@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.27 2000/12/21 11:14:54 stelian Exp $";
+	"$Id: tape.c,v 1.28 2000/12/21 15:01:54 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -236,24 +236,27 @@ dumpblock(daddr_t blkno, int size)
 int	nogripe = 0;
 
 static void
-tperror(int signo)
+tperror(int errnum)
 {
 
 	if (pipeout) {
-		msg("write error on %s\n", tape);
+		msg("write error on %s: %s\n", tape, strerror(errnum));
 		quit("Cannot recover\n");
 		/* NOTREACHED */
 	}
-	msg("write error %d blocks into volume %d\n", blocksthisvol, tapeno);
+	msg("write error %d blocks into volume %d: %s\n", blocksthisvol, tapeno, strerror(errnum));
 	broadcast("DUMP WRITE ERROR!\n");
-	if (!query("Do you want to restart?"))
-		dumpabort(0);
-	msg("Closing this volume.  Prepare to restart with new media;\n");
-	msg("this dump volume will be rewritten.\n");
-	killall();
-	nogripe = 1;
-	close_rewind();
-	Exit(X_REWRITE);
+	if (query("Do you want to rewrite this volume?")) {
+		msg("Closing this volume.  Prepare to restart with new media;\n");
+		msg("this dump volume will be rewritten.\n");
+		killall();
+		nogripe = 1;
+		close_rewind();
+		Exit(X_REWRITE);
+	}
+	if (query("Do you want to start the next tape?"))
+		return;
+	dumpabort(0);
 }
 
 static void
@@ -371,6 +374,10 @@ flushtape(void)
 		}
 		slp->sent = 0;
 
+		/* Check for errors */
+		if (got < 0)
+			tperror(-got);
+		
 		/* Check for end of tape */
 		if (got < writesize) {
 			msg("End of tape detected\n");
@@ -484,6 +491,10 @@ trewind(void)
 				dumpabort(0);
 			}
 			slaves[f].sent = 0;
+
+			if (got < 0)
+				tperror(-got);
+
 			if (got != writesize) {
 				msg("EOT detected in last 2 tape records!\n");
 				msg("Use a longer tape, decrease the size estimate\n");
@@ -656,6 +667,9 @@ rollforward(void)
 			dumpabort(0);
 		}
 		slp->sent = 0;
+
+		if (got < 0)
+			tperror(-got);
 
 		if (got != writesize) {
 			quit("EOT detected at start of the tape!\n");
@@ -916,8 +930,6 @@ enslave(void)
 	sigaction(SIGTERM, &sa, NULL); /* Slave sends SIGTERM on dumpabort() */
 	sa.sa_handler = sigpipe;
 	sigaction(SIGPIPE, &sa, NULL);
-	sa.sa_handler = tperror;
-	sigaction(SIGUSR1, &sa, NULL); /* Slave sends SIGUSR1 on tape errors */
 	sa.sa_handler = proceed;
 	sa.sa_flags = SA_RESTART;
 	sigaction(SIGUSR2, &sa, NULL); /* Slave sends SIGUSR2 to next slave */
@@ -1002,7 +1014,6 @@ doslave(int cmd, int slave_number)
 	register int nread;
 	int nextslave, size, eot_count;
 	volatile int wrote = 0;
-	sigset_t sigset;
 #ifdef	__linux__
 	errcode_t retval;
 #endif
@@ -1095,19 +1106,17 @@ doslave(int cmd, int slave_number)
 		if (eot_count > 0)
 			size = 0;
 
-		if (wrote < 0) {
-			(void) kill(master, SIGUSR1);
-			sigemptyset(&sigset);
-			sigaddset(&sigset, SIGINT);
-			for (;;)
-				sigsuspend(&sigset);
-		} else {
-			/*
-			 * pass size of write back to master
-			 * (for EOT handling)
-			 */
-			(void) atomic_write( cmd, (char *)&size, sizeof size);
-		}
+		/*
+		 * pass errno back to master for special handling
+		 */
+		if (wrote < 0)
+			size = -errno;
+
+		/*
+		 * pass size of write back to master
+		 * (for EOT handling)
+		 */
+		(void) atomic_write( cmd, (char *)&size, sizeof size);
 
 		/*
 		 * If partial write, don't want next slave to go.

@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.98 2000/12/21 11:14:52 stelian Exp $
+$Id: CHANGES,v 1.99 2000/12/21 15:01:53 stelian Exp $
 
 Changes between versions 0.4b20 and 0.4b21 (released ?????????????????)
 =======================================================================
@@ -34,7 +34,7 @@ Changes between versions 0.4b20 and 0.4b21 (released ?????????????????)
 	fully testing it... (of course, if this patch will break
 	anything, he is to blame for :-)).
 
-7.	Make dump and restore LFS aware. Dump can dump a filesystem
+7.	Made dump and restore LFS aware. Dump can dump a filesystem
 	containing large files, generate a large file on output and
 	restore can restore them. This feature is not enabled by
 	default, use --enable-largefile option of configure to enable
@@ -42,6 +42,12 @@ Changes between versions 0.4b20 and 0.4b21 (released ?????????????????)
 	Andrea Arcangeli <andrea@suse.de> for submitting the patch,
 	and to Theodore T'so <tytso@valinux.com> for his always
 	useful thoughts.
+
+8.	Made dump ask upon a tape write error if it should rewrite
+	the current volume (assume this is a bad tape) or if it should
+	assume an end-of-tape condition (useful for tape drives which
+	behaves badly at the end of the tape). Thanks to Andreas
+	Dilger <adilger@turbolinux.com> for the suggestion.
 
 Changes between versions 0.4b19 and 0.4b20 (released November 10, 2000)
 =======================================================================

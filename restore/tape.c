@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.22 2000/12/21 11:14:54 stelian Exp $";
+	"$Id: tape.c,v 1.23 2000/12/21 15:01:54 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1300,8 +1300,12 @@ getmore:
 #endif
 			seek_failed = (lseek(mt, i, SEEK_CUR) == (off_t)-1);
 
-		if (seek_failed)
-			err(1, "continuation failed");
+		if (seek_failed) {
+			warn("continuation failed");
+			if (!yflag && !reply("assume end-of-tape and continue"))
+				exit(1);
+			i = 0;
+		}
 	}
 	/*
 	 * Handle end of tape.
