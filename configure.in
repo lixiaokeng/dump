@@ -215,7 +215,24 @@ fi
 dnl
 dnl Check for library functions
 dnl
-AC_CHECK_FUNCS(err errx verr verrx vwarn vwarnx warn warnx realpath glob lchown)
+AC_CHECK_FUNCS(err errx verr verrx vwarn vwarnx warn warnx realpath lchown)
+AC_CHECK_FUNC(glob)
+
+dnl
+dnl Check for GLOB_ALTDIRFUNC
+dnl
+if test "$ac_cv_func_glob" = "yes"; then
+	AC_EGREP_CPP(yes, 
+	[
+#	include <glob.h>
+#	ifdef GLOB_ALTDIRFUNC
+	yes
+#	endif
+	], AC_DEFINE(HAVE_GLOB), noglob=yes)
+	if test "$noglob" = "yes"; then
+		echo "Your system does not support extended glob, will use the internal routines"
+	fi
+fi
 
 dnl
 dnl Check for types
