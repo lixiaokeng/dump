@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.72 2002/06/05 13:29:15 stelian Exp $";
+	"$Id: main.c,v 1.73 2002/07/17 10:18:52 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -711,9 +711,7 @@ main(int argc, char *argv[])
 	if (TP_BSIZE != (1 << tp_bshift))
 		quit("TP_BSIZE (%d) is not a power of 2", TP_BSIZE);
 	maxino = fs->super->s_inodes_count + 1;
-#if	0
 	spcl.c_flags |= DR_NEWINODEFMT;
-#endif
 #else	/* __linux __*/
 	if ((diskfd = open(disk, O_RDONLY)) < 0) {
 		msg("Cannot open %s\n", disk);

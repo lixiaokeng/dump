@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: bsdcompat.h,v 1.17 2002/06/10 14:05:00 stelian Exp $
+ *	$Id: bsdcompat.h,v 1.18 2002/07/17 10:18:52 stelian Exp $
  */
 
 #include <config.h>
@@ -96,7 +96,9 @@ struct dinode {
 	__u8	di_frag;
 	__u8	di_fsize;
 	__u16	di_pad1;
-	__u32	di_spare[2];
+	__u16	di_uidhigh;
+	__u16	di_gidhigh;
+	__u32	di_spare;
 };
 
 #define di_rdev		di_db[0]
@@ -134,21 +136,7 @@ struct dinode {
 #endif
 
 /*
- * This is the direct structure used by dump. In needs to be
- * different from direct because linux dump generates only
- * 'old inode format' dumps. And BSD supposes that the old
- * inode dumps have the d_namelen field written in machine byte
- * order...
- */
-struct olddirect {
-	__u32	d_ino;
-	__u16	d_reclen;
-	__u16	d_namlen;
-	char	d_name[MAXNAMLEN + 1];
-};
-
-/*
- * The direct structure used by restore.
+ * The direct structure used by dump/restore.
  */
 struct direct {
 	__u32	d_ino;

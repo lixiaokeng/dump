@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.184 2002/07/01 11:57:11 stelian Exp $
+$Id: CHANGES,v 1.185 2002/07/17 10:18:52 stelian Exp $
 
 Changes between versions 0.4b29 and 0.4b30 (released ????????????????)
 ======================================================================
@@ -21,6 +21,14 @@ Changes between versions 0.4b29 and 0.4b30 (released ????????????????)
 	media, and localized in english and german. Thanks to
 	Georg Lippold <g_lippold@sourceforge.net> for the new scripts.
 
+5.	Made dump save 32 bit UID/GID. Internally, this was achieved
+	by switching from the old BSD inode format to the new BSD 
+	inode format, which means that the tape format was changed.
+	However, since all restore versions out there should 
+	transparently support both inode formats, the change should
+	have no side effects. Thanks to John Yu <jky@cs.bu.edu> for
+	reporting the bug.
+	
 Changes between versions 0.4b28 and 0.4b29 (released June 8, 2002)
 ==================================================================
 

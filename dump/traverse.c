@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.47 2002/06/10 14:05:00 stelian Exp $";
+	"$Id: traverse.c,v 1.48 2002/07/17 10:18:52 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -786,7 +786,7 @@ dumpino(struct dinode *dp, dump_ino_t ino, int metaonly)
 	unsigned long cnt;
 	fsizeT size, remaining;
 	char buf[TP_BSIZE];
-	struct old_bsd_inode obi;
+	struct new_bsd_inode nbi;
 	int i;
 #ifdef	__linux__
 	struct block_context bc;
@@ -806,22 +806,24 @@ dumpino(struct dinode *dp, dump_ino_t ino, int metaonly)
 	}
 	CLRINO(ino, dumpinomap);
 #ifdef	__linux__
-	memset(&obi, 0, sizeof(obi));
-	obi.di_mode = dp->di_mode;
-	obi.di_uid = dp->di_uid;
-	obi.di_gid = dp->di_gid;
-	obi.di_qsize.v = i_size;
-	obi.di_atime = dp->di_atime;
-	obi.di_mtime = dp->di_mtime;
-	obi.di_ctime = dp->di_ctime;
-	obi.di_nlink = dp->di_nlink;
-	obi.di_blocks = dp->di_blocks;
-	obi.di_flags = dp->di_flags;
-	obi.di_gen = dp->di_gen;
-	memmove(&obi.di_db, &dp->di_db, (NDADDR + NIADDR) * sizeof(daddr_t));
+	memset(&nbi, 0, sizeof(nbi));
+	nbi.di_mode = dp->di_mode;
+	nbi.di_nlink = dp->di_nlink;
+	nbi.di_ouid = dp->di_uid;
+	nbi.di_ogid = dp->di_gid;
+	nbi.di_size = i_size;
+	nbi.di_atime.tv_sec = dp->di_atime;
+	nbi.di_mtime.tv_sec = dp->di_mtime;
+	nbi.di_ctime.tv_sec = dp->di_ctime;
+	memmove(&nbi.di_db, &dp->di_db, (NDADDR + NIADDR) * sizeof(daddr_t));
+	nbi.di_flags = dp->di_flags;
+	nbi.di_blocks = dp->di_blocks;
+	nbi.di_gen = dp->di_gen;
+	nbi.di_uid = (((int32_t)dp->di_uidhigh) << 16) | dp->di_uid;
+	nbi.di_gid = (((int32_t)dp->di_gidhigh) << 16) | dp->di_gid;
 	if (dp->di_file_acl)
 		warn("ACLs in inode #%ld won't be dumped", (long)ino);
-	memmove(&spcl.c_dinode, &obi, sizeof(obi));
+	memmove(&spcl.c_dinode, &nbi, sizeof(nbi));
 #else	/* __linux__ */
 	spcl.c_dinode = *dp;
 #endif	/* __linux__ */
@@ -961,19 +963,19 @@ static int
 convert_dir(struct ext2_dir_entry *dirent, int offset, int blocksize, char *buf, void *private)
 {
 	struct convert_dir_context *p;
-	struct olddirect *dp;
+	struct direct *dp;
 	int reclen;
 
 	p = (struct convert_dir_context *)private;
 
 	reclen = EXT2_DIR_REC_LEN((dirent->name_len & 0xFF) + 1);
 	if (((p->offset + reclen - 1) / p->bs) != (p->offset / p->bs)) {
-		dp = (struct olddirect *)(p->buf + p->prev_offset);
+		dp = (struct direct *)(p->buf + p->prev_offset);
 		dp->d_reclen += p->bs - (p->offset % p->bs);
 		p->offset += p->bs - (p->offset % p->bs);
 	}
 
-	dp = (struct olddirect *)(p->buf + p->offset);
+	dp = (struct direct *)(p->buf + p->offset);
 	dp->d_ino = dirent->inode;
 	dp->d_reclen = reclen;
 	dp->d_namlen = dirent->name_len & 0xFF;
@@ -995,7 +997,7 @@ dumpdirino(struct dinode *dp, dump_ino_t ino)
 {
 	fsizeT size;
 	char buf[TP_BSIZE];
-	struct old_bsd_inode obi;
+	struct new_bsd_inode nbi;
 	struct convert_dir_context cdc;
 	errcode_t retval;
 	struct ext2_dir_entry *de;
@@ -1035,22 +1037,24 @@ dumpdirino(struct dinode *dp, dump_ino_t ino)
 	dir_size = cdc.offset;
 
 #ifdef	__linux__
-	memset(&obi, 0, sizeof(obi));
-	obi.di_mode = dp->di_mode;
-	obi.di_uid = dp->di_uid;
-	obi.di_gid = dp->di_gid;
-	obi.di_qsize.v = dir_size; /* (u_quad_t)dp->di_size; */
-	obi.di_atime = dp->di_atime;
-	obi.di_mtime = dp->di_mtime;
-	obi.di_ctime = dp->di_ctime;
-	obi.di_nlink = dp->di_nlink;
-	obi.di_blocks = dp->di_blocks;
-	obi.di_flags = dp->di_flags;
-	obi.di_gen = dp->di_gen;
-	memmove(&obi.di_db, &dp->di_db, (NDADDR + NIADDR) * sizeof(daddr_t));
+	memset(&nbi, 0, sizeof(nbi));
+	nbi.di_mode = dp->di_mode;
+	nbi.di_nlink = dp->di_nlink;
+	nbi.di_ouid = dp->di_uid;
+	nbi.di_ogid = dp->di_gid;
+	nbi.di_size = dir_size; /* (u_quad_t)dp->di_size; */
+	nbi.di_atime.tv_sec = dp->di_atime;
+	nbi.di_mtime.tv_sec = dp->di_mtime;
+	nbi.di_ctime.tv_sec = dp->di_ctime;
+	memmove(&nbi.di_db, &dp->di_db, (NDADDR + NIADDR) * sizeof(daddr_t));
+	nbi.di_flags = dp->di_flags;
+	nbi.di_blocks = dp->di_blocks;
+	nbi.di_gen = dp->di_gen;
+	nbi.di_uid = (((int32_t)dp->di_uidhigh) << 16) | dp->di_uid;
+	nbi.di_gid = (((int32_t)dp->di_gidhigh) << 16) | dp->di_gid;
 	if (dp->di_file_acl)
 		warn("ACLs in inode #%ld won't be dumped", (long)ino);
-	memmove(&spcl.c_dinode, &obi, sizeof(obi));
+	memmove(&spcl.c_dinode, &nbi, sizeof(nbi));
 #else	/* __linux__ */
 	spcl.c_dinode = *dp;
 #endif	/* __linux__ */
