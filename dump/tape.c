@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.52 2001/07/20 09:01:46 stelian Exp $";
+	"$Id: tape.c,v 1.53 2001/07/20 11:02:45 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -443,12 +443,11 @@ flushtape(void)
 	nextblock = slp->tblock;
 	trecno = 0;
 	asize += tenths + returned.clen / density;
-	csize += returned.clen;
 	blockswritten += ntrec;
 	blocksthisvol += ntrec;
 	if (!pipeout && !unlimited) {
 		if (blocksperfile) {
-			if ( compressed ? csize + writesize >= blocksperfile * 1024
+			if ( compressed ? (bytes_written - tapea_bytes + SLAVES * (writesize + sizeof(struct tapebuf))) >= blocksperfile * 1024
 					: blocksthisvol >= blocksperfile ) {
 				close_rewind();
 				startnewtape(0);
@@ -693,7 +692,6 @@ rollforward(void)
 	slp->count = lastspclrec + blks + 1 - spcl.c_tapea;
 	slp->inode = curino;
 	asize += tenths + returned.clen / density;
-	csize += returned.clen;
 	blockswritten += ntrec;
 	blocksthisvol += ntrec;
 #endif
@@ -850,7 +848,6 @@ restore_check_point:
 		enslave();  /* Share open tape file descriptor with slaves */
 
 		asize = 0;
-		csize = 0;
 		blocksthisvol = 0;
 		if (top)
 			newtape++;		/* new tape signal */
