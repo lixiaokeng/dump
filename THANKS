@@ -1,4 +1,4 @@
-$Id: THANKS,v 1.15 2000/01/07 19:23:53 tiniou Exp $
+$Id: THANKS,v 1.16 2000/01/08 10:00:39 tiniou Exp $
 
 Dump and restore were written by the people of the CSRG at the University
 of California, Berkeley.
@@ -48,6 +48,7 @@ Chris Siebenmann	cks@utcc.utoronto.ca
 Bob Snyder		rsnyder@janet.advsys.com
 Matti Taskinen		mkt@rni.helsinki.fi
 Jason L Tibbitts III	tibbs@math.uh.edu
+Mike Tibor		tibor@lib.uaa.alaska.edu
 Theodore Y. Ts'o 	tytso@mit.edu
 Stephen Tweedie		sct@dcs.ed.ac.uk
 Daniel Veillard		Daniel.Veillard@imag.fr

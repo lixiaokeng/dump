@@ -1,6 +1,6 @@
-$Id: CHANGES,v 1.29 2000/01/07 19:39:38 tiniou Exp $
+$Id: CHANGES,v 1.30 2000/01/08 10:00:39 tiniou Exp $
 
-Changes between versions 0.4b11 and 0.4b12 (released January 7, 1999)
+Changes between versions 0.4b11 and 0.4b12 (released January 8, 1999)
 =====================================================================
 
 1.	Small fix in the dump man page. Thanks to Thorsten Kukuk 
@@ -28,6 +28,12 @@ Changes between versions 0.4b11 and 0.4b12 (released January 7, 1999)
 	with the Solaris version, and simplifying things for
 	amanda users). Thanks to Jason L Tibbitts III 
 	<tibbs@math.uh.edu> for reporting the bug.
+
+7.	Fixed a compatibility problem in linux/alpha dump tape format.
+	Now the linux/alpha dump are (again) compatible with the
+	other dump formats. But this breaks compatibility with
+	older dumps made on alpha. Thanks to Mike Tibor 
+	<tibor@lib.uaa.alaska.edu> for helping me in finding this bug.  
 
 Changes between versions 0.4b10 and 0.4b11 (released December 5, 1999)
 ======================================================================

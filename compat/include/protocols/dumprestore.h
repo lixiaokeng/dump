@@ -43,7 +43,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $Id: dumprestore.h,v 1.4 2000/01/07 19:24:04 tiniou Exp $
+ * $Id: dumprestore.h,v 1.5 2000/01/08 10:00:41 tiniou Exp $
  */
 
 #ifndef _PROTOCOLS_DUMPRESTORE_H_
@@ -76,8 +76,8 @@ union u_spcl {
 	char dummy[TP_BSIZE];
 	struct	s_spcl {
 		int32_t	c_type;		    /* record type (see below) */
-		time_t	c_date;		    /* date of this dump */
-		time_t	c_ddate;	    /* date of previous dump */
+		int32_t	c_date;		    /* date of this dump */
+		int32_t	c_ddate;	    /* date of previous dump */
 		int32_t	c_volume;	    /* dump volume number */
 		daddr_t	c_tapea;	    /* logical block of this record */
 		ino_t	c_inumber;	    /* number of inode */

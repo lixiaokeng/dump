@@ -117,7 +117,7 @@ rm -rf $RPM_BUILD_ROOT
 /sbin/rrestore.static
 
 %changelog
-* Fri Jan 7 2000 Stelian Pop <pop@cybercable.fr>
+* Fri Jan 8 2000 Stelian Pop <pop@cybercable.fr>
 - dump 0.4b12 released, first packaging.
 
 * Sun Dec 5 1999 Stelian Pop <pop@cybercable.fr>
