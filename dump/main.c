@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.32 2000/12/21 11:14:54 stelian Exp $";
+	"$Id: main.c,v 1.33 2001/02/21 16:13:05 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -98,6 +98,9 @@ long	dev_bsize = 1;	/* recalculated below */
 long	blocksperfile;	/* output blocks per file */
 char	*host = NULL;	/* remote host (if any) */
 int	sizest = 0;	/* return size estimate only */
+int	compressed = 0;	/* use zlib to compress the output */
+long long bytes_written = 0; /* total bytes written */
+long	uncomprblks = 0;/* uncompressed blocks written */
 
 #ifdef	__linux__
 char	*__progname;
@@ -159,10 +162,18 @@ main(int argc, char *argv[])
 
 	obsolete(&argc, &argv);
 #ifdef KERBEROS
+#ifdef HAVE_ZLIB
+#define optstring "0123456789aB:b:cd:e:f:F:h:kL:Mns:ST:uWwz"
+#else
 #define optstring "0123456789aB:b:cd:e:f:F:h:kL:Mns:ST:uWw"
+#endif /* HAVE_ZLIB */
+#else
+#ifdef HAVE_ZLIB
+#define optstring "0123456789aB:b:cd:e:f:F:h:L:Mns:ST:uWwz"
 #else
 #define optstring "0123456789aB:b:cd:e:f:F:h:L:Mns:ST:uWw"
-#endif
+#endif /* HAVE_ZLIB */
+#endif /* KERBEROS */
 	while ((ch = getopt(argc, argv, optstring)) != -1)
 #undef optstring
 		switch (ch) {
@@ -291,6 +302,11 @@ main(int argc, char *argv[])
 		case 'w':
 			lastdump(ch);
 			exit(X_FINOK);	/* do nothing else */
+#ifdef HAVE_ZLIB
+		case 'z':
+			compressed = 1;
+			break;
+#endif /* HAVE_ZLIB */
 
 		default:
 			usage();
@@ -745,6 +761,13 @@ main(int argc, char *argv[])
 	msg("Date this dump completed:  %s", ctime(&tnow));
 
 	msg("Average transfer rate: %ld KB/s\n", xferrate / tapeno);
+	if (compressed) {
+		long tapekb = bytes_written / 1024;
+		double rate = .0005 + (double) spcl.c_tapea / tapekb;
+		msg("Wrote %ldKB uncompressed, %ldKB compressed,"
+			" compression ratio %1.3f\n",
+			spcl.c_tapea, tapekb, rate);
+	}
 
 	broadcast("DUMP IS DONE!\7\7\n");
 	msg("DUMP IS DONE\n");
@@ -771,7 +794,11 @@ usage(void)
 #ifdef KERBEROS
 		"k"
 #endif
-		"MnSu] [-B records] [-b blocksize] [-d density]\n"
+		"MnSu"
+#ifdef HAVE_ZLIB
+		"z"
+#endif
+		"] [-B records] [-b blocksize] [-d density]\n"
 		"\t%s [-e inode#] [-f file] [-h level] [-s feet] [-T date] filesystem\n"
 		"\t%s [-W | -w]\n", __progname, white, __progname);
 	exit(X_STARTUP);

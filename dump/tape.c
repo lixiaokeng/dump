@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.30 2001/02/16 13:38:47 stelian Exp $";
+	"$Id: tape.c,v 1.31 2001/02/21 16:13:05 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -88,6 +88,10 @@ int	write(), read();
 #include <ext2fs/ext2fs.h>
 #endif
 
+#ifdef HAVE_ZLIB
+#include <zlib.h>
+#endif /* HAVE_ZLIB */
+
 #include "dump.h"
 
 int	writesize;		/* size of malloc()ed buffer for tape */
@@ -101,6 +105,7 @@ extern	char *host;
 char	*nexttape;
 extern  pid_t rshpid;
 int 	eot_code = 1;
+long long tapea_bytes = 0;	/* bytes_written at start of current volume */
 
 static	ssize_t atomic_read __P((int, void *, size_t));
 static	ssize_t atomic_write __P((int, const void *, size_t));
@@ -125,6 +130,11 @@ struct req {
 };
 int reqsiz;
 
+struct slave_results {
+	ssize_t unclen;		/* uncompressed length */
+	ssize_t clen;		/* compressed length */
+};
+
 #define SLAVES 3		/* 1 slave writing, 1 reading, 1 for slack */
 struct slave {
 	int tapea;		/* header number at start of this chunk */
@@ -146,7 +156,7 @@ static time_t tstart_volume;	/* time of volume start */
 static int tapea_volume;	/* value of spcl.c_tapea at volume start */
 
 int master;		/* pid of master, for sending error signals */
-int tenths;		/* length of tape used per block written */
+int tenths;		/* length of tape overhead per block written */
 static int caught;	/* have we caught the signal to proceed? */
 static int ready;	/* have we reached the lock point without having */
 			/* received the SIGUSR2 signal from the prev slave? */
@@ -169,8 +179,11 @@ alloctape(void)
 	 * variable, 0.30" to 0.45".  The gap is maximal when the tape stops.
 	 */
 	if (blocksperfile == 0 && !unlimited)
-		tenths = writesize / density +
-		    (cartridge ? 16 : density == 625 ? 5 : 8);
+		tenths = (cartridge ? 16 : density == 625 ? 5 : 8);
+	else {
+		tenths = 0;
+		density = 1;
+	}
 	/*
 	 * Allocate tape buffer contiguous with the array of instruction
 	 * packets, so flushtape() can write them together with one write().
@@ -289,14 +302,23 @@ do_stats(void)
 #else
 					  ctime(&tnow));
 #endif
-	msg("Volume %d: %ld tape blocks (%.2fMB)\n", tapeno, 
-		blocks, ((double)blocks * TP_BSIZE / 1048576));
+	if (! compressed)
+		msg("Volume %d %ld tape blocks (%.2fMB)\n", tapeno, 
+			blocks, ((double)blocks * TP_BSIZE / 1048576));
 	if (ttaken > 0) {
+		long volkb = (bytes_written - tapea_bytes) / 1024;
+		long txfrate = volkb / ttaken;
 		msg("Volume %d took %d:%02d:%02d\n", tapeno,
 			ttaken / 3600, (ttaken % 3600) / 60, ttaken % 60);
 		msg("Volume %d transfer rate: %ld KB/s\n", tapeno,
-			blocks / ttaken);
-		xferrate += blocks / ttaken;
+			txfrate);
+		xferrate += txfrate;
+		if (compressed) {
+			double rate = .0005 + (double) blocks / (double) volkb;
+			msg("Volume %d %ldKB uncompressed, %ldKB compressed,"
+				" compression ratio %1.3f\n",
+				tapeno, blocks, volkb, rate);
+		}
 	}
 	return(tnow);
 }
@@ -359,6 +381,7 @@ flushtape(void)
 {
 	int i, blks, got;
 	long lastfirstrec;
+	struct slave_results returned;
 
 	int siz = (char *)nextblock - (char *)slp->req;
 
@@ -375,11 +398,15 @@ flushtape(void)
 
 	/* Read results back from next slave */
 	if (slp->sent) {
-		if (atomic_read( slp->fd, (char *)&got, sizeof got)
-		    != sizeof got) {
+		if (atomic_read( slp->fd, (char *)&returned, sizeof returned)
+		    != sizeof returned) {
 			perror("  DUMP: error reading command pipe in master");
 			dumpabort(0);
 		}
+		got = returned.unclen;
+		bytes_written += returned.clen;
+		if (returned.unclen == returned.clen)
+			uncomprblks++;
 		slp->sent = 0;
 
 		/* Check for errors */
@@ -387,7 +414,7 @@ flushtape(void)
 			tperror(-got);
 		
 		/* Check for end of tape */
-		if (got < writesize) {
+		if (got == 0) {
 			msg("End of tape detected\n");
 
 			/*
@@ -397,8 +424,8 @@ flushtape(void)
 			for (i = 0; i < SLAVES; i++) {
 				if (slaves[i].sent) {
 					if (atomic_read( slaves[i].fd,
-					    (char *)&got, sizeof got)
-					    != sizeof got) {
+					    (char *)&returned, sizeof returned)
+					    != sizeof returned) {
 						perror("  DUMP: error reading command pipe in master");
 						dumpabort(0);
 					}
@@ -424,7 +451,7 @@ flushtape(void)
 	slp->inode = curino;
 	nextblock = slp->tblock;
 	trecno = 0;
-	asize += tenths;
+	asize += tenths + returned.clen / density;
 	blockswritten += ntrec;
 	blocksthisvol += ntrec;
 	if (!pipeout && !unlimited && (blocksperfile ?
@@ -482,6 +509,7 @@ trewind(void)
 {
 	int f;
 	int got;
+	struct slave_results returned;
 
 	for (f = 0; f < SLAVES; f++) {
 		/*
@@ -493,17 +521,21 @@ trewind(void)
 		 * fixme: punt for now.
 		 */
 		if (slaves[f].sent) {
-			if (atomic_read( slaves[f].fd, (char *)&got, sizeof got)
-			    != sizeof got) {
+			if (atomic_read( slaves[f].fd, (char *)&returned, sizeof returned)
+			    != sizeof returned) {
 				perror("  DUMP: error reading command pipe in master");
 				dumpabort(0);
 			}
+			got = returned.unclen;
+			bytes_written += returned.clen;
+			if (returned.unclen == returned.clen)
+				uncomprblks++;
 			slaves[f].sent = 0;
 
 			if (got < 0)
 				tperror(-got);
 
-			if (got != writesize) {
+			if (got == 0) {
 				msg("EOT detected in last 2 tape records!\n");
 				msg("Use a longer tape, decrease the size estimate\n");
 				quit("or use no size estimate at all.\n");
@@ -571,6 +603,7 @@ rollforward(void)
 	register struct slave *tslp;
 	int i, size, savedtapea, got;
 	union u_spcl *ntb, *otb;
+	struct slave_results returned;
 #ifdef __linux__
 	int blks;
 	long lastfirstrec;
@@ -669,17 +702,21 @@ rollforward(void)
 	 * worked ok, otherwise the tape is much too short!
 	 */
 	if (slp->sent) {
-		if (atomic_read( slp->fd, (char *)&got, sizeof got)
-		    != sizeof got) {
+		if (atomic_read( slp->fd, (char *)&returned, sizeof returned)
+		    != sizeof returned) {
 			perror("  DUMP: error reading command pipe in master");
 			dumpabort(0);
 		}
+		got = returned.unclen;
+		bytes_written += returned.clen;
+		if (returned.clen == returned.unclen)
+			uncomprblks++;
 		slp->sent = 0;
 
 		if (got < 0)
 			tperror(-got);
 
-		if (got != writesize) {
+		if (got == 0) {
 			quit("EOT detected at start of the tape!\n");
 		}
 	}
@@ -695,7 +732,7 @@ rollforward(void)
 	slp->firstrec = lastfirstrec + ntrec;
 	slp->count = lastspclrec + blks + 1 - spcl.c_tapea;
 	slp->inode = curino;
-	asize += tenths;
+	asize += tenths + returned.clen / density;
 	blockswritten += ntrec;
 	blocksthisvol += ntrec;
 #endif
@@ -735,6 +772,7 @@ startnewtape(int top)
 
 	parentpid = getpid();
 	tapea_volume = spcl.c_tapea;
+	tapea_bytes = bytes_written;
 #ifdef __linux__
 	(void)time4(&tstart_volume);
 #else
@@ -867,6 +905,8 @@ restore_check_point:
 		spcl.c_volume++;
 		spcl.c_type = TS_TAPE;
 		spcl.c_flags |= DR_NEWHEADER;
+		if (compressed)
+			spcl.c_flags |= DR_COMPRESSED;
 		writeheader((ino_t)slp->inode);
 		spcl.c_flags &=~ DR_NEWHEADER;
 		msg("Volume %d started at: %s", tapeno, 
@@ -1010,18 +1050,25 @@ killall(void)
 }
 
 /*
- * Synchronization - each process has a lockfile, and shares file
- * descriptors to the following process's lockfile.  When our write
- * completes, we release our lock on the following process's lock-
- * file, allowing the following process to lock it and proceed. We
- * get the lock back for the next cycle by swapping descriptors.
+ * Synchronization - each process waits for a SIGUSR2 from the
+ * previous process before writing to the tape, and sends SIGUSR2
+ * to the next process when the tape write completes. On tape errors
+ * a SIGUSR1 is sent to the master which then terminates all of the
+ * slaves.
  */
 static void
 doslave(int cmd, int slave_number)
 {
 	register int nread;
-	int nextslave, size, eot_count;
+	int nextslave, size, eot_count, bufsize;
 	volatile int wrote = 0;
+	char *buffer;
+#ifdef HAVE_ZLIB
+	struct tapebuf *comp_buf = NULL;
+	int compresult, complevel = 6, do_compress = 0;
+	unsigned long worklen;
+#endif /* HAVE_ZLIB */
+	struct slave_results returns;
 #ifdef	__linux__
 	errcode_t retval;
 #endif
@@ -1047,6 +1094,15 @@ doslave(int cmd, int slave_number)
 		quit("master/slave protocol botched - didn't get pid of next slave.\n");
 	}
 
+#ifdef HAVE_ZLIB
+	/* if we're doing a compressed dump, allocate the compress buffer */
+	if (compressed) {
+		comp_buf = malloc(sizeof(struct tapebuf) + TP_BSIZE + writesize);
+		if (comp_buf == NULL)
+			quit("couldn't allocate a compress buffer.\n");
+	}
+#endif /* HAVE_ZLIB */
+
 	/*
 	 * Get list of blocks to dump, read the blocks into tape buffer
 	 */
@@ -1055,10 +1111,10 @@ doslave(int cmd, int slave_number)
 
 		for (trecno = 0; trecno < ntrec;
 		     trecno += p->count, p += p->count) {
-			if (p->dblk) {
+			if (p->dblk) {	/* read a disk block */
 				bread(p->dblk, slp->tblock[trecno],
 					p->count * TP_BSIZE);
-			} else {
+			} else {	/* read record from pipe */
 				if (p->count != 1 || atomic_read( cmd,
 				    (char *)slp->tblock[trecno],
 				    TP_BSIZE) != TP_BSIZE)
@@ -1077,16 +1133,44 @@ doslave(int cmd, int slave_number)
 		wrote = 0;
 		eot_count = 0;
 		size = 0;
+		buffer = (char *) slp->tblock[0];	/* set write pointer */
+		bufsize = writesize;			/* length to write */
+		returns.clen = returns.unclen = bufsize;
 
-		while (eot_count < 10 && size < writesize) {
+#ifdef HAVE_ZLIB
+		/* 
+		 * If the data can't be compressed it's written with no
+		 * prefix as writesize bytes. If it's compressible, it's
+		 * written from struct tapebuf with an 8 byte prefix
+		 * followed by the data. This will always be less than
+		 * writesize. Restore, on a short read, can compare the
+		 * length read to the compressed length in the header
+		 * to verify that the read was good.
+		 */
+
+		if (do_compress) {	/* don't compress the first block */
+			comp_buf->clen = comp_buf->unclen = bufsize;
+			worklen = TP_BSIZE + writesize;
+			compresult = compress2(comp_buf->buf, &worklen,
+				(char *)slp->tblock[0], writesize, complevel);
+			if (compresult == Z_OK && worklen <= writesize-32) {
+				/* write the compressed buffer */
+				comp_buf->clen = worklen;
+				buffer = (char *) comp_buf;
+				returns.clen = bufsize = worklen + 8;
+			}
+		}
+		/* compress the remaining blocks */
+		do_compress = compressed;
+#endif /* HAVE_ZLIB */
+
+		while (eot_count < 10 && size < bufsize) {
 #ifdef RDUMP
 			if (host)
-				wrote = rmtwrite(slp->tblock[0]+size,
-				    writesize-size);
+				wrote = rmtwrite(buffer + size, bufsize - size);
 			else
 #endif
-				wrote = write(tapefd, slp->tblock[0]+size,
-				    writesize-size);
+				wrote = write(tapefd, buffer + size, bufsize - size);
 #ifdef WRITEDEBUG
 			printf("slave %d wrote %d\n", slave_number, wrote);
 #endif
@@ -1098,9 +1182,9 @@ doslave(int cmd, int slave_number)
 		}
 
 #ifdef WRITEDEBUG
-		if (size != writesize)
+		if (size != bufsize)
 		 printf("slave %d only wrote %d out of %d bytes and gave up.\n",
-		     slave_number, size, writesize);
+		     slave_number, size, bufsize);
 #endif
 
 		/*
@@ -1112,23 +1196,22 @@ doslave(int cmd, int slave_number)
 		}
 
 		if (eot_count > 0)
-			size = 0;
+			returns.clen = returns.unclen = 0;
 
 		/*
 		 * pass errno back to master for special handling
 		 */
 		if (wrote < 0)
-			size = -errno;
+			returns.unclen = -errno;
 
 		/*
-		 * pass size of write back to master
+		 * pass size of data and size of write back to master
 		 * (for EOT handling)
 		 */
-		(void) atomic_write( cmd, (char *)&size, sizeof size);
+		(void) atomic_write( cmd, (char *)&returns, sizeof returns);
 
 		/*
-		 * If partial write, don't want next slave to go.
-		 * Also jolts him awake.
+		 * Signal the next slave to go.
 		 */
 		(void) kill(nextslave, SIGUSR2);
 	}

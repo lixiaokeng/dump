@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: dump.h,v 1.19 2000/12/21 11:14:53 stelian Exp $
+ *	$Id: dump.h,v 1.20 2001/02/21 16:13:05 stelian Exp $
  */
 
 /*-
@@ -87,7 +87,9 @@ long	asize;		/* number of 0.1" units written on current tape */
 int	etapes;		/* estimated number of tapes */
 int	nonodump;	/* if set, do not honor UF_NODUMP user flags */
 int	unlimited;	/* if set, write to end of medium */
-
+int	compressed;	/* if set, dump is to be compressed */
+long long bytes_written;/* total bytes written to tape */
+long	uncomprblks;	/* uncompressed blocks written to tape */
 int	notify;		/* notify operator flag */
 int	blockswritten;	/* number of blocks written on current tape */
 int	tapeno;		/* current tape number */

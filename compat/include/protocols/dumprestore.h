@@ -5,7 +5,7 @@
  *      Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: dumprestore.h,v 1.9 2000/12/21 11:14:53 stelian Exp $
+ *	$Id: dumprestore.h,v 1.10 2001/02/21 16:13:05 stelian Exp $
  */
 
 /*
@@ -118,5 +118,13 @@ union u_spcl {
  */
 #define DR_NEWHEADER	0x0001	/* new format tape header */
 #define DR_NEWINODEFMT	0x0002	/* new format inodes on tape */
+#define DR_COMPRESSED	0x0080	/* dump tape is compressed */
+
+/* used for compressed dump tapes */
+struct tapebuf {
+	int32_t	clen;	/* compressed length of data */
+	int32_t	unclen;	/* uncompressed length of data */
+	char	buf[0];	/* the data */
+};
 
 #endif /* !_DUMPRESTORE_H_ */

@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.23 2000/12/21 15:01:54 stelian Exp $";
+	"$Id: tape.c,v 1.24 2001/02/21 16:13:05 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -72,6 +72,10 @@ static const char rcsid[] =
 #include <string.h>
 #include <unistd.h>
 
+#ifdef HAVE_ZLIB
+#include <zlib.h>
+#endif /* HAVE_ZLIB */
+
 #ifdef	__linux__
 #include <ext2fs/ext2fs.h>
 #endif
@@ -88,6 +92,11 @@ static char	magtapeprefix[MAXPATHLEN];
 static int	blkcnt;
 static int	numtrec;
 static char	*tapebuf;
+static char	*tbufptr = NULL;	/* active tape buffer */
+#ifdef HAVE_ZLIB
+static char	*comprbuf;		/* uncompress work buf */
+static size_t	comprlen;
+#endif
 static union	u_spcl endoftapemark;
 static long	blksread;		/* blocks read since last header */
 static long	tpblksread = 0;		/* TP_BSIZE blocks read */
@@ -115,7 +124,9 @@ static int	 gethead __P((struct s_spcl *));
 static void	 readtape __P((char *));
 static void	 setdumpnum __P((void));
 static u_int	 swabi __P((u_int));
+#if 0
 static u_long	 swabl __P((u_long));
+#endif
 static u_char	*swab64 __P((u_char *, int));
 static u_char	*swab32 __P((u_char *, int));
 static u_char	*swab16 __P((u_char *, int));
@@ -199,6 +210,14 @@ newtapebuf(long size)
 	if (tapebuf == NULL)
 		errx(1, "Cannot allocate space for tape buffer");
 	tapebufsize = size;
+#ifdef HAVE_ZLIB
+	if (comprbuf != NULL)
+		free(comprbuf);
+	comprlen = size * TP_BSIZE;
+	comprbuf = malloc(comprlen);
+	if (comprbuf == NULL)
+		errx(1, "Cannot allocate space for uncompress buffer");
+#endif /* HAVE_ZLIB */
 }
 
 /*
@@ -236,6 +255,15 @@ setup(void)
 		if (gethead(&spcl) == FAIL)
 			errx(1, "Tape is not a dump tape");
 		fprintf(stderr, "Converting to new file system format.\n");
+	}
+
+	if (spcl.c_flags & DR_COMPRESSED) {
+		fprintf(stderr, "Dump tape is compressed.\n");
+#ifdef HAVE_ZLIB
+		zflag = 1;
+#else
+		errx(1,"This restore version doesn't support decompression");
+#endif /* HAVE_ZLIB */
 	}
 	if (pipein) {
 		endoftapemark.s_spcl.c_magic = cvtflag ? OFS_MAGIC : NFS_MAGIC;
@@ -1218,13 +1246,19 @@ readtape(char *buf)
 {
 	ssize_t rd, newvol, i;
 	int cnt, seek_failed;
+#ifdef HAVE_ZLIB
+	int cresult;
+	struct tapebuf* tpb;
+	unsigned long worklen;
+#endif
 
 	if (blkcnt < numtrec) {
-		memmove(buf, &tapebuf[(blkcnt++ * TP_BSIZE)], TP_BSIZE);
+		memmove(buf, &tbufptr[(blkcnt++ * TP_BSIZE)], TP_BSIZE);
 		blksread++;
 		tpblksread++;
 		return;
 	}
+	tbufptr = tapebuf;
 	for (i = 0; i < ntrec; i++)
 		((struct s_spcl *)&tapebuf[i * TP_BSIZE])->c_magic = 0;
 	if (numtrec == 0)
@@ -1238,6 +1272,28 @@ getmore:
 	else
 #endif
 		i = read(mt, &tapebuf[rd], cnt);
+
+#ifdef HAVE_ZLIB
+	if (i < 0)
+		goto readerror;
+	if (i == 0 && !pipein)
+		goto endoftape;
+
+	if (zflag  && i != ntrec * TP_BSIZE) {
+		tpb = (struct tapebuf *) tapebuf;
+		if (i != tpb->clen + sizeof(struct tapebuf))
+			errx(1,"tape is not a compressed dump tape");
+		worklen = comprlen;
+		cresult = uncompress(comprbuf, &worklen, tpb->buf, tpb->clen);
+		if (cresult != Z_OK)
+			errx(1,"tape is not a compressed dump tape");
+		if (worklen != tpb->unclen)
+			errx(1,"decompression error, length mismatch");
+		i = worklen;
+		tbufptr = comprbuf;
+	}
+#endif /* HAVE_ZLIB */
+
 	/*
 	 * Check for mid-tape short read error.
 	 * If found, skip rest of buffer and start with the next.
@@ -1272,6 +1328,9 @@ getmore:
 	/*
 	 * Handle read error.
 	 */
+#ifdef HAVE_ZLIB
+readerror:
+#endif
 	if (i < 0) {
 		fprintf(stderr, "Tape read error while ");
 		switch (curfile.action) {
@@ -1310,6 +1369,9 @@ getmore:
 	/*
 	 * Handle end of tape.
 	 */
+#ifdef HAVE_ZLIB
+endoftape:
+#endif
 	if (i == 0) {
 		Vprintf(stdout, "End-of-tape encountered\n");
 		if (!pipein) {
@@ -1327,7 +1389,7 @@ getmore:
 		memmove(&tapebuf[rd], &endoftapemark, TP_BSIZE);
 	}
 	blkcnt = 0;
-	memmove(buf, &tapebuf[(blkcnt++ * TP_BSIZE)], TP_BSIZE);
+	memmove(buf, &tbufptr[(blkcnt++ * TP_BSIZE)], TP_BSIZE);
 	blksread++;
 	tpblksread++;
 }
@@ -1354,6 +1416,7 @@ findtapeblksize(void)
 				(long)i, TP_BSIZE);
 	ntrec = i / TP_BSIZE;
 	numtrec = ntrec;
+	tbufptr = tapebuf;
 	Vprintf(stdout, "Tape block size is %ld\n", ntrec);
 }
 
@@ -1791,9 +1854,11 @@ swabi(u_int x)
 	return (x);
 }
 
+#if 0
 static u_long
 swabl(u_long x)
 {
 	swabst((u_char *)"l", (u_char *)&x);
 	return (x);
 }
+#endif

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: optr.c,v 1.18 2000/12/21 11:14:54 stelian Exp $";
+	"$Id: optr.c,v 1.19 2001/02/21 16:13:05 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -567,7 +567,7 @@ static void
 print_wmsg(char arg, int dumpme, const char *dev, int level,
 	   const char *mtpt, time_t ddate)
 {
-	char *date;
+	char *date = NULL;
 	
 	if (ddate) {
 		char *d;

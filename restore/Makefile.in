@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.5 2000/05/29 14:17:37 stelian Exp $
+# $Id: Makefile.in,v 1.6 2001/02/21 16:13:05 stelian Exp $
 
 top_srcdir=	@top_srcdir@
 srcdir=		@srcdir@
@@ -7,7 +7,7 @@ srcdir=		@srcdir@
 
 CFLAGS=		@CCOPTS@ -pipe $(OPT) $(DEFS) $(GINC) $(INC) @RESTOREDEBUG@
 LDFLAGS:=	$(LDFLAGS) @STATIC@
-LIBS=		$(GLIBS) -le2p @READLINE@
+LIBS=		$(GLIBS) -le2p @READLINE@ @ZLIB@
 DEPLIBS=	../compat/lib/libcompat.a
 
 PROG=		restore
