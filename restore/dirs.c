@@ -42,10 +42,11 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dirs.c,v 1.24 2003/10/26 16:05:47 stelian Exp $";
+	"$Id: dirs.c,v 1.25 2004/03/29 13:57:29 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
+#include <compatlfs.h>
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/file.h>
@@ -98,8 +99,8 @@ static const char rcsid[] =
 struct inotab {
 	struct	inotab *t_next;
 	dump_ino_t t_ino;
-	int32_t	t_seekpt;
-	int32_t	t_size;
+	OFF_T	t_seekpt;
+	OFF_T	t_size;
 };
 static struct inotab *inotab[HASHSIZE];
 
@@ -130,7 +131,7 @@ struct rstdirdesc {
 /*
  * Global variables for this file.
  */
-static long	seekpt;
+static OFF_T	seekpt;
 static FILE	*df, *mf;
 static RST_DIR	*dirp;
 static char	dirfile[MAXPATHLEN] = "#";	/* No file */
@@ -147,9 +148,9 @@ struct odirect {
 };
 
 #if defined(__linux__) || defined(sunos)
-static struct inotab	*allocinotab __P((dump_ino_t, struct new_bsd_inode *, long));
+static struct inotab	*allocinotab __P((dump_ino_t, struct new_bsd_inode *, OFF_T));
 #else
-static struct inotab	*allocinotab __P((dump_ino_t, struct dinode *, long));
+static struct inotab	*allocinotab __P((dump_ino_t, struct dinode *, OFF_T));
 #endif
 static void		 dcvt __P((struct odirect *, struct direct *));
 static void		 flushent __P((void));
@@ -157,8 +158,8 @@ static struct inotab	*inotablookup __P((dump_ino_t));
 static RST_DIR		*opendirfile __P((const char *));
 static void		 putdir __P((char *, size_t));
 static void		 putent __P((struct direct *));
-static void		 rst_seekdir __P((RST_DIR *, long, long));
-static long		 rst_telldir __P((RST_DIR *));
+static void		rst_seekdir __P((RST_DIR *, OFF_T, OFF_T));
+static OFF_T		rst_telldir __P((RST_DIR *));
 static struct direct	*searchdir __P((dump_ino_t, char *));
 
 #ifdef sunos
@@ -190,9 +191,9 @@ extractdirs(int genmode)
 	if (command != 'r' && command != 'R') {
 		(void) strncat(dirfile, "-XXXXXX",
 			sizeof(dirfile) - strlen(dirfile));
-		fd = mkstemp(dirfile);
+		fd = MKSTEMP(dirfile);
 	} else
-		fd = open(dirfile, O_RDWR|O_CREAT|O_EXCL, 0666);
+		fd = OPEN(dirfile, O_RDWR|O_CREAT|O_EXCL, 0666);
 	if (fd == -1 || (df = fdopen(fd, "w")) == NULL) {
 		if (fd != -1)
 			close(fd);
@@ -203,9 +204,9 @@ extractdirs(int genmode)
 		if (command != 'r' && command != 'R') {
 			(void) strncat(modefile, "-XXXXXX",
 				sizeof(modefile) - strlen(modefile));
-			fd = mkstemp(modefile);
+			fd = MKSTEMP(modefile);
 		} else
-			fd = open(modefile, O_RDWR|O_CREAT|O_EXCL, 0666);
+			fd = OPEN(modefile, O_RDWR|O_CREAT|O_EXCL, 0666);
 		if (fd == -1 || (mf = fdopen(fd, "w")) == NULL) {
 			if (fd != -1)
 				close(fd);
@@ -265,7 +266,7 @@ treescan(char *pname, dump_ino_t ino, long (*todo) __P((char *, dump_ino_t, int)
 	struct inotab *itp;
 	struct direct *dp;
 	int namelen;
-	long bpt;
+	OFF_T bpt;
 	char locname[MAXPATHLEN + 1];
 
 	itp = inotablookup(ino);
@@ -479,7 +480,7 @@ flushent(void)
 	((struct direct *)(dirbuf + prev))->d_reclen = DIRBLKSIZ - prev;
 	if ( fwrite(dirbuf, (int)dirloc, 1, df) != 1 )
 		err(1, "cannot write to file %s", dirfile);
-	seekpt = ftell(df);
+	seekpt = FTELL(df);
 	if (seekpt == -1)
 		err(1, "cannot write to file %s", dirfile);
 	dirloc = 0;
@@ -505,15 +506,15 @@ dcvt(struct odirect *odp, struct direct *ndp)
  * the desired seek offset into it.
  */
 static void
-rst_seekdir(RST_DIR *dirp, long loc, long base)
+rst_seekdir(RST_DIR *dirp, OFF_T loc, OFF_T base)
 {
 
 	if (loc == rst_telldir(dirp))
 		return;
 	loc -= base;
 	if (loc < 0)
-		fprintf(stderr, "bad seek pointer to rst_seekdir %ld\n", loc);
-	(void) lseek(dirp->dd_fd, base + (loc & ~(DIRBLKSIZ - 1)), SEEK_SET);
+		fprintf(stderr, "bad seek pointer to rst_seekdir %lld\n", loc);
+	(void) LSEEK(dirp->dd_fd, base + (loc & ~(DIRBLKSIZ - 1)), SEEK_SET);
 	dirp->dd_loc = loc & (DIRBLKSIZ - 1);
 	if (dirp->dd_loc != 0)
 		dirp->dd_size = read(dirp->dd_fd, dirp->dd_buf, DIRBLKSIZ);
@@ -593,11 +594,11 @@ rst_closedir(RST_DIR *dirp)
 /*
  * Simulate finding the current offset in the directory.
  */
-static long
+static OFF_T
 rst_telldir(RST_DIR *dirp)
 {
-	return ((long)lseek(dirp->dd_fd,
-	    (OFF_T)0, SEEK_CUR) - dirp->dd_size + dirp->dd_loc);
+	return ((OFF_T)LSEEK(dirp->dd_fd,
+		(OFF_T)0, SEEK_CUR) - dirp->dd_size + dirp->dd_loc);
 }
 
 /*
@@ -609,7 +610,7 @@ opendirfile(const char *name)
 	RST_DIR *dirp;
 	int fd;
 
-	if ((fd = open(name, O_RDONLY)) == -1)
+	if ((fd = OPEN(name, O_RDONLY)) == -1)
 		return (NULL);
 	if ((dirp = malloc(sizeof(RST_DIR))) == NULL) {
 		(void)close(fd);
@@ -745,9 +746,9 @@ inodetype(dump_ino_t ino)
  */
 static struct inotab *
 #if defined(__linux__) || defined(sunos)
-allocinotab(dump_ino_t ino, struct new_bsd_inode *dip, long seekpt)
+allocinotab(dump_ino_t ino, struct new_bsd_inode *dip, OFF_T seekpt)
 #else
-allocinotab(dump_ino_t ino, struct dinode *dip, long seekpt)
+allocinotab(dump_ino_t ino, struct dinode *dip, OFF_T seekpt)
 #endif
 {
 	struct inotab	*itp;

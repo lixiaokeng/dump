@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.243 2004/03/08 14:04:02 stelian Exp $
+$Id: CHANGES,v 1.244 2004/03/29 13:57:28 stelian Exp $
 
 Changes between versions 0.4b35 and 0.4b36 (released ?????????????????)
 =======================================================================
@@ -33,6 +33,11 @@ Changes between versions 0.4b35 and 0.4b36 (released ?????????????????)
 	script which was changed in 0.434 to be run only when -M
 	or multiple -f were NOT specified. Some users rely on this
 	feature even when it is combined with -M/-f.
+
+9.	Fixed restore when restoring huge backups (where rstdir...
+	temporary files are over 2GB). Thanks to 
+	Raphael Jaffey <rjaffey@artic.edu> for reporting this, 
+	debugging the issue and making the patch.
 
 Changes between versions 0.4b34 and 0.4b35 (released December 21, 2003)
 =======================================================================

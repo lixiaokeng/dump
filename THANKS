@@ -1,4 +1,4 @@
-$Id: THANKS,v 1.83 2003/05/12 14:16:35 stelian Exp $
+$Id: THANKS,v 1.84 2004/03/29 13:57:28 stelian Exp $
 
 Dump and restore were written by the people of the CSRG at the University
 of California, Berkeley.
@@ -30,6 +30,7 @@ Gerd Bavendiek		bav@epost.de
 Fabrice Bellet		fabrice@bellet.info
 Stan Bubrouski		satan@fastdial.net
 Stephen Carr		sgcarr@civeng.adelaide.edu.au
+Mike Castle		dalgoda@users.sourceforge.net
 Rob Cermak		cermak@ahab.rutgers.edu
 Antonios Christofides	A.Christofides@itia.ntua.gr
 Isaac Chuang		ike@isl.stanford.edu
@@ -51,16 +52,20 @@ Arcady Genkin		antipode@users.sourceforge.net
 Uwe Gohlke		uwe@ugsoft.de
 Ian Gordon		iangordon@users.sourceforge.net
 Ted Grzesik		tedgyz@roostme.com
+Mike Harris		mharris@redhat.com
 Andreas Hasenack	andreas@conectiva.com.br
 Christian Haul		haul@informatik.tu-darmstadt.de
 George Helffrich	george@geology.bristol.ac.uk
+Patrick Higgins		phiggins@transzap.com
 Kjetil Torgrim Homme	kjetilho@ifi.uio.no
+Raphael Jaffey		rjaffey@artic.edu
 Jean-Paul van der Jagt	jeanpaul@dutepp0.et.tudelft.nl
 Helmut Jarausch		jarausch@igpm.rwth-aachen.de
 Eric Jergensen		eric@dvns.com
 Jeff Johnson		jbj@redhat.com
 Richard Johnson		Richard.Johnson3@ey.com
 Richard Jones           rich@annexia.org
+Zhang Jun		zhangjun@nanjing-fnst.com
 Charles Karney		karney@users.sourceforge.net
 Henry Katz		hkatz@hkatz.dialup.access.net
 Dragan Krnic		dkrnic@lycos.com
@@ -81,6 +86,7 @@ Elliott Mitchell	ehem@m5p.com
 David Monro		davidm@cs.su.oz.au
 Dejan Muhamedagic	dejan@quant-x.com
 Lukas Nellen		L.Nellen@ThPhys.Uni-Heidelberg.DE
+Markus Oberhumer	markus@oberhumer.com
 Nuno Oliveira		nuno@eq.uc.pt
 Brent Olson		night@halcyon.com
 Jorgen Ostling		jorgen_ostling@users.sourceforge.net
@@ -124,3 +130,4 @@ Christian Weisgerber	naddy@mips.rhein-neckar.de
 Kim Yong-jun		loveyou@hackerslab.org
 John Yu			jky@it.bu.edu
 Ian Zimmerman		itz@speakeasy.org
+Florian Zumbiehl	florz@gmx.de

@@ -3,7 +3,7 @@
  *	dump and restore backup suit
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: compatlfs.h,v 1.4 2003/03/30 15:40:34 stelian Exp $
+ *	$Id: compatlfs.h,v 1.5 2004/03/29 13:57:29 stelian Exp $
  */
 
 /*-
@@ -49,6 +49,8 @@
 #define LSTAT lstat64
 #define FTRUNCATE ftruncate64
 #define OFF_T __off64_t
+#define MKSTEMP mkstemp64
+#define FTELL ftello64
 
 #else
 
@@ -58,6 +60,8 @@
 #define LSTAT lstat
 #define FTRUNCATE ftruncate
 #define OFF_T off_t
+#define MKSTEMP mkstemp
+#define FTELL ftell
 
 #endif /* USE_LFS */
 
