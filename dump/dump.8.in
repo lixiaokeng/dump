@@ -30,598 +30,574 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.43 2002/07/23 12:20:35 stelian Exp $
+.\"	$Id: dump.8.in,v 1.44 2002/07/24 14:12:00 stelian Exp $
 .\"
-.Dd __DATE__
-.Dt DUMP 8
-.Os "dump __VERSION__"
-.Sh NAME
-.Nm dump
-.Nd ext2 filesystem backup
-.Sh SYNOPSIS
-.Nm dump
-.Op Fl 0123456789ackMnqSuv
-.Op Fl A Ar file
-.Op Fl B Ar records
-.Op Fl b Ar blocksize
-.Op Fl d Ar density
-.Op Fl e Ar inode numbers
-.Op Fl E Ar file
-.Op Fl f Ar file
-.Op Fl F Ar script
-.Op Fl h Ar level
-.Op Fl I Ar nr errors
-.Op Fl j Ar compression level
-.Op Fl L Ar label
-.Op Fl Q Ar file
-.Op Fl s Ar feet
-.Op Fl T Ar date
-.Op Fl z Ar compression level
-.Ar files-to-dump
-.Nm dump
-.Op Fl W Li \&| Fl w
-.Pp
-.in
-(The
-.Bx 4.3
-option syntax is implemented for backward compatibility but
-is not documented here.)
-.Sh DESCRIPTION
-.Nm Dump
-examines files
-on an ext2 filesystem
-and determines which files
-need to be backed up. These files
-are copied to the given disk, tape or other
-storage medium for safe keeping (see the
-.Fl f
-option below for doing remote backups).
-A dump that is larger than the output medium is broken into
-multiple volumes.
-On most media the size is determined by writing until an
-end-of-media indication is returned.
-.Pp
-On media that cannot reliably return an end-of-media indication
-(such as some cartridge tape drives), each volume is of a fixed size;
-the actual size is determined by specifying cartridge media, or via the
-tape size, density and/or block count options below.
-By default, the same output file name is used for each volume
-after prompting the operator to change media.
-.Pp
-.Ar files-to-dump
-is either a mountpoint of a filesystem
-or a list of files and directories to be backed up as a subset of a 
-filesystem.
-In the former case, either the path to a mounted filesystem
-or the device of an unmounted filesystem can be used.
-In the latter case, certain restrictions are placed on the backup:
-.Fl u
+.TH DUMP 8 "version __VERSION__ of __DATE__" BSD "System management commands"
+.SH NAME
+dump \- ext2/3 filesystem backup
+.SH SYNOPSIS
+.B dump 
+[\fB\-0123456789ackMnqSuv\fR]
+[\fB\-A \fIfile\fR]
+[\fB\-B \fIrecords\fR]
+[\fB\-b \fIblocksize\fR]
+[\fB\-d \fIdensity\fR]
+[\fB\-e \fIinode numbers\fR]
+[\fB\-E \fIfile\fR]
+[\fB\-f \fIfile\fR]
+[\fB\-F \fIscript\fR]
+[\fB\-h \fIlevel\fR]
+[\fB\-I \fInr errors\fR]
+[\fB\-j\fIcompression level\fR]
+[\fB\-L \fIlabel\fR]
+[\fB\-Q \fIfile\fR]
+[\fB\-s \fIfeet\fR]
+[\fB\-T \fIdate\fR]
+[\fB\-z\fIcompression level\fR]
+.I files-to-dump
+.PP
+.B dump 
+[\fB\-W \fR| \fB\-w\fR]
+.PP
+(The 4.3BSD option syntax is implemented for backward compatibility but is not
+documented here.)
+.SH DESCRIPTION
+.B Dump
+examines files on an ext2/3 filesystem and determines which files need to be
+backed up. These files are copied to the given disk, tape or other storage
+medium for safe keeping (see the
+.B \-f 
+option below for doing remote backups). A dump that is larger than the output 
+medium is broken into multiple volumes. On most media the size is determined by
+writing until an end-of-media indication is returned.
+.PP
+On media that cannot reliably return an end-of-media indication (such as some
+cartridge tape drives), each volume is of a fixed size; the actual size is 
+determined by specifying cartridge media, or via the tape size, density and/or
+block count options below. By default, the same output file name is used for
+each volume after prompting the operator to change media.
+.PP
+.I files-to-dump
+is either a mountpoint of a filesystem or a list of files and directories to be
+backed up as a subset of a filesystem. In the former case, either the path to a
+mounted filesystem or the device of an unmounted filesystem can be used. In the
+latter case, certain restrictions are placed on the backup:
+.B \-u
 is not allowed, the only dump level that is supported is
-.Fl 0 
+.B 0 
 and all the files and directories must reside on the same filesystem.
-.Pp
+.SH OPTIONS
 The following options are supported by
-.Nm Ns :
-.Bl -tag -width Ds
-.It Fl 0\-9
-Dump levels.
-A level 0, full backup,
-guarantees the entire file system is copied
-(but see also the
-.Fl h
-option below).
-A level number above 0,
-incremental backup,
-tells
-.Nm dump
+.B dump:
+.TP
+.BI \-0\-9
+Dump levels. A level 0, full backup, guarantees the entire file system is
+copied (but see also the
+.B \-h
+option below). A level number above 0, incremental backup, tells
+.B dump
 to
-copy all files new or modified since the
-last dump of a lower level.
-The default level is 9.
-.It Fl a
-.Dq auto-size .
-Bypass all tape length calculations, and write
-until an end-of-media indication is returned.  This works best
-for most modern tape drives, and is the default.  
-Use of this option is particularly recommended when appending to an 
-existing tape, or using a tape drive with hardware compression 
+copy all files new or modified since the last dump of a lower level. The 
+default level is 9.
+.TP
+.BI \-a 
+\*(lqauto-size\*(rq. Bypass all tape length calculations, and write until an 
+end-of-media indication is returned.  This works best for most modern tape
+drives, and is the default. Use of this option is particularly recommended when
+appending to an existing tape, or using a tape drive with hardware compression 
 (where you can never be sure about the compression ratio).
-.It Fl A Ar archive_file
-Archive a dump table-of-contents in the
-specified
-.Ar archive_file
+.TP
+.BI \-A " archive_file"
+Archive a dump table-of-contents in the specified
+.I archive_file
 to be used by 
-.Xr restore 8
+.BR restore (8)
 to determine whether a file is in the dump file that is being restored.
-.It Fl b Ar blocksize
-The number of kilobytes per dump record.
-Since the IO system slices all requests into chunks of MAXBSIZE
-(typically 64kB), it is not possible to use a larger blocksize
-without having problems later with
-.Xr restore 8 .
+.TP
+.BI \-b " blocksize"
+The number of kilobytes per dump record. Since the IO system slices all
+requests into chunks of 
+.B MAXBSIZE
+(typically 64kB), it is not possible to use a larger blocksize without having 
+problems later with
+.BR restore (8).
 Therefore
-.Nm dump
-will constrain writes to MAXBSIZE.
+.B dump
+will constrain writes to 
+.B MAXBSIZE.
 The default blocksize is 10.
-.It Fl B Ar records
+.TP
+.BI \-B " records"
 The number of 1 kB blocks per volume. Not normally required, as
-.Nm
+.B dump
 can detect end-of-media. When the specified size is reached,
-.Nm
-waits for you to change the volume.  This option overrides
-the calculation of tape size based on length and density.
-If compression is on this limits the size of the compressed
-output per volume.
-.It Fl c
-Change the defaults for use with a cartridge tape drive, with a density
-of 8000 bpi, and a length of 1700 feet. Specifying a cartridge drive
-overrides the end-of-media detection.
-.It Fl d Ar density
-Set tape density to
-.Ar density .
-The default is 1600BPI. Specifying a tape density overrides the 
+.B dump
+waits for you to change the volume.  This option overrides the calculation of 
+tape size based on length and density. If compression is on this limits the 
+size of the compressed output per volume.
+.TP
+.BI \-c
+Change the defaults for use with a cartridge tape drive, with a density of 8000
+bpi, and a length of 1700 feet. Specifying a cartridge drive overrides the
 end-of-media detection.
-.It Fl e Ar inodes
+.TP
+.BI \-d " density"
+Set tape density to
+.IR density .
+The default is 1600BPI. Specifying a tape density overrides the end-of-media
+detection.
+.TP
+.BI \-e " inodes"
 Exclude 
-.Ar inodes
+.I inodes
 from the dump. The
-.Ar inodes
+.I inodes
 parameter is a comma separated list of inode numbers (you can use
-.Ar stat 
+.BR stat (1)
 to find the inode number for a file or directory).
-.It Fl E Ar file
+.TP
+.BI \-E " file"
 Read list of inodes to be excluded from the dump from the text file
-.Ar file .
+.IR file .
 The file 
-.Ar file
-should be an ordinary file containing inode numbers separated by
-newlines.
-.It Fl f Ar file
+.I file
+should be an ordinary file containing inode numbers separated by newlines.
+.TP
+.BI \-f " file"
 Write the backup to
-.Ar file ;
-.Ar file
-may be a special device file
-like
-.Pa /dev/st0
+.IR file ;
+.I file
+may be a special device file like
+.I /dev/st0
 (a tape drive),
-.Pa /dev/rsd1c
-(a floppy disk drive),
-an ordinary file,
+.I /dev/rsd1c
+(a floppy disk drive), an ordinary file, or
+.I \-
+(the standard output). Multiple file names may be given as a single argument
+separated by commas. Each file will be used for one dump volume in the order
+listed; if the dump requires more volumes than the number of names given,
+the last file name will used for all remaining volumes after prompting for
+media changes. If the name of the file is of the form
+.I host:file
 or
-.Ql Fl
-(the standard output).
-Multiple file names may be given as a single argument separated by commas.
-Each file will be used for one dump volume in the order listed;
-if the dump requires more volumes than the number of names given,
-the last file name will used for all remaining volumes after prompting
-for media changes.
-If the name of the file is of the form
-.Dq host:file
-or
-.Dq user@host:file
-.Nm
+.I user@host:file
+.B dump
 writes to the named file on the remote host using
-.Xr rmt 8 .
+.BR rmt (8).
 The default path name of the remote
-.Xr rmt 8
+.BR rmt (8)
 program is
-.\" rmt path, is the path on the remote host
-.Pa /etc/rmt ;
+.IR /etc/rmt ;
 this can be overridden by the environment variable
-.Ev RMT .
-.It Fl F Ar script
-Run script at the end of each tape. The device name and the
-current volume number are passed on the command line.
-The script must return 0 if 
-.Nm
+.BR RMT .
+.TP
+.BI \-F " script"
+Run script at the end of each tape. The device name and the current volume
+number are passed on the command line. The script must return 0 if 
+.B dump
 should continue without asking the user to change the tape, 1 if 
-.Nm
-should continue but ask the user to change the tape. 
-Any other exit code will cause
-.Nm
-to abort.
-For security reasons,
-.Nm
-reverts back to the real user ID and the real group ID before 
-running the script.
-.It Fl h Ar level
+.B dump
+should continue but ask the user to change the tape. Any other exit code will 
+cause
+.B dump
+to abort. For security reasons,
+.B dump
+reverts back to the real user ID and the real group ID before running the
+script.
+.TP
+.BI \-h " level"
 Honor the user
-.Dq nodump
+.B nodump
 flag
-.Dv UF_NODUMP
+.B UF_NODUMP
 only for dumps at or above the given
-.Ar level .
-The default honor level is 1,
-so that incremental backups omit such files
-but full backups retain them.
-.It Fl I Ar nr errors
+.IR level .
+The default honor level is 1, so that incremental backups omit such files but
+full backups retain them.
+.TP
+.BI \-I " nr errors"
 By default,
-.Nm
-will ignore the first 32 read errors on the file
-system before asking for operator intervention. You can change this
-using this flag to any value. This is useful when running
-.Nm
-on an active filesystem where read errors simply indicate an
-inconsistency between the mapping and dumping passes.
-.It Fl j Ar compression level
-Compress every block to be written on the tape using bzlib library. This
-option will work only when dumping to a file or pipe or, when dumping
-to a tape drive, if the tape drive is capable of writing variable 
-length blocks. You will need at least the 0.4b24 version of restore in 
-order to extract compressed tapes. Tapes written using compression will
-not be compatible with the BSD tape format. The (optional) parameter 
-specifies the compression level bzlib will use. The default compression
-level is 2. If the optional parameter is specified, there should be no 
-white space between the option letter and the parameter.
-.It Fl k
-Use Kerberos authentication to talk to remote tape servers.  (Only
-available if this option was enabled when
-.Nm
+.B dump
+will ignore the first 32 read errors on the file system before asking for 
+operator intervention. You can change this using this flag to any value. This 
+is useful when running
+.B dump
+on an active filesystem where read errors simply indicate an inconsistency 
+between the mapping and dumping passes.
+.TP
+.BI \-j "compression level"
+Compress every block to be written on the tape using bzlib library. This option
+will work only when dumping to a file or pipe or, when dumping to a tape drive,
+if the tape drive is capable of writing variable length blocks. You will need
+at least the 0.4b24 version of 
+.B restore
+in order to extract compressed tapes. Tapes written using compression will not
+be compatible with the BSD tape format. The (optional) parameter specifies the 
+compression level bzlib will use. The default compression level is 2. If the
+optional parameter is specified, there should be no white space between the 
+option letter and the parameter.
+.TP
+.BI \-k
+Use Kerberos authentication to talk to remote tape servers. (Only available if
+this option was enabled when
+.B dump
 was compiled.)
-.It Fl L Ar label
+.TP
+.BI \-L " label"
 The user-supplied text string
-.Ar label
+.I label
 is placed into the dump header, where tools like
-.Xr restore 8
+.BR restore (8)
 and
-.Xr file 1
-can access it.
-Note that this label is limited
-to be at most LBLSIZE (currently 16) characters, which must include
-the terminating
-.Ql \e0 .
-.It Fl m
+.BR file (8)
+can access it. Note that this label is limited to be at most 
+.B LBLSIZE
+(currently 16) characters, which must include the terminating \e0.
+.TP
+.BI \-m
 If this flag is specified,
-.Nm
-will optimise the output for inodes having been changed but not
-modified since the last dump ('changed' and 'modified' have the
-meaning defined in stat(2)). For those inodes,
-.Nm
-will save only the metadata, instead of saving the entire inode 
-contents. Inodes which are either directories or have been modified
-since the last dump are saved in a regular way.
-Uses of this flag must be consistent, meaning that either every dump 
-in an incremental dump set have the flag, or no one has it.
-.Pp
-Tapes written using such 'metadata only' inodes will not be compatible
-with the BSD tape format or older versions of
-.Nm restore.
-.It Fl M
+.B dump
+will optimise the output for inodes having been changed but not modified since 
+the last dump ('changed' and 'modified' have the meaning defined in
+.BR stat (2)
+). For those inodes,
+.B dump
+will save only the metadata, instead of saving the entire inode contents. 
+Inodes which are either directories or have been modified since the last dump 
+are saved in a regular way. Uses of this flag must be consistent, meaning that
+either every dump in an incremental dump set have the flag, or no one has it.
+.IP
+Tapes written using such 'metadata only' inodes will not be compatible with the
+BSD tape format or older versions of
+.B restore.
+.TP
+.BI \-M
 Enable the multi-volume feature. The name specified with 
-.Fl f 
+.B f 
 is treated as a prefix and 
-.Nm
-writes in sequence to <prefix>001, <prefix>002 etc. This can be
-useful when dumping to files on an ext2 partition, in order to bypass
-the 2GB file size limitation.
-.It Fl n
+.B dump
+writes in sequence to
+.I <prefix>001, <prefix>002 
+etc. This can be useful when dumping to files on an ext2 partition, in order to
+bypass the 2GB file size limitation.
+.TP
+.BI \-n
 Whenever
-.Nm
-requires operator attention,
-notify all operators in the group
-.Dq operator
+.B dump
+requires operator attention, notify all operators in the group
+.B operator
 by means similar to a
-.Xr wall 1 .
-.It Fl q
+.BR wall (1).
+.TP
+.BI \-q
 Make
-.Nm
-abort immediately whenever operator attention is required,
-without prompting in case of write errors, tape changes etc.
-.It Fl Q Ar file
-Enable the Quick File Access support. Tape positions for each
-inode are stored into the file
-.Ar file
-which is used by restore (if called with parameter Q and the filename)
-to directly position the tape at the file restore is currently working
-on.  This saves hours when restoring single files from large backups,
-saves the tapes and the drive's head.
-.Pp
-It is recommended to set up the st driver to return logical tape 
-positions rather than physical before calling dump/restore with 
-parameter Q.  Since not all tape devices support physical tape 
-positions those tape devices return an error during dump/restore when
-the st driver is set to the default physical setting.
-Please see the st man page, option MTSETDRVBUFFER, or the mt man
-page, on how to set the driver to return logical tape positions.
-.Pp
-Before calling restore with parameter Q, always make sure the st
-driver is set to return the same type of tape position used during the 
-call to dump. Otherwise restore may be confused.
-.Pp
-This option can be used when dumping to local tapes (see above)
-or to local files.
-.It Fl s Ar feet
-Attempt to calculate the amount of tape needed at a particular density.
-If this amount is exceeded,
-.Nm
-prompts for a new tape.
-It is recommended to be a bit conservative on this option.
-The default tape length is 2300 feet. Specifying the tape size 
+.B dump
+abort immediately whenever operator attention is required, without prompting in
+case of write errors, tape changes etc.
+.TP
+.BI \-Q " file"
+Enable the Quick File Access support. Tape positions for each inode are stored 
+into the file
+.I file
+which is used by 
+.B restore
+(if called with parameter 
+.B \-Q
+and the filename) to directly position the tape at the file 
+.B restore 
+is currently working on. This saves hours when restoring single files from
+large backups, saves the tapes and the drive's head.
+.IP
+It is recommended to set up the st driver to return logical tape positions 
+rather than physical before calling 
+.B dump/restore 
+with parameter 
+.BR \-Q .
+Since not all tape devices support physical tape positions those tape devices 
+return an error during 
+.B dump/restore
+when the st driver is set to the default physical setting.  Please see the 
+.BR st (4)
+man page, option 
+.B MTSETDRVBUFFER
+, or the 
+.BR mt (1)
+man page, on how to set the driver to return logical tape positions.
+.IP
+Before calling
+.B restore
+with parameter
+.BR \-Q ,
+always make sure the st driver is set to return the same type of tape position
+used during the call to 
+.BR dump .
+Otherwise 
+.B restore
+may be confused.
+.IP
+This option can be used when dumping to local tapes (see above) or to local 
+files.
+.TP
+.BI \-s " feet"
+Attempt to calculate the amount of tape needed at a particular density. If this
+amount is exceeded,
+.B dump
+prompts for a new tape. It is recommended to be a bit conservative on this 
+option. The default tape length is 2300 feet. Specifying the tape size 
 overrides end-of-media detection.
-.ne 1i
-.It Fl S
-Size estimate. Determine the amount of space
-that is needed to perform the dump without
-actually doing it, and display the estimated
-number of bytes it will take. This is useful
-with incremental dumps to determine how many
-volumes of media will be needed.
-.It Fl T Ar date
-Use the specified date as the starting time for the dump
-instead of the time determined from looking in
-.Pa __DUMPDATES__ .
+.TP
+.BI \-S
+Size estimate. Determine the amount of space that is needed to perform the dump
+without actually doing it, and display the estimated number of bytes it will
+take. This is useful with incremental dumps to determine how many volumes of
+media will be needed.
+.TP
+.BI \-T " date"
+Use the specified date as the starting time for the dump instead of the time 
+determined from looking in
+.I __DUMPDATES__ .
 The format of
-.Ar date
+.I date
 is the same as that of
-.Xr ctime 3 .
-This option is useful for automated dump scripts that wish to
-dump over a specific period of time.
-The
-.Fl T
+.BR ctime (3).
+This option is useful for automated dump scripts that wish to dump over a 
+specific period of time. The
+.B \-T
 option is mutually exclusive from the
-.Fl u
+.B \-u
 option.
-.It Fl u
+.TP
+.BI \-u
 Update the file
-.Pa __DUMPDATES__
-after a successful dump.
-The format of
-.Pa __DUMPDATES__
-is readable by people, consisting of one
-free format record per line:
-filesystem name,
-increment level
-and
-.Xr ctime 3
-format dump date. 
-There may be only one entry per filesystem at each level.
-The file
-.Pa __DUMPDATES__
-may be edited to change any of the fields,
-if necessary.
-.It Fl v
+.I __DUMPDATES__
+after a successful dump. The format of
+.I __DUMPDATES__
+is readable by people, consisting of one free format record per line:
+filesystem name, increment level and
+.BR ctime (3)
+format dump date. There may be only one entry per filesystem at each level. The
+file
+.I __DUMPDATES__
+may be edited to change any of the fields, if necessary.
+.TP
+.BI \-v
 The
-.Fl v
+.B \-v
 (verbose) makes
-.Nm dump
+.B dump
 to print extra information which could be helpful in debug sessions.
-.It Fl W
-.Nm Dump
-tells the operator what file systems need to be dumped.
-This information is gleaned from the files
-.Pa __DUMPDATES__
+.TP
+.BI \-W
+.B Dump
+tells the operator what file systems need to be dumped. This information is
+gleaned from the files
+.I __DUMPDATES__
 and
-.Pa /etc/fstab .
+.IR /etc/fstab .
 The
-.Fl W
+.B \-W
 option causes
-.Nm
+.B dump
 to print out, for all file systems in
-.Pa __DUMPDATES__ ,
+.I __DUMPDATES__ ,
 and regognized file systems in
-.Pa /etc/fstab .
-the most recent dump date and level,
-and highlights those that should be dumped.
-If the
-.Fl W
+.IR /etc/fstab .
+the most recent dump date and level, and highlights those that should be 
+dumped. If the
+.B \-W
 option is set, all other options are ignored, and
-.Nm
+.B dump
 exits immediately.
-.It Fl w
+.TP 
+.BI \-w
 Is like
-.Fl W ,
+.BR \-W ,
 but prints only recognized filesystems in
-.Pa /etc/fstab
+.I /etc/fstab
 which need to be dumped.
-.It Fl z Ar compression level
-Compress every block to be written on the tape using zlib library. This
-option will work only when dumping to a file or pipe or, when dumping
-to a tape drive, if the tape drive is capable of writing variable 
-length blocks. You will need at least the 0.4b22 version of restore in 
-order to extract compressed tapes. Tapes written using compression will
-not be compatible with the BSD tape format. The (optional) parameter 
-specifies the compression level zlib will use. The default compression
-level is 2. If the optional parameter is specified, there should be no 
-white space between the option letter and the parameter.
-.El
-.Pp
-.Nm Dump
-requires operator intervention on these conditions:
-end of tape,
-end of dump,
-tape write error,
-tape open error or
-disk read error (if there is more than a threshold of nr errors).
-In addition to alerting all operators implied by the
-.Fl n
+.TP
+.BI \-z "compression level"
+Compress every block to be written on the tape using zlib library. This option
+will work only when dumping to a file or pipe or, when dumping to a tape drive,
+if the tape drive is capable of writing variable length blocks. You will need 
+at least the 0.4b22 version of
+.B restore
+in order to extract compressed tapes. Tapes written using compression will not
+be compatible with the BSD tape format. The (optional) parameter specifies the
+compression level zlib will use. The default compression level is 2. If the
+optional parameter is specified, there should be no white space between the 
+option letter and the parameter.
+.PP
+.B Dump
+requires operator intervention on these conditions: end of tape, end of dump,
+tape write error, tape open error or disk read error (if there is more than a 
+threshold of nr errors). In addition to alerting all operators implied by the
+.B \-n
 key,
-.Nm
-interacts with the operator on
-.Em dump's
-control terminal at times when
-.Nm
-can no longer proceed,
-or if something is grossly wrong.
-All questions
-.Nm
+.B dump
+interacts with the operator on dump's control terminal at times when
+.B dump
+can no longer proceed, or if something is grossly wrong. All questions
+.B dump
 poses
-.Em must
-be answered by typing
-.Dq yes
-or
-.Dq no ,
-appropriately.
-.Pp
+.I must
+be answered by typing \*(lqyes\*(rq or \*(lqno\*(rq, appropriately.
+.PP
 Since making a dump involves a lot of time and effort for full dumps,
-.Nm
-checkpoints itself at the start of each tape volume.
-If writing that volume fails for some reason,
-.Nm
-will,
-with operator permission,
-restart itself from the checkpoint
-after the old tape has been rewound and removed,
-and a new tape has been mounted.
-.Pp
-.Nm Dump
-tells the operator what is going on at periodic intervals,
-including usually low estimates of the number of blocks to write,
-the number of tapes it will take, the time to completion, and
-the time to the tape change.
-The output is verbose,
-so that others know that the terminal
-controlling
-.Nm
-is busy,
-and will be for some time.
-.Pp
-In the event of a catastrophic disk event, the time required
-to restore all the necessary backup tapes or files to disk
-can be kept to a minimum by staggering the incremental dumps.
-An efficient method of staggering incremental dumps
-to minimize the number of tapes follows:
-.Bl -bullet -offset indent
-.It
+.B dump
+checkpoints itself at the start of each tape volume. If writing that volume
+fails for some reason,
+.B dump
+will, with operator permission, restart itself from the checkpoint after the
+old tape has been rewound and removed, and a new tape has been mounted.
+.PP
+.B Dump
+tells the operator what is going on at periodic intervals, including usually 
+low estimates of the number of blocks to write, the number of tapes it will
+take, the time to completion, and the time to the tape change. The output is
+verbose, so that others know that the terminal controlling
+.B dump
+is busy, and will be for some time.
+.PP
+In the event of a catastrophic disk event, the time required to restore all the
+necessary backup tapes or files to disk can be kept to a minimum by staggering 
+the incremental dumps. An efficient method of staggering incremental dumps to
+minimize the number of tapes follows:
+.IP \(em
 Always start with a level 0 backup, for example:
-.Bd -literal -offset indent
-/sbin/dump -0u -f /dev/st0 /usr/src
-.Ed
-.Pp
+.RS 14
+.B /sbin/dump -0u -f /dev/st0 /usr/src
+.RE
+.IP
 This should be done at set intervals, say once a month or once every two months,
 and on a set of fresh tapes that is saved forever.
-.It
-After a level 0, dumps of active file
-systems are taken on a daily basis,
-using a modified Tower of Hanoi algorithm,
-with this sequence of dump levels:
-.Bd -literal -offset indent
-3 2 5 4 7 6 9 8 9 9 ...
-.Ed
-.Pp
-For the daily dumps, it should be possible to use a fixed number of tapes
-for each day, used on a weekly basis.
-Each week, a level 1 dump is taken, and
-the daily Hanoi sequence repeats beginning with 3.
-For weekly dumps, another fixed set of tapes per dumped file system is
-used, also on a cyclical basis.
-.El
-.Pp
-After several months or so, the daily and weekly tapes should get
-rotated out of the dump cycle and fresh tapes brought in.
-.Sh ENVIRONMENT
-.Bl -tag -width Fl
-.It Ev TAPE
-If no -f option was specified,
-.Nm
+.IP \(em
+After a level 0, dumps of active file systems are taken on a daily basis, using
+a modified Tower of Hanoi algorithm, with this sequence of dump levels:
+.RS 14
+.B 3 2 5 4 7 6 9 8 9 9 ...
+.RE
+.IP
+For the daily dumps, it should be possible to use a fixed number of tapes for
+each day, used on a weekly basis. Each week, a level 1 dump is taken, and the
+daily Hanoi sequence repeats beginning with 3. For weekly dumps, another fixed 
+set of tapes per dumped file system is used, also on a cyclical basis.
+.PP
+After several months or so, the daily and weekly tapes should get rotated out
+of the dump cycle and fresh tapes brought in.
+.SH ENVIRONMENT
+.TP 
+.B TAPE
+If no 
+.B \-f 
+option was specified,
+.B dump
 will use the device specified via
-.Ev TAPE
+.B TAPE
 as the dump device.
-.Ev TAPE
+.B TAPE
 may be of the form
-.Qq tapename ,
-.Qq host:tapename ,
+.IR tapename ,
+.IR host:tapename ,
 or
-.Qq user@host:tapename .
-.It Ev RMT
+.IR user@host:tapename .
+.TP
+.B RMT
 The environment variable
-.Ev RMT
+.B RMT
 will be used to determine the pathname of the remote
-.Xr rmt 8
+.BR rmt (8)
 program.
-.It Ev RSH
-.Nm Dump
-uses the contents of this variable to determine the name of the
-remote shell command to use when doing remote backups (rsh, ssh etc.). 
-If this variable is not set, 
-.Xr rcmd 3
+.TP
+.B RSH
+.B Dump
+uses the contents of this variable to determine the name of the remote shell
+command to use when doing remote backups (rsh, ssh etc.). If this variable is
+not set, 
+.BR rcmd (3)
 will be used, but only root will be able to do remote backups.
-.El
-.Sh FILES
-.Bl -tag -width __DUMPDATES__ -compact
-.It Pa /dev/st0
+.SH FILES
+.TP
+.I /dev/st0
 default tape unit to dump to
-.It Pa __DUMPDATES__
+.TP
+.I __DUMPDATES__
 dump date records
-.It Pa /etc/fstab
+.TP
+.I /etc/fstab
 dump table: file systems and frequency
-.It Pa /etc/group
+.TP
+.I /etc/group
 to find group
-.Em operator
-.El
-.Sh SEE ALSO
-.Xr fstab 5 ,
-.Xr restore 8 ,
-.Xr rmt 8
-.Sh DIAGNOSTICS
+.I operator
+.SH SEE ALSO
+.BR fstab (5),
+.BR restore (8),
+.BR rmt (8)
+.SH DIAGNOSTICS
 Many, and verbose.
-.Pp
-.Nm Dump
-exits with zero status on success.
-Startup errors are indicated with an exit code of 1;
-abnormal termination is indicated with an exit code of 3.
-.Sh BUGS
-It might be considered a bug that this version of dump can only handle ext2
+.SH EXIT STATUS
+.B Dump
+exits with zero status on success. Startup errors are indicated with an exit
+code of 1; abnormal termination is indicated with an exit code of 3.
+.SH BUGS
+It might be considered a bug that this version of dump can only handle ext2/3
 filesystems.  Specifically, it does not work with FAT filesystems.
-.Pp
-Fewer than 32 read errors (change this with -I)
-on the filesystem are ignored. If noticing
-read errors is important, the output from dump can be parsed to look for lines
-that contain the text 'read error'.
-.Pp
+.PP
+Fewer than 32 read errors (change this with 
+.BR \-I )
+on the filesystem are ignored. If noticing read errors is important, the output
+from dump can be parsed to look for lines that contain the text 'read error'.
+.PP
 When a read error occurs,
-.Nm
+.B dump
 prints out the corresponding physical disk block and sector number and the
-ext2 logical block number.
-It doesn't print out the corresponing file name or even the inode number. 
-The user has to use 
-.Xr debugfs 8 ,
+ext2/3 logical block number. It doesn't print out the corresponing file name or
+even the inode number. The user has to use 
+.BR debugfs (8),
 commands
-.Pa ncheck
+.B ncheck
 and
-.Pa icheck
+.B icheck
 to translate the
-.Pa ext2blk
-number printed out by dump into an inode number, then into a file name.
-.Pp
-Each reel requires a new process, so parent processes for
-reels already written just hang around until the entire tape
-is written.
-.Pp
+.B ext2blk
+number printed out by 
+.B dump
+into an inode number, then into a file name.
+.PP
+Each reel requires a new process, so parent processes for reels already written
+just hang around until the entire tape is written.
+.PP
 The estimated number of tapes is not correct if compression is on.
-.Pp
+.PP
 It would be nice if
-.Nm
-knew about the dump sequence,
-kept track of the tapes scribbled on,
-told the operator which tape to mount when,
-and provided more assistance
-for the operator running
-.Xr restore .
-.Pp
-.Nm Dump
-cannot do remote backups without being run as root, due to its
-security history.
-Presently, it works if you set it setuid (like it used to be), but this
-might constitute a security risk. Note that you can set RSH to use
-a remote shell program instead.
-.Sh AUTHOR
+.B dump
+knew about the dump sequence, kept track of the tapes scribbled on, told the
+operator which tape to mount when, and provided more assistance for the 
+operator running
+.BR restore .
+.PP
+.B Dump
+cannot do remote backups without being run as root, due to its security history.
+Presently, it works if you set it setuid (like it used to be), but this might
+constitute a security risk. Note that you can set 
+.B RSH
+to use a remote shell program instead.
+.SH AUTHOR
 The 
-.Nm dump/restore
-backup suite was ported to Linux's Second Extended File System
-by Remy Card <card@Linux.EU.Org>. He maintained the initial versions
-of dump (up and including 0.4b4, released in january 1997).
-.Pp
-Starting with 0.4b5, the new maintainer is Stelian Pop 
-.br
-<stelian@popies.net>.
-.Sh AVAILABILITY
+.B dump/restore
+backup suite was ported to Linux's Second Extended File System by Remy Card 
+<card@Linux.EU.Org>. He maintained the initial versions of 
+.B dump
+(up and including 0.4b4, released in january 1997).
+.PP
+Starting with 0.4b5, the new maintainer is Stelian Pop <stelian@popies.net>.
+.SH AVAILABILITY
 The
-.Nm dump/restore
-backup suite is available from 
-.br
-http://dump.sourceforge.net
-.Sh HISTORY
+.B dump/restore
+backup suite is available from <http://dump.sourceforge.net>
+.SH HISTORY
 A
-.Nm
+.B dump
 command appeared in
-.At v6 .
+.B Version 6 AT&T UNIX.
