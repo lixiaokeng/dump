@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.47 2004/12/15 11:00:01 stelian Exp $";
+	"$Id: main.c,v 1.48 2005/01/13 15:41:06 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -112,6 +112,7 @@ char	filesys[NAMELEN];
 static const char *stdin_opt = NULL;
 char	*bot_script = NULL;
 dump_ino_t volinfo[TP_NINOS];
+int	wdfd;
 
 #ifdef USE_QFA
 FILE	*gTapeposfp;
@@ -355,6 +356,10 @@ main(int argc, char *argv[])
 	}
 	else
 		setinput(inputdev);
+
+	wdfd = open(".", O_RDONLY);
+	if (wdfd < 0)
+		err(1, "can't get current directory");
 
 	if (argc == 0 && !filelist) {
 		argc = 1;

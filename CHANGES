@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.264 2005/01/13 12:13:46 stelian Exp $
+$Id: CHANGES,v 1.265 2005/01/13 15:41:05 stelian Exp $
 
 Changes between versions 0.4b38 and 0.4b39 (released ???????????????)
 =====================================================================
@@ -6,6 +6,13 @@ Changes between versions 0.4b38 and 0.4b39 (released ???????????????)
 1.	The newly added dump_on_cd_3 example was buggy, replace it
 	with an updated version from Andrew Basterfield
 	<bob@cemetery.homeunix.org>.
+
+2.	Made restore to chdir() back into the initial directory when
+	dumping core while aborting a comparision operation. The
+	previous behaviour was to write the corefile at the root of
+	the directory being compared, which could very well be 
+	read only and preventing the corefile generation. Thanks
+	to Kenneth Porter <shiva@sewingwitch.com> for the bug report.
 
 Changes between versions 0.4b37 and 0.4b38 (released January 7, 2005)
 =====================================================================
