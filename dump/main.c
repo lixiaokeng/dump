@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.61 2001/11/11 00:06:39 stelian Exp $";
+	"$Id: main.c,v 1.62 2001/11/11 00:12:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -984,12 +984,11 @@ usage(void)
 #endif
 		"MnqSu"
 		"] [-B records] [-b blocksize] [-d density]\n"
-		"\t%s [-e inode#,inode#,...] [-E file] [-f file] [-h level] "
-		"[-I nr errors] "
+		"\t%s [-e inode#,inode#,...] [-E file] [-f file] [-h level]\n"
+		"\t%s [-I nr errors] "
 #ifdef HAVE_BZLIB
 		"[-j zlevel] "
 #endif
-		"\n\t%s "
 #ifdef USE_QFA
 		"[-Q file] "
 #endif
