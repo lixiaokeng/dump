@@ -25,7 +25,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: restore.8.in,v 1.31 2003/06/11 13:01:36 stelian Exp $
+.\"	$Id: restore.8.in,v 1.32 2004/07/13 08:17:32 stelian Exp $
 .\"
 .TH RESTORE 8 "version __VERSION__ of __DATE__" BSD "System management commands"
 .SH NAME
@@ -102,9 +102,6 @@ restore \- restore files or file systems from backups made with dump
 [\fB\-T \fIdirectory\fR]
 [\fB\-X \fIfilelist\fR]
 [ \fIfile ... \fR]
-.PP
-(The 4.3BSD option syntax is implemented for backward compatibility but is not 
-documented here.)
 .SH DESCRIPTION
 The
 .B restore
@@ -541,6 +538,9 @@ may be an ordinary file or
 .B \-y
 Do not ask the user whether to abort the restore in the event of an error.
 Always try to skip over the bad block(s) and continue.
+.PP
+(The 4.3BSD option syntax is implemented for backward compatibility but is not 
+documented here.)
 .SH DIAGNOSTICS
 Complains if it gets a read error. If 
 .B y

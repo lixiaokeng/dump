@@ -26,7 +26,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.56 2004/04/21 08:55:48 stelian Exp $
+.\"	$Id: dump.8.in,v 1.57 2004/07/13 08:17:32 stelian Exp $
 .\"
 .TH DUMP 8 "version __VERSION__ of __DATE__" BSD "System management commands"
 .SH NAME
@@ -57,9 +57,6 @@ dump \- ext2/3 filesystem backup
 .PP
 .B dump 
 [\fB\-W \fR| \fB\-w\fR]
-.PP
-(The 4.3BSD option syntax is implemented for backward compatibility but is not
-documented here.)
 .SH DESCRIPTION
 .B Dump
 examines files on an ext2/3 filesystem and determines which files need to be
@@ -530,6 +527,9 @@ set of tapes per dumped file system is used, also on a cyclical basis.
 .PP
 After several months or so, the daily and weekly tapes should get rotated out
 of the dump cycle and fresh tapes brought in.
+.PP
+(The 4.3BSD option syntax is implemented for backward compatibility but is not
+documented here.)
 .SH ENVIRONMENT
 .TP 
 .B TAPE
