@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.86 2004/07/07 11:07:29 stelian Exp $";
+	"$Id: tape.c,v 1.87 2004/11/22 10:32:32 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -475,10 +475,14 @@ flushtape(void)
 	}
 
 	blks = 0;
-	if (spcl.c_type != TS_END) {
-		for (i = 0; i < spcl.c_count; i++)
-			if (spcl.c_addr[i] != 0)
-				blks++;
+	if (spcl.c_type == TS_CLRI || spcl.c_type == TS_BITS)
+		blks = spcl.c_count;
+	else {
+		if (spcl.c_type != TS_END) {
+			for (i = 0; i < spcl.c_count; i++)
+				if (spcl.c_addr[i] != 0)
+					blks++;
+		}
 	}
 	slp->count = lastspclrec + blks + 1 - spcl.c_tapea;
 	slp->tapea = spcl.c_tapea;

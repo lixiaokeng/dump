@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.258 2004/11/22 10:22:40 stelian Exp $
+$Id: CHANGES,v 1.259 2004/11/22 10:32:31 stelian Exp $
 
 Changes between versions 0.4b37 and 0.4b38 (released ????????????)
 ==================================================================
@@ -16,6 +16,11 @@ Changes between versions 0.4b37 and 0.4b38 (released ????????????)
 4.	Do not save directory entries to non-dumped inodes 
 	(excluded from dump). This will eliminate the 'missing
 	file' warnings when doing 'restore -C'.
+
+5.	Fix dump crash when backuping a huge (2TB) filesystem,
+	due to a bogus calculation on the inode map size.
+	Thanks to Kevin B. Haines <K.B.Haines@rl.ac.uk> for 
+	submitting the bug and testing the fix.
 
 Changes between versions 0.4b36 and 0.4b37 (released July 7, 2004)
 ==================================================================
