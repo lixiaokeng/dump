@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.9 2003/04/08 19:52:36 stelian Exp $
+# $Id: Makefile.in,v 1.10 2003/05/08 21:11:39 stelian Exp $
 
 top_srcdir=	@top_srcdir@
 srcdir=		@srcdir@
@@ -6,8 +6,8 @@ top_builddir=	..
 
 @MCONFIG@
 
-CFLAGS=		@CCOPTS@ -pipe $(OPT) $(GINC) $(INC) $(DEFS)
-LDFLAGS=	@LDOPTS@ @STATIC@
+ALL_CFLAGS=	@CPPFLAGS@ @CFLAGS@ @CCOPTS@ -pipe $(OPT) $(GINC) $(INC) $(DEFS)
+ALL_LDFLAGS=	@LDFLAGS@ @LDOPTS@ @STATIC@
 LIBS=		$(GLIBS)
 DEPLIBS=	../compat/lib/libcompat.a
 
@@ -16,15 +16,19 @@ SRCS=		rmt.c
 OBJS=		rmt.o
 MAN8=		rmt.8
 
+.c.o:
+	$(CC) -c $(ALL_CFLAGS) $< -o $@
+
 all::		$(PROG) @ERMT@ $(MAN8)
 
 $(PROG):	$(OBJS) $(DEPLIBS)
-	$(LD) $(CFLAGS) $(LDFLAGS) -o $(PROG) $(OBJS) $(LIBS)
+	$(LD) $(ALL_LDFLAGS) -o $(PROG) $(OBJS) $(LIBS)
 
 ermt:	ermt.o cipher.o $(DEPLIBS)
-	$(LD) $(CFLAGS) $(LDFLAGS) -o ermt ermt.o cipher.o $(LIBS) @CRYPTO@
+	$(LD) $(ALL_LDFLAGS) -o ermt ermt.o cipher.o $(LIBS) @CRYPTO@
+
 ermt.o: rmt.c
-	$(CC) -c $(CFLAGS) -DERMT -o ermt.o rmt.c
+	$(CC) -c $(ALL_CFLAGS) -DERMT -o ermt.o rmt.c
 
 $(MAN8):		rmt.8.in
 	sed -e "s|__DATE__|$(DATE)|g" \

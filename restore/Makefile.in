@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.11 2003/01/24 11:01:49 stelian Exp $
+# $Id: Makefile.in,v 1.12 2003/05/08 21:11:39 stelian Exp $
 
 top_srcdir=	@top_srcdir@
 srcdir=		@srcdir@
@@ -6,8 +6,9 @@ top_builddir=	..
 
 @MCONFIG@
 
-CFLAGS=		@CCOPTS@ -pipe $(OPT) $(DEFS) $(GINC) $(INC) @RESTOREDEBUG@
-LDFLAGS=	@LDOPTS@ @STATIC@
+INC=		-I$(top_srcdir)/restore
+ALL_CFLAGS=	@CPPFLAGS@ @CFLAGS@ @CCOPTS@ -pipe $(OPT) $(GINC) $(INC) $(DEFS) @RESTOREDEBUG@
+ALL_LDFLAGS=	@LDFLAGS@ @LDOPTS@ @STATIC@
 LIBS=		$(GLIBS) -le2p @READLINE@ @ZLIB@ @BZLIB@
 DEPLIBS=	../compat/lib/libcompat.a
 
@@ -21,10 +22,13 @@ OBJS=		dirs.o interactive.o main.o restore.o symtab.o tape.o \
 MAN8=		restore.8
 RMAN8=		rrestore.8
 
+.c.o:
+	$(CC) -c $(ALL_CFLAGS) $< -o $@
+
 all::		$(PROG) $(MAN8)
 
 $(PROG):	$(OBJS) $(DEPLIBS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(PROG) $(OBJS) $(LIBS)
+	$(CC) $(ALL_LDFLAGS) -o $(PROG) $(OBJS) $(LIBS)
 
 $(MAN8):	restore.8.in
 	sed -e "s|__DATE__|$(DATE)|g" \

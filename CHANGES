@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.229 2003/05/07 14:45:18 stelian Exp $
+$Id: CHANGES,v 1.230 2003/05/08 21:11:33 stelian Exp $
 
 Changes between versions 0.4b34 and 0.4b35 (released ??????????????)
 ====================================================================
@@ -7,6 +7,10 @@ Changes between versions 0.4b34 and 0.4b35 (released ??????????????)
 	blocksize can be 32 if -d is used with a high density argument.
 	Thanks to Antonios Christofides <A.Christofides@itia.ntua.gr>
 	for the patch.
+
+2.	Fixed configure to correctly understand CPPFLAGS, CFLAGS,
+	LDFLAGS environment variables. Thanks to Arcady Genkin
+	<antipode@users.sourceforge.net> for reporting the bug.
 
 Changes between versions 0.4b33 and 0.4b34 (released April 18, 2003)
 ====================================================================
