@@ -1,4 +1,4 @@
-$Id: TODO,v 1.12 2000/03/02 11:34:51 stelian Exp $
+$Id: TODO,v 1.13 2000/03/02 11:41:29 stelian Exp $
 
 Need to verify:
 ---------------
@@ -19,7 +19,8 @@ All others:
 2.	More documentation? Examples, crontab?
 
 3.	Explore and correct dump problems on active filesystems 
-	(lseek/read negative count) (This should be OK as of 0.4b14).
+	(lseek/read negative count) (This should be OK as of 0.4b14.
+	Unfortunately, this seems to continue for a very few users).
 
 4.	Reimplement the ext2 specific code in a "backend" and
 	make the dump code more generic. This would allow creation
