@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.37 2001/04/27 15:22:47 stelian Exp $";
+	"$Id: tape.c,v 1.38 2001/05/12 11:36:12 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -141,9 +141,10 @@ static void	 xtrlnkskip __P((char *, size_t));
 static void	 xtrmap __P((char *, size_t));
 static void	 xtrmapskip __P((char *, size_t));
 static void	 xtrskip __P((char *, size_t));
+static void	 setmagtapein __P((void));
 
 #ifdef HAVE_ZLIB
-static void	newcomprbuf __P((long));
+static void	newcomprbuf __P((int));
 static void	readtape_set __P((char *));
 static void	readtape_uncompr __P((char *));
 static void	readtape_comprfile __P((char *));
@@ -231,11 +232,12 @@ newtapebuf(long size)
 
 #ifdef HAVE_ZLIB
 static void
-newcomprbuf(long size)
+newcomprbuf(int size)
 {
-	if (size <= comprlen)
+	size_t buf_size = (size+1) * TP_BSIZE + sizeof(struct tapebuf);
+	if (buf_size <= comprlen)
 		return;
-	comprlen = size + sizeof(struct tapebuf);
+	comprlen = buf_size;
 	if (comprbuf != NULL)
 		free(comprbuf);
 	comprbuf = malloc(comprlen);
@@ -253,7 +255,6 @@ setup(void)
 {
 	int i, j, *ip;
 	struct STAT stbuf;
-	struct mtget mt_stat;
 
 	Vprintf(stdout, "Verify tape and initialize maps\n");
 #ifdef RRESTORE
@@ -268,22 +269,7 @@ setup(void)
 	if (mt < 0)
 		err(1, "%s", magtape);
 	volno = 1;
-	if (!pipein) {
-		/* need to know if input is really from a tape */
-#ifdef RRESTORE
-		if (host)
-			magtapein = rmtioctl(MTNOP, 1) != -1;
-		else
-#endif
-			if (ioctl(mt, MTIOCGET, (char *) &mt_stat) == 0) {
-				if (mt_stat.mt_dsreg & 0xffff)
-					magtapein = 1; /* fixed blocksize */
-				else
-					magtapein = 2; /* variable blocksize */
-			}
-	}
-
-	Vprintf(stdout,"Input is from %s\n", magtapein? "tape": "file/pipe");
+	setmagtapein();
 	setdumpnum();
 	FLUSHTAPEBUF();
 	findtapeblksize();
@@ -300,7 +286,7 @@ setup(void)
 	if (zflag) {
 		fprintf(stderr, "Dump tape is compressed.\n");
 #ifdef HAVE_ZLIB
-		newcomprbuf(bufsize);
+		newcomprbuf(ntrec);
 #else
 		errx(1,"This restore version doesn't support decompression");
 #endif /* HAVE_ZLIB */
@@ -480,6 +466,7 @@ again:
 		goto again;
 	}
 gethdr:
+	setmagtapein();
 	volno = newvol;
 	setdumpnum();
 	FLUSHTAPEBUF();
@@ -1298,6 +1285,7 @@ readtape_set(char *buf)
 	if (!zflag) 
 		readtape_func = readtape_uncompr;
 	else {
+		newcomprbuf(ntrec);
 		if (magtapein)
 			readtape_func = readtape_comprtape;
 		else
@@ -1700,13 +1688,14 @@ msg_read_error(char *m)
 #endif /* HAVE_ZLIB */
 
 /*
- * Read the first block and set the blocksize from its length. Test
- * if the block looks like a compressed dump tape. setup() will make
- * the final determination by checking the compressed flag if gethead()
+ * Read the first block and get the blocksize from it. Test
+ * for a compressed dump tape/file. setup() will make the final
+ * determination by checking the compressed flag if gethead()
  * finds a valid header. The test here is necessary to offset the buffer
  * by the size of the compressed prefix. zflag is set here so that
  * readtape_set can set the correct function pointer for readtape().
- * Note that the first block of each tape/file will not be compressed.
+ * Note that the first block of each tape/file is not compressed
+ * and does not have a prefix.
  */ 
 static void
 findtapeblksize(void)
@@ -1714,7 +1703,7 @@ findtapeblksize(void)
 	long i;
 	size_t len;
 	struct tapebuf *tpb = (struct tapebuf *) tapebuf;
-	struct s_spcl *spclpt = (struct s_spcl *) tpb->buf;
+	struct s_spcl *spclpt = (struct s_spcl *) tapebuf;
 
 	for (i = 0; i < ntrec; i++)
 		((struct s_spcl *)&tapebuf[i * TP_BSIZE])->c_magic = 0;
@@ -1724,67 +1713,57 @@ findtapeblksize(void)
 	 * For a pipe or file, read in the first record. For a tape, read
 	 * the first block.
 	 */
-	if (magtapein == 1)	/* fixed blocksize tape, not compressed */
-		len = ntrec * TP_BSIZE;
-	else if (magtapein == 2)/* variable blocksize tape */
-		len = bufsize + PREFIXSIZE;
-	else			/* not mag tape */
-		len = TP_BSIZE;
+	len = magtapein ? ntrec * TP_BSIZE : TP_BSIZE;
 
 	if (read_a_block(mt, tapebuf, len, &i) <= 0)
 		errx(1, "Tape read error on first record");
 
 	/*
 	 * If the input is from a file or a pipe, we read TP_BSIZE
-	 * bytes looking for a compressed dump header, we then
-	 * need to read in the rest of the record, as determined by
-	 * tpb->length or bufsize. The first block of the dump is
-	 * guaranteed to not be compressed so we look at the header.
+	 * bytes looking for a dump header. If the dump is compressed
+	 * we need to read in the rest of the block, as determined
+	 * by c_ntrec in the dump header. The first block of the
+	 * dump is not compressed and does not have a prefix.
 	 */
 	if (!magtapein) {
-		if (tpb->length % TP_BSIZE == 0
-		    && tpb->length <= bufsize
-		    && tpb->compressed == 0
-		    && spclpt->c_type == TS_TAPE 
+		if (spclpt->c_type == TS_TAPE
 		    && spclpt->c_flags & DR_COMPRESSED) {
-			/* Looks like it's a compressed dump block prefix, */
-			/* read in the rest of the block based on tpb->length. */
-			len = tpb->length - TP_BSIZE + PREFIXSIZE;
-			if (read_a_block(mt, tapebuf+TP_BSIZE, len, &i) <= 0
-			    || i != len)
-				errx(1,"Error reading dump file header");
-			tbufptr = tpb->buf;
-			numtrec = ntrec = tpb->length / TP_BSIZE;
+			/* It's a compressed dump file, read in the */
+			/* rest of the block based on spclpt->c_ntrec. */
+			if (spclpt->c_ntrec > ntrec)
+				errx(1, "Tape blocksize is too large, use "
+				     "\'-b %d\' ", spclpt->c_ntrec);
+			ntrec = spclpt->c_ntrec;
+			len = (ntrec - 1) * TP_BSIZE;
 			zflag = 1;   
 		}
 		else {
 			/* read in the rest of the block based on bufsize */
 			len = bufsize - TP_BSIZE;
-			if (read_a_block(mt, tapebuf+TP_BSIZE, len, &i) < 0
-			    || (i != len && i % TP_BSIZE != 0))
-				errx(1,"Error reading dump file header");
-			tbufptr = tapebuf;
-			numtrec = ntrec;
 		}
+		if (read_a_block(mt, tapebuf+TP_BSIZE, len, &i) < 0
+		    || (i != len && i % TP_BSIZE != 0))
+			errx(1,"Error reading dump file header");
+		tbufptr = tapebuf;
+		numtrec = ntrec;
 		Vprintf(stdout, "Input block size is %ld\n", ntrec);
 		return;
-	}
+	} /* if (!magtapein) */
 
 	/*
-	 * If the input is a variable block size tape, we tried to
-	 * read PREFIXSIZE + ntrec * TP_BSIZE bytes. 
-	 * If it's not a compressed dump tape or the value of ntrec is 
-	 * too large, we have read less than * what we asked for; 
-	 * adjust the value of ntrec and test for * a compressed dump 
-	 * tape prefix.
+	 * If the input is a tape, we tried to read ntrec * TP_BSIZE bytes.
+	 * If the value of ntrec is too large, we read less than
+	 * what we asked for; adjust the value of ntrec and test for 
+	 * a compressed dump tape.
 	 */
 
 	if (i % TP_BSIZE != 0) {
+		/* may be old format compressed dump tape with a prefix */
+		spclpt = (struct s_spcl *) tpb->buf;
 		if (i % TP_BSIZE == PREFIXSIZE
 		    && tpb->compressed == 0
 		    && spclpt->c_type == TS_TAPE
 		    && spclpt->c_flags & DR_COMPRESSED) {
-
 			zflag = 1;
 			tbufptr = tpb->buf;
 			if (tpb->length > bufsize)
@@ -1796,6 +1775,13 @@ findtapeblksize(void)
 				i, TP_BSIZE);
 	}
 	ntrec = i / TP_BSIZE;
+	if (spclpt->c_type == TS_TAPE) {
+		if (spclpt->c_flags & DR_COMPRESSED)
+			zflag = 1;
+		if (spclpt->c_ntrec > ntrec)
+			errx(1, "Tape blocksize is too large, use "
+				"\'-b %d\' ", spclpt->c_ntrec);
+	}
 	numtrec = ntrec;
 	Vprintf(stdout, "Tape block size is %ld\n", ntrec);
 }
@@ -1839,6 +1825,26 @@ closemt(void)
 	else
 #endif
 		(void) close(mt);
+}
+
+static void
+setmagtapein(void) {
+	struct mtget mt_stat;
+	static int done = 0;
+	if (done)
+		return;
+	done = 1;
+	if (!pipein) {
+		/* need to know if input is really from a tape */
+#ifdef RRESTORE
+		if (host)
+			magtapein = rmtioctl(MTNOP, 1) != -1;
+		else
+#endif
+			magtapein = ioctl(mt, MTIOCGET, (char *)&mt_stat) == 0;
+	}
+
+	Vprintf(stdout,"Input is from %s\n", magtapein? "tape": "file/pipe");
 }
 
 /*

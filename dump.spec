@@ -1,6 +1,6 @@
 %define	_sbindir /sbin
 # XXX --enable-kerberos		needs krcmd
-%define	myoptions --with-binmode=6755 --with-manowner=root --with-mangrp=root --with-manmode=0644 --with-dumpdates="%{_sysconfdir}/dumpdates" --enable-readline --enable-largefile
+%define	myoptions --with-binmode=6755 --with-manowner=root --with-mangrp=root --with-manmode=0644 --with-dumpdates="%{_sysconfdir}/dumpdates" --enable-readline --enable-largefile --enable-qfa
 
 Summary: Programs for backing up and restoring filesystems.
 Name: dump

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.45 2001/04/27 15:22:47 stelian Exp $";
+	"$Id: tape.c,v 1.46 2001/05/12 11:36:12 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -888,6 +888,7 @@ restore_check_point:
 		spcl.c_volume++;
 		spcl.c_type = TS_TAPE;
 		spcl.c_flags |= DR_NEWHEADER;
+		spcl.c_ntrec = ntrec;
 		if (compressed)
 			spcl.c_flags |= DR_COMPRESSED;
 		writeheader((dump_ino_t)slp->inode);
@@ -1046,7 +1047,7 @@ doslave(int cmd, int slave_number)
 	char *buffer;
 #ifdef HAVE_ZLIB
 	struct tapebuf *comp_buf = NULL;
-	int compresult, do_compress = 0;
+	int compresult, do_compress = slave_number > 0;
 	unsigned long worklen;
 #endif /* HAVE_ZLIB */
 	struct slave_results returns;
@@ -1119,24 +1120,24 @@ doslave(int cmd, int slave_number)
 
 #ifdef HAVE_ZLIB
 		/* 
-		 * When writing a compressed dump, each block is
-		 * written from struct tapebuf with an 4 byte prefix
+		 * When writing a compressed dump, each block except
+		 * the first one on each tape is written
+		 * from struct tapebuf with an 4 byte prefix
 		 * followed by the data. This can be less than
 		 * writesize. Restore, on a short read, can compare the
 		 * length read to the compressed length in the header
 		 * to verify that the read was good. Blocks which don't
 		 * compress well are written uncompressed.
-		 * The first block written by each slave is not compressed.
+		 * The first block written by each slave is not compressed
+		 * and does not have a prefix.
 		 */
 
-		if (compressed) {
+		if (compressed && do_compress) {
 			comp_buf->length = bufsize;
 			worklen = TP_BSIZE + writesize;
-			compresult = Z_DATA_ERROR;
-			if (do_compress)
-				compresult = compress2(comp_buf->buf, &worklen,
-					(char *)slp->tblock[0], writesize, compressed);
-			if (compresult == Z_OK && worklen <= writesize-32) {
+			compresult = compress2(comp_buf->buf, &worklen,
+				(char *)slp->tblock[0], writesize, compressed);
+			if (compresult == Z_OK && worklen <= (writesize - 16)) {
 				/* write the compressed buffer */
 				comp_buf->length = worklen;
 				comp_buf->compressed = 1;
@@ -1153,7 +1154,7 @@ doslave(int cmd, int slave_number)
 				memcpy(comp_buf->buf, (char *)slp->tblock[0], writesize);
 			}
 		}
-		/* compress the remaining blocks */
+		/* compress the remaining blocks if we're compressing */
 		do_compress = compressed;
 #endif /* HAVE_ZLIB */
 

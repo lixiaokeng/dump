@@ -5,7 +5,7 @@
  *      Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: dumprestore.h,v 1.12 2001/03/20 10:02:48 stelian Exp $
+ *	$Id: dumprestore.h,v 1.13 2001/05/12 11:36:12 stelian Exp $
  */
 
 /*
@@ -101,7 +101,8 @@ union u_spcl {
 		char	c_host[NAMELEN];    /* name of dumpped host */
 		int32_t	c_flags;	    /* additional information */
 		int32_t	c_firstrec;	    /* first record on volume */
-		int32_t	c_spare[32];	    /* reserved for future uses */
+		int32_t	c_ntrec;	    /* blocksize on volume */
+		int32_t	c_spare[31];	    /* reserved for future uses */
 	} s_spcl;
 } u_spcl;
 #define spcl u_spcl.s_spcl

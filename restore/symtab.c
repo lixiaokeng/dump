@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: symtab.c,v 1.14 2001/04/24 10:59:13 stelian Exp $";
+	"$Id: symtab.c,v 1.15 2001/05/12 11:36:12 stelian Exp $";
 #endif /* not lint */
 
 /*
@@ -449,6 +449,7 @@ struct symtableheader {
 	time_t	dumpdate;
 	dump_ino_t maxino;
 	int32_t	ntrec;
+	int32_t zflag;
 };
 
 /*
@@ -527,6 +528,7 @@ dumpsymtable(char *filename, long checkpt)
 	hdr.dumptime = dumptime;
 	hdr.dumpdate = dumpdate;
 	hdr.ntrec = ntrec;
+	hdr.zflag = zflag;
 	(void) fwrite((char *)&hdr, sizeof(struct symtableheader), 1, fd);
 	if (ferror(fd)) {
 		warn("fwrite");
@@ -596,6 +598,7 @@ initsymtable(char *filename)
 		curfile.action = SKIP;
 		dumptime = hdr.dumptime;
 		dumpdate = hdr.dumpdate;
+		zflag = hdr.zflag;
 		if (!bflag)
 			newtapebuf(hdr.ntrec);
 		getvol(hdr.volno);
