@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.51 2001/07/18 13:12:33 stelian Exp $";
+	"$Id: tape.c,v 1.52 2001/07/20 09:01:46 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -112,7 +112,7 @@ long long tapea_bytes = 0;	/* bytes_written at start of current volume */
 
 static	ssize_t atomic_read __P((int, void *, size_t));
 static	ssize_t atomic_write __P((int, const void *, size_t));
-static	void doslave __P((int, int));
+static	void doslave __P((int, int, int));
 static	void enslave __P((void));
 static	void flushtape __P((void));
 static	void killall __P((void));
@@ -448,7 +448,7 @@ flushtape(void)
 	blocksthisvol += ntrec;
 	if (!pipeout && !unlimited) {
 		if (blocksperfile) {
-			if ( compressed ? csize >= blocksperfile * 1024
+			if ( compressed ? csize + writesize >= blocksperfile * 1024
 					: blocksthisvol >= blocksperfile ) {
 				close_rewind();
 				startnewtape(0);
@@ -968,7 +968,7 @@ enslave(void)
 			    != sizeof i)
 				quit("master/slave protocol botched 3\n");
 #endif
-			doslave(cmd[0], i);
+			doslave(cmd[0], i, (slaves[i].pid == slp->pid));
 			Exit(X_FINOK);
 		}
 		else
@@ -1014,7 +1014,7 @@ killall(void)
  * slaves.
  */
 static void
-doslave(int cmd, int slave_number)
+doslave(int cmd, int slave_number, int first)
 {
 	register int nread;
 	int nextslave, size, eot_count, bufsize;
@@ -1022,7 +1022,7 @@ doslave(int cmd, int slave_number)
 	char *buffer;
 #ifdef HAVE_ZLIB
 	struct tapebuf *comp_buf = NULL;
-	int compresult, do_compress = slave_number > 0;
+	int compresult, do_compress = !first;
 	unsigned long worklen;
 #endif /* HAVE_ZLIB */
 	struct slave_results returns;

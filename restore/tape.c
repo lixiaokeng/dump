@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.44 2001/07/18 14:57:46 stelian Exp $";
+	"$Id: tape.c,v 1.45 2001/07/20 09:01:46 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -496,6 +496,7 @@ gethdr:
 	volno = newvol;
 	setdumpnum();
 	FLUSHTAPEBUF();
+	findtapeblksize();
 	if (gethead(&tmpbuf) == FAIL) {
 		Dprintf(stdout, "header read failed at %ld blocks\n", (long)blksread);
 		fprintf(stderr, "tape is not dump tape\n");
