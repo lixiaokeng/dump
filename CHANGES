@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.83 2000/09/26 12:34:51 stelian Exp $
+$Id: CHANGES,v 1.84 2000/09/26 13:17:42 stelian Exp $
 
 Changes between versions 0.4b19 and 0.4b20 (released ???????????????)
 =====================================================================
@@ -30,6 +30,9 @@ Changes between versions 0.4b19 and 0.4b20 (released ???????????????)
 	which is a mountpoint and it is not an absolute path 
 	(as specified in the fstab). Thanks to Bernhard R. Erdmann 
 	<be@berdmann.de> for reporting the bug.
+
+6.	Made dump able to backup files larger than 2 GB. Note that
+	dump still doesn't cope with files larger than 4 GB.
 
 Changes between versions 0.4b18 and 0.4b19 (released August 20, 2000)
 =====================================================================

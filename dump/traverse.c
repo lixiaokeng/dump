@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.19 2000/09/01 14:26:23 stelian Exp $";
+	"$Id: traverse.c,v 1.20 2000/09/26 13:17:09 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -84,10 +84,14 @@ static const char rcsid[] =
 #define	HASDUMPEDFILE	0x1
 #define	HASSUBDIRS	0x2
 
+#ifdef __linux__
+typedef u_quad_t fsizeT;
+#else
 #ifdef	FS_44INODEFMT
 typedef	quad_t fsizeT;
 #else
 typedef	long fsizeT;
+#endif
 #endif
 
 #ifdef	__linux__
