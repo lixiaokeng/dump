@@ -9,19 +9,29 @@
 # tsize takes its arguments in Bytes, the shell cannot compute the value
 # correctly anymore (value too high), so I use bc.
 
-# If you use growisofs which does not have the 10 second delay before burning
-# of cdrecord you may want to uncomment SLEEP="10" to ensure there is data
-# waiting on the fifo before burning starts
-
-FIFO="/tmp/dump.$$.fifo"
+# Set this to 4300 for DVD and 650 or 700 for CD
 #DISK_CAPACITY=10	# testing
+#DISK_CAPACITY=650
 DISK_CAPACITY=4300
+
 BSIZE="$(echo "$DISK_CAPACITY*1024" | bc -l )"
 TSIZE="$(echo "$DISK_CAPACITY*1024*1024" | bc -l )"
-#RECORD_BIN="dd of=/dev/null bs=1k if="	# testing
-#RECORD_BIN="/usr/bin/dvdrecord dev=0,0,0 fs=64M speed=2 -eject -dao -pad -tsize=$TSIZE -data "
+
+# This is used for testing
+#RECORD_BIN="dd of=/dev/null bs=1k if="
+
+# This is for writing to CD with cdrtools, this uses track-at-once mode
+# in case cdrtools does not support disk-at-once with your burner
+#RECORD_BIN="/usr/bin/cdrecord dev=0,0,0 fs=64M speed=2 -eject -tao -pad -tsize=$TSIZE -data "
+
+# This is for writing to DVD with cdrtools with DVD support, this has to
+# use disk-at-once mode.
+#RECORD_BIN="/usr/bin/cdrecord dev=0,0,0 fs=64M speed=2 -eject -dao -pad -tsize=$TSIZE -data "
+
+# This is for writing to DVD with growisofs
 RECORD_BIN="/usr/bin/growisofs -Z /dev/dvd="
-SLEEP="10"
+
+FIFO="/tmp/dump.$$.fifo"
 DUMP="/sbin/dump"
 
 cleanup() {
@@ -46,7 +56,7 @@ write_output() {
 		echo -n "Is the disk ready? (y/n) "
 		read  </dev/tty ANSWER
 		if [ "$ANSWER" == "y" ] ; then
-			([ -n "$SLEEP" ] && sleep $SLEEP; ${RECORD_BIN}${1}) &
+			(${RECORD_BIN}${1}) &
 			return 0
 		elif [ "$ANSWER" == "n" ] ; then
 			EXIT=""
@@ -76,12 +86,15 @@ else
 	trap cleanup EXIT
 	if write_output "$FIFO" "0"; then
 		if $DUMP "$@" -F "$0" -f "$FIFO" -B$BSIZE; then
-			kill % >/dev/null 2>&1	# Kill the background writing process
+			echo "Waiting for background writing process to complete"
+			wait %			# Wait for the background writing process
 		else
-			wait %			# Or wait for it to complete
+			kill % >/dev/null 2>&1	# or kill it
+			exit 1
 		fi
 		exit 0
 	else
+		kill % >/dev/null 2>&1	# Kill the background writing process
 		exit 1
 	fi
 fi

@@ -4,9 +4,13 @@ dump and acts accordingly.
 
 The script commandline takes dump arguments except -f (output file/device), -F
 (script to run after each volume is finished) and -B (volume size) which are
-overridden in the script.
+overridden.
+
+You can use the script to backup to CD with cdrtecord from cdrtools or to
+DVD with either cdrtools with DVD support or growisofs from dvd+rw-tools.
+You must configure the burning process by adjusting the variables at the top
+of the script.
 
 Andrew Basterfield
 
 bob@cemetery.homeunix.org
-
