@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.34 2001/04/12 16:03:30 stelian Exp $";
+	"$Id: tape.c,v 1.35 2001/04/26 08:49:56 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -274,7 +274,12 @@ setup(void)
 			magtapein = rmtioctl(MTNOP, 1) != -1;
 		else
 #endif
-			magtapein = ioctl(mt, MTIOCGET, (char *) &mt_stat) == 0;
+			if (ioctl(mt, MTIOCGET, (char *) &mt_stat) == 0) {
+				if (mt_stat.mt_dsreg & 0xffff)
+					magtapein = 1; /* fixed blocksize */
+				else
+					magtapein = 2; /* variable blocksize */
+			}
 	}
 
 	Vprintf(stdout,"Input is from %s\n", magtapein? "tape": "file/pipe");
@@ -1325,8 +1330,6 @@ readtape(char *buf)
 	if (numtrec == 0)
 		numtrec = ntrec;
 	cnt = ntrec * TP_BSIZE;
-	if (zflag)
-		cnt += PREFIXSIZE;
 	rd = 0;
 getmore:
 #ifdef RRESTORE
@@ -1639,12 +1642,9 @@ decompress_tapebuf(struct tapebuf *tpbin, int readsize)
 	}
 	switch (cresult) {
 		case Z_OK:
-			if (worklen != ntrec * TP_BSIZE) {
-				/* short block, shouldn't happen, but... */
+			numtrec = worklen / TP_BSIZE;
+			if (worklen % TP_BSIZE != 0)
 				reason = "length mismatch";
-				if (worklen % TP_BSIZE == 0)
-					numtrec = worklen / TP_BSIZE;
-			}
 			break;
 		case Z_MEM_ERROR:
 			reason = "not enough memory";
@@ -1719,7 +1719,12 @@ findtapeblksize(void)
 	 * For a pipe or file, read in the first record. For a tape, read
 	 * the first block.
 	 */
-	len = magtapein ? bufsize + PREFIXSIZE: TP_BSIZE;
+	if (magtapein == 1)	/* fixed blocksize tape, not compressed */
+		len = ntrec * TP_BSIZE;
+	else if (magtapein == 2)/* variable blocksize tape */
+		len = bufsize + PREFIXSIZE;
+	else			/* not mag tape */
+		len = TP_BSIZE;
 
 	if (read_a_block(mt, tapebuf, len, &i) <= 0)
 		errx(1, "Tape read error on first record");
@@ -1761,11 +1766,12 @@ findtapeblksize(void)
 	}
 
 	/*
-	 * If the input is a tape, we tried to read PREFIXSIZE +
-	 * ntrec * TP_BSIZE bytes. If it's not a compressed dump tape
-	 * or the value of ntrec is too large, we have read less than
-	 * what we asked for; adjust the value of ntrec and test for
-	 * a compressed dump tape prefix.
+	 * If the input is a variable block size tape, we tried to
+	 * read PREFIXSIZE + ntrec * TP_BSIZE bytes. 
+	 * If it's not a compressed dump tape or the value of ntrec is 
+	 * too large, we have read less than * what we asked for; 
+	 * adjust the value of ntrec and test for * a compressed dump 
+	 * tape prefix.
 	 */
 
 	if (i % TP_BSIZE != 0) {
@@ -1786,7 +1792,7 @@ findtapeblksize(void)
 	}
 	ntrec = i / TP_BSIZE;
 	numtrec = ntrec;
-	Vprintf(stdout, "Tape block size is %ld\n", ntrec);
+	fprintf(stderr, "Tape block size is %ld\n", ntrec);
 }
 
 /*
