@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.80 2000/08/30 08:55:15 stelian Exp $
+$Id: CHANGES,v 1.81 2000/09/01 14:26:23 stelian Exp $
 
 Changes between versions 0.4b19 and 0.4b20 (released ???????????????)
 =====================================================================
@@ -16,6 +16,10 @@ Changes between versions 0.4b19 and 0.4b20 (released ???????????????)
 	will preserve the functionality. Thanks to Bernhard Erdmann
 	<bernhard.erdmann@gmx.de> for reporting the bug.
 
+3.	The 'exclude inode' option, if applied to a directory
+	inode, excludes now correctly all the leaves of this 
+	directory. Thanks to John R. Dennison 
+	<gerdesas@users.sourceforge.net> for reporting the bug.
 
 Changes between versions 0.4b18 and 0.4b19 (released August 20, 2000)
 =====================================================================

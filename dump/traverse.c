@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.18 2000/05/28 18:16:42 stelian Exp $";
+	"$Id: traverse.c,v 1.19 2000/09/01 14:26:23 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -99,6 +99,7 @@ static	void dmpindir __P((ino_t ino, daddr_t blk, int level, fsizeT *size));
 static	int searchdir __P((ino_t ino, daddr_t blkno, long size, long filesize));
 #endif
 static	void mapfileino __P((ino_t ino, long *tapesize, int *dirskipped));
+static	int exclude_ino __P((ino_t ino));
 
 /* #define EXT3_FEATURE_INCOMPAT_RECOVER */
 
@@ -179,21 +180,41 @@ blockest(struct dinode *dp)
 	return (blkest + 1);
 }
 
+extern ino_t iexclude_list[IEXCLUDE_MAXNUM];	/* the inode exclude list */
+extern int iexclude_num;	/* number of elements in the list */
+
+/*
+ * This tests whether an inode is in the exclude list 
+ */
+int
+exclude_ino(ino_t ino)
+{
+	/* 04-Feb-00 ILC */
+	if (iexclude_num) {	/* if there are inodes in the exclude list */
+		int idx;	/* then check this inode against it */
+		for (idx = 0; idx < iexclude_num; idx++)
+			if (ino == iexclude_list[idx])
+				return 1;
+	}
+	return 0;
+}
+
 /* Auxiliary macro to pick up files changed since previous dump. */
 #define	CHANGEDSINCE(dp, t) \
 	((dp)->di_mtime >= (t) || (dp)->di_ctime >= (t))
 
-/* The WANTTODUMP macro decides whether a file should be dumped. */
+/* The NODUMP_FLAG macro tests if a file has the nodump flag. */
 #ifdef UF_NODUMP
-#define	WANTTODUMP(dp) \
-	(CHANGEDSINCE(dp, spcl.c_ddate) && \
-	 (nonodump || ((dp)->di_flags & UF_NODUMP) != UF_NODUMP))
+#define NODUMP_FLAG(dp) (!nonodump && (((dp)->di_flags & UF_NODUMP) == UF_NODUMP))
 #else
-#define	WANTTODUMP(dp) CHANGEDSINCE(dp, spcl.c_ddate)
+#define NODUMP_FLAG(dp) 0
 #endif
 
-extern ino_t iexclude_list[IEXCLUDE_MAXNUM];	/* the inode exclude list */
-extern int iexclude_num;	/* number of elements in the list */
+/* The WANTTODUMP macro decides whether a file should be dumped. */
+#define	WANTTODUMP(dp, ino) \
+	(CHANGEDSINCE(dp, spcl.c_ddate) && \
+	 (!NODUMP_FLAG(dp)) && \
+	 (!exclude_ino(ino)))
 
 /*
  * Determine if given inode should be dumped
@@ -223,20 +244,9 @@ mapfileino(ino_t ino, long *tapesize, int *dirskipped)
 	 */
 	SETINO(ino, usedinomap);
 
-	/* 04-Feb-00 ILC */
-	if(iexclude_num) {	/* if there are inodes in the exclude list */
-		int idx;	/* then check this inode against it */
-		for (idx=0; idx<iexclude_num; idx++) {
-			if (ino == iexclude_list[idx]) {
-				msg("Excluding inode number %d\n", ino);
-				return;	/* if in list then skip */
-			}
-		}
-	}
-
 	if (mode == IFDIR)
 		SETINO(ino, dumpdirmap);
-	if (WANTTODUMP(dp)) {
+	if (WANTTODUMP(dp, ino)) {
 		SETINO(ino, dumpinomap);
 		if (mode != IFREG && mode != IFDIR && mode != IFLNK)
 			*tapesize += 1;
@@ -245,10 +255,8 @@ mapfileino(ino_t ino, long *tapesize, int *dirskipped)
 		return;
 	}
 	if (mode == IFDIR) {
-#ifdef UF_NODUMP
-		if (!nonodump && (dp->di_flags & UF_NODUMP))
+		if ( NODUMP_FLAG(dp) || exclude_ino(ino) )
 			CLRINO(ino, usedinomap);
-#endif
 		*dirskipped = 1;
 	}
 }
