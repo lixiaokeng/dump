@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dirs.c,v 1.11 2000/12/04 15:43:17 stelian Exp $";
+	"$Id: dirs.c,v 1.12 2000/12/05 15:43:49 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -208,12 +208,13 @@ extractdirs(int genmode)
 		curfile.action = USING;
 		ip = curfile.dip;
 		if (ip == NULL || (ip->di_mode & IFMT) != IFDIR) {
-			(void) fclose(df);
+			if ( fclose(df) == EOF )
+				err(1, "cannot write to file %s", dirfile);
 			dirp = opendirfile(dirfile);
 			if (dirp == NULL)
 				warn("opendirfile");
-			if (mf != NULL)
-				(void) fclose(mf);
+			if (mf != NULL && fclose(mf) == EOF )
+				err(1, "cannot write to file %s", dirfile);
 			i = dirlookup(dot);
 			if (i == 0)
 				panic("Root directory is not on tape\n");
@@ -439,7 +440,8 @@ putent(struct direct *dp)
 	if (dirloc + dp->d_reclen > DIRBLKSIZ) {
 		((struct direct *)(dirbuf + prev))->d_reclen =
 		    DIRBLKSIZ - prev;
-		(void) fwrite(dirbuf, 1, DIRBLKSIZ, df);
+		if ( fwrite(dirbuf, 1, DIRBLKSIZ, df) != DIRBLKSIZ )
+			err(1,"cannot write to file %s", dirfile);
 		dirloc = 0;
 	}
 	memmove(dirbuf + dirloc, dp, (size_t)dp->d_reclen);
@@ -454,8 +456,11 @@ static void
 flushent(void)
 {
 	((struct direct *)(dirbuf + prev))->d_reclen = DIRBLKSIZ - prev;
-	(void) fwrite(dirbuf, (int)dirloc, 1, df);
+	if ( fwrite(dirbuf, (int)dirloc, 1, df) != 1 )
+		err(1, "cannot write to file %s", dirfile);
 	seekpt = ftell(df);
+	if (seekpt == -1)
+		err(1, "cannot write to file %s", dirfile);
 	dirloc = 0;
 }
 
@@ -748,7 +753,8 @@ allocinotab(ino_t ino, struct dinode *dip, long seekpt)
 	node.flags = dip->di_flags;
 	node.uid = dip->di_uid;
 	node.gid = dip->di_gid;
-	(void) fwrite((char *)&node, 1, sizeof(struct modeinfo), mf);
+	if ( fwrite((char *)&node, 1, sizeof(struct modeinfo), mf) != sizeof(struct modeinfo) )
+		err(1,"cannot write to file %s", modefile);
 	return (itp);
 }
 

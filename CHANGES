@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.94 2000/12/04 16:05:35 stelian Exp $
+$Id: CHANGES,v 1.95 2000/12/05 15:43:48 stelian Exp $
 
 Changes between versions 0.4b20 and 0.4b21 (released ?????????????????)
 =======================================================================
@@ -14,6 +14,13 @@ Changes between versions 0.4b20 and 0.4b21 (released ?????????????????)
 3.	Fixed a build problem on old lib5 based systems dealing with 
 	_PATH_MNTTAB being undefined. Thanks to John Adams
 	<johna@onevista.com> for reporting the bug.
+
+4.	Improved the error detection in restore when creating
+	the temporary files in TMPDIR. Now restore will corectly
+	report a 'no space left on device' error instead of 
+	strange errors which could imply an archive corruption.
+	Thanks to Gabriel Somlo <somlo@cs.colostate.edu> and
+	bgjenero <bgjenero@sympatico.ca> for reporting the bug.
 
 Changes between versions 0.4b19 and 0.4b20 (released November 10, 2000)
 =======================================================================
