@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dirs.c,v 1.19 2002/06/08 07:10:37 stelian Exp $";
+	"$Id: dirs.c,v 1.20 2002/06/25 19:00:38 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -397,6 +397,8 @@ putdir(char *buf, size_t size)
 					if (!Bcvt)
 						dp->d_namlen = dp->d_type;
 #				endif
+				if (dp->d_namlen == 0 && dp->d_type != 0)
+					dp->d_namlen = dp->d_type;
 				dp->d_type = DT_UNKNOWN;
 			}
 #ifdef	DIRDEBUG
