@@ -321,7 +321,7 @@ AC_SUBST(DUMPDATESPATH)
 dnl
 dnl Check for Ext2fs headers and libraries
 dnl
-AC_CHECK_HEADER(ext2fs/ext2fs.h, [ext2fs_h=yes], [ext2fs_h=no])
+AC_CHECK_HEADER(ext2fs/ext2fs.h, [ext2fs_h=yes], [ext2fs_h=no], [-])
 AC_CHECK_LIB(ext2fs, ext2fs_open, [ext2fs_lib=yes], [ext2fs_lib=no], [-lcom_err])
 if test "$ext2fs_h" = no -o "$ext2fs_lib" = no; then
 	AC_MSG_ERROR(You need to install the Ext2fs libraries from the E2fsprogs distribution first - hint: make install-libs)
@@ -330,7 +330,7 @@ fi
 dnl
 dnl Try to use ext2_fs.h header from libext2fs instead of from the kernel
 dnl
-AC_CHECK_HEADERS(ext2fs/ext2_fs.h)
+AC_CHECK_HEADERS(ext2fs/ext2_fs.h, [], [], [-])
 
 dnl
 dnl Check for ext2_ino_t type
@@ -375,7 +375,7 @@ fi
 dnl
 dnl Check for readline headers and libraries
 dnl
-AC_CHECK_HEADER(readline/readline.h, [readline_h=yes], [readline_h=no])
+AC_CHECK_HEADER(readline/readline.h, [readline_h=yes], [readline_h=no], [-])
 AC_CHECK_LIB(readline, readline, [readline_lib=yes], [readline_lib=no], "-ltermcap")
 if test "$readline_h" = no -o "$readline_lib" = no; then
 	if test "$READLINE" = "-lreadline -ltermcap"; then
@@ -402,7 +402,7 @@ fi
 dnl
 dnl Check for zlib headers and libraries
 dnl
-AC_CHECK_HEADER(zlib.h, [zlib_h=yes], [zlib_h=no])
+AC_CHECK_HEADER(zlib.h, [zlib_h=yes], [zlib_h=no], [-])
 AC_CHECK_LIB(z, compress2, [zlib_lib=yes], [zlib_lib=no])
 if test "$zlib_h" = yes -a "$zlib_lib" = yes; then
 	ZLIB="-lz"
@@ -415,7 +415,7 @@ AC_SUBST(ZLIB)
 dnl
 dnl Check for bzlib headers and libraries
 dnl
-AC_CHECK_HEADER(bzlib.h, [bzlib_h=yes], [bzlib_h=no])
+AC_CHECK_HEADER(bzlib.h, [bzlib_h=yes], [bzlib_h=no], [-])
 AC_CHECK_LIB(bz2, BZ2_bzBuffToBuffCompress, [bzlib_lib=yes], [bzlib_lib=no])
 if test "$bzlib_h" = yes -a "$bzlib_lib" = yes; then
 	BZLIB="-lbz2"
