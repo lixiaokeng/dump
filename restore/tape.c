@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.67 2003/01/10 14:42:51 stelian Exp $";
+	"$Id: tape.c,v 1.68 2003/02/11 09:56:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1266,16 +1266,22 @@ comparefile(char *name)
 	struct STAT stemp;
 #endif
 
+	curfile.name = name;
+	curfile.action = USING;
+	mode = curfile.dip->di_mode;
+
+	if ((mode & IFMT) == IFSOCK) {
+		Vprintf(stdout, "skipped socket %s\n", name);
+		skipfile();
+		return;
+	}
+
 	if ((r = LSTAT(name, &sb)) != 0) {
 		warn("%s: does not exist (%d)", name, r);
 		do_compare_error;
 		skipfile();
 		return;
 	}
-
-	curfile.name = name;
-	curfile.action = USING;
-	mode = curfile.dip->di_mode;
 
 	Vprintf(stdout, "comparing %s (size: %ld, mode: 0%o)\n", name,
 		(long)sb.st_size, mode);
