@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.197 2002/11/15 09:25:25 stelian Exp $
+$Id: CHANGES,v 1.198 2002/11/15 09:49:39 stelian Exp $
 
 Changes between versions 0.4b31 and 0.4b32 (released ?????????????)
 ===================================================================
@@ -34,6 +34,11 @@ Changes between versions 0.4b31 and 0.4b32 (released ?????????????)
 	directories behind when restoring incremental tapes. Thanks
 	to Philippe Troin <phil@fifi.org> for reporting this bug and
 	providing the test cases.
+
+7.	Changed the wording when inodes are excluded from dump:
+	replaced 'Added inode 7 to exclude list' with
+	'Excluding inode 7 (resize inode) from dump', as suggested
+	by Elliott Mitchell <ehem@m5p.com> in a Debian bug report.
 
 Changes between versions 0.4b30 and 0.4b31 (released July 30, 2002)
 ===================================================================

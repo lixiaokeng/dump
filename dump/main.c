@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.76 2002/10/07 19:27:36 stelian Exp $";
+	"$Id: main.c,v 1.77 2002/11/15 09:49:40 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1227,10 +1227,10 @@ do_exclude_ino(dump_ino_t ino, const char *reason)
 			exit(X_STARTUP);
 		}
 		if (reason)
-			msg("Added inode %u to exclude list (%s)\n", 
+			msg("Excluding inode %u (%s) from dump\n", 
 			    ino, reason);
 		else
-			msg("Added inode %u to exclude list\n", ino);
+			msg("Excluding inode %u from dump\n", ino);
 		iexclude_list[iexclude_num++] = ino;
 	}
 }
