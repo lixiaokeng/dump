@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.25 2001/07/18 12:54:06 stelian Exp $";
+	"$Id: main.c,v 1.26 2001/07/18 13:12:33 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -505,7 +505,7 @@ usage(void)
 
 	(void)fprintf(stderr,
 	  "usage:\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n",
-	  __progname, " -C [-c" kerbflag "Mvy] [-b blocksize] [-D filesystem] [-f file] [-F script ] [-s fileno]",
+	  __progname, " -C [-c" kerbflag "Mvy] [-b blocksize] [-D filesystem] [-f file] [-F script] [-s fileno]",
 	  __progname, " -i [-ch" kerbflag "mMuvy] [-b blocksize] [-f file] [-F script] " qfaflag "[-s fileno]",
 	  __progname, " -r [-c" kerbflag "Muvy] [-b blocksize] [-f file] [-F script] [-s fileno] [-T directory]",
 	  __progname, " -R [-c" kerbflag "Muvy] [-b blocksize] [-f file] [-F script] [-s fileno] [-T directory]",

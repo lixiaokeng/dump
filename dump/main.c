@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.51 2001/07/18 09:50:48 stelian Exp $";
+	"$Id: main.c,v 1.52 2001/07/18 13:12:33 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -528,6 +528,9 @@ main(int argc, char *argv[])
 
 		msg("Date of this level %c dump: %s", level,
 		    ctime4(&spcl.c_date));
+#ifdef USE_QFA
+		gThisDumpDate = spcl.c_date;
+#endif
 		if (spcl.c_ddate)
 	 		msg("Date of last level %c dump: %s", lastlevel,
 			    ctime4(&spcl.c_ddate));

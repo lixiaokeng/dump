@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: dump.h,v 1.25 2001/07/18 09:50:48 stelian Exp $
+ *	$Id: dump.h,v 1.26 2001/07/18 13:12:33 stelian Exp $
  */
 
 /*-
@@ -115,6 +115,7 @@ int	tp_bshift;	/* log2(TP_BSIZE) */
 int	gTapeposfd;
 char	*gTapeposfile;
 char	gTps[255];
+int32_t	gThisDumpDate;
 int	GetTapePos __P((long *pos));
 #endif /* USE_QFA */
 
