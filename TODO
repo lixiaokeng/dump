@@ -1,4 +1,4 @@
-$Id: TODO,v 1.20 2001/07/18 12:54:06 stelian Exp $
+$Id: TODO,v 1.21 2001/07/25 13:21:31 stelian Exp $
 
 Need to verify:
 ---------------
@@ -57,3 +57,5 @@ All others:
 12.	Dump uses /dev/tty for reporting some messages. When invoked
 	from a script, /dev/tty may not exist. Why not using just
 	stderr ?
+
+13.	-a and -B option to dump are exclusive.
