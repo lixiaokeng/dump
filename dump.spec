@@ -6,9 +6,9 @@ Summary: Programs for backing up and restoring filesystems.
 Name: dump
 Version: 0.4b21
 Release: 1
-Copyright: UCB
+License: BSD
 Group: Applications/Archiving
-Source: http://sourceforge.net/download.php/dump/dump-%{version}.tar.gz
+Source: http://download.sourceforge.net/dump/dump-%{version}.tar.gz
 Requires: rmt
 BuildRoot: %{_tmppath}/%{name}-root
 
