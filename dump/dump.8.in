@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.9 2000/01/21 10:17:41 stelian Exp $
+.\"	$Id: dump.8.in,v 1.10 2000/01/21 10:23:30 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -476,7 +476,9 @@ Starting with 0.4b5, the new maintainer is Stelian Pop
 .Sh AVAILABILITY
 The
 .Nm dump/restore
-backup suit is available from http://dump.sourceforge.net
+backup suit is available from 
+.br
+http://dump.sourceforge.net
 .Sh HISTORY
 A
 .Nm
