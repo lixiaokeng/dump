@@ -1,4 +1,4 @@
-$Id: TODO,v 1.4 1999/10/11 13:31:04 stelian Exp $
+$Id: TODO,v 1.5 1999/11/02 09:35:55 tiniou Exp $
 
 1.	Make dump honor the no-dump attribute on directories.  Currently, it
 	honours it only on files.  This means that a directory flagged with
@@ -17,7 +17,8 @@ $Id: TODO,v 1.4 1999/10/11 13:31:04 stelian Exp $
 	was ported from *BSD and was not tested - in fact, this
 	wasn't even compiled in!). Need success reports for this.
 
-6.	Explore and correct dump problems on a 4GB+ filesystem.
+6.	Explore and correct dump problems on a 4GB+ active 
+	filesystem (lseek/read negative count).
 
 7.	Clean-up the code by removing all those #ifdef _BSD, 
 	since nobody would ever re-compile this on a BSD system. 

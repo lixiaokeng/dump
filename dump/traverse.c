@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.6 1999/10/13 09:57:20 stelian Exp $";
+	"$Id: traverse.c,v 1.7 1999/11/02 09:35:56 tiniou Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -93,7 +93,6 @@ typedef	long fsizeT;
 #ifdef	__linux__
 static	int searchdir __P((struct ext2_dir_entry *dp, int offset,
 			   int blocksize, char *buf, void *private));
-loff_t llseek (int fd, loff_t offset, int origin);
 #else
 static	int dirindir __P((ino_t ino, daddr_t blkno, int level, long *size));
 static	void dmpindir __P((ino_t ino, daddr_t blk, int level, fsizeT *size));
@@ -1013,8 +1012,8 @@ bread(daddr_t blkno, char *buf, int size)
 
 loop:
 #ifdef	__linux__
-	if (llseek(diskfd, ((ext2_loff_t)blkno << dev_bshift), 0) !=
-			((ext2_loff_t)blkno << dev_bshift))
+	if (ext2fs_llseek(diskfd, (((ext2_loff_t)blkno) << dev_bshift), 0) !=
+			(((ext2_loff_t)blkno) << dev_bshift))
 #else
 	if (lseek(diskfd, ((off_t)blkno << dev_bshift), 0) !=
 						((off_t)blkno << dev_bshift))
@@ -1059,8 +1058,8 @@ loop:
 	memset(buf, 0, size);
 	for (i = 0; i < size; i += dev_bsize, buf += dev_bsize, blkno++) {
 #ifdef	__linux__
-		if (llseek(diskfd, ((ext2_loff_t)blkno << dev_bshift), 0) !=
-				((ext2_loff_t)blkno << dev_bshift))
+		if (ext2fs_llseek(diskfd, (((ext2_loff_t)blkno) << dev_bshift), 0) !=
+				(((ext2_loff_t)blkno) << dev_bshift))
 #else
 		if (lseek(diskfd, ((off_t)blkno << dev_bshift), 0) !=
 						((off_t)blkno << dev_bshift))

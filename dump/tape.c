@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.6 1999/10/13 09:57:20 stelian Exp $";
+	"$Id: tape.c,v 1.7 1999/11/02 09:35:56 tiniou Exp $";
 #endif /* not lint */
 
 #ifdef __linux__
@@ -95,6 +95,7 @@ extern	int ntrec;		/* blocking factor on tape */
 extern	int cartridge;
 extern	char *host;
 char	*nexttape;
+extern  pid_t rshpid;
 
 static	ssize_t atomic_read __P((int, void *, size_t));
 static	ssize_t atomic_write __P((int, const void *, size_t));
@@ -661,7 +662,8 @@ restore_check_point:
 			tapeno+1, parentpid, childpid);
 #endif /* TDEBUG */
 		while ((waitpid = wait(&status)) != childpid)
-			msg("Parent %d waiting for child %d has another child %d return\n",
+			if (waitpid != rshpid)
+				msg("Parent %d waiting for child %d has another child %d return\n",
 				parentpid, childpid, waitpid);
 		if (status & 0xFF) {
 			msg("Child %d returns LOB status %o\n",

@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dumprmt.c,v 1.7 1999/10/30 22:55:50 tiniou Exp $";
+	"$Id: dumprmt.c,v 1.8 1999/11/02 09:35:56 tiniou Exp $";
 #endif /* not lint */
 
 #ifdef __linux__
@@ -97,6 +97,7 @@ static const char rcsid[] =
 static	int rmtstate = TS_CLOSED;
 static	int tormtape = -1;
 static	int fromrmtape = -1;
+int rshpid = -1;
 static	const char *rmtpeer = 0;
 
 static	int okname __P((const char *));
@@ -203,7 +204,7 @@ rmtgetconn(void)
 		rshcmd[4] = rmt;
 		rshcmd[5] = NULL;
 
-		if (piped_child(rshcmd) < 0) {
+		if ((rshpid = piped_child(rshcmd)) < 0) {
 			msg("cannot open connection\n");
 			return 0;
 		}
