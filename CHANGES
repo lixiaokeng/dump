@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.142 2001/11/13 12:11:05 stelian Exp $
+$Id: CHANGES,v 1.143 2001/11/16 14:09:07 stelian Exp $
 
 Changes between versions 0.4b24 and 0.4b25 (released ??????????????????)
 ========================================================================
@@ -21,6 +21,14 @@ Changes between versions 0.4b24 and 0.4b25 (released ??????????????????)
         to Clemens Stiglechner <a9401816@unet.univie.ac.at> for the
 	patch.
 
+6.	Add the -l option to restore to specify if, when doing a
+        remote restore, the file used to access the backup is a
+	regular file (the defaults being a tape drive). Restore needs
+	to know this information when reading a remote compressed 
+	dump. Previously, this information was autodetected, but
+	the autodetection code fails (with ioctl: Inappropriate ioctl 
+	for device) when using a non Linux remote box.
+	
 Changes between versions 0.4b23 and 0.4b24 (released September 12, 2001)
 ========================================================================
 

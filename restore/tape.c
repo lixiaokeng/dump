@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.47 2001/09/12 10:21:49 stelian Exp $";
+	"$Id: tape.c,v 1.48 2001/11/16 14:09:07 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1929,7 +1929,7 @@ setmagtapein(void) {
 		/* need to know if input is really from a tape */
 #ifdef RRESTORE
 		if (host)
-			magtapein = rmtioctl(MTNOP, 1) != -1;
+			magtapein = !lflag;
 		else
 #endif
 			magtapein = ioctl(mt, MTIOCGET, (char *)&mt_stat) == 0;

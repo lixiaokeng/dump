@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.31 2001/11/13 12:11:42 stelian Exp $";
+	"$Id: main.c,v 1.32 2001/11/16 14:09:07 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -82,7 +82,7 @@ static const char rcsid[] =
 
 int	bflag = 0, cvtflag = 0, dflag = 0, vflag = 0, yflag = 0;
 int	hflag = 1, mflag = 1, Mflag = 0, Nflag = 0, Vflag = 0, zflag = 0;
-int	uflag = 0;
+int	uflag = 0, lflag = 0;
 int	dokerberos = 0;
 char	command = '\0';
 long	dumpnum = 1;
@@ -158,7 +158,7 @@ main(int argc, char *argv[])
 #ifdef KERBEROS
 		"k"
 #endif
-		"mMN"
+		"lmMN"
 #ifdef USE_QFA
 		"Q:"
 #endif
@@ -213,6 +213,9 @@ main(int argc, char *argv[])
 				    "%c and %c options are mutually exclusive",
 				    ch, command);
 			command = ch;
+			break;
+		case 'l':
+			lflag = 1;
 			break;
 		case 'm':
 			mflag = 0;
@@ -280,7 +283,11 @@ main(int argc, char *argv[])
 
 	atexit(cleanup);
 
-	if (command == 'C' && inputdev[0] != '/' && strcmp(inputdev, "-")) {
+	if (command == 'C' && inputdev[0] != '/' && strcmp(inputdev, "-")
+#ifdef RRESTORE
+	    && !strchr(inputdev, ':')
+#endif
+	  ) {
 		/* since we chdir into the directory we are comparing
 		 * to, we must retain the full tape path */
 		char wd[MAXPATHLEN], fullpathinput[MAXPATHLEN];
@@ -527,12 +534,12 @@ usage(void)
 
 	(void)fprintf(stderr,
 	  "usage:\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n",
-	  __progname, " -C [-c" kerbflag "MvVy] [-b blocksize] [-D filesystem] [-f file] [-F script] [-s fileno]",
-	  __progname, " -i [-ch" kerbflag "mMuvVy] [-b blocksize] [-f file] [-F script] " qfaflag "[-s fileno]",
-	  __progname, " -r [-c" kerbflag "MuvVy] [-b blocksize] [-f file] [-F script] [-s fileno] [-T directory]",
-	  __progname, " -R [-c" kerbflag "MuvVy] [-b blocksize] [-f file] [-F script] [-s fileno] [-T directory]",
-	  __progname, " -t [-ch" kerbflag "MuvVy] [-b blocksize] [-f file] [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]",
-	  __progname, " -x [-ch" kerbflag "mMuvVy] [-b blocksize] [-f file] [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]");
+	  __progname, " -C [-c" kerbflag "lMvVy] [-b blocksize] [-D filesystem] [-f file] [-F script] [-s fileno]",
+	  __progname, " -i [-ch" kerbflag "lmMuvVy] [-b blocksize] [-f file] [-F script] " qfaflag "[-s fileno]",
+	  __progname, " -r [-c" kerbflag "lMuvVy] [-b blocksize] [-f file] [-F script] [-s fileno] [-T directory]",
+	  __progname, " -R [-c" kerbflag "lMuvVy] [-b blocksize] [-f file] [-F script] [-s fileno] [-T directory]",
+	  __progname, " -t [-ch" kerbflag "lMuvVy] [-b blocksize] [-f file] [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]",
+	  __progname, " -x [-ch" kerbflag "lmMuvVy] [-b blocksize] [-f file] [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]");
 	exit(1);
 }
 

@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: restore.h,v 1.18 2001/09/12 10:21:49 stelian Exp $
+ *	$Id: restore.h,v 1.19 2001/11/16 14:09:07 stelian Exp $
  */
 
 /*
@@ -55,6 +55,7 @@ extern int	cvtflag;	/* convert from old to new tape format */
 extern int	bflag;		/* set input block size */
 extern int	dflag;		/* print out debugging info */
 extern int	hflag;		/* restore heirarchies */
+extern int	lflag;		/* assume remote filename is a regular file */
 extern int	mflag;		/* restore by name instead of inode number */
 extern int	Mflag;		/* multi-volume restore */
 extern int	Vflag;		/* multi-volume on a single device like CDROM */
