@@ -1,7 +1,7 @@
-$Id: CHANGES,v 1.188 2002/07/24 14:11:59 stelian Exp $
+$Id: CHANGES,v 1.189 2002/07/25 09:56:47 stelian Exp $
 
-Changes between versions 0.4b29 and 0.4b30 (released ????????????????)
-======================================================================
+Changes between versions 0.4b29 and 0.4b30 (released July 25, 2002)
+===================================================================
 
 1.	Made dump print out the ext2 logical block number in case of a read
 	error, which can be given as an argument to debugfs' ncheck command,
