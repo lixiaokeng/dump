@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: optr.c,v 1.14 2000/11/10 14:42:25 stelian Exp $";
+	"$Id: optr.c,v 1.15 2000/11/29 10:13:43 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -572,9 +572,12 @@ print_wmsg(char arg, int dumpme, const char *dev, int level,
 {
 	char *date;
 	
-	if (ddate)
+	if (ddate) {
+		char *d;
 		date = (char *)ctime(&ddate);
-	//date[16] = '\0';	/* blast away seconds and year */
+		d = strchr(date, '\n');
+		if (d) *d = '\0';
+	}
 
 	if (!dumpme && arg == 'w')
 		return;
@@ -628,8 +631,7 @@ lastdump(char arg) /* w ==> just what to do; W ==> most recent dumps */
 				sizeof(dtwalk->dd_name)) == 0)
 				continue;
 			lastname = dtwalk->dd_name;
-			if ((dt = dtwalk->dd_fstab) != NULL &&
-			    dt->fs_freq != 0) {
+			if ((dt = dtwalk->dd_fstab) != NULL) {
 				/* Overload fs_freq as dump level and
 				 * fs_passno as date, because we can't
 				 * change struct fstab format.
@@ -637,11 +639,11 @@ lastdump(char arg) /* w ==> just what to do; W ==> most recent dumps */
 				 * filesystem needs to be dumped.
 				 */
 				dt->fs_passno = dtwalk->dd_ddate;
-				if (dtwalk->dd_ddate <
-				    tnow - (dt->fs_freq * 86400))
-					dt->fs_freq = -dtwalk->dd_level;
+				if (dt->fs_freq > 0 && (dtwalk->dd_ddate <
+				    tnow - (dt->fs_freq * 86400)))
+					dt->fs_freq = -dtwalk->dd_level - 1;
 				else
-					dt->fs_freq = dtwalk->dd_level;
+					dt->fs_freq = dtwalk->dd_level + 1;
 
 			}
 		}
@@ -656,9 +658,9 @@ lastdump(char arg) /* w ==> just what to do; W ==> most recent dumps */
 			if (strncmp(dt->fs_vfstype, *type,
 				    sizeof(dt->fs_vfstype)) == 0) {
 				const char *disk = get_device_name(dt->fs_spec);
-				print_wmsg(arg, dt->fs_freq < 0 || !dt->fs_passno,
+				print_wmsg(arg, dt->fs_freq < 0,
 					   disk ? disk : dt->fs_spec,
-					   dt->fs_freq < 0 ? -dt->fs_freq : dt->fs_freq, 
+					   dt->fs_freq < 0 ? -dt->fs_freq - 1 : dt->fs_freq - 1, 
 					   dt->fs_file,
 					   dt->fs_passno);
 			}
