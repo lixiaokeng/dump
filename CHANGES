@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.217 2003/02/17 10:31:44 stelian Exp $
+$Id: CHANGES,v 1.218 2003/02/25 14:06:47 stelian Exp $
 
 Changes between versions 0.4b33 and 0.4b34 (released ?????????????????)
 =======================================================================
@@ -27,6 +27,10 @@ Changes between versions 0.4b33 and 0.4b34 (released ?????????????????)
 6.	Fixed restore corner case when dealing with large block sizes
 	dump is able to write now (-b 1024). Thanks to Fabrice Bellet
 	<fabrice@bellet.info> for reporting the bug.
+
+7.	Fixed a bug preventing dump to access a filesystem having 
+	a label exactly 16 bytes in length. Thanks to <minduni@ti-edu.ch>
+	for reporting the bug.
 
 Changes between versions 0.4b32 and 0.4b33 (released February 10, 2003)
 =======================================================================

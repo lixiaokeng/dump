@@ -29,12 +29,14 @@
 #define EXT2_SUPER_SIZE		sizeof(struct ext2_super_block)
 #define EXT2_SUPER_MAGIC	0xEF53
 
+#define VOLNAMSZ	16
+
 struct ext2_super_block {
 	unsigned char	s_dummy1[56];
 	unsigned char	s_magic[2];
 	unsigned char	s_dummy2[46];
 	unsigned char	s_uuid[16];
-	unsigned char	s_volume_name[16];
+	unsigned char	s_volume_name[VOLNAMSZ];
 };
 #define ext2magic(s)	((unsigned int) s.s_magic[0] + (((unsigned int) s.s_magic[1]) << 8))
 
@@ -71,7 +73,9 @@ get_label_uuid(const char *device, char **label, char *uuid) {
 
 	/* superblock is ext2 - now what is its label? */
 	memcpy(uuid, e2sb.s_uuid, sizeof(e2sb.s_uuid));
-	*label = strdup(e2sb.s_volume_name);
+	*label = malloc(VOLNAMSZ + 1);
+	strncpy(*label, e2sb.s_volume_name, VOLNAMSZ);
+	(*label)[VOLNAMSZ] = 0;
 
 	return 0;
 }
