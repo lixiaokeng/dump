@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.66 2002/03/27 16:48:38 stelian Exp $";
+	"$Id: tape.c,v 1.67 2002/04/11 14:51:09 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -114,8 +114,8 @@ int 	eot_code = 1;
 long long tapea_bytes = 0;	/* bytes_written at start of current volume */
 static int magtapeout;		/* output is really a tape */
 
-static	ssize_t atomic_read __P((int, void *, size_t));
-static	ssize_t atomic_write __P((int, const void *, size_t));
+static	ssize_t dump_atomic_read __P((int, void *, size_t));
+static	ssize_t dump_atomic_write __P((int, const void *, size_t));
 static	void doslave __P((int, int, int));
 static	void enslave __P((void));
 static	void flushtape __P((void));
@@ -410,7 +410,7 @@ flushtape(void)
 
 	slp->req[trecno].count = 0;			/* Sentinel */
 
-	if (atomic_write( slp->fd, (char *)slp->req, siz) != siz)
+	if (dump_atomic_write( slp->fd, (char *)slp->req, siz) != siz)
 		quit("error writing command pipe: %s\n", strerror(errno));
 	slp->sent = 1; /* we sent a request, read the response later */
 
@@ -421,7 +421,7 @@ flushtape(void)
 
 	/* Read results back from next slave */
 	if (slp->sent) {
-		if (atomic_read( slp->fd, (char *)&returned, sizeof returned)
+		if (dump_atomic_read( slp->fd, (char *)&returned, sizeof returned)
 		    != sizeof returned) {
 			perror("  DUMP: error reading command pipe in master");
 			dumpabort(0);
@@ -446,7 +446,7 @@ flushtape(void)
 			 */
 			for (i = 0; i < SLAVES; i++) {
 				if (slaves[i].sent) {
-					if (atomic_read( slaves[i].fd,
+					if (dump_atomic_read( slaves[i].fd,
 					    (char *)&returned, sizeof returned)
 					    != sizeof returned) {
 						perror("  DUMP: error reading command pipe in master");
@@ -510,7 +510,7 @@ trewind(void)
 		 * fixme: punt for now.
 		 */
 		if (slaves[f].sent) {
-			if (atomic_read( slaves[f].fd, (char *)&returned, sizeof returned)
+			if (dump_atomic_read( slaves[f].fd, (char *)&returned, sizeof returned)
 			    != sizeof returned) {
 				perror("  DUMP: error reading command pipe in master");
 				dumpabort(0);
@@ -645,7 +645,7 @@ rollforward(void)
 			lastspclrec = savedtapea - 1;
 		}
 		size = (char *)ntb - (char *)q;
-		if (atomic_write( slp->fd, (char *)q, size) != size) {
+		if (dump_atomic_write( slp->fd, (char *)q, size) != size) {
 			perror("  DUMP: error writing command pipe");
 			dumpabort(0);
 		}
@@ -693,7 +693,7 @@ rollforward(void)
 	 * worked ok, otherwise the tape is much too short!
 	 */
 	if (slp->sent) {
-		if (atomic_read( slp->fd, (char *)&returned, sizeof returned)
+		if (dump_atomic_read( slp->fd, (char *)&returned, sizeof returned)
 		    != sizeof returned) {
 			perror("  DUMP: error reading command pipe in master");
 			dumpabort(0);
@@ -1007,7 +1007,7 @@ enslave(void)
 			sigprocmask(SIG_BLOCK, &sigs, NULL);
 
 #ifdef	LINUX_FORK_BUG
-			if (atomic_write( cmd[0], (char *) &i, sizeof i)
+			if (dump_atomic_write( cmd[0], (char *) &i, sizeof i)
 			    != sizeof i)
 				quit("master/slave protocol botched 3\n");
 #endif
@@ -1025,12 +1025,12 @@ enslave(void)
 	 * returned from fork() causes a SEGV in the child process
 	 */
 	for (i = 0; i < SLAVES; i++)
-		if (atomic_read( slaves[i].fd, (char *) &j, sizeof j) != sizeof j)
+		if (dump_atomic_read( slaves[i].fd, (char *) &j, sizeof j) != sizeof j)
 			quit("master/slave protocol botched 4\n");
 #endif
 
 	for (i = 0; i < SLAVES; i++)
-		(void) atomic_write( slaves[i].fd, 
+		(void) dump_atomic_write( slaves[i].fd, 
 			      (char *) &slaves[(i + 1) % SLAVES].pid, 
 		              sizeof slaves[0].pid);
 		
@@ -1106,7 +1106,7 @@ doslave(int cmd, int slave_number, int first)
 	/*
 	 * Need the pid of the next slave in the loop...
 	 */
-	if ((nread = atomic_read( cmd, (char *)&nextslave, sizeof nextslave))
+	if ((nread = dump_atomic_read( cmd, (char *)&nextslave, sizeof nextslave))
 	    != sizeof nextslave) {
 		quit("master/slave protocol botched - didn't get pid of next slave.\n");
 	}
@@ -1127,7 +1127,7 @@ doslave(int cmd, int slave_number, int first)
 	/*
 	 * Get list of blocks to dump, read the blocks into tape buffer
 	 */
-	while ((nread = atomic_read( cmd, (char *)slp->req, reqsiz)) == reqsiz) {
+	while ((nread = dump_atomic_read( cmd, (char *)slp->req, reqsiz)) == reqsiz) {
 		struct req *p = slp->req;
 
 		for (trecno = 0; trecno < ntrec;
@@ -1136,7 +1136,7 @@ doslave(int cmd, int slave_number, int first)
 				bread(p->dblk, slp->tblock[trecno],
 					p->count * TP_BSIZE);
 			} else {	/* read record from pipe */
-				if (p->count != 1 || atomic_read( cmd,
+				if (p->count != 1 || dump_atomic_read( cmd,
 				    (char *)slp->tblock[trecno],
 				    TP_BSIZE) != TP_BSIZE)
 				       quit("master/slave protocol botched.\n");
@@ -1298,7 +1298,7 @@ doslave(int cmd, int slave_number, int first)
 		 * pass size of data and size of write back to master
 		 * (for EOT handling)
 		 */
-		(void) atomic_write( cmd, (char *)&returns, sizeof returns);
+		(void) dump_atomic_write( cmd, (char *)&returns, sizeof returns);
 
 		/*
 		 * Signal the next slave to go.
@@ -1315,7 +1315,7 @@ doslave(int cmd, int slave_number, int first)
  * loop until the count is satisfied (or error).
  */
 static ssize_t
-atomic_read(int fd, void *buf, size_t count)
+dump_atomic_read(int fd, void *buf, size_t count)
 {
 	int got, need = count;
 
@@ -1332,7 +1332,7 @@ atomic_read(int fd, void *buf, size_t count)
  * loop until the count is satisfied (or error).
  */
 static ssize_t
-atomic_write(int fd, const void *buf, size_t count)
+dump_atomic_write(int fd, const void *buf, size_t count)
 {
 	int got, need = count;
 
