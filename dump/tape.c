@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.17 2000/03/10 10:03:09 stelian Exp $";
+	"$Id: tape.c,v 1.18 2000/03/11 15:29:01 stelian Exp $";
 #endif /* not lint */
 
 #ifdef __linux__
@@ -488,14 +488,13 @@ trewind(void)
 			rmtclose();
 		}
 		else 
-#else
+#endif
 		{
 			(void) close(tapefd);
 			while ((f = open(tape, 0)) < 0)
 				sleep (10);
 			(void) close(f);
 		}
-#endif
 		eot_code = 1;
 		if (eot_script) {
 			msg("Launching %s\n", eot_script);

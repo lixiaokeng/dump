@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.52 2000/03/10 10:03:09 stelian Exp $
+$Id: CHANGES,v 1.53 2000/03/11 15:29:01 stelian Exp $
 
 Changes between versions 0.4b15 and 0.4b16 (released ?????????????)
 ===================================================================
@@ -25,6 +25,9 @@ Changes between versions 0.4b15 and 0.4b16 (released ?????????????)
 
 5.	Added the device name and the current volume number
 	as arguments to the end of tape script (dump -F option).
+
+6.	Made the multi-volume dump work again (after having 
+	broken it in 0.4b15). 
 
 Changes between versions 0.4b14 and 0.4b15 (released March 2, 2000)
 ===================================================================
