@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.63 2002/01/05 23:23:02 stelian Exp $";
+	"$Id: main.c,v 1.64 2002/01/10 09:02:54 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -499,6 +499,13 @@ main(int argc, char *argv[])
 		signal(SIGTERM, sig);
 	if (signal(SIGINT, interrupt) == SIG_IGN)
 		signal(SIGINT, SIG_IGN);
+#ifdef SIGXCPU
+	signal(SIGXCPU, SIG_IGN);
+#endif /* SIGXCPU */
+#ifdef SIGXFSZ
+	signal(SIGXFSZ, SIG_IGN);
+#endif /* SIGXFSZ */
+
 	set_operators();	/* /etc/group snarfed */
 	getfstab();		/* /etc/fstab snarfed */
 
