@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.50 2002/08/18 20:52:05 stelian Exp $";
+	"$Id: traverse.c,v 1.51 2002/09/02 12:20:26 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -195,7 +195,7 @@ blockest(struct dinode const *dp)
 	 *	dump blocks (sizeest vs. blkest in the indirect block
 	 *	calculation).
 	 */
-	blkest = howmany((u_quad_t)dp->di_blocks*fs->blocksize, TP_BSIZE);
+	blkest = howmany((u_quad_t)dp->di_blocks * 512, TP_BSIZE);
 	i_size = dp->di_size + ((u_quad_t) dp->di_size_high << 32);
 	sizeest = howmany(i_size, TP_BSIZE);
 	if (blkest > sizeest)
