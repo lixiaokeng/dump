@@ -1,0 +1,179 @@
+#!/bin/bash
+#
+# This script will make a simple backup of the most critical partitions,
+# using the "dump" facility, into the backup partition. It will stop the
+# webserver, and recurse the sites directories making a tar mini-backup of
+# the database dirs. It will the restart the webserver, and start the
+# "dump" backup.
+#
+
+if [ "$2" = "nodumpdate" ]; then
+   UPDATEDDATE=""
+else
+   UPDATEDDATE="-u"
+fi
+
+if [ "$1" = "full" ]; then
+   DLEVEL="0"
+   BTYPE="full"
+elif [ "$1" = "inc" ]; then
+   DLEVEL="1"
+   BTYPE="inc"
+else
+   echo "Usage: $0 full|inc [nodumpdate]" 
+   exit 1
+fi
+
+
+#
+# Configuration Parameters
+#
+
+BACKUPPART="/backup"
+BACKUPDIR="current"
+DUMPLOGARCH="$BACKUPPART/backup.dump.log.gz"
+FSTODUMP="/ /var /home /mnt/hdb1 /usr"
+DUMPFILESMODE="0644"
+DUMPFILESOWN="root.root"
+
+#
+# Start
+# 
+
+echo
+echo "#####################################################################"
+echo "Starting backup."
+echo "#####################################################################"
+echo
+
+
+#
+#  Make full system backup
+#
+
+echo "Phase 1: ### Full System Dump Backup ###"
+echo "Phase 1: Using backup partition: $BACKUPPART"
+echo "Phase 1: Filesystems to dump: $FSTODUMP"
+
+echo -n "Phase 1: Remounting backup partition read-write ... "
+if ( mount $BACKUPPART -o remount,rw &> /dev/null ) then
+   echo "done."
+else
+   echo "failure!"
+   echo "Phase 1:  There were problems remounting $BACKUPPART in read-write mode!"
+   echo "Phase 1: Aborting Full System Dump Backup."
+   echo "Phase 1: Aborted, done."
+   echo "-------------------------------------------------------------------------------"
+   exit 1
+fi
+
+echo -n "Phase 1: Checking backup partition for correct dir structure ... "
+if [ -d $BACKUPPART/$BACKUPDIR -a -w $BACKUPPART/$BACKUPDIR ]; then
+   echo "done."
+
+   echo -n "Phase 1: Checking backup partition for available space ... "
+   SREQ=`for i in $FSTODUMP;do dump -$DLEVEL -S $i 2> /dev/null;done|awk '{x=x+$1/1048576} END {printf "%6.0f\n", x}'`
+   SAVAILFREE=`df --block-size=1048576 |grep -Ew $BACKUPPART|awk '{printf "%6.0f\n", $4}'`
+   SAVAILDEL=`du -s --block-size=1048576 $BACKUPPART/$BACKUPDIR/. |awk '{printf "%6.0f\n", $1}'`
+   SAVAIL=`expr $SAVAILFREE + $SAVAILDEL`
+
+   if [ `expr $SAVAIL - $SREQ` -gt "0" ]; then
+      echo "done."
+      echo "Phase 1:  Available: $SAVAIL MB Required: $SREQ MB."
+   else
+      echo "no enough space!"
+      echo "Phase 1:  There is not enough space left in $BACKUPPART for the backup!"
+      echo "Phase 1:  Available: $SAVAIL MB Required: $SREQ MB."
+      echo -n "Phase 1: Remounting backup partition read-only ... "
+      if ( mount $BACKUPPART -o remount,ro &> /dev/null ) then
+         echo "done."
+      else
+         echo "failure!"
+         echo "Phase 1:  There were problems remounting $BACKUPPART in read-only mode!"
+         echo "Phase 1: Aborting Full System Dump Backup."
+         echo "Phase 1: Aborted, done."
+         echo "-------------------------------------------------------------------------------"
+         exit 1
+      fi
+      echo "Phase 1: Aborting Full System Dump Backup."
+      echo "Phase 1: Aborted, done."
+      echo "-------------------------------------------------------------------------------"
+      exit 1
+   fi
+
+   echo -n "Phase 1: Deleting old files ... "
+   if [ `ls -la $BACKUPPART/$BACKUPDIR/|wc -l` -gt "3" ]; then
+      rm -f $BACKUPPART/$BACKUPDIR/* &> /dev/null
+      echo "done."
+   else
+      echo "no old files to delete."
+   fi
+
+   echo "Phase 1: Dumping filesystems ... "
+   for FS in $FSTODUMP
+   do
+      if [ "$FS" = "/" ]; then
+         FSNAME="root"
+      else
+         FSNAME=`echo $FS|tr / _|cut -b 2-`
+      fi
+      sync
+      echo -n "Phase 1:  Starting dump of $FSNAME ( $FS ) ... "
+      if ( dump -$DLEVEL $UPDATEDDATE -z -M -s 27306 -f $BACKUPPART/$BACKUPDIR/$FSNAME.$BTYPE. $FS &> $BACKUPPART/$BACKUPDIR/$FSNAME.log ) then
+         echo "done."
+      else
+         echo "problems!"
+         echo "Phase 1:  There where problems with the dump of $FSNAME ( $FS )."
+         echo "Phase 1:  Check logfile $BACKUPPART/$BACKUPDIR/$FSNAME.log for more info"
+         echo "Phase 1:  Also check log archive file $DUMPLOGARCH."
+      fi
+      cat $BACKUPPART/$BACKUPDIR/$FSNAME.log |gzip >> $DUMPLOGARCH
+      echo "-------------------------------------------------------------------------------" |gzip >> $DUMPLOGARCH
+   done
+
+   echo -n "Phase 1: Setting ownership and permissions of dump files ... "
+   chmod $DUMPFILESMODE $BACKUPPART/$BACKUPDIR/* $DUMPLOGARCH &> /dev/null
+   chown $DUMPFILESOWN $BACKUPPART/$BACKUPDIR/* $DUMPLOGARCH &> /dev/null
+   echo "done."
+
+   echo -n "Phase 1: Compressing dump log files ... "
+   gzip $BACKUPPART/$BACKUPDIR/*.log &> /dev/null
+   echo "done."
+   sync
+
+else
+   echo "problems!"
+   echo "Phase 1:  There are problems with the directory structure."
+   echo "Phase 1:  Check dirs: $BACKUPPART/$BACKUPDIR"
+   echo -n "Phase 1: Remounting backup partition read-only ... "
+   if ( mount $BACKUPPART -o remount,ro &> /dev/null ) then
+      echo "done."
+   else
+      echo "failure!"
+      echo "Phase 1:  There were problems remounting $BACKUPPART in read-only mode!"
+      echo "Phase 1: Aborting Full System Dump Backup."
+      echo "Phase 1: Aborted, done."
+      echo "-------------------------------------------------------------------------------"
+      exit 1
+   fi
+   echo "Phase 1: Aborting Full System Dump Backup."
+   echo "Phase 1: Aborted, done."
+   echo "-------------------------------------------------------------------------------"
+   exit 1
+fi
+
+echo -n "Phase 1: Remounting backup partition read-only ... "
+if ( mount $BACKUPPART -o remount,ro &> /dev/null ) then 
+   echo "done."
+else
+   echo "failure!"
+   echo "Phase 1:  There were problems remounting $BACKUPPART in read-only mode!"
+   echo "Phase 1: Aborting Full System Dump Backup."
+   echo "Phase 1: Aborted, done."
+   echo "-------------------------------------------------------------------------------"
+   exit 1
+fi
+
+echo "Phase 1: End of Full System Dump Backup."
+echo "Phase 1: Done."
+echo "-------------------------------------------------------------------------------"
