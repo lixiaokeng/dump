@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.31 2001/03/28 12:59:48 stelian Exp $";
+	"$Id: traverse.c,v 1.32 2001/04/10 13:42:22 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -366,6 +366,54 @@ mapfiles(dump_ino_t maxino, long *tapesize)
 	 */
 	SETINO(ROOTINO, dumpinomap);
 	return (anydirskipped);
+}
+#endif /* __linux__ */
+
+#ifdef __linux__
+int
+maponefile(dump_ino_t maxino, long *tapesize, char *directory)
+{
+	errcode_t retval;
+	ext2_ino_t dir_ino;
+	char dir_name [MAXPATHLEN];
+	int i, anydirskipped = 0;
+
+	/*
+	 * Mark every directory in the path as being dumped
+	 */
+	for (i = 0; i < strlen (directory); i++) {
+		if (directory[i] == '/') {
+			strncpy (dir_name, directory, i);
+			dir_name[i] = '\0';
+			retval = ext2fs_namei(fs, ROOTINO, ROOTINO, 
+					      dir_name, &dir_ino);
+			if (retval) {
+				com_err(disk, retval, 
+					"while translating %s", dir_name);
+				exit(X_ABORT);
+			}
+			mapfileino((dump_ino_t) dir_ino, 0,
+				   tapesize, &anydirskipped);
+		}
+	}
+	/*
+	 * Mark the final directory
+	 */
+	retval = ext2fs_namei(fs, ROOTINO, ROOTINO, directory, &dir_ino);
+	if (retval) {
+		com_err(disk, retval, "while translating %s", directory);
+		exit(X_ABORT);
+	}
+	mapfileino((dump_ino_t)dir_ino, 0, tapesize, &anydirskipped);
+
+	mapfileino(ROOTINO, 0, tapesize, &anydirskipped);
+
+	/*
+	 * Restore gets very upset if the root is not dumped,
+	 * so ensure that it always is dumped.
+	 */
+	SETINO(ROOTINO, dumpdirmap);
+	return anydirskipped;
 }
 #endif /* __linux__ */
 

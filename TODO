@@ -1,4 +1,4 @@
-$Id: TODO,v 1.17 2001/02/16 14:16:54 stelian Exp $
+$Id: TODO,v 1.18 2001/04/10 13:42:21 stelian Exp $
 
 Need to verify:
 ---------------
@@ -13,45 +13,39 @@ Urgent items (for the next stable version):
 All others:
 -----------
 
-1.	Make dump able to backup several directories and/or files in one
-	invocation, like the SunOS version.
+1.	More documentation? Examples, crontab?
 
-2.	More documentation? Examples, crontab?
-
-3.	Explore and correct dump problems on active filesystems 
+2.	Explore and correct dump problems on active filesystems 
 	(lseek/read negative count) (This should be OK as of 0.4b14.
 	Unfortunately, this seems to continue for a very few users).
 
-4.	Reimplement the ext2 specific code in a "backend" and
+3.	Reimplement the ext2 specific code in a "backend" and
 	make the dump code more generic. This would allow creation
 	of other backends for other filesystems. Implementing a 
 	(v)fat backend should be quite easy, as for BSD ffs (we
 	already have the code for this). The BSD code in traverse.c
 	(all those #ifdef _BSD) should go into the ffs backend.
 
-5.	Implement a DEBUG option which doesn't fork on each tape, making
+4.	Implement a DEBUG option which doesn't fork on each tape, making
 	it able to debug dump with gdb.
 
-6.	Add a compression mode using zlib on each file (see
-	http://www.cdrom.com/pub/infozip/zlib).
+5.	Extend the compression patch to use bzip2.
 
-7.	Make a bootable dump tape? I don't know if it is possible...
+6.	Make a bootable dump tape? I don't know if it is possible...
 
-8.	From Kjetil Torgrim Homme <kjetilho@ifi.uio.no>:
+7.	From Kjetil Torgrim Homme <kjetilho@ifi.uio.no>:
 	  a archive_file
 	     Archive file. Archive a dump table-of-contents  in
 	     the   specified   archive_file   to   be  used  by
 	     ufsrestore(1M) to determine whether a file  is  in
 	     the dump file that is being restored.
 
-9.	Modify (or get rid of) rmt in order to work with non Linux
+8.	Modify (or get rid of) rmt in order to work with non Linux
 	systems (limited succes has been reported). A good version 
 	of rmt to be looked at is part of star 
 	http://www.fokus.gmd.de/research/cc/glone/employees/joerg.schilling/private/star.html
 
-10.	Rework the makefiles, actually --prefix doesn't work in
-	configure. Maybe use automake in the same step ?
-
-11.	EA/ACL support in dump (requested by Michael Ju. Tokarev 
+9.	EA/ACL support in dump (requested by Michael Ju. Tokarev 
 	<mjt@tls.msk.ru>.
 
+10.	Better readline completition in restore (escape spaces etc).

@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.109 2001/04/10 12:46:53 stelian Exp $
+$Id: CHANGES,v 1.110 2001/04/10 13:42:21 stelian Exp $
 
 Changes between versions 0.4b21 and 0.4b22 (released ????????????????)
 ======================================================================
@@ -41,6 +41,10 @@ Changes between versions 0.4b21 and 0.4b22 (released ????????????????)
 	working on.  This saves hours when restoring single files from
 	large backups, saves the tapes and the drive's head. Use
 	--enable-qfa option of configure to compile in the QFA support.
+
+8.	Added the possibility to dump several files and directories
+	in a single invocation of dump. Thanks to Uwe Gohlke 
+	<uwe@ugsoft.de> for implementing this option.
 
 Changes between versions 0.4b20 and 0.4b21 (released January 13, 2001)
 ======================================================================

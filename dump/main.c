@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.42 2001/04/10 12:46:53 stelian Exp $";
+	"$Id: main.c,v 1.43 2001/04/10 13:42:22 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -124,6 +124,8 @@ main(int argc, char *argv[])
 	register int ch;
 	int i, anydirskipped, bflag = 0, Tflag = 0, honorlevel = 1;
 	dump_ino_t maxino;
+	struct stat statbuf;
+	dev_t filedev;
 #ifdef	__linux__
 	errcode_t retval;
 	char directory[MAXPATHLEN];
@@ -197,6 +199,7 @@ main(int argc, char *argv[])
 			if (ntrec > maxbsize/1024) {
 				msg("Please choose a blocksize <= %dkB\n",
 					maxbsize/1024);
+				msg("The ENTIRE dump is aborted.\n");
 				exit(X_STARTUP);
 			}
 			bflag = 1;
@@ -217,12 +220,14 @@ main(int argc, char *argv[])
 			                /* 04-Feb-00 ILC */
 		case 'e':		/* exclude an inode */
 			if (iexclude_num == IEXCLUDE_MAXNUM) {
-				(void)fprintf(stderr, "Too many -e options\n");
+				msg("Too many -e options\n");
+				msg("The ENTIRE dump is aborted.\n");
 				exit(X_STARTUP);
 			}
 		        iexclude_list[iexclude_num++] = numarg("inode to exclude",0L,0L);
 			if (iexclude_list[iexclude_num-1] <= ROOTINO) {
-				(void)fprintf(stderr, "Cannot exclude inode %ld\n", (long)iexclude_list[iexclude_num-1]);
+				msg("Cannot exclude inode %ld\n", (long)iexclude_list[iexclude_num-1]);
+				msg("The ENTIRE dump is aborted.\n");
 				exit(X_STARTUP);
 			}
 			msg("Added %d to exclude list\n",
@@ -291,8 +296,8 @@ main(int argc, char *argv[])
 		case 'T':		/* time of last dump */
 			spcl.c_ddate = unctime(optarg);
 			if (spcl.c_ddate < 0) {
-				(void)fprintf(stderr, "bad time \"%s\"\n",
-				    optarg);
+				msg("bad time \"%s\"\n", optarg);
+				msg("The ENTIRE dump is aborted.\n");
 				exit(X_STARTUP);
 			}
 			Tflag = 1;
@@ -322,26 +327,20 @@ main(int argc, char *argv[])
 	argv += optind;
 
 	if (argc < 1) {
-		(void)fprintf(stderr, "Must specify disk or filesystem\n");
+		msg("Must specify disk or filesystem\n");
+		msg("The ENTIRE dump is aborted.\n");
 		exit(X_STARTUP);
 	}
 	diskparam = *argv++;
 	if (strlen(diskparam) >= MAXPATHLEN) {
-		(void)fprintf(stderr, "Disk or filesystem name too long: %s\n", 
-			      diskparam);
+		msg("Disk or filesystem name too long: %s\n", diskparam);
+		msg("The ENTIRE dump is aborted.\n");
 		exit(X_STARTUP);
 	}
 	argc--;
-	if (argc >= 1) {
-		(void)fprintf(stderr, "Unknown arguments to dump:");
-		while (argc--)
-			(void)fprintf(stderr, " %s", *argv++);
-		(void)fprintf(stderr, "\n");
-		exit(X_STARTUP);
-	}
 	if (Tflag && uflag) {
-	        (void)fprintf(stderr,
-		    "You cannot use the T and u flags together.\n");
+	        msg("You cannot use the T and u flags together.\n");
+		msg("The ENTIRE dump is aborted.\n");
 		exit(X_STARTUP);
 	}
 	if (strcmp(tapeprefix, "-") == 0) {
@@ -374,13 +373,15 @@ main(int argc, char *argv[])
 		*tapeprefix++ = '\0';
 #ifdef RDUMP
 		if (index(tapeprefix, '\n')) {
-		    (void)fprintf(stderr, "invalid characters in tape\n");
-		    exit(X_STARTUP);
+			msg("invalid characters in tape\n");
+			msg("The ENTIRE dump is aborted.\n");
+			exit(X_STARTUP);
 		}
 		if (rmthost(host) == 0)
 			exit(X_STARTUP);
 #else
-		(void)fprintf(stderr, "remote dump not enabled\n");
+		msg("remote dump not enabled\n");
+		msg("The ENTIRE dump is aborted.\n");
 		exit(X_STARTUP);
 #endif
 	}
@@ -416,6 +417,7 @@ main(int argc, char *argv[])
 				   of LABEL= or UID= but it was not
 				   found */
 		msg("Cannot find a disk having %s\n", diskparam);
+		msg("The ENTIRE dump is aborted.\n");
 		exit(X_STARTUP);
 	}
 	/*
@@ -425,6 +427,16 @@ main(int argc, char *argv[])
 	 *	the file system name with or without the leading '/'.
 	 */
 	if ((dt = fstabsearch(disk)) != NULL) {
+		/* if found then only one parameter (i.e. partition)
+		 * is allowed */
+		if (argc >= 1) {
+			(void)fprintf(stderr, "Unknown arguments to dump:");
+			while (argc--)
+				(void)fprintf(stderr, " %s", *argv++);
+			(void)fprintf(stderr, "\n");
+			msg("The ENTIRE dump is aborted.\n");
+			exit(X_STARTUP);
+		}
 		disk = rawname(dt->fs_spec);
 		(void)strncpy(spcl.c_dev, dt->fs_spec, NAMELEN);
 		(void)strncpy(spcl.c_filesys, dt->fs_file, NAMELEN);
@@ -470,11 +482,13 @@ main(int argc, char *argv[])
 
 	if (directory[0] != 0) {
 		if (level != '0') {
-			(void)fprintf(stderr, "Only level 0 dumps are allowed on a subdirectory\n");
+			msg("Only level 0 dumps are allowed on a subdirectory\n");
+			msg("The ENTIRE dump is aborted.\n");
 			exit(X_STARTUP);
 		}
 		if (uflag) {
-			(void)fprintf(stderr, "You can't update the dumpdates file when dumping a subdirectory\n");
+			msg("You can't update the dumpdates file when dumping a subdirectory\n");
+			msg("The ENTIRE dump is aborted.\n");
 			exit(X_STARTUP);
 		}
 	}
@@ -519,16 +533,19 @@ main(int argc, char *argv[])
 	if (retval) {
 		com_err(disk, retval, "while opening filesystem");
 		if (retval == EXT2_ET_REV_TOO_HIGH)
-			printf ("Get a newer version of dump!\n");
+			msg("Get a newer version of dump!\n");
+		msg("The ENTIRE dump is aborted.\n");
 		exit(X_STARTUP);
 	}
 	if (fs->super->s_rev_level > DUMP_CURRENT_REV) {
 		com_err(disk, retval, "while opening filesystem");
-		printf ("Get a newer version of dump!\n");
+		msg("Get a newer version of dump!\n");
+		msg("The ENTIRE dump is aborted.\n");
 		exit(X_STARTUP);
 	}
 	if ((diskfd = open(disk, O_RDONLY)) < 0) {
 		msg("Cannot open %s\n", disk);
+		msg("The ENTIRE dump is aborted.\n");
 		exit(X_STARTUP);
 	}
 	/* if no user label specified, use ext2 filesystem label if available */
@@ -556,6 +573,7 @@ main(int argc, char *argv[])
 #else	/* __linux __*/
 	if ((diskfd = open(disk, O_RDONLY)) < 0) {
 		msg("Cannot open %s\n", disk);
+		msg("The ENTIRE dump is aborted.\n");
 		exit(X_STARTUP);
 	}
 	sync();
@@ -600,8 +618,51 @@ main(int argc, char *argv[])
 #ifdef	__linux__
 	if (directory[0] == 0)
 		anydirskipped = mapfiles(maxino, &tapesize);
-	else
-		anydirskipped = mapfilesfromdir(maxino, &tapesize, directory);
+	else {
+		if (stat(pathname, &statbuf) == -1) {
+			msg("File cannot be accessed (%s).\n", pathname);
+			msg("The ENTIRE dump is aborted.\n");
+			exit(X_STARTUP);
+		}
+		filedev = statbuf.st_dev;
+		if (!(statbuf.st_mode & S_IFDIR))	/* is a file */
+			anydirskipped = maponefile(maxino, &tapesize, 
+						   directory);
+		else
+			anydirskipped = mapfilesfromdir(maxino, &tapesize, 
+							directory);
+	}
+	while (argc--) {
+		int anydirskipped2;
+		char *p = *argv;
+		/* check if file is available */
+		if (stat(p, &statbuf) == -1) {
+			msg("File cannot be accessed (%s).\n", p);
+			msg("The ENTIRE dump is aborted.\n");
+			exit(X_STARTUP);
+		}
+		/* check if file is on same unix partiton as the first 
+		 * argument */
+		if (statbuf.st_dev != filedev) {
+			msg("Files are not on same file system (%s).\n", p);
+			msg("The ENTIRE dump is aborted.\n");
+			exit(X_STARTUP);
+		}
+		/* check if file is a directory */
+		if (!(statbuf.st_mode & S_IFDIR))
+			anydirskipped2 = maponefile(maxino, &tapesize, 
+						    p+strlen(dt->fs_file));
+		else
+			/* read directory inodes.
+			 * NOTE: nested directories are not recognized 
+			 * so inodes may be umped twice!
+			 */
+			anydirskipped2 = mapfilesfromdir(maxino, &tapesize, 
+							 p+strlen(dt->fs_file));
+		if (!anydirskipped)
+			anydirskipped = anydirskipped2;
+		argv++;
+	}		
 #else
 	anydirskipped = mapfiles(maxino, &tapesize);
 #endif

@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.25 2001/04/10 12:46:53 stelian Exp $
+.\"	$Id: dump.8.in,v 1.26 2001/04/10 13:42:22 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -53,7 +53,7 @@
 .Op Fl s Ar feet
 .Op Fl T Ar date
 .Op Fl z Ar compression level
-.Ar file-to-dump
+.Ar files-to-dump
 .Nm dump
 .Op Fl W Li \&| Fl w
 .Pp
@@ -84,15 +84,17 @@ tape size, density and/or block count options below.
 By default, the same output file name is used for each volume
 after prompting the operator to change media.
 .Pp
-.Ar file-to-dump
+.Ar files-to-dump
 is either a mountpoint of a filesystem
-or a directory to be backed up as a subset of a filesystem.
+or a list of files and directories to be backed up as a subset of a 
+filesystem.
 In the former case, either the path to a mounted filesystem
 or the device of an unmounted filesystem can be used.
 In the latter case, certain restrictions are placed on the backup:
 .Fl u
-is not allowed and the only dump level that is supported is
-.Fl 0 .
+is not allowed, the only dump level that is supported is
+.Fl 0 
+and all the files and directories must reside on the same filesystem.
 .Pp
 The following options are supported by
 .Nm Ns :

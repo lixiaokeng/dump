@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: dump.h,v 1.23 2001/04/10 12:46:53 stelian Exp $
+ *	$Id: dump.h,v 1.24 2001/04/10 13:42:22 stelian Exp $
  */
 
 /*-
@@ -141,6 +141,7 @@ long	blockest __P((struct dinode const *dp));
 int	mapfiles __P((dump_ino_t maxino, long *tapesize));
 #ifdef	__linux__
 int	mapfilesfromdir __P((dump_ino_t maxino, long *tapesize, char *directory));
+int	maponefile __P((dump_ino_t maxino, long *tapesize, char *directory));
 #endif
 int	mapdirs __P((dump_ino_t maxino, long *tapesize));
 
