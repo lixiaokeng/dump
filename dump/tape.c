@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.41 2001/04/10 12:46:53 stelian Exp $";
+	"$Id: tape.c,v 1.42 2001/04/12 13:14:15 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -994,6 +994,8 @@ enslave(void)
 			doslave(cmd[0], i);
 			Exit(X_FINOK);
 		}
+		else
+			close(cmd[0]);
 	}
 
 #ifdef	LINUX_FORK_BUG
