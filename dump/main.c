@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.77 2002/11/15 09:49:40 stelian Exp $";
+	"$Id: main.c,v 1.78 2002/12/12 11:49:35 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -49,13 +49,13 @@ static const char rcsid[] =
 #include <ctype.h>
 #include <compaterr.h>
 #include <fcntl.h>
-#include <fstab.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <mntent.h>
 
 #include <sys/param.h>
 #include <sys/time.h>
@@ -198,7 +198,7 @@ main(int argc, char *argv[])
 	dump_ino_t ino;
 	int dirty;
 	struct dinode *dp;
-	struct	fstab *dt;
+	struct mntent *dt;
 	char *map;
 	int ch;
 	int i, anydirskipped;
@@ -570,9 +570,9 @@ main(int argc, char *argv[])
 			msg("The ENTIRE dump is aborted.\n");
 			exit(X_STARTUP);
 		}
-		disk = rawname(dt->fs_spec);
-		(void)strncpy(spcl.c_dev, dt->fs_spec, NAMELEN);
-		(void)strncpy(spcl.c_filesys, dt->fs_file, NAMELEN);
+		disk = rawname(dt->mnt_fsname);
+		(void)strncpy(spcl.c_dev, dt->mnt_fsname, NAMELEN);
+		(void)strncpy(spcl.c_filesys, dt->mnt_dir, NAMELEN);
 	} else {
 #ifdef	__linux__
 #ifdef	HAVE_REALPATH
@@ -584,9 +584,9 @@ main(int argc, char *argv[])
 		 * a filesystem specified in fstab. Search for it.
 		 */
 		if ((dt = fstabsearch(pathname)) != NULL) {
-			disk = rawname(dt->fs_spec);
-			(void)strncpy(spcl.c_dev, dt->fs_spec, NAMELEN);
-			(void)strncpy(spcl.c_filesys, dt->fs_file, NAMELEN);
+			disk = rawname(dt->mnt_fsname);
+			(void)strncpy(spcl.c_dev, dt->mnt_fsname, NAMELEN);
+			(void)strncpy(spcl.c_filesys, dt->mnt_dir, NAMELEN);
 		} else {
 			/*
 			 * The argument was not found in the fstab
@@ -595,11 +595,11 @@ main(int argc, char *argv[])
 			dt = fstabsearchdir(pathname, directory);
 			if (dt != NULL) {
 				char name[MAXPATHLEN];
-				(void)strncpy(spcl.c_dev, dt->fs_spec, NAMELEN);
+				(void)strncpy(spcl.c_dev, dt->mnt_fsname, NAMELEN);
 				(void)snprintf(name, sizeof(name), "%s (dir %s)",
-					      dt->fs_file, directory);
+					      dt->mnt_dir, directory);
 				(void)strncpy(spcl.c_filesys, name, NAMELEN);
-				disk = rawname(dt->fs_spec);
+				disk = rawname(dt->mnt_fsname);
 			} else {
 				(void)strncpy(spcl.c_dev, disk, NAMELEN);
 				(void)strncpy(spcl.c_filesys, "an unlisted file system",
@@ -798,14 +798,14 @@ main(int argc, char *argv[])
 		/* check if file is a directory */
 		if (!(statbuf.st_mode & S_IFDIR))
 			anydirskipped2 = maponefile(maxino, &tapesize, 
-						    p+strlen(dt->fs_file));
+						    p+strlen(dt->mnt_dir));
 		else
 			/* read directory inodes.
 			 * NOTE: nested directories are not recognized 
 			 * so inodes may be umped twice!
 			 */
 			anydirskipped2 = mapfilesfromdir(maxino, &tapesize, 
-							 p+strlen(dt->fs_file));
+							 p+strlen(dt->mnt_dir));
 		if (!anydirskipped)
 			anydirskipped = anydirskipped2;
 		argv++;

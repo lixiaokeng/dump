@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.202 2002/12/09 10:53:59 stelian Exp $
+$Id: CHANGES,v 1.203 2002/12/12 11:49:35 stelian Exp $
 
 Changes between versions 0.4b32 and 0.4b33 (released ?????????????????)
 =======================================================================
@@ -14,6 +14,13 @@ Changes between versions 0.4b32 and 0.4b33 (released ?????????????????)
 3.	Fixed the "ACL won't be dumped" warning message (which showed
 	an extra, unrelated error message). Thanks to Dragan Krnic
 	<dkrnic@lycos.com> for reporting this bug.
+
+4.	Made dump look first into /etc/fstab, then into /etc/mtab 
+	when searching for filesystem paths. Also fixed some problems
+	caused by binding mounts or multiple block device mounts.
+	Thanks to Matus Uhlar <uhlar@fantomas.sk>, Elliott Mitchell
+	<ehem@m5p.com>, Greg Edwards <gedwards@users.sourceforge.net>.
+	(fixes Debian bugs #147086 and #160305, Sourceforge bug #618699)
 
 Changes between versions 0.4b31 and 0.4b32 (released November 15, 2002)
 =======================================================================

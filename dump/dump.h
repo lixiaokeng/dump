@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: dump.h,v 1.40 2002/07/29 12:00:33 stelian Exp $
+ *	$Id: dump.h,v 1.41 2002/12/12 11:49:35 stelian Exp $
  */
 
 /*-
@@ -214,9 +214,11 @@ void	do_exclude_ino __P((dump_ino_t ino, const char *));
 #define DIALUP	"ttyd"			/* prefix for dialups */
 #endif
 
-struct	fstab *fstabsearch __P((const char *key));	/* search fs_file and fs_spec */
+#include <mntent.h>
+
+struct	mntent *fstabsearch __P((const char *key));	/* search fs_file and fs_spec */
 #ifdef	__linux__
-struct	fstab *fstabsearchdir __P((const char *key, char *dir));	/* search fs_file and fs_spec */
+struct	mntent *fstabsearchdir __P((const char *key, char *dir));	/* search fs_file and fs_spec */
 #endif
 
 /*
@@ -225,7 +227,7 @@ struct	fstab *fstabsearchdir __P((const char *key, char *dir));	/* search fs_fil
  */
 struct dumpdates {
 	char	dd_name[MAXPATHLEN+3];
-	struct fstab *dd_fstab;
+	struct mntent *dd_fstab;
 	char	dd_level;
 	time_t	dd_ddate;
 };
@@ -261,15 +263,6 @@ extern int errno;
 #define	DUMP_CURRENT_REV	1
 
 int dump_fs_open(const char *disk, ext2_filsys *fs);
-#endif
-
-#ifndef	__linux__
-#ifndef	_PATH_UTMP
-#define	_PATH_UTMP	"/etc/utmp"
-#endif
-#ifndef	_PATH_FSTAB
-#define	_PATH_FSTAB	"/etc/fstab"
-#endif
 #endif
 
 #ifdef sunos

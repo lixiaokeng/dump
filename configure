@@ -2503,7 +2503,7 @@ fi
 echo "$ac_t""$ac_cv_type_quad_t" 1>&6
 if test $ac_cv_type_quad_t = no; then
   cat >> confdefs.h <<\EOF
-#define quad_t __s64
+#define quad_t int64_t
 EOF
 
 fi
@@ -2536,7 +2536,7 @@ fi
 echo "$ac_t""$ac_cv_type_u_quad_t" 1>&6
 if test $ac_cv_type_u_quad_t = no; then
   cat >> confdefs.h <<\EOF
-#define u_quad_t __u64
+#define u_quad_t uint64_t
 EOF
 
 fi

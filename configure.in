@@ -429,8 +429,8 @@ fi
 dnl
 dnl Check for types
 dnl
-AC_CHECK_TYPE(quad_t, __s64)
-AC_CHECK_TYPE(u_quad_t, __u64)
+AC_CHECK_TYPE(quad_t, int64_t)
+AC_CHECK_TYPE(u_quad_t, uint64_t)
 
 dnl
 dnl Compute top_buildir

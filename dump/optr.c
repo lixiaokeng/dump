@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: optr.c,v 1.32 2002/07/19 14:57:39 stelian Exp $";
+	"$Id: optr.c,v 1.33 2002/12/12 11:49:35 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -51,7 +51,8 @@ static const char rcsid[] =
 #include <time.h>
 
 #include <errno.h>
-#include <fstab.h>
+#include <mntent.h>
+#include <paths.h>
 #include <grp.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -423,67 +424,98 @@ quit(fmt, va_alist)
  *	we don't actually do it
  */
 
-static struct fstab *
-allocfsent(struct fstab *fs)
-{
-	struct fstab *new;
-
-	new = (struct fstab *)malloc(sizeof (*fs));
-	if (new == NULL)
-		quit("%s\n", strerror(errno));
-	if (strlen(fs->fs_file) > 1 && fs->fs_file[strlen(fs->fs_file) - 1] == '/')
-		fs->fs_file[strlen(fs->fs_file) - 1] = '\0';
-	if ((new->fs_file = strdup(fs->fs_file)) == NULL ||
-	    (new->fs_type = strdup(fs->fs_type)) == NULL ||
-	    (new->fs_vfstype = strdup(fs->fs_vfstype)) == NULL ||
-	    (new->fs_spec = strdup(fs->fs_spec)) == NULL)
-		quit("%s\n", strerror(errno));
-	new->fs_passno = fs->fs_passno;
-	new->fs_freq = fs->fs_freq;
-	return (new);
-}
-
 struct	pfstab {
 	struct	pfstab *pf_next;
 	struct  dumpdates *pf_dd;
-	struct	fstab *pf_fstab;
+	struct	mntent *pf_mntent;
 };
 
 static	struct pfstab *table;
 
+static struct mntent *
+allocfsent(struct mntent *fs)
+{
+	struct mntent *new;
+	const char *disk;
+	struct stat buf, tabbuf;
+	struct pfstab *tabpf;
+	struct mntent *tabfs;
+
+	new = (struct mntent *)malloc(sizeof (*fs));
+	if (new == NULL)
+		quit("%s\n", strerror(errno));
+
+	/* Translade UUID=, LABEL= ... */
+	disk = get_device_name(fs->mnt_fsname);
+	if (disk == NULL)
+		quit("Cannot find a disk having %s\n", fs->mnt_fsname);
+
+	/* Discard non block devices */
+	if (stat(disk, &buf) != 0 || !S_ISBLK(buf.st_mode)) {
+		free(new);
+		return NULL;
+	}
+
+	/* Discard same major/minor devices */
+	for (tabpf = table; tabpf != NULL; tabpf = tabpf->pf_next) {
+		tabfs = tabpf->pf_mntent;
+		if (stat(tabfs->mnt_fsname, &tabbuf) != 0)
+			/* should not happen */
+			quit("Cannot access %s\n", tabfs->mnt_fsname);
+		if (tabbuf.st_rdev == buf.st_rdev) {
+			free(new);
+			return NULL;
+		}
+	}
+		
+	if (strlen(fs->mnt_dir) > 1 && fs->mnt_dir[strlen(fs->mnt_dir) - 1] == '/')
+		fs->mnt_dir[strlen(fs->mnt_dir) - 1] = '\0';
+	if ((new->mnt_dir = strdup(fs->mnt_dir)) == NULL ||
+	    (new->mnt_type = strdup(fs->mnt_type)) == NULL ||
+	    (new->mnt_opts = strdup(fs->mnt_opts)) == NULL ||
+	    (new->mnt_fsname = strdup(disk)) == NULL)
+		quit("%s\n", strerror(errno));
+	new->mnt_passno = fs->mnt_passno;
+	new->mnt_freq = fs->mnt_freq;
+	return (new);
+}
+
 void
 getfstab(void)
 {
-	struct fstab *fs;
+	struct mntent *fs;
 	struct pfstab *pf;
 	struct pfstab *pfold = NULL;
+	FILE *mntfp;
+	char *mnttables[] = { _PATH_MNTTAB, _PATH_MOUNTED, 0 };
+	int i;
 
-	if (setfsent() == 0) {
-		msg("Can't open %s for dump table information: %s\n",
-		    _PATH_FSTAB, strerror(errno));
-		return;
-	}
-	while ((fs = getfsent()) != NULL) {
-		if (strcmp(fs->fs_type, FSTAB_RW) &&
-		    strcmp(fs->fs_type, FSTAB_RO) &&
-		    strcmp(fs->fs_type, FSTAB_RQ))
+	for (i = 0; mnttables[i]; i++) {
+		mntfp = setmntent(mnttables[i], "r");
+		if (mntfp == NULL) {
+			msg("Can't open %s for dump table information: %s\n",
+			    mnttables[i], strerror(errno));
 			continue;
-		fs = allocfsent(fs);
-		fs->fs_passno = 0;
-		if ((pf = (struct pfstab *)malloc(sizeof (*pf))) == NULL)
-			quit("%s\n", strerror(errno));
-		pf->pf_fstab = fs;
-		pf->pf_next = NULL;
-
-		/* keep table in /etc/fstab order for use with -w and -W */
-		if (pfold) {
-			pfold->pf_next = pf;
-			pfold = pf;
-		} else
-			pfold = table = pf;
-
+		}
+		while ((fs = getmntent(mntfp)) != NULL) {
+			fs = allocfsent(fs);
+			if (!fs)
+				continue;
+			fs->mnt_passno = 0;
+			if ((pf = (struct pfstab *)malloc(sizeof (*pf))) == NULL)
+				quit("%s\n", strerror(errno));
+			pf->pf_mntent = fs;
+			pf->pf_next = NULL;
+	
+			/* keep table in /etc/fstab order for use with -w and -W */
+			if (pfold) {
+				pfold->pf_next = pf;
+				pfold = pf;
+			} else
+				pfold = table = pf;
+		}
+		(void) endmntent(mntfp);
 	}
-	(void) endfsent();
 }
 
 /*
@@ -497,27 +529,27 @@ getfstab(void)
  *
  * The file name can omit the leading '/'.
  */
-struct fstab *
+struct mntent *
 fstabsearch(const char *key)
 {
 	struct pfstab *pf;
-	struct fstab *fs;
+	struct mntent *fs;
 	const char *rn;
 
 	for (pf = table; pf != NULL; pf = pf->pf_next) {
-		fs = pf->pf_fstab;
-		if (strcmp(fs->fs_file, key) == 0 ||
-		    strcmp(fs->fs_spec, key) == 0)
+		fs = pf->pf_mntent;
+		if (strcmp(fs->mnt_dir, key) == 0 ||
+		    strcmp(fs->mnt_fsname, key) == 0)
 			return (fs);
-		rn = rawname(fs->fs_spec);
+		rn = rawname(fs->mnt_fsname);
 		if (rn != NULL && strcmp(rn, key) == 0)
 			return (fs);
 		if (key[0] != '/') {
-			if (*fs->fs_spec == '/' &&
-			    strcmp(fs->fs_spec + 1, key) == 0)
+			if (*fs->mnt_fsname == '/' &&
+			    strcmp(fs->mnt_fsname + 1, key) == 0)
 				return (fs);
-			if (*fs->fs_file == '/' &&
-			    strcmp(fs->fs_file + 1, key) == 0)
+			if (*fs->mnt_dir == '/' &&
+			    strcmp(fs->mnt_dir + 1, key) == 0)
 				return (fs);
 		}
 	}
@@ -525,12 +557,12 @@ fstabsearch(const char *key)
 }
 
 #ifdef	__linux__
-struct fstab *
+struct mntent *
 fstabsearchdir(const char *key, char *directory)
 {
 	struct pfstab *pf;
-	struct fstab *fs;
-	struct fstab *found_fs = NULL;
+	struct mntent *fs;
+	struct mntent *found_fs = NULL;
 	unsigned int size = 0;
 	struct stat buf;
 
@@ -538,14 +570,14 @@ fstabsearchdir(const char *key, char *directory)
 		return NULL;
 
 	for (pf = table; pf != NULL; pf = pf->pf_next) {
-		fs = pf->pf_fstab;
-		if (strlen(fs->fs_file) > size &&
-		    strlen(key) > strlen(fs->fs_file) &&
-		    strncmp(fs->fs_file, key, strlen(fs->fs_file)) == 0 &&
-		    (key[strlen(fs->fs_file)] == '/' ||
-		     fs->fs_file[strlen(fs->fs_file) - 1] == '/')) {
+		fs = pf->pf_mntent;
+		if (strlen(fs->mnt_dir) > size &&
+		    strlen(key) > strlen(fs->mnt_dir) &&
+		    strncmp(fs->mnt_dir, key, strlen(fs->mnt_dir)) == 0 &&
+		    (key[strlen(fs->mnt_dir)] == '/' ||
+		     fs->mnt_dir[strlen(fs->mnt_dir) - 1] == '/')) {
 			found_fs = fs;
-			size = strlen(fs->fs_file);
+			size = strlen(fs->mnt_dir);
 		}
 	}
 	if (found_fs != NULL) {
@@ -605,7 +637,7 @@ lastdump(char arg) /* w ==> just what to do; W ==> most recent dumps */
 	initdumptimes(0);	/* dumpdates input */
 	if (ddatev == NULL && table == NULL) {
 		(void) printf("No %s or %s file found\n",
-			      _PATH_FSTAB, _PATH_DUMPDATES);
+			      _PATH_MNTTAB, _PATH_DUMPDATES);
 		return;
 	}
 
@@ -624,7 +656,7 @@ lastdump(char arg) /* w ==> just what to do; W ==> most recent dumps */
 
 		lastname = "??";
 		ITITERATE(i, dtwalk) {
-			struct fstab *dt;
+			struct mntent *dt;
 			if (strncmp(lastname, dtwalk->dd_name,
 				sizeof(dtwalk->dd_name)) == 0)
 				continue;
@@ -636,15 +668,15 @@ lastdump(char arg) /* w ==> just what to do; W ==> most recent dumps */
 				 * A positive fs_freq means this
 				 * filesystem needs to be dumped.
 				 */
-				dt->fs_passno = dtwalk->dd_ddate;
-				if (dt->fs_freq > 0 && (dtwalk->dd_ddate <
-				    tnow - (dt->fs_freq * 86400)))
-					dt->fs_freq = dtwalk->dd_level;
+				dt->mnt_passno = dtwalk->dd_ddate;
+				if (dt->mnt_freq > 0 && (dtwalk->dd_ddate <
+				    tnow - (dt->mnt_freq * 86400)))
+					dt->mnt_freq = dtwalk->dd_level;
 				else
-					dt->fs_freq = -dtwalk->dd_level;
+					dt->mnt_freq = -dtwalk->dd_level;
 #ifdef FDEBUG
 				printf("%s fs_freq set to %d\n", lastname,
-					dt->fs_freq);
+					dt->mnt_freq);
 #endif
 			}
 		}
@@ -652,19 +684,19 @@ lastdump(char arg) /* w ==> just what to do; W ==> most recent dumps */
 
 	/* print in /etc/fstab order only those filesystem types we can dump */
 	for (pf = table; pf != NULL; pf = pf->pf_next) {
-		struct fstab *dt = pf->pf_fstab;
+		struct mntent *dt = pf->pf_mntent;
 		char **type;
 
 		for (type = fstypes; *type != NULL; type++) {
-			if (strncmp(dt->fs_vfstype, *type,
-				    sizeof(dt->fs_vfstype)) == 0) {
-				const char *disk = get_device_name(dt->fs_spec);
-				print_wmsg(arg, dt->fs_freq > 0,
-					   disk ? disk : dt->fs_spec,
-					   dt->fs_freq < 0 ? -dt->fs_freq :
-							      dt->fs_freq,
-					   dt->fs_file,
-					   dt->fs_passno);
+			if (strncmp(dt->mnt_type, *type,
+				    sizeof(dt->mnt_type)) == 0) {
+				const char *disk = get_device_name(dt->mnt_fsname);
+				print_wmsg(arg, dt->mnt_freq > 0,
+					   disk ? disk : dt->mnt_fsname,
+					   dt->mnt_freq < 0 ? -dt->mnt_freq :
+							      dt->mnt_freq,
+					   dt->mnt_dir,
+					   dt->mnt_passno);
 			}
 		}
 	}

@@ -3,10 +3,10 @@
 /* Define if you have the ANSI C header files.  */
 #undef STDC_HEADERS
 
-/* Define to __s64 if <sys/types.h> does not define */
+/* Define to int64_t if <sys/types.h> does not define */
 #undef quad_t
 
-/* Define to __u64 if <sys/types.h> does not define */
+/* Define to uint64_t if <sys/types.h> does not define */
 #undef u_quad_t
 
 /* Define if you have the err function.  */
