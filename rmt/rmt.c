@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: rmt.c,v 1.7 1999/11/11 16:14:01 tiniou Exp $";
+	"$Id: rmt.c,v 1.8 1999/11/21 02:24:47 tiniou Exp $";
 #endif /* not linux */
 
 /*
@@ -58,12 +58,6 @@ static const char rcsid[] =
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#ifdef __linux__
-#include <linux/ext2_fs.h>
-#include <ext2fs/ext2fs.h>
-#include <bsdcompat.h>
-#endif
 
 int	tape = -1;
 

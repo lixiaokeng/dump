@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.7 1999/11/02 09:35:56 tiniou Exp $";
+	"$Id: tape.c,v 1.8 1999/11/21 02:24:47 tiniou Exp $";
 #endif /* not lint */
 
 #ifdef __linux__
@@ -81,9 +81,10 @@ static const char rcsid[] =
 int	write(), read();
 #endif
 
-#ifdef	__linux__
+#ifdef __linux__
 #include <ext2fs/ext2fs.h>
 #endif
+
 #include "dump.h"
 
 int	writesize;		/* size of malloc()ed buffer for tape */
@@ -908,9 +909,9 @@ doslave(int cmd, int slave_number)
 		quit("slave couldn't reopen disk: %s\n", strerror(errno));
 #ifdef	__linux__
 	ext2fs_close(fs);
-	retval = ext2fs_open(disk, 0, 0, 0, unix_io_manager, &fs);
+	retval = dump_fs_open(disk, &fs);
 	if (retval)
-		quit("slave couldn't reopen disk: %s\n", strerror(errno));
+		quit("slave couldn't reopen disk: %s\n", error_message(retval));
 #endif	/* __linux__ */
 
 	/*

@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.9 1999/11/21 00:17:16 tiniou Exp $";
+	"$Id: traverse.c,v 1.10 1999/11/21 02:24:47 tiniou Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -99,6 +99,35 @@ static	void dmpindir __P((ino_t ino, daddr_t blk, int level, fsizeT *size));
 static	int searchdir __P((ino_t ino, daddr_t blkno, long size, long filesize));
 #endif
 static	void mapfileino __P((ino_t ino, long *tapesize, int *dirskipped));
+
+/* #define EXT3_FEATURE_INCOMPAT_RECOVER */
+
+int dump_fs_open(const char *disk, ext2_filsys *fs)
+{
+	int retval;
+	struct ext2fs_sb *s;
+
+#ifdef EXT3_FEATURE_INCOMPAT_RECOVER
+	retval = ext2fs_open(disk, EXT2_FLAG_FORCE, 0, 0, unix_io_manager, fs);
+#else
+	retval = ext2fs_open(disk, 0, 0, 0, unix_io_manager, fs);
+#endif
+	if (!retval) {
+		s = (struct ext2fs_sb *) (*fs)->super;
+		if ((s->s_feature_compat & ~EXT2_LIB_FEATURE_COMPAT_SUPP) ||
+#ifdef EXT3_FEATURE_INCOMPAT_RECOVER
+		    (s->s_feature_incompat & ~(EXT3_FEATURE_INCOMPAT_RECOVER | EXT2_LIB_FEATURE_INCOMPAT_SUPP))) {
+#else
+		    (s->s_feature_incompat & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP)) {
+#endif
+			retval = EXT2_ET_UNSUPP_FEATURE;
+		}
+		else if (s->s_feature_ro_compat & ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP) {
+			retval = EXT2_ET_RO_UNSUPP_FEATURE;
+		}
+	}
+	return retval;
+}
 
 /*
  * This is an estimation of the number of TP_BSIZE blocks in the file.

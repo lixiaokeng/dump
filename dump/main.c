@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.6 1999/10/13 09:57:19 stelian Exp $";
+	"$Id: main.c,v 1.7 1999/11/21 02:24:47 tiniou Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -414,7 +414,7 @@ main(int argc, char *argv[])
 	msg("Label: %s\n", labelstr);
 
 #ifdef	__linux__
-	retval = ext2fs_open(disk, 0, 0, 0, unix_io_manager, &fs);
+	retval = dump_fs_open(disk, &fs);
 	if (retval) {
 		com_err(disk, retval, "while opening filesystem");
 		if (retval == EXT2_ET_REV_TOO_HIGH)

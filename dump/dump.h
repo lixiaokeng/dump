@@ -4,7 +4,7 @@
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *	Stelian Pop <pop@cybercable.fr>, 1999
  *
- *	$Id: dump.h,v 1.6 1999/10/13 09:57:19 stelian Exp $
+ *	$Id: dump.h,v 1.7 1999/11/21 02:24:47 tiniou Exp $
  */
 
 /*-
@@ -229,6 +229,8 @@ extern int errno;
 
 #ifdef	__linux__
 #define	DUMP_CURRENT_REV	1
+
+int dump_fs_open(const char *disk, ext2_filsys *fs);
 #endif
 
 #ifndef	__linux__

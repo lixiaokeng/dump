@@ -1,6 +1,6 @@
 Summary: Programs for backing up and restoring filesystems.
 Name: dump
-Version: 0.4b9
+Version: 0.4b10
 Release: 1
 Copyright: UCB
 Group: Applications/Archiving
@@ -117,6 +117,9 @@ rm -rf $RPM_BUILD_ROOT
 /sbin/rrestore.static
 
 %changelog
+* Sun Nov 21 1999 Stelian Pop <pop@cybercable.fr>
+- dump 0.4b10 released, first packaging.
+
 * Thu Nov 11 1999 Stelian Pop <pop@cybercable.fr>
 - make static versions also for rescue purposes.
 

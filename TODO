@@ -1,4 +1,4 @@
-$Id: TODO,v 1.7 1999/11/21 00:17:12 tiniou Exp $
+$Id: TODO,v 1.8 1999/11/21 02:24:45 tiniou Exp $
 
 Need to verify:
 ---------------
@@ -30,4 +30,13 @@ All others:
 
 5.	Implement a DEBUG option which doesn't fork on each tape, making
 	it able to debug dump with gdb.
+
+6.	Add a compression mode using zlib on each file (see
+	http://www.cdrom.com/pub/infozip/zlib).
+
+7.	Add some support in dump and restore for numbering in sequence
+	the output files (when dumping to a file). Something like -N <prefix>
+	which creates (or reads) <prefix>-1, <prefix>-2 etc...
+
+8.	Make a bootable dump tape? I don't know if it is possible...
 
