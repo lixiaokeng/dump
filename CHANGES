@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.22 1999/11/22 21:39:37 tiniou Exp $
+$Id: CHANGES,v 1.23 1999/12/05 18:21:21 tiniou Exp $
 
 Changes between versions 0.4b10 and 0.4b11 (released ????????????????)
 ======================================================================
@@ -17,6 +17,10 @@ Changes between versions 0.4b10 and 0.4b11 (released ????????????????)
 	the output files will be named <prefix>001, <prefix>002 etc. With
 	the 'M' flag, restore automatically selects the right file without
 	asking to enter a new tape each time.
+
+4.	Fixed a memory leak which was causing dump to grow very big
+	(270MB when dumping a 10GB filesystem...). Thanks to Zaphod 
+	Beeblebrox <zaphod@netrider.org.au> for reporting the bug.
 
 Changes between versions 0.4b9 and 0.4b10 (released November 21, 1999)
 ======================================================================

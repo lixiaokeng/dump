@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.10 1999/11/21 02:24:47 tiniou Exp $";
+	"$Id: traverse.c,v 1.11 1999/12/05 18:21:23 tiniou Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -759,6 +759,7 @@ dumpino(struct dinode *dp, ino_t ino)
 	if (bc.cnt > 0) {
 		blksout (bc.buf, bc.cnt, bc.ino);
 	}
+	free(bc.buf);
 #else
 	for (ind_level = 0; ind_level < NIADDR; ind_level++) {
 		dmpindir(ino, dp->di_ib[ind_level], ind_level, &size);

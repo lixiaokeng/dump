@@ -1,4 +1,4 @@
-$Id: THANKS,v 1.11 1999/11/22 19:08:47 tiniou Exp $
+$Id: THANKS,v 1.12 1999/12/05 18:21:21 tiniou Exp $
 
 Dump and restore were written by the people of the CSRG at the University
 of California, Berkeley.
@@ -22,6 +22,7 @@ Thanks to people who reported problems with the port, sent patches, and
 suggested various improvements.
 Here is a partial list of them (if I have forgotten someone, please complain):
 
+Zaphod Beeblebrox	zaphod@netrider.org.au
 Stephen Carr		sgcarr@civeng.adelaide.edu.au
 Rob Cermak		cermak@ahab.rutgers.edu
 Abhijit Dasgupta	abhijit@ans.net
