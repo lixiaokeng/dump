@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.48 2005/01/13 15:41:06 stelian Exp $";
+	"$Id: main.c,v 1.49 2005/01/14 13:04:56 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -424,6 +424,7 @@ main(int argc, char *argv[])
 		Vprintf(stdout, "Begin compare restore\n");
 		compare_ignore_not_found = 0;
 		compare_errors = 0;
+		Nflag = 1;
 		setup();
 		printf("filesys = %s\n", filesys);
 		if (STAT(filesys, &stbuf) < 0)

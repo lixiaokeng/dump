@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.267 2005/01/14 13:04:07 stelian Exp $
+$Id: CHANGES,v 1.268 2005/01/14 13:04:56 stelian Exp $
 
 Changes between versions 0.4b38 and 0.4b39 (released ???????????????)
 =====================================================================
@@ -23,6 +23,9 @@ Changes between versions 0.4b38 and 0.4b39 (released ???????????????)
 	directory get renamed to RSTTMP...). Thanks to Kenneth Porter
 	<shiva@sewingwitch.com> for finding the bug and helping me
 	reproduce it.
+
+5.	Made restore -C force the -N flag (no writing allowed on
+	the disk) in order to prevent more bugs like the above one.
 
 Changes between versions 0.4b37 and 0.4b38 (released January 7, 2005)
 =====================================================================
