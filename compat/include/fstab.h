@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@cybercable.fr>, 1999-2000
  *	Stelian Pop <pop@cybercable.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: fstab.h,v 1.7 2000/11/10 14:42:24 stelian Exp $
+ *	$Id: fstab.h,v 1.8 2000/12/04 14:00:17 stelian Exp $
  */
 
 /*
@@ -57,11 +57,12 @@
  */
 #ifdef __linux__
 #include <mntent.h>
+#ifdef	_PATH_MNTTAB
 #define _PATH_FSTAB	_PATH_MNTTAB
-#endif
-#ifndef _PATH_FSTAB
+#else
 #define	_PATH_FSTAB	"/etc/fstab"
 #endif
+#endif /* __linux__ */
 #define	FSTAB		_PATH_FSTAB	/* deprecated */
 
 #define FSTAB_DEF	"defaults"	/* default mount option */
