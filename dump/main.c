@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.8 1999/11/21 16:01:47 tiniou Exp $";
+	"$Id: main.c,v 1.9 1999/11/22 19:08:50 tiniou Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -94,6 +94,7 @@ int	dokerberos = 0;	/* Use Kerberos authentication */
 long	dev_bsize = 1;	/* recalculated below */
 long	blocksperfile;	/* output blocks per file */
 char	*host = NULL;	/* remote host (if any) */
+int	sizest = 0;	/* return size estimate only */
 
 #ifdef	__linux__
 char	*__progname;
@@ -151,9 +152,9 @@ main(int argc, char *argv[])
 
 	obsolete(&argc, &argv);
 #ifdef KERBEROS
-#define optstring "0123456789aB:b:cd:f:h:kL:Mns:T:uWw"
+#define optstring "0123456789aB:b:cd:f:h:kL:Mns:ST:uWw"
 #else
-#define optstring "0123456789aB:b:cd:f:h:L:Mns:T:uWw"
+#define optstring "0123456789aB:b:cd:f:h:L:Mns:ST:uWw"
 #endif
 	while ((ch = getopt(argc, argv, optstring)) != -1)
 #undef optstring
@@ -235,6 +236,10 @@ main(int argc, char *argv[])
 
 		case 's':		/* tape size, feet */
 			tsize = numarg("tape size", 1L, 0L) * 12 * 10;
+			break;
+
+		case 'S':
+			sizest = 1;	/* return size estimate only */
 			break;
 
 		case 'T':		/* time of last dump */
@@ -402,26 +407,30 @@ main(int argc, char *argv[])
 		strncpy(tape, tapeprefix, NAME_MAX);
 	tape[NAME_MAX - 1] = '\0';
 
-	msg("Date of this level %c dump: %s", level,
+	if (!sizest) {
+
+		msg("Date of this level %c dump: %s", level,
 #ifdef	__linux__
-		spcl.c_date == 0 ? "the epoch\n" : ctime4(&spcl.c_date));
+			spcl.c_date == 0 ? "the epoch\n" : ctime4(&spcl.c_date));
 #else
-		spcl.c_date == 0 ? "the epoch\n" : ctime(&spcl.c_date));
+			spcl.c_date == 0 ? "the epoch\n" : ctime(&spcl.c_date));
 #endif
- 	msg("Date of last level %c dump: %s", lastlevel,
+	 	msg("Date of last level %c dump: %s", lastlevel,
 #ifdef	__linux__
-		spcl.c_ddate == 0 ? "the epoch\n" : ctime4(&spcl.c_ddate));
+			spcl.c_ddate == 0 ? "the epoch\n" : ctime4(&spcl.c_ddate));
 #else
-		spcl.c_ddate == 0 ? "the epoch\n" : ctime(&spcl.c_ddate));
+			spcl.c_ddate == 0 ? "the epoch\n" : ctime(&spcl.c_ddate));
 #endif
-	msg("Dumping %s ", disk);
-	if (dt != NULL)
-		msgtail("(%s) ", dt->fs_file);
-	if (host)
-		msgtail("to %s on host %s\n", tape, host);
-	else
-		msgtail("to %s\n", tape);
-	msg("Label: %s\n", labelstr);
+		msg("Dumping %s ", disk);
+		if (dt != NULL)
+			msgtail("(%s) ", dt->fs_file);
+		if (host)
+			msgtail("to %s on host %s\n", tape, host);
+		else
+			msgtail("to %s\n", tape);
+		msg("Label: %s\n", labelstr);
+
+	} /* end of size estimate */
 
 #ifdef	__linux__
 	retval = dump_fs_open(disk, &fs);
@@ -487,7 +496,8 @@ main(int argc, char *argv[])
 	(void)signal(SIGINFO, statussig);
 #endif
 
-	msg("mapping (Pass I) [regular files]\n");
+	if (!sizest)
+		msg("mapping (Pass I) [regular files]\n");
 #ifdef	__linux__
 	if (directory[0] == 0)
 		anydirskipped = mapfiles(maxino, &tapesize);
@@ -497,10 +507,16 @@ main(int argc, char *argv[])
 	anydirskipped = mapfiles(maxino, &tapesize);
 #endif
 
-	msg("mapping (Pass II) [directories]\n");
+	if (!sizest)
+		msg("mapping (Pass II) [directories]\n");
 	while (anydirskipped) {
 		anydirskipped = mapdirs(maxino, &tapesize);
 	}
+
+	if (sizest) {
+		printf("%ld\n", tapesize + 10);
+		exit(X_STARTUP);
+	} /* stop here for size estimate */
 
 	if (pipeout || unlimited) {
 		tapesize += 10;	/* 10 trailer blocks */
@@ -666,7 +682,7 @@ usage(void)
 #ifdef KERBEROS
 		"k"
 #endif
-		"Mnu] [-B records] [-b blocksize] [-d density]\n"
+		"MnSu] [-B records] [-b blocksize] [-d density]\n"
 		"\t%s [-f file] [-h level] [-s feet] [-T date] filesystem\n"
 		"\t%s [-W | -w]\n", __progname, white, __progname);
 	exit(X_STARTUP);

@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.4 1999/10/30 22:55:51 tiniou Exp $
+.\"	$Id: dump.8.in,v 1.5 1999/11/22 19:08:50 tiniou Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -40,7 +40,7 @@
 .Nd ext2 filesystem backup
 .Sh SYNOPSIS
 .Nm dump
-.Op Fl 0123456789acknu
+.Op Fl 0123456789acknSu
 .Op Fl B Ar records
 .Op Fl b Ar blocksize
 .Op Fl d Ar density
@@ -51,7 +51,7 @@
 .Op Fl T Ar date
 .Ar filesystem
 .Nm dump
-.Op Fl 0123456789acknu
+.Op Fl 0123456789acknSu
 .Op Fl B Ar records
 .Op Fl b Ar blocksize
 .Op Fl d Ar density
@@ -218,6 +218,13 @@ prompts for a new tape.
 It is recommended to be a bit conservative on this option.
 The default tape length is 2300 feet.
 .ne 1i
+.It Fl S
+Size estimate. Determine the amount of space
+that is needed to perform the dump without
+actually doing it, and display the estimated
+number of blocks it will take. This is useful
+with incremental dumps to determine how many
+volumes of media will be needed.
 .It Fl T Ar date
 Use the specified date as the starting time for the dump
 instead of the time determined from looking in
