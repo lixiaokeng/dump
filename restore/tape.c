@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.76 2003/11/22 16:52:16 stelian Exp $";
+	"$Id: tape.c,v 1.77 2004/01/27 10:18:17 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -413,13 +413,19 @@ setup(void)
 		dump_ino_t oldmaxino = maxino;
 		maxino += (spcl.c_count * TP_BSIZE * NBBY) + 1;
 		resizemaps(oldmaxino, maxino);
+		map = usedinomap;
 
 		spcl.c_dinode.di_size = spcl.c_count * TP_BSIZE;
 		getfile(xtrmap, xtrmapskip);
 	}
 	Dprintf(stdout, "maxino = %lu\n", (unsigned long)maxino);
-	if (spcl.c_type != TS_BITS)
+	if (spcl.c_type != TS_BITS) {
+		if (spcl.c_type == TS_END) {
+			msg("Cannot find file dump list, assuming empty tape\n");
+			exit(0);
+		}
 		errx(1, "Cannot find file dump list");
+	}
 	map = calloc((unsigned)1, (unsigned)howmany(maxino, NBBY));
 	if (map == (char *)NULL)
 		errx(1, "no memory for file dump list");
