@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.41 2000/02/08 12:22:42 stelian Exp $
+$Id: CHANGES,v 1.42 2000/02/10 09:42:32 stelian Exp $
 
 Changes between versions 0.4b13 and 0.4b14 (released ????????????????)
 ======================================================================
@@ -27,6 +27,22 @@ Changes between versions 0.4b13 and 0.4b14 (released ????????????????)
 6.	Fixed a restore problem when restoring a hard link to an inode
 	having the immutable or append-only attribute set. Thanks to
 	Ambrose Li <acli@mingpaoxpress.com> for submitting the patch.
+
+7.	Fixed a compatibility problem between dumps made on little
+	endian machines (the format was correct) and big endian 
+	machines (the format was incorrect). This fix break the
+	compatibility with the older dumps made on big endian 
+	machines (sparc, m86k, ppc etc). For the first time in
+	linux dump's history (I believe), the dumps made by *BSD, 
+	Linux/alpha, Linux/sparc and Linux/x86 are compatible, 
+	so interchangeable. Thanks to Rob Cermak
+	<cermak@ahab.rutgers.edu> for submitting the bug and
+	helping me test the fix.
+
+8.	Fixed the way dump reports the remaining percent/time, if
+	the number of blocks actually dumped exceeds the estimated
+	number of blocks. Thanks to Jean-Paul van der Jagt 
+	<jeanpaul@dutepp0.et.tudelft.nl> for reporting the bug.
 
 Changes between versions 0.4b12 and 0.4b13 (released January 21, 2000)
 ======================================================================

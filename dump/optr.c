@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: optr.c,v 1.9 2000/01/26 11:38:08 stelian Exp $";
+	"$Id: optr.c,v 1.10 2000/02/10 09:42:32 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -328,6 +328,8 @@ timeest(void)
 		tschedule = tnow + 300;
 		if (blockswritten < 500)
 			return;
+		if (blockswritten > tapesize)
+			tapesize = blockswritten;
 		deltat = tstart_writing - tnow +
 			(1.0 * (tnow - tstart_writing))
 			/ blockswritten * tapesize;

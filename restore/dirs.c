@@ -45,7 +45,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dirs.c,v 1.7 2000/01/21 10:17:41 stelian Exp $";
+	"$Id: dirs.c,v 1.8 2000/02/10 09:42:32 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -379,10 +379,6 @@ putdir(char *buf, size_t size)
 			if (Bcvt)
 				swabst((u_char *)"is", (u_char *) dp);
 			if (oldinofmt && dp->d_ino != 0) {
-#ifdef	__linux__
-				if (Bcvt)
-					swabst((u_char *)"s", (u_char *)&dp->d_namlen);
-#else
 #				if BYTE_ORDER == BIG_ENDIAN
 					if (Bcvt)
 						dp->d_namlen = dp->d_type;
@@ -390,16 +386,8 @@ putdir(char *buf, size_t size)
 					if (!Bcvt)
 						dp->d_namlen = dp->d_type;
 #				endif
-#endif	/* __linux__ */
 				dp->d_type = DT_UNKNOWN;
 			}
-#ifdef	__linux__
-			/*
-			 * Horrible hack to read FreeBSD 2.0 dumps
-			 */
-			if (!oldinofmt)
-				swabst((u_char *)"6bs", (u_char *) dp);
-#endif	/* __linux__ */
 #ifdef	DIRDEBUG
 			printf ("reclen = %d, namlen = %d, type = %d\n",
 				dp->d_reclen, dp->d_namlen, dp->d_type);

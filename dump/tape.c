@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.11 2000/01/21 10:17:41 stelian Exp $";
+	"$Id: tape.c,v 1.12 2000/02/10 09:42:32 stelian Exp $";
 #endif /* not lint */
 
 #ifdef __linux__
@@ -311,6 +311,8 @@ statussig(int notused)
 #else
 	(void) time((time_t *) &tnow);
 #endif
+	if (blockswritten > tapesize)
+		tapesize = blockswritten;
 	deltat = tstart_writing - tnow + (1.0 * (tnow - tstart_writing))
 		/ blockswritten * tapesize;
 	(void)snprintf(msgbuf, sizeof(msgbuf),
