@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.256 2004/07/20 15:52:58 stelian Exp $
+$Id: CHANGES,v 1.257 2004/08/16 09:39:45 stelian Exp $
 
 Changes between versions 0.4b37 and 0.4b38 (released ????????????)
 ==================================================================
@@ -8,6 +8,10 @@ Changes between versions 0.4b37 and 0.4b38 (released ????????????)
 
 2.	Made restore use either libncurses or libtermcap, depending
 	on which one is available at configure time.
+
+3.	Fixed restore negative size display bug when comparing a
+	dump containing files over 2GB. Thanks to Steve Bonds
+	<sbonds@users.sourceforge.net> for the bug report.
 
 Changes between versions 0.4b36 and 0.4b37 (released July 7, 2004)
 ==================================================================

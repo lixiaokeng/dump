@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.81 2004/05/25 10:39:31 stelian Exp $";
+	"$Id: tape.c,v 1.82 2004/08/16 09:39:47 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1426,7 +1426,7 @@ xtrcmpskip(UNUSED(char *buf), size_t size)
 
 #if !COMPARE_ONTHEFLY
 static int
-do_cmpfiles(int fd_tape, int fd_disk, long size)
+do_cmpfiles(int fd_tape, int fd_disk, OFF_T size)
 {
 	static char buf_tape[BUFSIZ];
 	static char buf_disk[BUFSIZ];
@@ -1475,8 +1475,8 @@ cmpfiles(char *tapefile, char *diskfile, struct STAT *sbuf_disk)
 
 	if (sbuf_disk->st_size != sbuf_tape.st_size) {
 		fprintf(stderr,
-			"%s: size changed from %ld to %ld.\n",
-			diskfile, (long)sbuf_tape.st_size, (long)sbuf_disk->st_size);
+			"%s: size changed from %lld to %lld.\n",
+			diskfile, (long long)sbuf_tape.st_size, (long long)sbuf_disk->st_size);
 		do_compare_error;
 #ifdef COMPARE_FAIL_KEEP_FILE
 		return (0);
@@ -1568,8 +1568,8 @@ comparefile(char *name)
 		return;
 	}
 
-	Vprintf(stdout, "comparing %s (size: %ld, mode: 0%o)\n", name,
-		(long)sb.st_size, mode);
+	Vprintf(stdout, "comparing %s (size: %lld, mode: 0%o)\n", name,
+		(long long)sb.st_size, mode);
 
 	if (sb.st_mode != mode) {
 		fprintf(stderr, "%s: mode changed from 0%o to 0%o.\n",
