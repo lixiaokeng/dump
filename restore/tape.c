@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.68 2003/02/11 09:56:48 stelian Exp $";
+	"$Id: tape.c,v 1.69 2003/02/11 12:43:45 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -286,7 +286,7 @@ setup(void)
 		temptape = magtape;
 
 #ifdef RRESTORE
-	if (host)
+	if (!Afile && host)
 		mt = rmtopen(temptape, O_RDONLY);
 	else
 #endif
@@ -295,7 +295,7 @@ setup(void)
 	else
 		mt = OPEN(temptape, O_RDONLY, 0);
 	if (mt < 0)
-		err(1, "%s", magtape);
+		err(1, "%s", temptape);
 	if (!Afile) {
 		volno = 1;
 		setmagtapein();
@@ -502,6 +502,13 @@ again:
 		return;
 	}
 	closemt();
+
+	/* 
+	 * if using an archive file, reset its name so readtape()
+	 * could properly use remote access.
+	 */
+	Afile = NULL;
+
 	if (Mflag) {
 		snprintf(magtape, MAXPATHLEN, "%s%03ld", magtapeprefix, newvol);
 		magtape[MAXPATHLEN - 1] = '\0';
@@ -1487,7 +1494,7 @@ readtape(char *buf)
 #endif
 getmore:
 #ifdef RRESTORE
-	if (host)
+	if (!Afile && host)
 		i = rmtread(&tapebuf[rd], cnt);
 	else
 #endif
@@ -1549,7 +1556,7 @@ getmore:
 		i = ntrec * TP_BSIZE;
 		memset(tapebuf, 0, (size_t)i);
 #ifdef RRESTORE
-		if (host)
+		if (!Afile && host)
 			seek_failed = (rmtseek(i, 1) < 0);
 		else
 #endif
@@ -2030,7 +2037,7 @@ static int read_a_block(int fd, char *buf, size_t len, long *lengthread)
 	size = len;
 	while (size > 0) {
 #ifdef RRESTORE
-		if (host)
+		if (!Afile && host)
 			i = rmtread(buf, size);
 		else
 #endif
@@ -2054,7 +2061,7 @@ closemt(void)
 	if (mt < 0)
 		return;
 #ifdef RRESTORE
-	if (host)
+	if (!Afile && host)
 		rmtclose();
 	else
 #endif
