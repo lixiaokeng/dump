@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.8 1999/10/22 18:12:25 tiniou Exp $
+$Id: CHANGES,v 1.9 1999/10/30 22:55:45 tiniou Exp $
 
 Changes between versions 0.4b7 and 0.4b8 (released ???????????????)
 ===================================================================
@@ -16,6 +16,11 @@ Changes between versions 0.4b7 and 0.4b8 (released ???????????????)
 4.	Added again the DT_* constants because old libc does not
 	contain them :(. Thanks to Eric Maisonobe <virnet@nat.fr>
 	for submitting the bug report.
+
+5.	Added the RSH environment variable in order to be able to
+	use a rsh replacement like ssh when doing remote backups (and
+	bypass the security limitations of rcmd). Now you can do remote
+	backups without being root (or making dump setuid root).
 
 Changes between versions 0.4b6 and 0.4b7 (released October 8, 1999)
 ===================================================================

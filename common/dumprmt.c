@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dumprmt.c,v 1.6 1999/10/13 09:57:18 stelian Exp $";
+	"$Id: dumprmt.c,v 1.7 1999/10/30 22:55:50 tiniou Exp $";
 #endif /* not lint */
 
 #ifdef __linux__
@@ -95,16 +95,18 @@ static const char rcsid[] =
 #define	TS_OPEN		1
 
 static	int rmtstate = TS_CLOSED;
-static	int rmtape = -1;
+static	int tormtape = -1;
+static	int fromrmtape = -1;
 static	const char *rmtpeer = 0;
 
 static	int okname __P((const char *));
 static	int rmtcall __P((const char *, const char *));
 static	void rmtconnaborted __P((int));
 static	int rmtgetb __P((void));
-static	void rmtgetconn __P((void));
+static	int rmtgetconn __P((void));
 static	void rmtgets __P((char *, size_t));
 static	int rmtreply __P((const char *));
+static  int piped_child __P((const char **command));
 #ifdef KERBEROS
 int	krcmd __P((char **, int /*u_short*/, char *, char *, int *, char *));
 #endif
@@ -124,10 +126,7 @@ rmthost(const char *host)
 	if ((rmtpeer = strdup(host)) == NULL)
 		rmtpeer = host;
 	signal(SIGPIPE, rmtconnaborted);
-	rmtgetconn();
-	if (rmtape < 0)
-		return (0);
-	return (1);
+	return rmtgetconn();
 }
 
 static void
@@ -157,7 +156,7 @@ rmtconnaborted(int signo)
 	exit(X_ABORT);
 }
 
-static void
+static int
 rmtgetconn(void)
 {
 	register char *cp;
@@ -165,15 +164,20 @@ rmtgetconn(void)
 	static struct servent *sp = NULL;
 	static struct passwd *pwd = NULL;
 	const char *tuser;
+	const char *rsh;
 	int size;
 	int throughput;
 	int on;
 
-	if (sp == NULL) {
+	rsh = getenv("RSH");
+
+	if (!rsh && sp == NULL) {
 		sp = getservbyname(dokerberos ? "kshell" : "shell", "tcp");
 		if (sp == NULL)
 			errx(1, "%s/tcp: unknown service",
 			    dokerberos ? "kshell" : "shell");
+	}
+	if (pwd == NULL) {
 		pwd = getpwuid(getuid());
 		if (pwd == NULL)
 			errx(1, "who are you?");
@@ -189,35 +193,54 @@ rmtgetconn(void)
 	if ((rmt = getenv("RMT")) == NULL)
 		rmt = _PATH_RMT;
 	msg("");
+
+	if (rsh) {
+		const char *rshcmd[6];
+		rshcmd[0] = rsh;
+		rshcmd[1] = rmtpeer;
+		rshcmd[2] = "-l";
+		rshcmd[3] = tuser;
+		rshcmd[4] = rmt;
+		rshcmd[5] = NULL;
+
+		if (piped_child(rshcmd) < 0) {
+			msg("cannot open connection\n");
+			return 0;
+		}
+	}
+	else {
 #ifdef KERBEROS
-	if (dokerberos)
-		rmtape = krcmd((char **)&rmtpeer, sp->s_port, tuser, rmt, &errfd,
-			       (char *)0);
-	else
+		if (dokerberos)
+			tormtape = krcmd((char **)&rmtpeer, sp->s_port, tuser, rmt, &errfd,
+				       (char *)0);
+		else
 #endif
-		rmtape = rcmd((char **)&rmtpeer, (u_short)sp->s_port, pwd->pw_name,
-			      tuser, rmt, &errfd);
-	if (rmtape < 0) {
-		msg("login to %s as %s failed.\n", rmtpeer, tuser);
-		return;
+			tormtape = rcmd((char **)&rmtpeer, (u_short)sp->s_port, pwd->pw_name,
+				      tuser, rmt, &errfd);
+		if (tormtape < 0) {
+			msg("login to %s as %s failed.\n", rmtpeer, tuser);
+			return 0;
+		}
+		size = ntrec * TP_BSIZE;
+		if (size > 60 * 1024)		/* XXX */
+			size = 60 * 1024;
+		/* Leave some space for rmt request/response protocol */
+		size += 2 * 1024;
+		while (size > TP_BSIZE &&
+		    setsockopt(tormtape, SOL_SOCKET, SO_SNDBUF, &size, sizeof (size)) < 0)
+			    size -= TP_BSIZE;
+		(void)setsockopt(tormtape, SOL_SOCKET, SO_RCVBUF, &size, sizeof (size));
+		throughput = IPTOS_THROUGHPUT;
+		if (setsockopt(tormtape, IPPROTO_IP, IP_TOS,
+		    &throughput, sizeof(throughput)) < 0)
+			perror("IP_TOS:IPTOS_THROUGHPUT setsockopt");
+		on = 1;
+		if (setsockopt(tormtape, IPPROTO_TCP, TCP_NODELAY, &on, sizeof (on)) < 0)
+			perror("TCP_NODELAY setsockopt");
+		fromrmtape = tormtape;
 	}
 	(void)fprintf(stderr, "Connection to %s established.\n", rmtpeer);
-	size = ntrec * TP_BSIZE;
-	if (size > 60 * 1024)		/* XXX */
-		size = 60 * 1024;
-	/* Leave some space for rmt request/response protocol */
-	size += 2 * 1024;
-	while (size > TP_BSIZE &&
-	    setsockopt(rmtape, SOL_SOCKET, SO_SNDBUF, &size, sizeof (size)) < 0)
-		    size -= TP_BSIZE;
-	(void)setsockopt(rmtape, SOL_SOCKET, SO_RCVBUF, &size, sizeof (size));
-	throughput = IPTOS_THROUGHPUT;
-	if (setsockopt(rmtape, IPPROTO_IP, IP_TOS,
-	    &throughput, sizeof(throughput)) < 0)
-		perror("IP_TOS:IPTOS_THROUGHPUT setsockopt");
-	on = 1;
-	if (setsockopt(rmtape, IPPROTO_TCP, TCP_NODELAY, &on, sizeof (on)) < 0)
-		perror("TCP_NODELAY setsockopt");
+	return 1;
 }
 
 static int
@@ -269,7 +292,7 @@ rmtread(char *buf, size_t count)
 		/* rmtcall() properly sets errno for us on errors. */
 		return (n);
 	for (i = 0; i < n; i += cc) {
-		cc = read(rmtape, buf+i, n - i);
+		cc = read(fromrmtape, buf+i, n - i);
 		if (cc <= 0)
 			rmtconnaborted(0);
 	}
@@ -282,8 +305,8 @@ rmtwrite(const char *buf, size_t count)
 	char line[30];
 
 	(void)snprintf(line, sizeof (line), "W%d\n", count);
-	write(rmtape, line, strlen(line));
-	write(rmtape, buf, count);
+	write(tormtape, line, strlen(line));
+	write(tormtape, buf, count);
 	return (rmtreply("write"));
 }
 
@@ -327,7 +350,7 @@ static int
 rmtcall(const char *cmd, const char *buf)
 {
 
-	if (write(rmtape, buf, strlen(buf)) != strlen(buf))
+	if (write(tormtape, buf, strlen(buf)) != strlen(buf))
 		rmtconnaborted(0);
 	return (rmtreply(cmd));
 }
@@ -365,7 +388,7 @@ rmtgetb(void)
 {
 	char c;
 
-	if (read(rmtape, &c, 1) != 1)
+	if (read(fromrmtape, &c, 1) != 1)
 		rmtconnaborted(0);
 	return (c);
 }
@@ -389,4 +412,56 @@ rmtgets(char *line, size_t len)
 	msg("Protocol to remote tape server botched.\n");
 	msg("(rmtgets got \"%s\").\n", line);
 	rmtconnaborted(0);
+}
+
+int piped_child(const char **command) {
+	int pid;
+	int to_child_pipe[2];
+	int from_child_pipe[2];
+
+	if (pipe (to_child_pipe) < 0) {
+		msg ("cannot create pipe: %s\n", strerror(errno));
+		return -1;
+	}
+	if (pipe (from_child_pipe) < 0) {
+		msg ("cannot create pipe: %s\n", strerror(errno)); 
+		return -1;
+	}
+	pid = fork ();
+	if (pid < 0) {
+		msg ("cannot fork: %s\n", strerror(errno));
+		return -1;
+	}
+	if (pid == 0) {
+		if (dup2 (to_child_pipe[0], STDIN_FILENO) < 0) {
+			msg ("cannot dup2 pipe: %s\n", strerror(errno));
+			exit(1);
+		}
+		if (close (to_child_pipe[1]) < 0) {
+			msg ("cannot close pipe: %s\n", strerror(errno));
+			exit(1);
+		}
+		if (close (from_child_pipe[0]) < 0) {
+			msg ("cannot close pipe: %s\n", strerror(errno));
+			exit(1);
+		}
+		if (dup2 (from_child_pipe[1], STDOUT_FILENO) < 0) {
+			msg ("cannot dup2 pipe: %s\n", strerror(errno));
+			exit(1);
+		}
+		execvp (command[0], (char *const *) command);
+		msg("cannot exec %s: %s\n", command[0], strerror(errno));
+		exit(1);
+	}
+	if (close (to_child_pipe[0]) < 0) {
+		msg ("cannot close pipe: %s\n", strerror(errno));
+		return -1;
+	}
+	if (close (from_child_pipe[1]) < 0) {
+		msg ("cannot close pipe: %s\n", strerror(errno));
+		return -1;
+	}
+	tormtape = to_child_pipe[1];
+	fromrmtape = from_child_pipe[0];
+	return pid;
 }
