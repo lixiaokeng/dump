@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: restore.c,v 1.19 2001/12/24 12:31:12 stelian Exp $";
+	"$Id: restore.c,v 1.20 2001/12/24 15:53:41 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -867,7 +867,8 @@ createfiles(void)
 		 */
 		while (curfile.ino > last) {
 			curfile.action = SKIP;
-			getvol((long)0);
+			if (!pipein)
+				getvol((long)0);
 			if (curfile.ino == maxino) {
 				next = lowerbnd(next);
 				while (next < curfile.ino) {

@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: restore.h,v 1.19 2001/11/16 14:09:07 stelian Exp $
+ *	$Id: restore.h,v 1.20 2001/12/24 15:53:41 stelian Exp $
  */
 
 /*
@@ -78,6 +78,7 @@ extern time_t	dumptime;	/* time that this dump begins */
 extern time_t	dumpdate;	/* time that this dump was made */
 extern char	command;	/* opration being performed */
 extern FILE	*terminal;	/* file descriptor for the terminal input */
+extern int	pipein;		/* input is from a pipe */
 extern char	*tmpdir;	/* name of temp directory */
 extern int	oldinofmt;	/* reading tape with old format inodes */
 extern int	Bcvt;		/* need byte swapping on inodes and dirs */

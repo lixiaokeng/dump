@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.49 2001/12/24 12:31:12 stelian Exp $";
+	"$Id: tape.c,v 1.50 2001/12/24 15:53:41 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -97,7 +97,7 @@ int		noresyncmesg = 0;
 #endif /* USE_QFA */
 static long	fssize = MAXBSIZE;
 static int	mt = -1;
-static int	pipein = 0;
+int		pipein = 0;
 static int	magtapein = 0;		/* input is from magtape */
 static char	magtape[MAXPATHLEN];
 static char	magtapeprefix[MAXPATHLEN];
