@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.79 2003/11/22 16:52:16 stelian Exp $";
+	"$Id: tape.c,v 1.80 2004/01/27 10:37:29 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -105,7 +105,8 @@ int    write(), read();
 int	writesize;		/* size of malloc()ed buffer for tape */
 long	lastspclrec = -1;	/* tape block number of last written header */
 int	trecno = 0;		/* next record to write in current block */
-extern	long blocksperfile;	/* number of blocks per output file */
+extern	long *blocksperfiles;	/* number of blocks per output file(s) */
+long	blocksperfiles_current;	/* current position in blocksperfiles */
 long	blocksthisvol;		/* number of blocks on current output file */
 extern	int ntrec;		/* blocking factor on tape */
 extern	int cartridge;
@@ -197,7 +198,7 @@ alloctape(void)
 	 * repositioning after stopping, i.e, streaming mode, where the gap is
 	 * variable, 0.30" to 0.45".  The gap is maximal when the tape stops.
 	 */
-	if (blocksperfile == 0 && !unlimited)
+	if (!blocksperfiles && !unlimited)
 		tenths = (cartridge ? 16 : density == 625 ? 5 : 8);
 	else {
 		tenths = 0;
@@ -484,9 +485,9 @@ flushtape(void)
 	blockswritten += ntrec;
 	blocksthisvol += ntrec;
 	if (!pipeout && !unlimited) {
-		if (blocksperfile) {
-			if ( compressed ? (bytes_written - tapea_bytes + SLAVES * (writesize + sizeof(struct tapebuf))) >= (((long long)blocksperfile) * 1024)
-					: blocksthisvol >= blocksperfile ) {
+		if (blocksperfiles[blocksperfiles_current]) {
+			if ( compressed ? (bytes_written - tapea_bytes + SLAVES * (writesize + sizeof(struct tapebuf))) >= (((long long)blocksperfiles[blocksperfiles_current]) * 1024)
+					: blocksthisvol >= blocksperfiles[blocksperfiles_current] ) {
 				close_rewind();
 				startnewtape(0);
 			}
@@ -871,6 +872,8 @@ restore_check_point:
 			tape[MAXPATHLEN - 1] = '\0';
 			msg("Dumping volume %d on %s\n", tapeno, tape);
 		}
+		if (blocksperfiles_current < *blocksperfiles)
+			blocksperfiles_current++;
 #ifdef RDUMP
 		while ((tapefd = (host ? rmtopen(tape, O_WRONLY|O_CREAT|O_TRUNC) : pipeout ? 
 			fileno(stdout) : 

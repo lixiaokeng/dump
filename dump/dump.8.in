@@ -26,7 +26,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.53 2003/05/07 14:45:20 stelian Exp $
+.\"	$Id: dump.8.in,v 1.54 2004/01/27 10:37:28 stelian Exp $
 .\"
 .TH DUMP 8 "version __VERSION__ of __DATE__" BSD "System management commands"
 .SH NAME
@@ -134,7 +134,15 @@ can detect end-of-media. When the specified size is reached,
 .B dump
 waits for you to change the volume.  This option overrides the calculation of 
 tape size based on length and density. If compression is on this limits the 
-size of the compressed output per volume.
+size of the compressed output per volume.  Multiple values may be given
+as a single argument separated by commas.  Each value will be used for one
+dump volume in the order listed; if
+.B dump
+creates more volumes than the
+number of values given, the last value will be used for the remaining
+volumes. This is useful for filling up already partially filled media
+(and then continuing with full size volumes on empty media) or mixing media
+of different sizes.
 .TP
 .BI \-c
 Change the defaults for use with a cartridge tape drive, with a density of 8000

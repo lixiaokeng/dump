@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.238 2004/01/27 10:18:17 stelian Exp $
+$Id: CHANGES,v 1.239 2004/01/27 10:37:25 stelian Exp $
 
 Changes between versions 0.4b35 and 0.4b36 (released ?????????????????)
 =======================================================================
@@ -13,6 +13,10 @@ Changes between versions 0.4b35 and 0.4b36 (released ?????????????????)
 	written with Solaris 7 ufsdump. Thanks to Patrick Higgins
 	<phiggins@transzap.com> for reporting the bug and providing 
 	the test case.
+
+4.	Changed dump to enable the creation of volumes of different
+	sizes in a single run (make -B accept a list of values).
+	Patch contributed by Florian Zumbiehl <florz@gmx.de>.
 
 Changes between versions 0.4b34 and 0.4b35 (released December 21, 2003)
 =======================================================================

@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.89 2004/01/04 10:48:35 stelian Exp $";
+	"$Id: main.c,v 1.90 2004/01/27 10:37:29 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -171,7 +171,7 @@ int	tapepos = 0; 	/* assume no QFA tapeposition needed by user */
 #endif /* USE_QFA */
 int	dokerberos = 0;	/* Use Kerberos authentication */
 long	dev_bsize = 1;	/* recalculated below */
-long	blocksperfile;	/* output blocks per file */
+long	*blocksperfiles = NULL; /* output blocks per file(s) */
 char	*host = NULL;	/* remote host (if any) */
 int	sizest = 0;	/* return size estimate only */
 int	compressed = 0;	/* use zlib to compress the output, compress level 1-9 */
@@ -186,6 +186,7 @@ char	*__progname;
 
 int 	maxbsize = 1024*1024;     /* XXX MAXBSIZE from sys/param.h */
 static long numarg __P((const char *, long, long));
+static long numlistarg __P((const char *, long, long));
 static void obsolete __P((int *, char **[]));
 static void usage __P((void));
 static void do_exclude_from_file __P((char *));
@@ -285,7 +286,7 @@ main(int argc, char *argv[])
 
 		case 'B':		/* blocks per output file */
 			unlimited = 0;
-			blocksperfile = numarg("number of blocks per file",
+			blocksperfiles = numlistarg("number of blocks per file",
 			    1L, 0L);
 			break;
 
@@ -473,7 +474,7 @@ main(int argc, char *argv[])
 	}
 	argc--;
 	incompat_flags(Tflag && uflag, 'T', 'u');
-	incompat_flags(aflag && blocksperfile, 'a', 'B');
+	incompat_flags(aflag && blocksperfiles, 'a', 'B');
 	incompat_flags(aflag && cartridge, 'a', 'c');
 	incompat_flags(aflag && density, 'a', 'd');
 	incompat_flags(aflag && tsize, 'a', 's');
@@ -483,8 +484,9 @@ main(int argc, char *argv[])
 		tapeprefix = "standard output";
 	}
 
-	if (blocksperfile && !compressed)
-		blocksperfile = blocksperfile / ntrec * ntrec; /* round down */
+	if (blocksperfiles && !compressed)
+		for (i = 1; i <= *blocksperfiles; i++)
+			blocksperfiles[i] = blocksperfiles[i] / ntrec * ntrec; /* round down */
 	else if (!unlimited) {
 		/*
 		 * Determine how to default tape size and density
@@ -867,9 +869,21 @@ main(int argc, char *argv[])
 	} else {
 		double fetapes;
 
-		if (blocksperfile)
-			fetapes = (double) tapesize / blocksperfile;
-		else if (cartridge) {
+		if (blocksperfiles) {
+			long tapesize_left;
+
+			tapesize_left = tapesize;
+			fetapes = 0;
+			for (i = 1; i < *blocksperfiles && tapesize_left; i++) {
+				fetapes++;
+				if (tapesize_left > blocksperfiles[i])
+					tapesize_left -= blocksperfiles[i];
+				else
+					tapesize_left = 0;
+			}
+			if (tapesize_left)
+				fetapes += (double)tapesize_left / blocksperfiles[*blocksperfiles];
+		} else if (cartridge) {
 			/* Estimate number of tapes, assuming streaming stops at
 			   the end of each block written, and not in mid-block.
 			   Assume no erroneous blocks; this can be compensated
@@ -1115,6 +1129,37 @@ numarg(const char *meaning, long vmin, long vmax)
 	if (val < vmin || (vmax && val > vmax))
 		errx(X_STARTUP, "%s must be between %ld and %ld", meaning, vmin, vmax);
 	return (val);
+}
+
+/*
+ * The same as numarg, just that it expects a comma separated list of numbers
+ * and returns an array of longs with the first element containing the number
+ * values in that array.
+ */
+static long
+numlistarg(const char *meaning, long vmin, long vmax)
+{
+	char *p;
+	long *vals,*curval;
+	long valnum;
+
+	p = optarg;
+	vals = NULL;
+	valnum = 0;
+	do {
+		valnum++;
+		if ( !(vals = realloc(vals, (valnum + 1) * sizeof(*vals))) )
+			errx(X_STARTUP, "allocating memory failed");
+		curval = vals + valnum;
+		*curval = strtol(p, &p, 10);
+		if (*p && *p!=',')
+			errx(X_STARTUP, "illegal %s -- %s", meaning, optarg);
+		if (*curval < vmin || (vmax && *curval > vmax))
+			errx(X_STARTUP, "%s must be between %ld and %ld", meaning, vmin, vmax);
+		*vals = valnum;
+		if (*p) p++;
+	} while(*p);
+	return (vals);
 }
 
 void
