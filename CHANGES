@@ -1,4 +1,11 @@
-$Id: CHANGES,v 1.62 2000/06/01 20:49:32 stelian Exp $
+$Id: CHANGES,v 1.63 2000/06/03 22:24:17 stelian Exp $
+
+Changes between versions 0.4b17 and 0.4b18 (released ??????????????)
+====================================================================
+
+1.	Fixed a potential buffer overflow in restore. Thanks
+	to Stan Bubrouski <satan@fastdial.net> for reporting 
+	the bug.
 
 Changes between versions 0.4b16 and 0.4b17 (released June 1st, 2000)
 ====================================================================

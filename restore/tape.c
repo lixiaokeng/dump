@@ -45,7 +45,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.16 2000/06/01 18:30:08 stelian Exp $";
+	"$Id: tape.c,v 1.17 2000/06/03 22:24:18 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -359,7 +359,7 @@ again:
 		do	{
 			fprintf(stderr, "Specify next volume #: ");
 			(void) fflush(stderr);
-			(void) fgets(buf, BUFSIZ, terminal);
+			(void) fgets(buf, TP_BSIZE, terminal);
 		} while (!feof(terminal) && buf[0] == '\n');
 		if (feof(terminal))
 			exit(1);
@@ -384,7 +384,7 @@ again:
 		fprintf(stderr, "Enter ``none'' if there are no more tapes\n");
 		fprintf(stderr, "otherwise enter tape name (default: %s) ", magtape);
 		(void) fflush(stderr);
-		(void) fgets(buf, BUFSIZ, terminal);
+		(void) fgets(buf, TP_BSIZE, terminal);
 		if (feof(terminal))
 			exit(1);
 		if (!strcmp(buf, "none\n")) {
