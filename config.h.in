@@ -45,6 +45,12 @@
 /* Define if you want to include readline support.  */
 #undef HAVE_READLINE
 
+/* Define if we have the ext2_ino_t type (from e2fsprogs 1.20+). */ 
+#undef HAVE_EXT2_INO_T
+
+/* Define if we have the s_journal_inum field in struct ext2_super_block. */
+#undef HAVE_EXT2_JOURNAL_INUM
+ 
 /* Define this is you want old style F script (no arguments) */
 #undef OLD_STYLE_FSCRIPT
 

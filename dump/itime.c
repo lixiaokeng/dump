@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: itime.c,v 1.17 2001/03/20 09:14:58 stelian Exp $";
+	"$Id: itime.c,v 1.18 2001/03/21 09:37:13 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -240,8 +240,6 @@ putdumptime(void)
 	if (ftruncate(fd, ftell(df)))
 		quit("ftruncate (%s): %s\n", dumpdates, strerror(errno));
 	(void) fclose(df);
-	msg("level %c dump on %s", level,
-		spcl.c_date == 0 ? "the epoch\n" : ctime4(&spcl.c_date));
 }
 
 static void

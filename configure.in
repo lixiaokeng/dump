@@ -274,6 +274,28 @@ if test "$ext2fs_h" = no -o "$ext2fs_lib" = no; then
 fi
 
 dnl
+dnl Check for ext2_ino_t type
+dnl
+AC_MSG_CHECKING(for ext2_ino_t type in ext2 headers)
+AC_TRY_COMPILE([#include <stdio.h>
+#include <linux/ext2_fs.h>
+#include <ext2fs/ext2fs.h>], 
+[ext2_ino_t ino = 0;], 
+[AC_DEFINE(HAVE_EXT2_INO_T), AC_MSG_RESULT(yes)],
+AC_MSG_RESULT(no))
+
+dnl
+dnl Check for s_journal_inum field in ext2_super_block struct
+dnl
+AC_MSG_CHECKING(for s_journal_inum field in ext2_super_block struct)
+AC_TRY_COMPILE([#include <stdio.h>
+#include <linux/ext2_fs.h>
+#include <ext2fs/ext2fs.h>],
+[struct ext2_super_block es; es.s_journal_inum = 0;],
+[AC_DEFINE(HAVE_EXT2_JOURNAL_INUM), AC_MSG_RESULT(yes)],
+AC_MSG_RESULT(no))
+
+dnl
 dnl Check for termcap libraries
 dnl
 AC_CHECK_LIB(termcap, tgetent, [termcap_lib=yes], [termcap_lib=no])
@@ -316,6 +338,7 @@ AC_CHECK_FUNC(glob)
 dnl
 dnl Check for GLOB_ALTDIRFUNC
 dnl
+AC_MSG_CHECKING(for extended glob routines)
 if test "$ac_cv_func_glob" = "yes"; then
 	AC_EGREP_CPP(yes, 
 	[
@@ -323,10 +346,15 @@ if test "$ac_cv_func_glob" = "yes"; then
 #	ifdef GLOB_ALTDIRFUNC
 	yes
 #	endif
-	], AC_DEFINE(HAVE_GLOB), noglob=yes)
-	if test "$noglob" = "yes"; then
-		echo "Your system does not support extended glob, will use the internal routines"
-	fi
+	], 
+	[
+	AC_DEFINE(HAVE_GLOB)
+	AC_MSG_RESULT(yes)
+	],
+	[
+	AC_MSG_RESULT(no)
+	echo "Your system does not support extended glob, will use the internal routines"
+	])
 fi
 
 dnl

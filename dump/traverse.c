@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.28 2001/03/20 10:02:48 stelian Exp $";
+	"$Id: traverse.c,v 1.29 2001/03/21 09:37:13 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -102,12 +102,13 @@ static	int exclude_ino __P((dump_ino_t ino));
 extern dump_ino_t iexclude_list[IEXCLUDE_MAXNUM];	/* the inode exclude list */
 extern int iexclude_num;			/* number of elements in list */
 
-/* Temporary fix waiting for Andreas fixes... */
-#ifdef HAS_EXT2FS_EXT2_FS
+#ifdef HAVE_EXT2_JOURNAL_INUM
 #define ext2_journal_ino(sb) (sb->s_journal_inum)
 #else
-#define ext2_ino_t __u32
 #define ext2_journal_ino(sb) (*((__u32 *)sb + 0x38))
+#endif
+#ifndef HAVE_EXT2_INO_T
+#define ext2_ino_t __u32
 #endif
 
 #ifndef EXT3_FEATURE_COMPAT_HAS_JOURNAL
