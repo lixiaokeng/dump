@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: restore.c,v 1.35 2004/12/15 11:00:01 stelian Exp $";
+	"$Id: restore.c,v 1.36 2005/03/18 22:12:55 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -635,15 +635,19 @@ removeoldnodes(void)
 		change = 0;
 		prev = &removelist;
 		for (ep = removelist; ep != NULL; ep = *prev) {
+			int docont = 0;
 			if (ep->e_entries != NULL) {
 				int i;
 				for (i = 0; i < DIRHASH_SIZE; i++) {
 					if (ep->e_entries[i] != NULL) {
 						prev = &ep->e_next;
-						continue;
+						docont = 1;
+						break;
 					}
 				}
 			}
+			if (docont)
+				continue;
 			*prev = ep->e_next;
 			removenode(ep);
 			freeentry(ep);

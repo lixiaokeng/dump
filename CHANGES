@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.272 2005/03/02 08:46:54 stelian Exp $
+$Id: CHANGES,v 1.273 2005/03/18 22:12:54 stelian Exp $
 
 Changes between versions 0.4b39 and 0.4b40 (released ????????????????)
 ======================================================================
@@ -19,6 +19,10 @@ Changes between versions 0.4b39 and 0.4b40 (released ????????????????)
 	the user used -d/-s to specify the tape characteristics. Thanks
 	to Philip Goisman <goisman@physics.arizona.edu> for reporting
 	the bug.
+
+4.	Fixed another bug introduced in restore with the hashtree
+	implementation. This one caused restore to stop saying
+	"removenode: non-empty directory" in some cases.
 
 Changes between versions 0.4b38 and 0.4b39 (released January 21, 2005)
 ======================================================================
