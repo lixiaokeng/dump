@@ -1,10 +1,14 @@
-$Id: CHANGES,v 1.25 1999/12/06 21:37:47 tiniou Exp $
+$Id: CHANGES,v 1.26 1999/12/17 10:14:27 tiniou Exp $
 
 Changes between versions 0.4b11 and 0.4b12 (released ????????????????)
 ======================================================================
 
 1.	Small fix in the dump man page. Thanks to Thorsten Kukuk 
 	<kukuk@suse.de> for submitting the patch.
+
+2.	Fix for the exit code when using the size estimate option of
+	dump. Thanks to Matti Taskinen <mkt@rni.helsinki.fi> for
+	submitting the patch.
 
 Changes between versions 0.4b10 and 0.4b11 (released December 5, 1999)
 ======================================================================
@@ -25,8 +29,8 @@ Changes between versions 0.4b10 and 0.4b11 (released December 5, 1999)
 	asking to enter a new tape each time.
 
 4.	Fixed a memory leak which was causing dump to grow very big
-	(270MB when dumping a 10GB filesystem...). Thanks to Zaphod 
-	Beeblebrox <zaphod@netrider.org.au> for reporting the bug.
+	(270MB when dumping a 10GB filesystem...). Thanks to Jason 
+	Fearon <jasonf@netrider.org.au> for reporting the bug.
 
 Changes between versions 0.4b9 and 0.4b10 (released November 21, 1999)
 ======================================================================

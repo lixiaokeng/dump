@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.9 1999/11/22 19:08:50 tiniou Exp $";
+	"$Id: main.c,v 1.10 1999/12/17 10:14:59 tiniou Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -515,7 +515,7 @@ main(int argc, char *argv[])
 
 	if (sizest) {
 		printf("%ld\n", tapesize + 10);
-		exit(X_STARTUP);
+		exit(X_FINOK);
 	} /* stop here for size estimate */
 
 	if (pipeout || unlimited) {
