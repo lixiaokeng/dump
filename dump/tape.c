@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.65 2002/03/11 10:17:43 stelian Exp $";
+	"$Id: tape.c,v 1.66 2002/03/27 16:48:38 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -872,7 +872,8 @@ restore_check_point:
 				  OPEN(tape, O_RDWR|O_CREAT, 0666))) < 0)
 #endif
 		    {
-			msg("Cannot open output \"%s\".\n", tape);
+			msg("Cannot open output \"%s\": %s\n", tape, 
+			    strerror(errno));
 			if (!query("Do you want to retry the open?"))
 				dumpabort(0);
 		}
