@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.33 2001/04/11 13:42:52 stelian Exp $";
+	"$Id: tape.c,v 1.34 2001/04/12 16:03:30 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -150,7 +150,7 @@ static void	readtape_comprtape __P((char *));
 static char	*decompress_tapebuf __P((struct tapebuf *, int));
 static void	msg_read_error __P((char *));
 #endif
-static int	read_a_block __P((int, void *, size_t, long *));
+static int	read_a_block __P((int, char *, size_t, long *));
 #define PREFIXSIZE	sizeof(struct tapebuf)
 
 #define COMPARE_ONTHEFLY 1
@@ -1792,7 +1792,7 @@ findtapeblksize(void)
 /*
  * Read a block of data handling all of the messy details.
  */
-static int read_a_block(int fd, void *buf, size_t len, long *lengthread)
+static int read_a_block(int fd, char *buf, size_t len, long *lengthread)
 {
 	long i = 1, size;
 

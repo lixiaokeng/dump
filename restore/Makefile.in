@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.7 2001/04/06 10:09:40 stelian Exp $
+# $Id: Makefile.in,v 1.8 2001/04/12 16:03:30 stelian Exp $
 
 top_srcdir=	@top_srcdir@
 srcdir=		@srcdir@
@@ -11,20 +11,21 @@ LIBS=		$(GLIBS) -le2p @READLINE@ @ZLIB@
 DEPLIBS=	../compat/lib/libcompat.a
 
 PROG=		restore
+RPROG=		rrestore
 LINKS=		${SBINDIR}/restore ${SBINDIR}/rrestore
 SRCS=		dirs.c interactive.c main.c restore.c symtab.c tape.c \
 		utilities.c
 OBJS=		dirs.o interactive.o main.o restore.o symtab.o tape.o \
 		utilities.o ../common/dumprmt.o
 MAN8=		restore.8
-MLINKS=		$(MANDIR)/restore.8 $(MANDIR)/rrestore.8
+RMAN8=		rrestore.8
 
-all::		$(PROG) restore.8
+all::		$(PROG) $(MAN8)
 
 $(PROG):	$(OBJS) $(DEPLIBS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(PROG) $(OBJS) $(LIBS)
 
-restore.8:	restore.8.in
+$(MAN8):	restore.8.in
 	sed -e "s|__DATE__|$(DATE)|g" \
 	    -e "s|__VERSION__|$(VERSION)|g" $< > $@
 
@@ -32,19 +33,11 @@ install::	all
 	$(INSTALL) -d $(SBINDIR) $(MANDIR)
 	$(INSTALLBIN) $(PROG) $(SBINDIR)
 	$(INSTALLMAN) $(srcdir)/$(MAN8) $(MANDIR)
-	@set $(LINKS) $(MLINKS); \
-	while test $$# -ge 2; do \
-		l=$$1; \
-		shift; \
-		t=$$1; \
-		shift; \
-		echo $$t -\> $$l; \
-		$(RM) -f $$t; \
-		$(LN_S) $$l $$t; \
-	done; true
+	cd $(SBINDIR) && $(RM) -f $(RPROG) && $(LN_S) $(PROG) $(RPROG)
+	cd $(MANDIR) && $(RM) -f $(RMAN8) && $(LN_S) $(MAN8) $(RMAN8)
 
 clean::
-	$(RM) -f $(PROG) \#* *.s *.o *.a *~ core restore.8
+	$(RM) -f $(PROG) $(MAN8) \#* *.s *.o *.a *~ core
 
 distclean::	clean
 	$(RM) -f Makefile Makefile.old .depend

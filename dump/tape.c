@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.42 2001/04/12 13:14:15 stelian Exp $";
+	"$Id: tape.c,v 1.43 2001/04/12 16:03:29 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1154,6 +1154,7 @@ doslave(int cmd, int slave_number)
 		if (compressed) {
 			comp_buf->length = bufsize;
 			worklen = TP_BSIZE + writesize;
+			compresult = Z_DATA_ERROR;
 			if (do_compress)
 				compresult = compress2(comp_buf->buf, &worklen,
 					(char *)slp->tblock[0], writesize, compressed);

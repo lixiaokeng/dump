@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.44 2001/04/11 15:24:03 stelian Exp $";
+	"$Id: main.c,v 1.45 2001/04/12 16:03:29 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -125,7 +125,7 @@ main(int argc, char *argv[])
 	int i, anydirskipped, bflag = 0, Tflag = 0, honorlevel = 1;
 	dump_ino_t maxino;
 	struct stat statbuf;
-	dev_t filedev;
+	dev_t filedev = 0;
 #ifdef	__linux__
 	errcode_t retval;
 	char directory[MAXPATHLEN];
