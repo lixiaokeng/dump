@@ -1,4 +1,4 @@
-$Id: THANKS,v 1.49 2001/11/13 12:11:05 stelian Exp $
+$Id: THANKS,v 1.50 2001/11/17 10:31:45 stelian Exp $
 
 Dump and restore were written by the people of the CSRG at the University
 of California, Berkeley.
@@ -20,6 +20,7 @@ Stelian Pop <pop@noos.fr> is now the current maintainer (since dump-0.4b5).
 Thanks to people who reported problems with the port, sent patches, and
 suggested various improvements.
 Here is a partial list of them (if I have forgotten someone, please complain):
+Eros Albertazzi		eros@lamel.bo.cnr.it
 John Adams		johna@onevista.com
 Andrea Arcangeli	andrea@suse.de
 Stephen Atwell		satwell@urbana.css.mot.com

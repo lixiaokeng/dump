@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.143 2001/11/16 14:09:07 stelian Exp $
+$Id: CHANGES,v 1.144 2001/11/17 10:31:46 stelian Exp $
 
 Changes between versions 0.4b24 and 0.4b25 (released ??????????????????)
 ========================================================================
@@ -27,7 +27,10 @@ Changes between versions 0.4b24 and 0.4b25 (released ??????????????????)
 	to know this information when reading a remote compressed 
 	dump. Previously, this information was autodetected, but
 	the autodetection code fails (with ioctl: Inappropriate ioctl 
-	for device) when using a non Linux remote box.
+	for device) when using a non Linux remote box. Thanks to 
+	many users and especially to Eros Albertazzi 
+	<eros@lamel.bo.cnr.it> for reporting this.
+
 	
 Changes between versions 0.4b23 and 0.4b24 (released September 12, 2001)
 ========================================================================
