@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: rmt.c,v 1.14 2001/04/27 15:22:47 stelian Exp $";
+	"$Id: rmt.c,v 1.15 2001/05/26 11:11:16 stelian Exp $";
 #endif /* not linux */
 
 /*
@@ -77,6 +77,30 @@ FILE	*debug;
 #define	DEBUG(f)	if (debug) fprintf(debug, f)
 #define	DEBUG1(f,a)	if (debug) fprintf(debug, f, a)
 #define	DEBUG2(f,a1,a2)	if (debug) fprintf(debug, f, a1, a2)
+
+/*
+ * Support for Sun's extended RMT protocol
+ */
+#define RMTI_VERSION    -1
+#define RMT_VERSION 1
+ 
+/* Extended 'i' commands */
+#define RMTI_CACHE  0
+#define RMTI_NOCACHE    1
+#define RMTI_RETEN  2
+#define RMTI_ERASE  3
+#define RMTI_EOM    4
+#define RMTI_NBSF   5
+ 
+/* Extended 's' comands */
+#define MTS_TYPE    'T'
+#define MTS_DSREG   'D'
+#define MTS_ERREG   'E'
+#define MTS_RESID   'R'
+#define MTS_FILENO  'F'
+#define MTS_BLKNO   'B'
+#define MTS_FLAGS   'f'
+#define MTS_BF      'b'
 
 char	*checkbuf __P((char *, int));
 void	 error __P((int));
@@ -175,7 +199,10 @@ top:
 		getstring(op);
 		getstring(count);
 		DEBUG2("rmtd: I %s %s\n", op, count);
-		{ struct mtop mtop;
+		if (atoi(op) == RMTI_VERSION) {
+			rval = RMT_VERSION;
+		} else { 
+		  struct mtop mtop;
 		  mtop.mt_op = atoi(op);
 		  mtop.mt_count = atoi(count);
 		  if (ioctl(tape, MTIOCTOP, (char *)&mtop) < 0)
@@ -183,6 +210,56 @@ top:
 		  rval = mtop.mt_count;
 		}
 		goto respond;
+
+	case 'i':
+	{	struct mtop mtop;
+ 
+		getstring (op);
+		getstring (count);
+		DEBUG2 ("rmtd: i %s %s\n", op, count);
+		switch (atoi(op)) {
+#ifdef MTCACHE
+			case RMTI_CACHE:
+				mtop.mt_op = MTCACHE;
+				break;
+#endif
+#ifdef MTNOCACHE
+			case RMTI_NOCACHE:
+				mtop.mt_op = MTNOCACHE;
+				break;
+#endif
+#ifdef MTRETEN
+			case RMTI_RETEN:
+				mtop.mt_op = MTRETEN;
+				break;
+#endif
+#ifdef MTERASE
+			case RMTI_ERASE:
+				mtop.mt_op = MTERASE;
+				break;
+#endif
+#ifdef MTEOM
+			case RMTI_EOM:
+				mtop.mt_op = MTEOM;
+				break;
+#endif
+#ifdef MTNBSF
+			case RMTI_NBSF:
+				mtop.mt_op = MTNBSF;
+				break;
+#endif
+			default:
+				errno = EINVAL;
+				goto ioerror;
+		}
+		mtop.mt_count = atoi (count);
+		if (ioctl (tape, MTIOCTOP, (char *) &mtop) < 0)
+			goto ioerror;
+
+		rval = mtop.mt_count;
+
+		goto respond;
+	}
 
 	case 'S':		/* status */
 		DEBUG("rmtd: S\n");
@@ -195,6 +272,49 @@ top:
 		  (void)write(1, (char *)&mtget, sizeof (mtget));
 		  goto top;
 		}
+
+	case 's':
+	{	char s;
+		struct mtget mtget;
+ 
+		if (read (0, &s, 1) != 1)
+			goto top;
+ 
+		if (ioctl (tape, MTIOCGET, (char *) &mtget) < 0)
+			goto ioerror;
+
+		switch (s) {
+			case MTS_TYPE:
+				rval = mtget.mt_type;
+				break;
+			case MTS_DSREG:
+				rval = mtget.mt_dsreg;
+				break;
+			case MTS_ERREG:
+				rval = mtget.mt_erreg;
+				break;
+			case MTS_RESID:
+				rval = mtget.mt_resid;
+				break;
+			case MTS_FILENO:
+				rval = mtget.mt_fileno;
+				break;
+			case MTS_BLKNO:
+				rval = mtget.mt_blkno;
+				break;
+			case MTS_FLAGS:
+				rval = mtget.mt_gstat;
+				break;
+			case MTS_BF:
+				rval = 0;
+				break;
+			default:
+				errno = EINVAL;
+				goto ioerror;
+		}
+
+		goto respond;
+	}
 
         case 'V':               /* version */
                 getstring(op);
