@@ -3,8 +3,9 @@
  *	dump and restore backup suit
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *	Stelian Pop <pop@cybercable.fr>, 1999-2000
+ *	Stelian Pop <pop@cybercable.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: compatglob.h,v 1.5 2000/01/21 10:17:41 stelian Exp $
+ *	$Id: compatglob.h,v 1.6 2000/11/10 14:42:24 stelian Exp $
  */
 
 /*

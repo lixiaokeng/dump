@@ -3,7 +3,9 @@
  *	dump and restore backup suit
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *      Stelian Pop <pop@cybercable.fr>, 1999-2000
+ *	Stelian Pop <pop@cybercable.fr> - Alcôve <www.alcove.fr>, 2000
  *
+ *	$Id: dumprestore.h,v 1.7 2000/11/10 14:42:25 stelian Exp $
  */
 
 /*
@@ -42,8 +44,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $Id: dumprestore.h,v 1.6 2000/01/21 10:17:41 stelian Exp $
  */
 
 #ifndef _PROTOCOLS_DUMPRESTORE_H_

@@ -3,8 +3,9 @@
  *	dump and restore backup suit
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *	Stelian Pop <pop@cybercable.fr>, 1999-2000
+ *	Stelian Pop <pop@cybercable.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: fstab.h,v 1.6 2000/11/10 09:35:07 stelian Exp $
+ *	$Id: fstab.h,v 1.7 2000/11/10 14:42:24 stelian Exp $
  */
 
 /*

@@ -3,6 +3,7 @@
  *	dump and restore backup suit
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *	Stelian Pop <pop@cybercable.fr>, 1999-2000
+ *	Stelian Pop <pop@cybercable.fr> - Alcôve <www.alcove.fr>, 2000
  */
 
 /*-
@@ -40,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dumprmt.c,v 1.12 2000/11/03 18:28:58 stelian Exp $";
+	"$Id: dumprmt.c,v 1.13 2000/11/10 14:42:24 stelian Exp $";
 #endif /* not lint */
 
 #ifdef __linux__

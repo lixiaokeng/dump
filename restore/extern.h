@@ -3,8 +3,9 @@
  *	dump and restore backup suit
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *	Stelian Pop <pop@cybercable.fr>, 1999-2000
+ *	Stelian Pop <pop@cybercable.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: extern.h,v 1.8 2000/02/08 12:22:43 stelian Exp $
+ *	$Id: extern.h,v 1.9 2000/11/10 14:42:25 stelian Exp $
  */
 
 /*-
