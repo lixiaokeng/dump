@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.42 2002/06/10 14:05:00 stelian Exp $
+.\"	$Id: dump.8.in,v 1.43 2002/07/23 12:20:35 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -228,7 +228,7 @@ running the script.
 Honor the user
 .Dq nodump
 flag
-.Dp Dv UF_NODUMP
+.Dv UF_NODUMP
 only for dumps at or above the given
 .Ar level .
 The default honor level is 1,
