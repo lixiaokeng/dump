@@ -34,7 +34,7 @@ like dump (a filesystem backup program), restore (a program for
 restoring files from a backup) and tar (an archiving program).
 
 %package -n dump-static
-Summary: Programs for backing up and restoring filesystems.
+Summary: Statically linked versions of dump and restore.
 Group: Applications/Archiving
 
 %description -n dump-static

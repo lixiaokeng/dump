@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: fstab.c,v 1.6 2000/01/21 10:17:41 stelian Exp $";
+	"$Id: fstab.c,v 1.7 2000/08/20 19:41:24 stelian Exp $";
 #endif /* not lint */
 
 #include <errno.h>
@@ -50,12 +50,15 @@ static const char rcsid[] =
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <bylabel.h>
 
 static FILE *_fs_fp;
 static struct fstab _fs_fstab;
 
 static void error __P((int));
 static int fstabscan __P((void));
+
+void msg __P((const char *fmt, ...));
 
 static
 int fstabscan(void)
@@ -65,12 +68,18 @@ int fstabscan(void)
 	int typexx;
 #define	MAXLINELENGTH	1024
 	char subline[MAXLINELENGTH];
+	char *device_name;
 
 	for (;;) {
 		if (!(mnt = getmntent(_fs_fp)))
 			return 0;
 
-		_fs_fstab.fs_spec = mnt->mnt_fsname;
+		device_name = get_device_name(mnt->mnt_fsname);
+		if (!device_name) {
+			msg("Warning: unable to translate %s\n", mnt->mnt_fsname);
+			continue;
+		}
+		_fs_fstab.fs_spec = device_name;
 		_fs_fstab.fs_file = mnt->mnt_dir;
 		_fs_fstab.fs_vfstype = mnt->mnt_type;
 		_fs_fstab.fs_mntops = mnt->mnt_opts;

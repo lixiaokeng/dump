@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.23 2000/08/19 23:48:10 stelian Exp $";
+	"$Id: main.c,v 1.24 2000/08/20 19:41:50 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -79,6 +79,7 @@ static const char rcsid[] =
 
 #include "dump.h"
 #include "pathnames.h"
+#include "bylabel.h"
 
 #ifndef SBOFF
 #define SBOFF (SBLOCK * DEV_BSIZE)
@@ -126,6 +127,7 @@ main(int argc, char *argv[])
 #endif
 	time_t tnow;
 	char labelstr[LBLSIZE];
+	char *diskparam;
 
 	spcl.c_date = 0;
 #ifdef	__linux__
@@ -287,9 +289,9 @@ main(int argc, char *argv[])
 		(void)fprintf(stderr, "Must specify disk or filesystem\n");
 		exit(X_STARTUP);
 	}
-	disk = *argv++;
-	if (strlen(disk) >= MAXPATHLEN) {
-		(void)fprintf(stderr, "Disk or filesystem name too long: %s\n", disk);
+	diskparam = *argv++;
+	if (strlen(diskparam) >= MAXPATHLEN) {
+		(void)fprintf(stderr, "Disk or filesystem name too long: %s\n", diskparam);
 		exit(X_STARTUP);
 	}
 	argc--;
@@ -363,6 +365,14 @@ main(int argc, char *argv[])
 		signal(SIGINT, SIG_IGN);
 	set_operators();	/* /etc/group snarfed */
 	getfstab();		/* /etc/fstab snarfed */
+
+	disk = get_device_name(diskparam);
+	if (!disk) {		/* null means the disk is some form
+				   of LABEL= or UID= but it was not
+				   found */
+		msg("Cannot find a disk having %s\n", diskparam);
+		exit(X_STARTUP);
+	}
 	/*
 	 *      disk may end in / and this can confuse
 	 *      fstabsearch.
@@ -421,7 +431,6 @@ main(int argc, char *argv[])
 			exit(X_STARTUP);
 		}
 	}
-
 	spcl.c_dev[NAMELEN-1]='\0';
 	spcl.c_filesys[NAMELEN-1]='\0';
 	(void)strncpy(spcl.c_label, labelstr, sizeof(spcl.c_label) - 1);

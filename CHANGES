@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.76 2000/08/20 16:34:00 stelian Exp $
+$Id: CHANGES,v 1.77 2000/08/20 19:41:23 stelian Exp $
 
 Changes between versions 0.4b17 and 0.4b19 (released ?????????????)
 ===================================================================
@@ -36,6 +36,12 @@ Changes between versions 0.4b17 and 0.4b19 (released ?????????????)
 8.	Updated the configure script to check for libtermcap
 	before checking for libreadline, because we need this
 	library in order to compile the readline support.
+
+9.	Made dump understand the LABEL= and UUID= notation
+	both in /etc/fstab and on the command line. Note that
+	you will need the /proc filesystem in order to use
+	these notations. Thanks to Erik Troan <ewt@redhat.com> 
+	for providing the patch.
 
 Changes between versions 0.4b17 and 0.4b18 (released June 30, 2000)
 ===================================================================
