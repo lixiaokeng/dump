@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.29 2001/09/12 10:21:49 stelian Exp $";
+	"$Id: main.c,v 1.30 2001/11/13 12:11:05 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -280,7 +280,7 @@ main(int argc, char *argv[])
 
 	atexit(cleanup);
 
-	if (command == 'C' && inputdev[0] != '/') {
+	if (command == 'C' && inputdev[0] != '/' && strcmp(inputdev, "-")) {
 		/* since we chdir into the directory we are comparing
 		 * to, we must retain the full tape path */
 		char wd[MAXPATHLEN], fullpathinput[MAXPATHLEN];
