@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.54 2001/07/19 09:49:35 stelian Exp $";
+	"$Id: main.c,v 1.55 2001/08/13 15:48:52 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -745,7 +745,7 @@ main(int argc, char *argv[])
 #ifdef USE_QFA
 	if (tapepos) {
 		msg("writing QFA positions to %s\n", gTapeposfile);
-		if ((gTapeposfd = open(gTapeposfile, O_RDWR|O_CREAT)) < 0)
+		if ((gTapeposfd = open(gTapeposfile, O_RDWR|O_CREAT, S_IRUSR | S_IWUSR)) < 0)
 			quit("can't open tapeposfile\n");
 		/* print QFA-file header */
 		sprintf(gTps, "%s\n%s\n%ld\n\n", QFA_MAGIC, QFA_VERSION, (unsigned long)spcl.c_date);
