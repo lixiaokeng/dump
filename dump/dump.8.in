@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.32 2001/08/16 15:24:21 stelian Exp $
+.\"	$Id: dump.8.in,v 1.33 2001/11/10 23:50:59 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -486,6 +486,7 @@ remote shell command to use when doing remote backups (rsh, ssh etc.).
 If this variable is not set, 
 .Xr rcmd 3
 will be used, but only root will be able to do remote backups.
+.El
 .Sh FILES
 .Bl -tag -width __DUMPDATES__ -compact
 .It Pa /dev/st0
