@@ -7,9 +7,10 @@ Name: dump
 Version: 0.4b24
 Release: 1
 License: BSD
+URL: http://dump.sourceforge.net
 Group: Applications/Archiving
 Source: http://download.sourceforge.net/dump/dump-%{version}.tar.gz
-BuildPrereq: e2fsprogs-devel, libtermcap-devel, readline-devel
+BuildPrereq: e2fsprogs-devel >= 1.18, libtermcap-devel, readline-devel >= 4.1
 Requires: rmt
 BuildRoot: %{_tmppath}/%{name}-root
 
