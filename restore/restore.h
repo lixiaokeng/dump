@@ -4,7 +4,7 @@
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *	Stelian Pop <pop@cybercable.fr>, 1999-2000
  *
- *	$Id: restore.h,v 1.7 2000/01/21 10:17:41 stelian Exp $
+ *	$Id: restore.h,v 1.8 2000/03/02 11:34:51 stelian Exp $
  */
 
 /*
@@ -45,6 +45,7 @@
  * SUCH DAMAGE.
  */
 
+#include <protocols/dumprestore.h>
 /*
  * Flags
  */
@@ -78,7 +79,7 @@ extern int	compare_ignore_not_found;
 				/* used to compare incremental dumps, */
 				/* so messages about "not found" files */
 				/* isn't seen. */
-extern char	*filesys;	/* name of dumped filesystem */
+extern char	filesys[NAMELEN];/* name of dumped filesystem */
 
 /*
  * Each file in the file system is described by one of these entries

@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.11 2000/02/04 20:22:21 stelian Exp $
+.\"	$Id: dump.8.in,v 1.12 2000/03/02 11:34:51 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -44,7 +44,9 @@
 .Op Fl B Ar records
 .Op Fl b Ar blocksize
 .Op Fl d Ar density
+.Op Fl e Ar inode number
 .Op Fl f Ar file
+.Op Fl F Ar script
 .Op Fl h Ar level
 .Op Fl L Ar label
 .Op Fl s Ar feet
@@ -55,7 +57,9 @@
 .Op Fl B Ar records
 .Op Fl b Ar blocksize
 .Op Fl d Ar density
+.Op Fl e Ar inode number
 .Op Fl f Ar file
+.Op Fl F Ar script
 .Op Fl h Ar level
 .Op Fl L Ar label
 .Op Fl s Ar feet
@@ -190,6 +194,12 @@ program is
 .Pa /etc/rmt ;
 this can be overridden by the environment variable
 .Ev RMT .
+.It Fl F Ar script
+Run script at the end of each tape. The script must return 0
+if the dump should continue without asking the user to change
+the tape, 1 if the dump should continue but ask the user
+to change the tape. Any other exit code will cause dump to
+abort.
 .It Fl k
 Use Kerberos authentication to talk to remote tape servers.  (Only
 available if this option was enabled when

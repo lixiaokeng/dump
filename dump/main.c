@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.17 2000/03/01 10:16:05 stelian Exp $";
+	"$Id: main.c,v 1.18 2000/03/02 11:34:51 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -141,6 +141,7 @@ main(int argc, char *argv[])
 #endif
 
 	tsize = 0;	/* Default later, based on 'c' option for cart tapes */
+	eot_script = NULL;
 	if ((tapeprefix = getenv("TAPE")) == NULL)
 		tapeprefix = _PATH_DEFTAPE;
 	dumpdates = _PATH_DUMPDATES;
@@ -154,9 +155,9 @@ main(int argc, char *argv[])
 
 	obsolete(&argc, &argv);
 #ifdef KERBEROS
-#define optstring "0123456789aB:b:cd:e:f:h:kL:Mns:ST:uWw"
+#define optstring "0123456789aB:b:cd:e:f:F:h:kL:Mns:ST:uWw"
 #else
-#define optstring "0123456789aB:b:cd:e:f:h:L:Mns:ST:uWw"
+#define optstring "0123456789aB:b:cd:e:f:F:h:L:Mns:ST:uWw"
 #endif
 	while ((ch = getopt(argc, argv, optstring)) != -1)
 #undef optstring
@@ -207,6 +208,10 @@ main(int argc, char *argv[])
 
 		case 'f':		/* output file */
 			tapeprefix = optarg;
+			break;
+
+		case 'F':		/* end of tape script */
+			eot_script = optarg;
 			break;
 
 		case 'h':
@@ -655,6 +660,9 @@ main(int argc, char *argv[])
 	spcl.c_type = TS_END;
 	for (i = 0; i < ntrec; i++)
 		writeheader(maxino - 1);
+
+	tnow = trewind();
+
 	if (pipeout)
 		msg("DUMP: %ld tape blocks\n", spcl.c_tapea);
 	else
@@ -669,7 +677,6 @@ main(int argc, char *argv[])
 		    tend_writing - tstart_writing,
 		    spcl.c_tapea / (tend_writing - tstart_writing));
 
-	tnow = do_stats();
 	putdumptime();
 #ifdef __linux__
 	msg("DUMP: Date of this level %c dump: %s", level,
@@ -682,7 +689,6 @@ main(int argc, char *argv[])
 
 	msg("DUMP: Average transfer rate: %ld KB/s\n", xferrate / tapeno);
 
-	trewind();
 	broadcast("DUMP IS DONE!\7\7\n");
 	msg("DUMP IS DONE\n");
 	Exit(X_FINOK);
@@ -812,8 +818,11 @@ obsolete(int *argcp, char **argvp[])
 		case 'B':
 		case 'b':
 		case 'd':
+		case 'e':
 		case 'f':
+		case 'F':
 		case 'h':
+		case 'L':
 		case 's':
 		case 'T':
 			if (*argv == NULL) {

@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.14 2000/03/01 10:16:05 stelian Exp $";
+	"$Id: tape.c,v 1.15 2000/03/02 11:34:51 stelian Exp $";
 #endif /* not lint */
 
 #ifdef __linux__
@@ -73,6 +73,7 @@ static const char rcsid[] =
 #include <setjmp.h>
 #include <signal.h>
 #include <stdio.h>
+#include <compaterr.h>
 #ifdef __STDC__
 #include <stdlib.h>
 #include <string.h>
@@ -97,6 +98,7 @@ extern	int cartridge;
 extern	char *host;
 char	*nexttape;
 extern  pid_t rshpid;
+int 	eot_code = 1;
 
 static	ssize_t atomic_read __P((int, void *, size_t));
 static	ssize_t atomic_write __P((int, const void *, size_t));
@@ -402,7 +404,42 @@ flushtape(void)
 	timeest();
 }
 
-void
+/*
+ * Executes the command in a shell.
+ * Returns -1 if an error occured, the exit status of
+ * the command on success.
+ */
+int system_command(const char *command) {
+	int pid, status;
+
+	pid = fork();
+	if (pid == -1) {
+		perror("  DUMP: unable to fork");
+		return -1;
+	}
+	if (pid == 0) {
+		setuid(getuid());
+		setgid(getgid());
+		execl("/bin/sh", "sh", "-c", command, NULL);
+		perror("  DUMP: unable to execute shell");
+		exit(-1);
+	}
+	do {
+		if (waitpid(pid, &status, 0) == -1) {
+			if (errno != EINTR) {
+				perror("  DUMP: waitpid error");
+				return -1;
+			}
+		} else {
+			if (WIFEXITED(status))
+				return WEXITSTATUS(status);
+			else
+				return -1;
+		}
+	} while(1);
+}
+
+time_t
 trewind(void)
 {
 	int f;
@@ -435,32 +472,45 @@ trewind(void)
 	while (wait((int *)NULL) >= 0)	/* wait for any signals from slaves */
 		/* void */;
 
-	if (pipeout)
-		return;
+	if (!pipeout) {
 
-	msg("Closing %s\n", tape);
+		msg("Closing %s\n", tape);
 
 #ifdef RDUMP
-	if (host) {
-		rmtclose();
-		while (rmtopen(tape, 0) < 0)
-			sleep(10);
-		rmtclose();
-		return;
-	}
+		if (host) {
+			rmtclose();
+			while (rmtopen(tape, 0) < 0)
+				sleep(10);
+			rmtclose();
+		}
+		else 
+#else
+		{
+			(void) close(tapefd);
+			while ((f = open(tape, 0)) < 0)
+				sleep (10);
+			(void) close(f);
+		}
 #endif
-	(void) close(tapefd);
-	while ((f = open(tape, 0)) < 0)
-		sleep (10);
-	(void) close(f);
+		eot_code = 1;
+		if (eot_script) {
+			msg("Launching %s\n", eot_script);
+			eot_code = system_command(eot_script);
+		}
+		if (eot_code != 0 && eot_code != 1) {
+			msg("Dump aborted by the end of tape script\n");
+			dumpabort(0);
+		}
+	}
+	return do_stats();
 }
 
+		
 void
 close_rewind(void)
 {
-	trewind();
-	(void)do_stats();
-	if (nexttape || Mflag)
+	(void)trewind();
+	if (nexttape || Mflag || (eot_code == 0) )
 		return;
 	if (!nogripe) {
 		msg("Change Volumes: Mount volume #%d\n", tapeno+1);

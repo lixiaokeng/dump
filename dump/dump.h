@@ -4,7 +4,7 @@
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *	Stelian Pop <pop@cybercable.fr>, 1999-2000
  *
- *	$Id: dump.h,v 1.12 2000/03/01 10:16:05 stelian Exp $
+ *	$Id: dump.h,v 1.13 2000/03/02 11:34:51 stelian Exp $
  */
 
 /*-
@@ -71,6 +71,7 @@ char	lastlevel;	/* dump level of previous dump */
 char	level;		/* dump level of this dump */
 int	uflag;		/* update flag */
 int	Mflag;		/* multi-volume flag */
+char	*eot_script;	/* end of volume script fiag */
 int	diskfd;		/* disk file descriptor */
 int	tapefd;		/* tape file descriptor */
 int	pipeout;	/* true => output to standard output */
@@ -143,7 +144,7 @@ int	alloctape __P((void));
 void	close_rewind __P((void));
 void	dumpblock __P((daddr_t blkno, int size));
 void	startnewtape __P((int top));
-void	trewind __P((void));
+time_t	trewind __P((void));
 void	writerec __P((const void *dp, int isspcl));
 
 void 	Exit __P((int status));

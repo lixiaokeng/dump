@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.8 2000/01/21 10:17:41 stelian Exp $";
+	"$Id: main.c,v 1.9 2000/03/02 11:34:51 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -87,7 +87,7 @@ time_t	dumpdate;
 FILE 	*terminal;
 char	*tmpdir;
 int	compare_ignore_not_found;
-char	*filesys = NULL;
+char	filesys[NAMELEN];
 
 #ifdef	__linux__
 char	*__progname;
@@ -107,7 +107,7 @@ main(int argc, char *argv[])
 
 	/* Temp files should *not* be readable.  We set permissions later. */
 	(void) umask(077);
-
+	filesys[0] = '\0';
 #ifdef	__linux__
 	__progname = argv[0];
 #endif
@@ -144,7 +144,8 @@ main(int argc, char *argv[])
 			cvtflag = 1;
 			break;
 		case 'D':
-			filesys = optarg;
+			strncpy(filesys, optarg, NAMELEN);
+			filesys[NAMELEN - 1] = '\0';
 			break;
 		case 'T':
 			tmpdir = optarg;
@@ -402,8 +403,10 @@ obsolete(int *argcp, char **argvp[])
 	for (flags = 0; *ap; ++ap) {
 		switch (*ap) {
 		case 'b':
+		case 'D':
 		case 'f':
 		case 's':
+		case 'T':
 			if (*argv == NULL) {
 				warnx("option requires an argument -- %c", *ap);
 				usage();
