@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: restore.h,v 1.17 2001/08/13 16:17:52 stelian Exp $
+ *	$Id: restore.h,v 1.18 2001/09/12 10:21:49 stelian Exp $
  */
 
 /*
@@ -57,6 +57,7 @@ extern int	dflag;		/* print out debugging info */
 extern int	hflag;		/* restore heirarchies */
 extern int	mflag;		/* restore by name instead of inode number */
 extern int	Mflag;		/* multi-volume restore */
+extern int	Vflag;		/* multi-volume on a single device like CDROM */
 extern int	Nflag;		/* do not write the disk */
 extern int	uflag;		/* unlink symlink targets */
 extern int	vflag;		/* print out actions taken */

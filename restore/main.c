@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.28 2001/08/14 13:11:58 stelian Exp $";
+	"$Id: main.c,v 1.29 2001/09/12 10:21:49 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -81,7 +81,7 @@ static const char rcsid[] =
 #include "extern.h"
 
 int	bflag = 0, cvtflag = 0, dflag = 0, vflag = 0, yflag = 0;
-int	hflag = 1, mflag = 1, Mflag = 0, Nflag = 0, zflag = 0;
+int	hflag = 1, mflag = 1, Mflag = 0, Nflag = 0, Vflag = 0, zflag = 0;
 int	uflag = 0;
 int	dokerberos = 0;
 char	command = '\0';
@@ -162,7 +162,7 @@ main(int argc, char *argv[])
 #ifdef USE_QFA
 		"Q:"
 #endif
-		"Rrs:tT:uvxX:y")) != -1)
+		"Rrs:tT:uvVxX:y")) != -1)
 		switch(ch) {
 		case 'b':
 			/* Change default tape blocksize. */
@@ -242,6 +242,9 @@ main(int argc, char *argv[])
 			break;
 		case 'v':
 			vflag = 1;
+			break;
+		case 'V':
+			Vflag = 1;
 			break;
 		case 'X':
 			if( !strcmp(optarg,"-") ) {
@@ -525,12 +528,12 @@ usage(void)
 
 	(void)fprintf(stderr,
 	  "usage:\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n",
-	  __progname, " -C [-c" kerbflag "Mvy] [-b blocksize] [-D filesystem] [-f file] [-F script] [-s fileno]",
-	  __progname, " -i [-ch" kerbflag "mMuvy] [-b blocksize] [-f file] [-F script] " qfaflag "[-s fileno]",
-	  __progname, " -r [-c" kerbflag "Muvy] [-b blocksize] [-f file] [-F script] [-s fileno] [-T directory]",
-	  __progname, " -R [-c" kerbflag "Muvy] [-b blocksize] [-f file] [-F script] [-s fileno] [-T directory]",
-	  __progname, " -t [-ch" kerbflag "Muvy] [-b blocksize] [-f file] [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]",
-	  __progname, " -x [-ch" kerbflag "mMuvy] [-b blocksize] [-f file] [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]");
+	  __progname, " -C [-c" kerbflag "MvVy] [-b blocksize] [-D filesystem] [-f file] [-F script] [-s fileno]",
+	  __progname, " -i [-ch" kerbflag "mMuvVy] [-b blocksize] [-f file] [-F script] " qfaflag "[-s fileno]",
+	  __progname, " -r [-c" kerbflag "MuvVy] [-b blocksize] [-f file] [-F script] [-s fileno] [-T directory]",
+	  __progname, " -R [-c" kerbflag "MuvVy] [-b blocksize] [-f file] [-F script] [-s fileno] [-T directory]",
+	  __progname, " -t [-ch" kerbflag "MuvVy] [-b blocksize] [-f file] [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]",
+	  __progname, " -x [-ch" kerbflag "mMuvVy] [-b blocksize] [-f file] [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]");
 	exit(1);
 }
 

@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.46 2001/08/16 15:24:22 stelian Exp $";
+	"$Id: tape.c,v 1.47 2001/09/12 10:21:49 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1492,6 +1492,9 @@ readtape_comprfile(char *buf)
 
 	/* read the block prefix */
 	ret = read_a_block(mt, tapebuf, PREFIXSIZE, &rl);
+
+	if (Vflag && (ret == 0 || rl < PREFIXSIZE  ||  tpb->length == 0))
+		ret = 0;
 	if (ret <= 0)
 		goto readerr;
 
@@ -1932,7 +1935,9 @@ setmagtapein(void) {
 			magtapein = ioctl(mt, MTIOCGET, (char *)&mt_stat) == 0;
 	}
 
-	Vprintf(stdout,"Input is from %s\n", magtapein? "tape": "file/pipe");
+	Vprintf(stdout,"Input is from %s\n", 
+			magtapein ? "tape" :
+			Vflag ? "multi-volume (no tape)" : "file/pipe");
 }
 
 /*

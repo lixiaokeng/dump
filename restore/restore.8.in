@@ -29,7 +29,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: restore.8.in,v 1.16 2001/07/18 13:12:33 stelian Exp $
+.\"	$Id: restore.8.in,v 1.17 2001/09/12 10:21:49 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt RESTORE 8
@@ -40,7 +40,7 @@
 .Sh SYNOPSIS
 .Nm restore
 .Fl C
-.Op Fl ckMvy
+.Op Fl ckMvVy
 .Op Fl b Ar blocksize
 .Op Fl D Ar filesystem
 .Op Fl f Ar file
@@ -49,7 +49,7 @@
 .Op Fl T Ar directory
 .Nm restore
 .Fl i
-.Op Fl chkmMNuvy
+.Op Fl chkmMNuvVy
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
 .Op Fl F Ar script
@@ -58,7 +58,7 @@
 .Op Fl T Ar directory
 .Nm restore
 .Fl R
-.Op Fl ckMNuvy
+.Op Fl ckMNuvVy
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
 .Op Fl F Ar script
@@ -66,7 +66,7 @@
 .Op Fl T Ar directory
 .Nm restore
 .Fl r
-.Op Fl ckMNuvy
+.Op Fl ckMNuvVy
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
 .Op Fl F Ar script
@@ -74,7 +74,7 @@
 .Op Fl T Ar directory
 .Nm restore
 .Fl t
-.Op Fl chkMNuvy
+.Op Fl chkMNuvVy
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
 .Op Fl F Ar script
@@ -85,7 +85,7 @@
 .Op file ...
 .Nm restore
 .Fl x
-.Op Fl chkmMNuvy
+.Op Fl chkmMNuvVy
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
 .Op Fl F Ar script
@@ -433,6 +433,8 @@ The
 (verbose)
 flag causes it to type the name of each file it treats
 preceded by its file type.
+.It Fl V
+Enables reading multi-volume non-tape mediums like CDROMs.
 .It Fl X Ar filelist
 Read list of files to be listed or extracted from the text file
 .Ar filelist

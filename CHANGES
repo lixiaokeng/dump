@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.137 2001/09/12 09:02:51 stelian Exp $
+$Id: CHANGES,v 1.138 2001/09/12 10:21:48 stelian Exp $
 
 Changes between versions 0.4b23 and 0.4b24 (released ?????????????)
 ===================================================================
@@ -39,6 +39,12 @@ Changes between versions 0.4b23 and 0.4b24 (released ?????????????)
 
 9.	Updated the RPM spec file following the RedHat changes 
 	(dynamically linked binaries now in /usr/sbin etc).
+
+10.	Added a patch from Helmut Jarausch <jarausch@igpm.rwth-aachen.de>
+	which enables restore to recognise multi volume compressed dumps
+	done on CD. Included his scripts for dump (which pipe the dump
+	output directly into cdrecord) and restore. There is now 
+	possible to to backups to CD on the fly!
 
 Changes between versions 0.4b22 and 0.4b23 (released July 20, 2001)
 ===================================================================

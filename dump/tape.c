@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.56 2001/09/12 09:02:51 stelian Exp $";
+	"$Id: tape.c,v 1.57 2001/09/12 10:21:49 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1122,6 +1122,7 @@ doslave(int cmd, int slave_number, int first)
 		if (compressed && do_compress) {
 			comp_buf->length = bufsize;
 			worklen = TP_BSIZE + writesize;
+			compresult = 1;
 #ifdef HAVE_ZLIB
 			if (!bzipflag) {
 				compresult = compress2(comp_buf->buf, 

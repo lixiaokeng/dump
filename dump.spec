@@ -108,7 +108,7 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root)
 %doc CHANGES COPYRIGHT KNOWNBUGS MAINTAINERS README REPORTING-BUGS THANKS TODO
-%doc dump.lsm
+%doc dump.lsm examples
 %attr(0664,root,disk)	%config(noreplace) %{_sysconfdir}/dumpdates
 %attr(0755,root,root)	/usr/sbin/dump
 /usr/sbin/rdump
