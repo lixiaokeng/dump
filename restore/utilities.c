@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: utilities.c,v 1.27 2005/01/13 15:41:07 stelian Exp $";
+	"$Id: utilities.c,v 1.28 2005/03/30 13:21:45 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -380,7 +380,7 @@ badentry(struct entry *ep, const char *msg)
 		int i;
 		for (i = 0; i < DIRHASH_SIZE; i++) {
 			if (ep->e_entries[i] != NULL) {
-				fprintf(stderr, "next entry name: %s\n", myname(ep->e_entries[0]));
+				fprintf(stderr, "next entry name: %s\n", myname(ep->e_entries[i]));
 				break;
 			}
 		}
