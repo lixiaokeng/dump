@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.17 2000/11/10 11:48:31 stelian Exp $
+.\"	$Id: dump.8.in,v 1.18 2000/11/10 13:22:10 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -73,16 +73,12 @@ option below for doing remote backups).
 A dump that is larger than the output medium is broken into
 multiple volumes.
 On most media the size is determined by writing until an
-end-of-media indication is returned. This can be enforced
-by using the
-.Fl a
-option.
+end-of-media indication is returned.
 .Pp
 On media that cannot reliably return an end-of-media indication
-(such as some cartridge tape drives),
-each volume is of a fixed size;
-the actual size is determined by the tape size, density and/or
-block count options below.
+(such as some cartridge tape drives), each volume is of a fixed size;
+the actual size is determined by specifying cartridge media, or via the
+tape size, density and/or block count options below.
 By default, the same output file name is used for each volume
 after prompting the operator to change media.
 .Pp
@@ -116,16 +112,16 @@ last dump of a lower level.
 The default level is 9.
 .It Fl B Ar records
 The number of 1 KB blocks per volume.
-This option overrides the calculation of tape size
-based on length and density.
+This option overrides the end-of-media detection, and calculation 
+of tape size based on length and density.
 .It Fl a
 .Dq auto-size .
-Bypass all tape length considerations, and enforce writing
-until an end-of-media indication is returned.  This fits best
-for most modern tape drives.  Use of this option is particularly
-recommended when appending to an existing tape, or using a tape
-drive with hardware compression (where you can never be sure about
-the compression ratio).
+Bypass all tape length calculations, and write
+until an end-of-media indication is returned.  This works best
+for most modern tape drives, and is the default.  
+Use of this option is particularly recommended when appending to an 
+existing tape, or using a tape drive with hardware compression 
+(where you can never be sure about the compression ratio).
 .It Fl b Ar blocksize
 The number of kilobytes per dump record.
 Since the IO system slices all requests into chunks of MAXBSIZE
@@ -138,7 +134,8 @@ will constrain writes to MAXBSIZE.
 The default blocksize is 10.
 .It Fl c
 Change the defaults for use with a cartridge tape drive, with a density
-of 8000 bpi, and a length of 1700 feet.
+of 8000 bpi, and a length of 1700 feet. Specifying a cartridge drive
+overrides the end-of-media detection.
 .It Fl e Ar inode
 Exclude 
 .Ar inode
@@ -158,7 +155,8 @@ but full backups retain them.
 .It Fl d Ar density
 Set tape density to
 .Ar density .
-The default is 1600BPI.
+The default is 1600BPI. Specifying a tape density overrides the 
+end-of-media detection.
 .It Fl f Ar file
 Write the backup to
 .Ar file ;
@@ -241,13 +239,13 @@ notify all operators in the group
 by means similar to a
 .Xr wall 1 .
 .It Fl s Ar feet
-Attempt to calculate the amount of tape needed
-at a particular density.
+Attempt to calculate the amount of tape needed at a particular density.
 If this amount is exceeded,
 .Nm
 prompts for a new tape.
 It is recommended to be a bit conservative on this option.
-The default tape length is 2300 feet.
+The default tape length is 2300 feet. Specifying the tape size 
+overrides end-of-media detection.
 .ne 1i
 .It Fl S
 Size estimate. Determine the amount of space

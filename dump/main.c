@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.26 2000/09/26 12:34:52 stelian Exp $";
+	"$Id: main.c,v 1.27 2000/11/10 13:22:10 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -143,6 +143,7 @@ main(int argc, char *argv[])
 #endif
 
 	tsize = 0;	/* Default later, based on 'c' option for cart tapes */
+	unlimited = 1;
 	eot_script = NULL;
 	if ((tapeprefix = getenv("TAPE")) == NULL)
 		tapeprefix = _PATH_DEFTAPE;
@@ -175,6 +176,7 @@ main(int argc, char *argv[])
 			break;
 
 		case 'B':		/* blocks per output file */
+			unlimited = 0;
 			blocksperfile = numarg("number of blocks per file",
 			    1L, 0L);
 			break;
@@ -191,10 +193,12 @@ main(int argc, char *argv[])
 			break;
 
 		case 'c':		/* Tape is cart. not 9-track */
+			unlimited = 0;
 			cartridge = 1;
 			break;
 
 		case 'd':		/* density, in bits per inch */
+			unlimited = 0;
 			density = numarg("density", 10L, 327670L) / 10;
 			if (density >= 625 && !bflag)
 				ntrec = HIGHDENSITYTREC;
@@ -259,6 +263,7 @@ main(int argc, char *argv[])
 			break;
 
 		case 's':		/* tape size, feet */
+			unlimited = 0;
 			tsize = numarg("tape size", 1L, 0L) * 12 * 10;
 			break;
 
