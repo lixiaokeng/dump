@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: dump.h,v 1.41 2002/12/12 11:49:35 stelian Exp $
+ *	$Id: dump.h,v 1.42 2003/01/10 14:42:50 stelian Exp $
  */
 
 /*-
@@ -43,6 +43,7 @@
 
 #include <config.h>
 #include <protocols/dumprestore.h>
+#include <compatlfs.h>
 
 #define MAXINOPB	(MAXBSIZE / sizeof(struct dinode))
 #define MAXNINDIR	(MAXBSIZE / sizeof(daddr_t))
@@ -190,7 +191,7 @@ int	rmtopen __P((const char *tape, const int mode));
 void	rmtclose __P((void));
 int	rmtread __P((char *buf, size_t count));
 int	rmtwrite __P((const char *buf, size_t count));
-int	rmtseek __P((int offset, int pos));
+OFF_T	rmtseek __P((OFF_T offset, int pos));
 struct mtget * rmtstatus __P((void));
 int	rmtioctl __P((int cmd, int count));
 #endif /* RDUMP */

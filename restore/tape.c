@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.66 2002/11/28 08:54:00 stelian Exp $";
+	"$Id: tape.c,v 1.67 2003/01/10 14:42:51 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1019,7 +1019,7 @@ static void
 xtrskip(UNUSED(char *buf), size_t size)
 {
 
-	if (LSEEK(ofile, (off_t)size, SEEK_CUR) == -1)
+	if (LSEEK(ofile, (OFF_T)size, SEEK_CUR) == -1)
 		err(1, "seek error extracting inode %lu, name %s\nlseek",
 			(unsigned long)curfile.ino, curfile.name);
 }
@@ -1547,7 +1547,7 @@ getmore:
 			seek_failed = (rmtseek(i, 1) < 0);
 		else
 #endif
-			seek_failed = (LSEEK(mt, i, SEEK_CUR) == (off_t)-1);
+			seek_failed = (LSEEK(mt, i, SEEK_CUR) == (OFF_T)-1);
 
 		if (seek_failed) {
 			warn("continuation failed");
@@ -2589,7 +2589,7 @@ GotoTapePos(long long pos)
 
 #ifdef RDUMP
 	if (host)
-		err = (rmtseek((long)pos, SEEK_SET) < 0);
+		err = (rmtseek(pos, SEEK_SET) < 0);
 	else
 #endif
 	{

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: rmt.c,v 1.21 2002/07/29 12:00:34 stelian Exp $";
+	"$Id: rmt.c,v 1.22 2003/01/10 14:42:51 stelian Exp $";
 #endif /* not linux */
 
 /*
@@ -183,7 +183,7 @@ top:
 		getstring(count);
 		getstring(pos);
 		DEBUG2("rmtd: L %s %s\n", count, pos);
-		rval = LSEEK(tape, (off_t)atol(count), atoi(pos));
+		rval = LSEEK(tape, (OFF_T)atoll(count), atoi(pos));
 		if (rval < 0)
 			goto ioerror;
 		goto respond;

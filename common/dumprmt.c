@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dumprmt.c,v 1.23 2002/07/29 12:00:33 stelian Exp $";
+	"$Id: dumprmt.c,v 1.24 2003/01/10 14:42:50 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -331,12 +331,12 @@ rmtwrite(const char *buf, size_t count)
 	return (rmtreply("write"));
 }
 
-int
-rmtseek(int offset, int pos)
+OFF_T
+rmtseek(OFF_T offset, int pos)
 {
 	char line[80];
 
-	(void)snprintf(line, sizeof (line), "L%d\n%d\n", offset, pos);
+	(void)snprintf(line, sizeof (line), "L%lld\n%d\n", (long long)offset, pos);
 	return (rmtcall("seek", line));
 }
 

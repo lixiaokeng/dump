@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dirs.c,v 1.21 2002/07/19 14:57:39 stelian Exp $";
+	"$Id: dirs.c,v 1.22 2003/01/10 14:42:51 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -587,7 +587,7 @@ static long
 rst_telldir(RST_DIR *dirp)
 {
 	return ((long)lseek(dirp->dd_fd,
-	    (off_t)0, SEEK_CUR) - dirp->dd_size + dirp->dd_loc);
+	    (OFF_T)0, SEEK_CUR) - dirp->dd_size + dirp->dd_loc);
 }
 
 /*

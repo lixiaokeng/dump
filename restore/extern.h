@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: extern.h,v 1.20 2002/11/15 09:25:41 stelian Exp $
+ *	$Id: extern.h,v 1.21 2003/01/10 14:42:51 stelian Exp $
  */
 
 /*-
@@ -42,6 +42,7 @@
  */
 
 #include <config.h>
+#include <compatlfs.h>
 
 struct entry	*addentry __P((char *, dump_ino_t, int));
 long		 addfile __P((char *, dump_ino_t, int));
@@ -121,7 +122,7 @@ int		rmthost __P((const char *));
 int		rmtioctl __P((int, int));
 int		rmtopen __P((const char *, const int));
 int		rmtread __P((const char *, int));
-int		rmtseek __P((int, int));
+OFF_T		rmtseek __P((OFF_T, int));
 
 /* From e2fsprogs */
 int fsetflags __P((const char *, unsigned long));
