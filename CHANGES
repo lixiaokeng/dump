@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.38 2000/01/26 11:38:07 stelian Exp $
+$Id: CHANGES,v 1.39 2000/02/04 20:22:21 stelian Exp $
 
 Changes between versions 0.4b13 and 0.4b14 (released ????????????????)
 ======================================================================
@@ -17,6 +17,9 @@ Changes between versions 0.4b13 and 0.4b14 (released ????????????????)
 
 3.	Improved the output of dump in order to tell which directory
 	it is currently dumping (when dumping a subtree).
+
+4.	Added the '-e' exclude inode option to dump. Thanks to
+	Isaac Chuang <ike@isl.stanford.edu> for contributing with the patch.
 
 Changes between versions 0.4b12 and 0.4b13 (released January 21, 2000)
 ======================================================================

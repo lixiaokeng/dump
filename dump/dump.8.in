@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.10 2000/01/21 10:23:30 stelian Exp $
+.\"	$Id: dump.8.in,v 1.11 2000/02/04 20:22:21 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -137,6 +137,12 @@ will constrain writes to MAXBSIZE.
 .It Fl c
 Change the defaults for use with a cartridge tape drive, with a density
 of 8000 bpi, and a length of 1700 feet.
+.It Fl e Ar inode
+Exclude 
+.Ar inode
+from the dump (you can use 
+.Ar stat 
+to find the inode number for a file or directory).
 .It Fl h Ar level
 Honor the user
 .Dq nodump

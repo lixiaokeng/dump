@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.14 2000/01/21 10:17:41 stelian Exp $";
+	"$Id: traverse.c,v 1.15 2000/02/04 20:22:21 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -190,6 +190,9 @@ blockest(struct dinode *dp)
 #define	WANTTODUMP(dp) CHANGEDSINCE(dp, spcl.c_ddate)
 #endif
 
+extern ino_t iexclude_list[IEXCLUDE_MAXNUM];	/* the inode exclude list */
+extern int iexclude_num;	/* number of elements in the list */
+
 /*
  * Determine if given inode should be dumped
  */
@@ -217,6 +220,18 @@ mapfileino(ino_t ino, long *tapesize, int *dirskipped)
 	 * to the usedinomap.
 	 */
 	SETINO(ino, usedinomap);
+
+	/* 04-Feb-00 ILC */
+	if(iexclude_num) {	/* if there are inodes in the exclude list */
+		int idx;	/* then check this inode against it */
+		for (idx=0; idx<iexclude_num; idx++) {
+			if (ino == iexclude_list[idx]) {
+				msg("Excluding inode number %d\n", ino);
+				return;	/* if in list then skip */
+			}
+		}
+	}
+
 	if (mode == IFDIR)
 		SETINO(ino, dumpdirmap);
 	if (WANTTODUMP(dp)) {

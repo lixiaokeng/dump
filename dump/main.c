@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.14 2000/01/26 11:38:08 stelian Exp $";
+	"$Id: main.c,v 1.15 2000/02/04 20:22:21 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -105,6 +105,9 @@ static long numarg __P((const char *, long, long));
 static void obsolete __P((int *, char **[]));
 static void usage __P((void));
 
+ino_t iexclude_list[IEXCLUDE_MAXNUM];	/* the inode exclude list */
+int iexclude_num = 0;			/* number of elements in the list */
+
 int
 main(int argc, char *argv[])
 {
@@ -152,9 +155,9 @@ main(int argc, char *argv[])
 
 	obsolete(&argc, &argv);
 #ifdef KERBEROS
-#define optstring "0123456789aB:b:cd:f:h:kL:Mns:ST:uWw"
+#define optstring "0123456789aB:b:cd:e:f:h:kL:Mns:ST:uWw"
 #else
-#define optstring "0123456789aB:b:cd:f:h:L:Mns:ST:uWw"
+#define optstring "0123456789aB:b:cd:e:f:h:L:Mns:ST:uWw"
 #endif
 	while ((ch = getopt(argc, argv, optstring)) != -1)
 #undef optstring
@@ -193,6 +196,14 @@ main(int argc, char *argv[])
 			density = numarg("density", 10L, 327670L) / 10;
 			if (density >= 625 && !bflag)
 				ntrec = HIGHDENSITYTREC;
+			break;
+			
+			                /* 04-Feb-00 ILC */
+		case 'e':		/* exclude an inode */
+		        iexclude_list[iexclude_num++] = 
+			  numarg("inode to exclude",0L,0L);
+			msg("Added %d to exclude list\n",
+			    iexclude_list[iexclude_num-1]);
 			break;
 
 		case 'f':		/* output file */
@@ -695,7 +706,7 @@ usage(void)
 		"k"
 #endif
 		"MnSu] [-B records] [-b blocksize] [-d density]\n"
-		"\t%s [-f file] [-h level] [-s feet] [-T date] filesystem\n"
+		"\t%s [-e inode#] [-f file] [-h level] [-s feet] [-T date] filesystem\n"
 		"\t%s [-W | -w]\n", __progname, white, __progname);
 	exit(X_STARTUP);
 }

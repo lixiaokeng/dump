@@ -4,7 +4,7 @@
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *	Stelian Pop <pop@cybercable.fr>, 1999-2000
  *
- *	$Id: dump.h,v 1.9 2000/01/21 10:17:41 stelian Exp $
+ *	$Id: dump.h,v 1.10 2000/02/04 20:22:21 stelian Exp $
  */
 
 /*-
@@ -257,3 +257,7 @@ extern void exit();
 extern off_t lseek();
 extern const char *strerror();
 #endif
+
+				/* 04-Feb-00 ILC */
+#define IEXCLUDE_MAXNUM 256	/* max size of inode exclude list */
+

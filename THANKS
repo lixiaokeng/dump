@@ -1,4 +1,4 @@
-$Id: THANKS,v 1.18 2000/01/25 14:16:01 stelian Exp $
+$Id: THANKS,v 1.19 2000/02/04 20:22:21 stelian Exp $
 
 Dump and restore were written by the people of the CSRG at the University
 of California, Berkeley.
@@ -24,6 +24,7 @@ Here is a partial list of them (if I have forgotten someone, please complain):
 
 Stephen Carr		sgcarr@civeng.adelaide.edu.au
 Rob Cermak		cermak@ahab.rutgers.edu
+Isaac Chuang		ike@isl.stanford.edu
 Rainer Clasen		bj@ncc.cicely.de
 Abhijit Dasgupta	abhijit@ans.net
 Jason Fearon		jasonf@netrider.org.au
