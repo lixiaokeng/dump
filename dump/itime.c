@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: itime.c,v 1.26 2003/10/26 16:05:47 stelian Exp $";
+	"$Id: itime.c,v 1.27 2004/04/21 08:55:51 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -163,17 +163,17 @@ getdumptime(int createdumpdates)
 	int i;
 
 #ifdef FDEBUG
-	msg("Looking for name %s in dumpdates = %s for level = %c\n",
+	msg("Looking for name %s in dumpdates = %s for level = %s\n",
 		disk, dumpdates, level);
 #endif
 	spcl.c_ddate = 0;
-	lastlevel = '0';
+	memset(&lastlevel, 0, NUM_STR_SIZE);
 
 	/* If this is a level 0 dump, and we're not updating 
 	   dumpdates, there's no point in trying to read
 	   dumpdates.  It may not exist yet, or may not be mounted.  For
 	   incrementals, we *must* read dumpdates (fail if it's not there!) */
-	if ( (level == lastlevel) && !createdumpdates)
+	if ( (!strcmp(level, lastlevel)) && !createdumpdates)
 		return;
 	initdumptimes(createdumpdates);
 	if (ddatev == NULL)
@@ -185,12 +185,12 @@ getdumptime(int createdumpdates)
 	ITITERATE(i, ddp) {
 		if (strncmp(disk, ddp->dd_name, sizeof (ddp->dd_name)) != 0)
 			continue;
-		if (ddp->dd_level >= level)
+		if (ddp->dd_level >= atoi(level))
 			continue;
 		if (ddp->dd_ddate <= (time_t)spcl.c_ddate)
 			continue;
 		spcl.c_ddate = ddp->dd_ddate;
-		lastlevel = ddp->dd_level;
+		snprintf(lastlevel, NUM_STR_SIZE, "%d", ddp->dd_level);
 	}
 }
 
@@ -225,7 +225,7 @@ putdumptime(void)
 		if (strncmp(disk, dtwalk->dd_name,
 				sizeof (dtwalk->dd_name)) != 0)
 			continue;
-		if (dtwalk->dd_level != level)
+		if (dtwalk->dd_level != atoi(level))
 			continue;
 		goto found;
 	}
@@ -238,7 +238,7 @@ putdumptime(void)
 	nddates += 1;
   found:
 	(void) strncpy(dtwalk->dd_name, disk, sizeof (dtwalk->dd_name));
-	dtwalk->dd_level = level;
+	dtwalk->dd_level = atoi(level);
 	dtwalk->dd_ddate = spcl.c_date;
 
 	ITITERATE(i, dtwalk) {
@@ -262,7 +262,7 @@ dumprecout(FILE *file, struct dumpdates *what)
 	if (buf[24] != '\n' || buf[25] != '\0')
 		quit("asctime returned an unexpected string\n");
 	buf[24] = 0;
-	if (fprintf(file, "%s %c %s %c%2.2d%2.2d\n",
+	if (fprintf(file, "%s %d %s %c%2.2d%2.2d\n",
 		    what->dd_name,
 		    what->dd_level,
 		    buf,
@@ -288,7 +288,7 @@ getrecord(FILE *df, struct dumpdates *ddatep)
 			dumpdates, recno);
 
 #ifdef FDEBUG
-	msg("getrecord: %s %c %s", ddatep->dd_name, ddatep->dd_level,
+	msg("getrecord: %s %d %s", ddatep->dd_name, ddatep->dd_level,
 	    ddatep->dd_ddate == 0 ? "the epoch\n" : ctime(&ddatep->dd_ddate));
 #endif
 	return(0);
@@ -298,7 +298,6 @@ static int
 makedumpdate(struct dumpdates *ddp, char *tbuf)
 {
 	char *tok;
-	
 	/* device name */
 	if ( NULL == (tok = strsep( &tbuf, " ")) )
 		return(-1);
@@ -310,8 +309,9 @@ makedumpdate(struct dumpdates *ddp, char *tbuf)
 	for( ; *tbuf == ' ' ; tbuf++);
 
 	/* dump level */
-	ddp->dd_level = *tbuf;
-	++tbuf;
+	ddp->dd_level = atoi(tbuf);
+	/* eat the rest of the numbers*/
+	for( ; *tbuf >= '0' && *tbuf <= '9' ; tbuf++);
 
 	/* eat whitespace */
 	for( ; *tbuf == ' ' ; tbuf++);

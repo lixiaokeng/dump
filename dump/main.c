@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.91 2004/01/27 10:46:55 stelian Exp $";
+	"$Id: main.c,v 1.92 2004/04/21 08:55:51 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -103,8 +103,8 @@ const char *disk;	/* name of the disk file */
 char	tape[MAXPATHLEN];/* name of the tape file */
 char	*tapeprefix;	/* prefix of the tape file */
 char	*dumpdates;	/* name of the file containing dump date information*/
-char	lastlevel;	/* dump level of previous dump */
-char	level;		/* dump level of this dump */
+char	lastlevel[NUM_STR_SIZE];/* dump level of previous dump */
+char	level[NUM_STR_SIZE];/* dump level of this dump */
 int	zipflag;	/* which compression method */
 int	Afile = -1;	/* archive file descriptor */
 int	AfileActive = 1;/* Afile flag */
@@ -204,7 +204,7 @@ main(int argc, char *argv[])
 	struct dinode *dp;
 	struct mntent *dt;
 	char *map;
-	int ch;
+	int ch, pch = 0;
 	int i, anydirskipped;
 	int aflag = 0, bflag = 0, Tflag = 0, honorlevel = 1;
 	dump_ino_t maxino;
@@ -236,7 +236,8 @@ main(int argc, char *argv[])
 	dumpdates = _PATH_DUMPDATES;
 	if (TP_BSIZE / DEV_BSIZE == 0 || TP_BSIZE % DEV_BSIZE != 0)
 		quit("TP_BSIZE must be a multiple of DEV_BSIZE\n");
-	level = '0';
+	memset(&lastlevel, 0, NUM_STR_SIZE);
+	memset(&level, 0, NUM_STR_SIZE);
 
 	if (argc < 2)
 		usage();
@@ -272,7 +273,11 @@ main(int argc, char *argv[])
 		/* dump level */
 		case '0': case '1': case '2': case '3': case '4':
 		case '5': case '6': case '7': case '8': case '9':
-			level = ch;
+			if ((pch >= '0') && (pch <= '9') && (strlen(level) < NUM_STR_SIZE))
+				level[strlen(level)] = ch;
+			else 
+				level[0] = ch;
+			pch = ch;
 			break;
 
 		case 'A':		/* archive file */
@@ -424,7 +429,7 @@ main(int argc, char *argv[])
 				exit(X_STARTUP);
 			}
 			Tflag = 1;
-			lastlevel = '?';
+			lastlevel[0] = '?'; lastlevel[1] = '\0'; 
 			break;
 
 		case 'u':		/* update dumpdates */
@@ -646,7 +651,7 @@ main(int argc, char *argv[])
 	}
 
 	if (directory[0] != 0) {
-		if (level != '0') {
+		if (atoi(level) != 0) {
 			msg("Only level 0 dumps are allowed on a subdirectory\n");
 			msg("The ENTIRE dump is aborted.\n");
 			exit(X_STARTUP);
@@ -661,7 +666,7 @@ main(int argc, char *argv[])
 	spcl.c_filesys[NAMELEN-1] = '\0';
 	(void)gethostname(spcl.c_host, NAMELEN);
 	spcl.c_host[NAMELEN-1] = '\0';
-	spcl.c_level = level - '0';
+	spcl.c_level = atoi(level);
 	spcl.c_type = TS_TAPE;
 	if (!Tflag)
 	        getdumptime(uflag);		/* dumpdates snarfed */
@@ -669,7 +674,7 @@ main(int argc, char *argv[])
 	if (spcl.c_ddate == 0 && spcl.c_level) {
 		msg("WARNING: There is no inferior level dump on this filesystem\n"); 
 		msg("WARNING: Assuming a level 0 dump by default\n");
-		level = '0';
+		level[0] = '0'; level[1] = '\0';
 		spcl.c_level = 0;
 	}
 
@@ -686,13 +691,13 @@ main(int argc, char *argv[])
 
 	if (!sizest) {
 
-		msg("Date of this level %c dump: %s", level,
+		msg("Date of this level %s dump: %s", level,
 		    ctime4(&spcl.c_date));
 #ifdef USE_QFA
 		gThisDumpDate = spcl.c_date;
 #endif
 		if (spcl.c_ddate)
-	 		msg("Date of last level %c dump: %s", lastlevel,
+	 		msg("Date of last level %s dump: %s", lastlevel,
 			    ctime4(&spcl.c_ddate));
 		msg("Dumping %s (%s) ", disk, spcl.c_filesys);
 		if (host)
@@ -1046,7 +1051,7 @@ main(int argc, char *argv[])
 		    spcl.c_tapea / (tend_writing - tstart_writing));
 
 	putdumptime();
-	msg("Date of this level %c dump: %s", level,
+	msg("Date of this level %s dump: %s", level,
 		spcl.c_date == 0 ? "the epoch\n" : ctime4(&spcl.c_date));
 	msg("Date this dump completed:  %s", ctime(&tnow));
 
@@ -1085,7 +1090,7 @@ usage(void)
 	fprintf(stderr, "%s %s\n", __progname, _DUMP_VERSION);
 #endif
 	fprintf(stderr,
-		"usage:\t%s [-0123456789ac"
+		"usage:\t%s [-level#] [-ac"
 #ifdef KERBEROS
 		"k"
 #endif

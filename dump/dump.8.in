@@ -26,14 +26,15 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.55 2004/02/18 16:26:41 stelian Exp $
+.\"	$Id: dump.8.in,v 1.56 2004/04/21 08:55:48 stelian Exp $
 .\"
 .TH DUMP 8 "version __VERSION__ of __DATE__" BSD "System management commands"
 .SH NAME
 dump \- ext2/3 filesystem backup
 .SH SYNOPSIS
 .B dump 
-[\fB\-0123456789ackMnqSuv\fR]
+[\fB\-\fIlevel#\fR]
+[\fB\-ackMnqSuv]
 [\fB\-A \fIfile\fR]
 [\fB\-B \fIrecords\fR]
 [\fB\-b \fIblocksize\fR]
@@ -88,15 +89,16 @@ and all the files and directories must reside on the same filesystem.
 The following options are supported by
 .B dump:
 .TP
-.BI \-0\-9
-Dump levels. A level 0, full backup, guarantees the entire file system is
-copied (but see also the
+.BI \-level#
+The dump level (any integer). A level 0, full backup, guarantees the
+entire file system is copied (but see also the
 .B \-h
 option below). A level number above 0, incremental backup, tells
 .B dump
 to
 copy all files new or modified since the last dump of a lower level. The 
-default level is 9.
+default level is 9. Historically only levels 0 to 9 were usable in
+dump, this version is able to understand any integer as a dump level.
 .TP
 .BI \-a 
 \*(lqauto-size\*(rq. Bypass all tape length calculations, and write until an 

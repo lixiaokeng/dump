@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: dump.h,v 1.47 2003/10/26 16:05:46 stelian Exp $
+ *	$Id: dump.h,v 1.48 2004/04/21 08:55:51 stelian Exp $
  */
 
 /*-
@@ -43,6 +43,7 @@
 
 #define MAXINOPB	(MAXBSIZE / sizeof(struct dinode))
 #define MAXNINDIR	(MAXBSIZE / sizeof(daddr_t))
+#define NUM_STR_SIZE	32	/* a generic number buffer size */
 
 /*
  * Dump maps used to describe what is to be dumped.
@@ -71,8 +72,8 @@ extern const char *disk;	/* name of the disk file */
 extern char	tape[MAXPATHLEN];/* name of the tape file */
 extern char	*tapeprefix;	/* prefix of the tape file */
 extern char	*dumpdates;	/* name of the file containing dump date information*/
-extern char	lastlevel;	/* dump level of previous dump */
-extern char	level;		/* dump level of this dump */
+extern char	lastlevel[NUM_STR_SIZE];/* dump level of previous dump */
+extern char	level[NUM_STR_SIZE];/* dump level of this dump */
 extern int	Afile;		/* archive file descriptor */
 extern int      AfileActive;    /* Afile flag */
 extern int	zipflag;	/* which compression method */
@@ -226,7 +227,7 @@ struct	mntent *fstabsearchdir __P((const char *key, char *dir));	/* search fs_fi
 struct dumpdates {
 	char	dd_name[MAXPATHLEN+3];
 	struct mntent *dd_fstab;
-	char	dd_level;
+	int	dd_level;
 	time_t	dd_ddate;
 };
 struct dumptime {
