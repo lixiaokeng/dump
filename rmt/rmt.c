@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: rmt.c,v 1.18 2002/04/15 11:57:29 stelian Exp $";
+	"$Id: rmt.c,v 1.19 2002/04/16 21:00:59 stelian Exp $";
 #endif /* not linux */
 
 /*
@@ -84,7 +84,7 @@ static FILE	*debug;
  * 	and relicensed by his permission from GPL to BSD for use in dump.
  *
  * 	rmt_version is 0 for regular clients (Linux included)
- * 	rmt_version is 1 for extended clients (Sun especially). In this cas
+ * 	rmt_version is 1 for extended clients (Sun especially). In this case
  * 		we support some extended commands (see below) and we remap
  * 		the ioctl commands to the UNIX "standard", as per:
  * 			ftp://ftp.fokus.gmd.de/pub/unix/star/README.mtio
