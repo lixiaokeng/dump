@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.46 2001/04/24 10:59:12 stelian Exp $";
+	"$Id: main.c,v 1.47 2001/04/27 12:23:23 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -604,10 +604,13 @@ main(int argc, char *argv[])
 
 	nonodump = spcl.c_level < honorlevel;
 
-	msg("Label: %s\n", spcl.c_label);
+	if (!sizeest) {
+		msg("Label: %s\n", spcl.c_label);
 
-	if (compressed)
-		msg("Compressing output at compression level %d\n", compressed);
+		if (compressed)
+			msg("Compressing output at compression level %d\n", 
+			    compressed);
+	}
 
 #if defined(SIGINFO)
 	(void)signal(SIGINFO, statussig);

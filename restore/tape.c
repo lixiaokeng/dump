@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.35 2001/04/26 08:49:56 stelian Exp $";
+	"$Id: tape.c,v 1.36 2001/04/27 12:23:23 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1792,7 +1792,7 @@ findtapeblksize(void)
 	}
 	ntrec = i / TP_BSIZE;
 	numtrec = ntrec;
-	fprintf(stderr, "Tape block size is %ld\n", ntrec);
+	Vprintf(stdout, "Tape block size is %ld\n", ntrec);
 }
 
 /*
