@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.64 2002/02/27 09:47:48 stelian Exp $";
+	"$Id: tape.c,v 1.65 2002/03/11 10:17:43 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -71,9 +71,6 @@ int    write(), read();
 #include <sys/wait.h>
 #include <sys/mtio.h>
 #ifdef __linux__
-#include <linux/fs.h>
-#undef atomic_read	/* this get wrongly defined in kernel */
-			/* headers and we don't want it */
 #ifdef HAVE_EXT2FS_EXT2_FS_H
 #include <ext2fs/ext2_fs.h>
 #else
