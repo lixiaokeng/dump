@@ -2,8 +2,8 @@ VPATH=		$(srcdir)
 
 top_builddir=	@top_builddir@
 
-VERSION=	0.4b24
-DATE=		September 12, 2001
+VERSION=	0.4b25
+DATE=		November 17, 2001
 
 AR=		@AR@
 CC=		@CC@
