@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.52 2002/01/16 09:32:14 stelian Exp $";
+	"$Id: tape.c,v 1.53 2002/01/16 10:29:26 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -406,7 +406,7 @@ getvol(long nextvol)
 again:
 	if (pipein)
 		exit(1); /* pipes do not get a second chance */
-	if (command == 'R' || command == 'r' || curfile.action != SKIP) {
+	if (aflag || curfile.action != SKIP) {
 		newvol = nextvol;
 		wantnext = 1;
 	} else {

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.34 2002/01/16 09:32:14 stelian Exp $";
+	"$Id: main.c,v 1.35 2002/01/16 10:29:26 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -80,7 +80,7 @@ static const char rcsid[] =
 #include "restore.h"
 #include "extern.h"
 
-int	bflag = 0, cvtflag = 0, dflag = 0, vflag = 0, yflag = 0;
+int	aflag = 0, bflag = 0, cvtflag = 0, dflag = 0, vflag = 0, yflag = 0;
 int	hflag = 1, mflag = 1, Mflag = 0, Nflag = 0, Vflag = 0, zflag = 0;
 int	uflag = 0, lflag = 0, Lflag = 0;
 int	dokerberos = 0;
@@ -154,7 +154,7 @@ main(int argc, char *argv[])
 		;                                                               
 	obsolete(&argc, &argv);
 	while ((ch = getopt(argc, argv, 
-		"b:CcdD:f:F:hi"
+		"ab:CcdD:f:F:hi"
 #ifdef KERBEROS
 		"k"
 #endif
@@ -164,6 +164,9 @@ main(int argc, char *argv[])
 #endif
 		"Rrs:tT:uvVxX:y")) != -1)
 		switch(ch) {
+		case 'a':
+			aflag = 1;
+			break;
 		case 'b':
 			/* Change default tape blocksize. */
 			bflag = 1;
@@ -393,6 +396,7 @@ main(int argc, char *argv[])
 	 * Incremental restoration of a file system.
 	 */
 	case 'r':
+		aflag = 1; 	/* in -r or -R mode, -a is default */
 		setup();
 		if (dumptime > 0) {
 			/*
@@ -430,6 +434,7 @@ main(int argc, char *argv[])
 	 * Resume an incremental file system restoration.
 	 */
 	case 'R':
+		aflag = 1; 	/* in -r or -R mode, -a is default */
 		initsymtable(symtbl);
 		skipmaps();
 		skipdirs();
@@ -542,11 +547,11 @@ usage(void)
 	(void)fprintf(stderr,
 	  "usage:\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n",
 	  __progname, " -C [-c" kerbflag "lMvVy] [-b blocksize] [-D filesystem] [-f file] [-F script] [-L limit] [-s fileno]",
-	  __progname, " -i [-ch" kerbflag "lmMuvVy] [-b blocksize] [-f file] [-F script] " qfaflag "[-s fileno]",
+	  __progname, " -i [-ach" kerbflag "lmMuvVy] [-b blocksize] [-f file] [-F script] " qfaflag "[-s fileno]",
 	  __progname, " -r [-c" kerbflag "lMuvVy] [-b blocksize] [-f file] [-F script] [-s fileno] [-T directory]",
 	  __progname, " -R [-c" kerbflag "lMuvVy] [-b blocksize] [-f file] [-F script] [-s fileno] [-T directory]",
 	  __progname, " -t [-ch" kerbflag "lMuvVy] [-b blocksize] [-f file] [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]",
-	  __progname, " -x [-ch" kerbflag "lmMuvVy] [-b blocksize] [-f file] [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]");
+	  __progname, " -x [-ach" kerbflag "lmMuvVy] [-b blocksize] [-f file] [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]");
 	exit(1);
 }
 

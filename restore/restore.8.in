@@ -29,7 +29,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: restore.8.in,v 1.21 2002/01/16 09:32:14 stelian Exp $
+.\"	$Id: restore.8.in,v 1.22 2002/01/16 10:29:26 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt RESTORE 8
@@ -50,7 +50,7 @@
 .Op Fl T Ar directory
 .Nm restore
 .Fl i
-.Op Fl chklmMNuvVy
+.Op Fl achklmMNuvVy
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
 .Op Fl F Ar script
@@ -86,7 +86,7 @@
 .Op file ...
 .Nm restore
 .Fl x
-.Op Fl chklmMNuvVy
+.Op Fl achklmMNuvVy
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
 .Op Fl F Ar script
@@ -301,6 +301,21 @@ option below.
 .Pp
 The following additional options may be specified:
 .Bl -tag -width Ds
+.It Fl a
+In 
+.Fl i
+or
+.Fl x
+mode, 
+.Nm restore 
+does ask the user for the volume number on which the files to
+be extracted are supposed to be (in order to minimise the time
+be reading only the interesting volumes). The 
+.Fl a
+option disables this behaviour and reads all the volumes starting
+with 1. This option is useful when the operator does not know on which
+volume the files to be extracted are and/or when he prefers the
+longer unattended mode rather than the shorter interactive mode.
 .It Fl b Ar blocksize
 The number of kilobytes per dump record.
 If the

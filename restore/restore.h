@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: restore.h,v 1.22 2002/01/16 09:32:14 stelian Exp $
+ *	$Id: restore.h,v 1.23 2002/01/16 10:29:26 stelian Exp $
  */
 
 /*
@@ -51,6 +51,7 @@
 /*
  * Flags
  */
+extern int	aflag;		/* automatic volume increment */
 extern int	cvtflag;	/* convert from old to new tape format */
 extern int	bflag;		/* set input block size */
 extern int	dflag;		/* print out debugging info */
