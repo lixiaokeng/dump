@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.62 2002/01/25 15:08:59 stelian Exp $";
+	"$Id: tape.c,v 1.63 2002/02/21 09:25:31 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1239,6 +1239,7 @@ doslave(int cmd, int slave_number, int first)
 				spclptr = &uspclptr->s_spcl;
 				if ((spclptr->c_magic == NFS_MAGIC) && 
 				    (spclptr->c_type == TS_INODE) &&
+		                    ((spclptr->c_dinode.di_mode & S_IFMT) != IFDIR) &&
 				    (spclptr->c_date == gThisDumpDate)) {
 					/* if an error occured previously don't
 					 * try again */

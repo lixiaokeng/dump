@@ -1,4 +1,11 @@
-$Id: CHANGES,v 1.162 2002/02/15 11:30:09 stelian Exp $
+$Id: CHANGES,v 1.163 2002/02/21 09:25:31 stelian Exp $
+
+Changes between versions 0.4b27 and 0.4b28 (released ?????????????????)
+=======================================================================
+
+1.	Fixed a bug in the QFA feature which could have caused 
+	a bad tape positionning on restore (causing extra delays in
+	restore). Credits go to Uwe Gohlke <uwe@ugsoft.de>.
 
 Changes between versions 0.4b26 and 0.4b27 (released February 15, 2002)
 =======================================================================
