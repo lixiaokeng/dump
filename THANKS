@@ -1,4 +1,4 @@
-$Id: THANKS,v 1.25 2000/03/08 11:25:58 stelian Exp $
+$Id: THANKS,v 1.26 2000/05/28 16:24:13 stelian Exp $
 
 Dump and restore were written by the people of the CSRG at the University
 of California, Berkeley.
@@ -24,6 +24,7 @@ Here is a partial list of them (if I have forgotten someone, please complain):
 
 Stephen Carr		sgcarr@civeng.adelaide.edu.au
 Rob Cermak		cermak@ahab.rutgers.edu
+Chris			haul@informatik.tu-darmstadt.de
 Isaac Chuang		ike@isl.stanford.edu
 Rainer Clasen		bj@ncc.cicely.de
 W. Reilly Cooley	wcooley@nakedape.cc
@@ -34,6 +35,7 @@ Jeremy Fitzhardinge	jeremy@goop.org
 Eirik Fuller		eirik@netcom.com
 Jean-Paul van der Jagt	jeanpaul@dutepp0.et.tudelft.nl
 Eric Jergensen		eric@dvns.com
+Jeff Johnson		jbj@redhat.com
 Henry Katz		hkatz@hkatz.dialup.access.net
 Klaus Kudielka		kkudielk@cacofonix.nt.tuwien.ac.at
 Thorsten Kukuk		kukuk@suse.de

@@ -52,7 +52,7 @@ This packages contains statically linked versions of dump and restore.
 
 %build
 
-%configure --with-binmode=6755 --with-manowner=root --with-mangrp=root --with-manmode=0644 --enable-static
+./configure --prefix=/usr --with-binmode=6755 --with-manowner=root --with-mangrp=root --with-manmode=0644 --enable-static
 
 make OPT="$RPM_OPT_FLAGS -Wall -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wno-char-subscripts"
 
@@ -61,7 +61,7 @@ mv restore/restore restore/restore.static
 
 make distclean
 
-%configure --with-binmode=6755 --with-manowner=root --with-mangrp=root --with-manmode=0644 --enable-rmt
+./configure --prefix=/usr --with-binmode=6755 --with-manowner=root --with-mangrp=root --with-manmode=0644 --enable-rmt
 
 make OPT="$RPM_OPT_FLAGS -Wall -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wno-char-subscripts"
 
@@ -98,16 +98,16 @@ rm -rf $RPM_BUILD_ROOT
 /sbin/rdump
 %attr(6755,root,tty)	/sbin/restore
 /sbin/rrestore
-%{_prefix}/man/man8/dump.8
-%{_prefix}/man/man8/rdump.8
-%{_prefix}/man/man8/restore.8
-%{_prefix}/man/man8/rrestore.8
+%{_prefix}/man/man8/dump.*
+%{_prefix}/man/man8/rdump.*
+%{_prefix}/man/man8/restore.*
+%{_prefix}/man/man8/rrestore.*
 
 %files -n rmt
 %defattr(-,root,root)
 %attr(0755,root,root)	/sbin/rmt
 /etc/rmt
-%{_prefix}/man/man8/rmt.8 
+%{_prefix}/man/man8/rmt.*
 
 %files -n dump-static
 %defattr(-,root,root)

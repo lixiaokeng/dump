@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.18 2000/03/11 15:29:01 stelian Exp $";
+	"$Id: tape.c,v 1.19 2000/05/28 16:24:14 stelian Exp $";
 #endif /* not lint */
 
 #ifdef __linux__
@@ -496,7 +496,7 @@ trewind(void)
 			(void) close(f);
 		}
 		eot_code = 1;
-		if (eot_script) {
+		if (eot_script && spcl.c_type != TS_END) {
 			msg("Launching %s\n", eot_script);
 			eot_code = system_command(eot_script, tape, tapeno);
 		}
@@ -617,12 +617,13 @@ rollforward(void)
 	}
 	slp->req[0] = *q;
 	nextblock = slp->tblock;
-	if (q->dblk == 0)
+	if (q->dblk == 0) {
 #ifdef __linux__
-		*(union u_spcl *)(*(nextblock)++) = *(union u_spcl *)tslp->tblock;
-#else
-		nextblock++;
+	/* XXX post increment triggers an egcs-1.1.2-12 bug on alpha/sparc */
+		*(union u_spcl *)(*nextblock) = *(union u_spcl *)tslp->tblock;
 #endif
+		nextblock++;
+	}
 	trecno = 1;
 
 	/*
@@ -676,17 +677,21 @@ startnewtape(int top)
 	int	status;
 	int	waitpid;
 	char	*p;
+
 #ifdef	__linux__
-	void    (*interrupt_save)  __P((int signo));
+	sigset_t sigs;
+	sigemptyset(&sigs);
+	sigaddset(&sigs, SIGINT);
+	sigprocmask(SIG_BLOCK, &sigs, NULL);
 #else	/* __linux__ */
 #ifdef sunos
 	void	(*interrupt_save)();
 #else
 	sig_t	interrupt_save;
 #endif
+	interrupt_save = signal(SIGINT, SIG_IGN);
 #endif	/* __linux__ */
 
-	interrupt_save = signal(SIGINT, SIG_IGN);
 	parentpid = getpid();
 	tapea_volume = spcl.c_tapea;
 #ifdef __linux__
@@ -696,7 +701,11 @@ startnewtape(int top)
 #endif
 
 restore_check_point:
+#ifdef	__linux__
+	sigprocmask(SIG_UNBLOCK, &sigs, NULL);
+#else
 	(void)signal(SIGINT, interrupt_save);
+#endif
 	/*
 	 *	All signals are inherited...
 	 */
@@ -712,7 +721,11 @@ restore_check_point:
 		 *	until the child doing all of the work returns.
 		 *	don't catch the interrupt
 		 */
+#ifdef	__linux__
+		sigprocmask(SIG_BLOCK, &sigs, NULL);
+#else
 		signal(SIGINT, SIG_IGN);
+#endif
 #ifdef TDEBUG
 		msg("Tape: %d; parent process: %d child process %d\n",
 			tapeno+1, parentpid, childpid);
@@ -860,10 +873,9 @@ Exit(int status)
 static void
 proceed(int signo)
 {
-
+	caught++;
 	if (ready)
 		siglongjmp(jmpbuf, 1);
-	caught++;
 }
 
 void
@@ -878,10 +890,17 @@ enslave(void)
 
 	master = getpid();
 
-	signal(SIGTERM, dumpabort);  /* Slave sends SIGTERM on dumpabort() */
-	signal(SIGPIPE, sigpipe);
-	signal(SIGUSR1, tperror);    /* Slave sends SIGUSR1 on tape errors */
-	signal(SIGUSR2, proceed);    /* Slave sends SIGUSR2 to next slave */
+    {	struct sigaction sa;
+	sa.sa_handler = dumpabort;
+	sigaction(SIGTERM, &sa, NULL); /* Slave sends SIGTERM on dumpabort() */
+	sa.sa_handler = sigpipe;
+	sigaction(SIGPIPE, &sa, NULL);
+	sa.sa_handler = tperror;
+	sigaction(SIGUSR1, &sa, NULL); /* Slave sends SIGUSR1 on tape errors */
+	sa.sa_handler = proceed;
+	sa.sa_flags = SA_RESTART;
+	sigaction(SIGUSR2, &sa, NULL); /* Slave sends SIGUSR2 to next slave */
+   }
 
 	for (i = 0; i < SLAVES; i++) {
 		if (i == slp - &slaves[0]) {
@@ -898,12 +917,15 @@ enslave(void)
 		slaves[i].fd = cmd[1];
 		slaves[i].sent = 0;
 		if (slaves[i].pid == 0) { 	    /* Slave starts up here */
+			sigset_t sigs;
 			for (j = 0; j <= i; j++)
 			        (void) close(slaves[j].fd);
-			signal(SIGINT, SIG_IGN);    /* Master handles this */
+			sigemptyset(&sigs);
+			sigaddset(&sigs, SIGINT);  /* Master handles this */
 #if defined(SIGINFO)
-			signal(SIGINFO, SIG_IGN);
+			sigaddset(&sigs, SIGINFO);
 #endif
+			sigprocmask(SIG_BLOCK, &sigs, NULL);
 
 #ifdef	LINUX_FORK_BUG
 			if (atomic_write( cmd[0], (char *) &i, sizeof i)
@@ -1003,7 +1025,7 @@ doslave(int cmd, int slave_number)
 				       quit("master/slave protocol botched.\n");
 			}
 		}
-		if (setjmp(jmpbuf) == 0) {
+		if (sigsetjmp(jmpbuf, 1) == 0) {
 			ready = 1;
 			if (!caught)
 				(void) pause();
