@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: restore.h,v 1.20 2001/12/24 15:53:41 stelian Exp $
+ *	$Id: restore.h,v 1.21 2002/01/11 08:54:14 stelian Exp $
  */
 
 /*
@@ -56,6 +56,7 @@ extern int	bflag;		/* set input block size */
 extern int	dflag;		/* print out debugging info */
 extern int	hflag;		/* restore heirarchies */
 extern int	lflag;		/* assume remote filename is a regular file */
+extern int	Lflag;		/* compare errors limit */
 extern int	mflag;		/* restore by name instead of inode number */
 extern int	Mflag;		/* multi-volume restore */
 extern int	Vflag;		/* multi-volume on a single device like CDROM */
@@ -175,3 +176,10 @@ extern char	gTps[255];
 extern long	gSeekstart;
 extern int	tapeposflag;
 #endif /* USE_QFA */
+
+#define do_compare_error \
+	if (++compare_errors >= Lflag && Lflag) { \
+		printf("Compare errors limit reached, exiting...\n"); \
+		exit(2); \
+	}
+

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.32 2001/11/16 14:09:07 stelian Exp $";
+	"$Id: main.c,v 1.33 2002/01/11 08:54:14 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -82,7 +82,7 @@ static const char rcsid[] =
 
 int	bflag = 0, cvtflag = 0, dflag = 0, vflag = 0, yflag = 0;
 int	hflag = 1, mflag = 1, Mflag = 0, Nflag = 0, Vflag = 0, zflag = 0;
-int	uflag = 0, lflag = 0;
+int	uflag = 0, lflag = 0, Lflag = 0;
 int	dokerberos = 0;
 char	command = '\0';
 long	dumpnum = 1;
@@ -158,7 +158,7 @@ main(int argc, char *argv[])
 #ifdef KERBEROS
 		"k"
 #endif
-		"lmMN"
+		"lL:mMN"
 #ifdef USE_QFA
 		"Q:"
 #endif
@@ -216,6 +216,13 @@ main(int argc, char *argv[])
 			break;
 		case 'l':
 			lflag = 1;
+			break;
+		case 'L':
+			Lflag = strtol(optarg, &p, 10);
+			if (*p)
+				errx(1, "illegal limit -- %s", optarg);
+			if (Lflag < 0)
+				errx(1, "limit must be greater than 0");
 			break;
 		case 'm':
 			mflag = 0;
@@ -534,7 +541,7 @@ usage(void)
 
 	(void)fprintf(stderr,
 	  "usage:\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n",
-	  __progname, " -C [-c" kerbflag "lMvVy] [-b blocksize] [-D filesystem] [-f file] [-F script] [-s fileno]",
+	  __progname, " -C [-c" kerbflag "lMvVy] [-b blocksize] [-D filesystem] [-f file] [-F script] [-L limit] [-s fileno]",
 	  __progname, " -i [-ch" kerbflag "lmMuvVy] [-b blocksize] [-f file] [-F script] " qfaflag "[-s fileno]",
 	  __progname, " -r [-c" kerbflag "lMuvVy] [-b blocksize] [-f file] [-F script] [-s fileno] [-T directory]",
 	  __progname, " -R [-c" kerbflag "lMuvVy] [-b blocksize] [-f file] [-F script] [-s fileno] [-T directory]",
@@ -577,6 +584,7 @@ obsolete(int *argcp, char **argvp[])
 		case 'D':
 		case 'f':
 		case 'F':
+		case 'L':
 		case 'Q':
 		case 's':
 		case 'T':

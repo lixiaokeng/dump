@@ -29,7 +29,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: restore.8.in,v 1.19 2001/11/16 14:09:07 stelian Exp $
+.\"	$Id: restore.8.in,v 1.20 2002/01/11 08:54:14 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt RESTORE 8
@@ -45,6 +45,7 @@
 .Op Fl D Ar filesystem
 .Op Fl f Ar file
 .Op Fl F Ar script
+.Op Fl L Ar limit
 .Op Fl s Ar fileno
 .Op Fl T Ar directory
 .Nm restore
@@ -133,6 +134,9 @@ disk.
 It first changes its working directory to the root of the filesystem
 that was dumped and compares the tape with the files in its new
 current directory.
+See also the
+.Fl L
+flag described below.
 .It Fl i
 This mode allows interactive restoration of files from a dump.
 After reading in the directory information from the dump,
@@ -375,6 +379,18 @@ a remote compressed file, you will need to specify this
 option or 
 .Nm restore
 will fail to access it correctly.
+.It Fl L Ar limit
+The
+.Fl L
+flag allows the user to specify a maximal number of miscompares
+when using
+.Nm restore
+with the
+.Fl C
+option to check the backup. If this limit is reached, 
+.Nm restore
+will abort with an error message. A value of 0 (the default value) 
+disables the check.
 .It Fl m
 Extract by inode numbers rather than by file name.
 This is useful if only a few files are being extracted,
@@ -394,7 +410,14 @@ The
 .Fl N
 flag causes
 .Nm
-to only print file names. Files are not extracted.
+to perform a full execution as requested by one of
+.Fl i,
+.Fl R,
+.Fl r,
+.Fl t
+or
+.Fl x
+command without actually writing any file on disk.
 .It Fl Q Ar file
 Use the file
 .Ar file

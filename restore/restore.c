@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: restore.c,v 1.20 2001/12/24 15:53:41 stelian Exp $";
+	"$Id: restore.c,v 1.21 2002/01/11 08:54:14 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -505,7 +505,7 @@ nodeupdates(char *name, dump_ino_t ino, int type)
 		if (compare_ignore_not_found) break;
 		fprintf(stderr, "%s: (inode %lu) not found on tape\n",
 			name, (unsigned long)ino);
-		compare_errors = 1;
+		do_compare_error;
 		break;
 
 	/*
@@ -637,7 +637,7 @@ compare_entry(struct entry *ep, int do_compare)
 {
 	if ((ep->e_flags & (NEW|EXTRACT)) == 0) {
 		badentry(ep, "unexpected file on tape");
-		compare_errors = 1;
+		do_compare_error;
 	}
 	if (do_compare) (void) comparefile(myname(ep));
 	ep->e_flags &= ~(NEW|EXTRACT);
@@ -669,7 +669,7 @@ compareleaves(void)
 			if (ep == NULL)
 				panic("%d: bad first\n", first);
 			fprintf(stderr, "%s: not found on tape\n", myname(ep));
-			compare_errors = 1;
+			do_compare_error;
 			ep->e_flags &= ~(NEW|EXTRACT);
 			first = lowerbnd(first);
 		}
@@ -683,14 +683,14 @@ compareleaves(void)
 		if (first != curfile.ino) {
 			fprintf(stderr, "expected next file %ld, got %lu\n",
 				(long)first, (unsigned long)curfile.ino);
-			compare_errors = 1;
+			do_compare_error;
 			skipfile();
 			goto next;
 		}
 		ep = lookupino(curfile.ino);
 		if (ep == NULL) {
 			panic("unknown file on tape\n");
-			compare_errors = 1;
+			do_compare_error;
 		}
 		compare_entry(ep, 1);
 		for (ep = ep->e_links; ep != NULL; ep = ep->e_links) {
@@ -723,7 +723,7 @@ compareleaves(void)
 			panic("%d: bad first\n", first);
 		fprintf(stderr, "%s: (inode %lu) not found on tape\n", 
 			myname(ep), (unsigned long)first);
-		compare_errors = 1;
+		do_compare_error;
 		ep->e_flags &= ~(NEW|EXTRACT);
 		first = lowerbnd(first);
 	}
@@ -822,7 +822,7 @@ createleaves(char *symtabfile)
 			panic("%d: bad first\n", first);
 		fprintf(stderr, "%s: (inode %lu) not found on tape\n", 
 			myname(ep), (unsigned long)first);
-		compare_errors = 1;
+		do_compare_error;
 		ep->e_flags &= ~(NEW|EXTRACT);
 		first = lowerbnd(first);
 	}

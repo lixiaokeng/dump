@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.50 2001/12/24 15:53:41 stelian Exp $";
+	"$Id: tape.c,v 1.51 2002/01/11 08:54:14 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1080,14 +1080,14 @@ cmpfiles(char *tapefile, char *diskfile, struct STAT *sbuf_disk)
 	if (STAT(tapefile, &sbuf_tape) != 0) {
 		panic("Can't lstat tmp file %s: %s\n", tapefile,
 		      strerror(errno));
-		compare_errors = 1;
+		do_compare_error;
 	}
 
 	if (sbuf_disk->st_size != sbuf_tape.st_size) {
 		fprintf(stderr,
 			"%s: size changed from %ld to %ld.\n",
 			diskfile, (long)sbuf_tape.st_size, (long)sbuf_disk->st_size);
-		compare_errors = 1;
+		do_compare_error;
 #ifdef COMPARE_FAIL_KEEP_FILE
 		return (0);
 #else
@@ -1097,12 +1097,12 @@ cmpfiles(char *tapefile, char *diskfile, struct STAT *sbuf_disk)
 
 	if ((fd_tape = OPEN(tapefile, O_RDONLY)) < 0) {
 		panic("Can't open %s: %s\n", tapefile, strerror(errno));
-		compare_errors = 1;
+		do_compare_error;
 	}
 	if ((fd_disk = OPEN(diskfile, O_RDONLY)) < 0) {
 		close(fd_tape);
 		panic("Can't open %s: %s\n", diskfile, strerror(errno));
-		compare_errors = 1;
+		do_compare_error;
 	}
 
 	if (do_cmpfiles(fd_tape, fd_disk, sbuf_tape.st_size)) {
@@ -1110,7 +1110,7 @@ cmpfiles(char *tapefile, char *diskfile, struct STAT *sbuf_disk)
 			diskfile);
 		close(fd_tape);
 		close(fd_disk);
-		compare_errors = 1;
+		do_compare_error;
 #ifdef COMPARE_FAIL_KEEP_FILE
 		/* rename the file to live in /tmp */
 		/* rename `tapefile' to /tmp/<basename of diskfile> */
@@ -1163,7 +1163,7 @@ comparefile(char *name)
 
 	if ((r = LSTAT(name, &sb)) != 0) {
 		warn("%s: does not exist (%d)", name, r);
-		compare_errors = 1;
+		do_compare_error;
 		skipfile();
 		return;
 	}
@@ -1178,7 +1178,7 @@ comparefile(char *name)
 	if (sb.st_mode != mode) {
 		fprintf(stderr, "%s: mode changed from 0%o to 0%o.\n",
 			name, mode & 07777, sb.st_mode & 07777);
-		compare_errors = 1;
+		do_compare_error;
 	}
 	switch (mode & IFMT) {
 	default:
@@ -1200,7 +1200,7 @@ comparefile(char *name)
 		if (!(sb.st_mode & S_IFLNK)) {
 			fprintf(stderr, "%s: is no longer a symbolic link\n",
 				name);
-			compare_errors = 1;
+			do_compare_error;
 			return;
 		}
 		lnkbuf[0] = '\0';
@@ -1210,20 +1210,20 @@ comparefile(char *name)
 			fprintf(stderr,
 				"%s: zero length symbolic link (ignored)\n",
 				name);
-			compare_errors = 1;
+			do_compare_error;
 			return;
 		}
 		if ((lsize = readlink(name, lbuf, MAXPATHLEN)) < 0) {
 			panic("readlink of %s failed: %s", name,
 			      strerror(errno));
-			compare_errors = 1;
+			do_compare_error;
 		}
 		lbuf[lsize] = 0;
 		if (strcmp(lbuf, lnkbuf) != 0) {
 			fprintf(stderr,
 				"%s: symbolic link changed from %s to %s.\n",
 				name, lnkbuf, lbuf);
-			compare_errors = 1;
+			do_compare_error;
 			return;
 		}
 		return;
@@ -1234,7 +1234,7 @@ comparefile(char *name)
 		if (!(sb.st_mode & (S_IFCHR|S_IFBLK))) {
 			fprintf(stderr, "%s: no longer a special file\n",
 				name);
-			compare_errors = 1;
+			do_compare_error;
 			skipfile();
 			return;
 		}
@@ -1247,7 +1247,7 @@ comparefile(char *name)
 				(int)curfile.dip->di_rdev & 0xff,
 				((int)sb.st_rdev >> 8) & 0xff,
 				(int)sb.st_rdev & 0xff);
-			compare_errors = 1;
+			do_compare_error;
 		}
 		skipfile();
 		return;
@@ -1257,7 +1257,7 @@ comparefile(char *name)
 		if ((ifile = OPEN(name, O_RDONLY)) < 0) {
 			panic("Can't open %s: %s\n", name, strerror(errno));
 			skipfile();
-			compare_errors = 1;
+			do_compare_error;
 		}
 		else {
 			cmperror = 0;
@@ -1271,7 +1271,7 @@ comparefile(char *name)
 				}
 			}
 			if (cmperror)
-				compare_errors = 1;
+				do_compare_error;
 			close(ifile);
 		}
 #else
