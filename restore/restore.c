@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: restore.c,v 1.16 2001/04/12 13:14:15 stelian Exp $";
+	"$Id: restore.c,v 1.17 2001/04/26 08:28:29 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -497,7 +497,7 @@ nodeupdates(char *name, dump_ino_t ino, int type)
 	 * for it, we discard the name knowing that it will be on the
 	 * next incremental tape.
 	 */
-	case NULL:
+	case 0:
 		if (compare_ignore_not_found) break;
 		fprintf(stderr, "%s: (inode %lu) not found on tape\n",
 			name, (unsigned long)ino);
