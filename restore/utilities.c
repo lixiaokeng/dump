@@ -41,31 +41,28 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: utilities.c,v 1.11 2000/12/21 11:14:54 stelian Exp $";
+	"$Id: utilities.c,v 1.12 2001/03/19 13:22:49 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
-#include <sys/param.h>
-#include <sys/stat.h>
-
-#ifdef	__linux__
-#include <sys/time.h>
-#include <linux/ext2_fs.h>
-#include <bsdcompat.h>
-#else	/* __linux__ */
-#include <ufs/ufs/dinode.h>
-#include <ufs/ufs/dir.h>
-#endif	/* __linux__ */
-
 #include <errno.h>
 #include <compaterr.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
+#include <sys/param.h>
+#include <sys/stat.h>
+
 #ifdef	__linux__
+#include <sys/time.h>
+#include <linux/ext2_fs.h>
 #include <ext2fs/ext2fs.h>
-#endif
+#include <bsdcompat.h>
+#else	/* __linux__ */
+#include <ufs/ufs/dinode.h>
+#include <ufs/ufs/dir.h>
+#endif	/* __linux__ */
 
 #include "restore.h"
 #include "extern.h"

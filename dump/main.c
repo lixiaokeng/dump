@@ -41,31 +41,10 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.34 2001/02/22 10:57:40 stelian Exp $";
+	"$Id: main.c,v 1.35 2001/03/19 13:22:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
-#include <sys/param.h>
-#include <sys/time.h>
-#ifdef __linux__
-#include <linux/ext2_fs.h>
-#include <time.h>
-#include <sys/stat.h>
-#include <bsdcompat.h>
-#else
-#ifdef sunos
-#include <sys/vnode.h>
-
-#include <ufs/inode.h>
-#include <ufs/fs.h>
-#else
-#include <ufs/ufs/dinode.h>
-#include <ufs/ffs/fs.h>
-#endif
-#endif
-
-#include <protocols/dumprestore.h>
-
 #include <ctype.h>
 #include <compaterr.h>
 #include <fcntl.h>
@@ -76,9 +55,25 @@ static const char rcsid[] =
 #include <string.h>
 #include <unistd.h>
 
+#include <sys/param.h>
+#include <sys/time.h>
 #ifdef __linux__
+#include <linux/ext2_fs.h>
 #include <ext2fs/ext2fs.h>
+#include <time.h>
+#include <sys/stat.h>
+#include <bsdcompat.h>
+#elif defined sunos
+#include <sys/vnode.h>
+
+#include <ufs/inode.h>
+#include <ufs/fs.h>
+#else
+#include <ufs/ufs/dinode.h>
+#include <ufs/ffs/fs.h>
 #endif
+
+#include <protocols/dumprestore.h>
 
 #include "dump.h"
 #include "pathnames.h"
@@ -162,20 +157,17 @@ main(int argc, char *argv[])
 		usage();
 
 	obsolete(&argc, &argv);
+
+	while ((ch = getopt(argc, argv,
+			    "0123456789aB:b:cd:e:f:F:h:L:"
 #ifdef KERBEROS
+			    "k"
+#endif
+			    "Mns:ST:uWw"
 #ifdef HAVE_ZLIB
-#define optstring "0123456789aB:b:cd:e:f:F:h:kL:Mns:ST:uWwz"
-#else
-#define optstring "0123456789aB:b:cd:e:f:F:h:kL:Mns:ST:uWw"
-#endif /* HAVE_ZLIB */
-#else
-#ifdef HAVE_ZLIB
-#define optstring "0123456789aB:b:cd:e:f:F:h:L:Mns:ST:uWwz"
-#else
-#define optstring "0123456789aB:b:cd:e:f:F:h:L:Mns:ST:uWw"
-#endif /* HAVE_ZLIB */
-#endif /* KERBEROS */
-	while ((ch = getopt(argc, argv, optstring)) != -1)
+			    "z"
+#endif
+			    )) != -1)
 #undef optstring
 		switch (ch) {
 		/* dump level */
@@ -321,7 +313,8 @@ main(int argc, char *argv[])
 	}
 	diskparam = *argv++;
 	if (strlen(diskparam) >= MAXPATHLEN) {
-		(void)fprintf(stderr, "Disk or filesystem name too long: %s\n", diskparam);
+		(void)fprintf(stderr, "Disk or filesystem name too long: %s\n", 
+			      diskparam);
 		exit(X_STARTUP);
 	}
 	argc--;
@@ -396,6 +389,14 @@ main(int argc, char *argv[])
 	set_operators();	/* /etc/group snarfed */
 	getfstab();		/* /etc/fstab snarfed */
 
+	/*
+	 *      disk may end in / and this can confuse
+	 *      fstabsearch.
+	 */
+	i = strlen(diskparam) - 1;
+	if (i > 1 && diskparam[i] == '/')
+		diskparam[i] = '\0';
+
 	disk = get_device_name(diskparam);
 	if (!disk) {		/* null means the disk is some form
 				   of LABEL= or UID= but it was not
@@ -403,12 +404,6 @@ main(int argc, char *argv[])
 		msg("Cannot find a disk having %s\n", diskparam);
 		exit(X_STARTUP);
 	}
-	/*
-	 *      disk may end in / and this can confuse
-	 *      fstabsearch.
-	 */
-	if (strlen(disk) > 1 && disk[strlen(disk) - 1] == '/')
-		disk[strlen(disk) - 1] = '\0';
 	/*
 	 *	disk can be either the full special file name,
 	 *	the suffix of the special file name,
@@ -849,8 +844,8 @@ sig(int signo)
 	}
 }
 
-char *
-rawname(char *cp)
+const char *
+rawname(const char *cp)
 {
 #ifdef	__linux__
 	return cp;
@@ -860,10 +855,8 @@ rawname(char *cp)
 
 	if (dp == NULL)
 		return (NULL);
-	*dp = '\0';
-	(void)strncpy(rawbuf, cp, MAXPATHLEN - 1);
-	rawbuf[MAXPATHLEN-1] = '\0';
-	*dp = '/';
+	(void)strncpy(rawbuf, cp, min(dp-cp, MAXPATHLEN - 1));
+	rawbuf[min(dp-cp, MAXPATHLEN-1)] = '\0';
 	(void)strncat(rawbuf, "/r", MAXPATHLEN - 1 - strlen(rawbuf));
 	(void)strncat(rawbuf, dp + 1, MAXPATHLEN - 1 - strlen(rawbuf));
 	return (rawbuf);

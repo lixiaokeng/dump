@@ -46,10 +46,18 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.26 2001/03/18 15:35:44 stelian Exp $";
+	"$Id: tape.c,v 1.27 2001/03/19 13:22:49 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
+#include <errno.h>
+#include <compaterr.h>
+#include <setjmp.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
 #include <sys/param.h>
 #include <sys/file.h>
 #include <sys/mtio.h>
@@ -59,27 +67,16 @@ static const char rcsid[] =
 #include <sys/time.h>
 #include <time.h>
 #include <linux/ext2_fs.h>
+#include <ext2fs/ext2fs.h>
 #include <bsdcompat.h>
 #else	/* __linux__ */
 #include <ufs/ufs/dinode.h>
 #endif	/* __linux__ */
 #include <protocols/dumprestore.h>
 
-#include <errno.h>
-#include <compaterr.h>
-#include <setjmp.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-
 #ifdef HAVE_ZLIB
 #include <zlib.h>
 #endif /* HAVE_ZLIB */
-
-#ifdef	__linux__
-#include <ext2fs/ext2fs.h>
-#endif
 
 #include "restore.h"
 #include "extern.h"

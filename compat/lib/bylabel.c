@@ -24,7 +24,10 @@
 #define PROC_PARTITIONS "/proc/partitions"
 #define DEVLABELDIR	"/dev"
 
-#define EXT2_SUPER_MAGIC 0xEF53
+#define EXT2_SUPER_OFFSET	1024
+#define EXT2_SUPER_SIZE		sizeof(struct ext2_super_block)
+#define EXT2_SUPER_MAGIC	0xEF53
+
 struct ext2_super_block {
 	unsigned char	s_dummy1[56];
 	unsigned char	s_magic[2];
@@ -56,9 +59,9 @@ get_label_uuid(const char *device, char **label, char *uuid) {
 	if (fd < 0)
 		return 1;
 
-	if (lseek(fd, 1024, SEEK_SET) != 1024
-	    || read(fd, (char *) &e2sb, sizeof(e2sb)) != sizeof(e2sb)
-	    || (ext2magic(e2sb) != EXT2_SUPER_MAGIC)) {
+	if (lseek(fd, EXT2_SUPER_OFFSET, SEEK_SET) != EXT2_SUPER_OFFSET ||
+	    read(fd, (char *) &e2sb, EXT2_SUPER_SIZE) != EXT2_SUPER_SIZE ||
+	    ext2magic(e2sb) != EXT2_SUPER_MAGIC) {
 		close(fd);
 		return 1;
 	}

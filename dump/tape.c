@@ -41,36 +41,10 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.33 2001/03/18 15:35:44 stelian Exp $";
+	"$Id: tape.c,v 1.34 2001/03/19 13:22:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
-#ifdef __linux__
-#include <sys/types.h>
-#include <time.h>
-#include <linux/types.h>
-#endif
-#include <sys/param.h>
-#include <sys/socket.h>
-#include <sys/time.h>
-#include <sys/wait.h>
-#ifdef __linux__
-#include <linux/ext2_fs.h>
-#include <bsdcompat.h>
-#else	/* __linux__ */
-#ifdef sunos
-#include <sys/vnode.h>
-
-#include <ufs/fs.h>
-#include <ufs/inode.h>
-#else
-#include <ufs/ufs/dinode.h>
-#include <ufs/ffs/fs.h>
-#endif
-#endif	/* __linux__ */
-
-#include <protocols/dumprestore.h>
-
 #include <errno.h>
 #include <fcntl.h>
 #include <setjmp.h>
@@ -82,12 +56,33 @@ static const char rcsid[] =
 #include <string.h>
 #include <unistd.h>
 #else
-int	write(), read();
+int    write(), read();
 #endif
 
 #ifdef __linux__
-#include <ext2fs/ext2fs.h>
+#include <sys/types.h>
+#include <time.h>
+#include <linux/types.h>
 #endif
+#include <sys/param.h>
+#include <sys/socket.h>
+#include <sys/time.h>
+#include <sys/wait.h>
+#ifdef __linux__
+#include <linux/ext2_fs.h>
+#include <ext2fs/ext2fs.h>
+#include <bsdcompat.h>
+#elif defined sunos
+#include <sys/vnode.h>
+
+#include <ufs/fs.h>
+#include <ufs/inode.h>
+#else
+#include <ufs/ufs/dinode.h>
+#include <ufs/ffs/fs.h>
+#endif	/* __linux__ */
+
+#include <protocols/dumprestore.h>
 
 #ifdef HAVE_ZLIB
 #include <zlib.h>

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: optr.c,v 1.20 2001/02/22 10:57:40 stelian Exp $";
+	"$Id: optr.c,v 1.21 2001/03/19 13:22:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -505,7 +505,7 @@ fstabsearch(const char *key)
 {
 	register struct pfstab *pf;
 	register struct fstab *fs;
-	char *rn;
+	const char *rn;
 
 	for (pf = table; pf != NULL; pf = pf->pf_next) {
 		fs = pf->pf_fstab;

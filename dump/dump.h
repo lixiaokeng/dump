@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: dump.h,v 1.20 2001/02/21 16:13:05 stelian Exp $
+ *	$Id: dump.h,v 1.21 2001/03/19 13:22:48 stelian Exp $
  */
 
 /*-
@@ -66,7 +66,7 @@ char	*dumpinomap;	/* map of files to be dumped */
 /*
  *	All calculations done in 0.1" units!
  */
-char	*disk;		/* name of the disk file */
+const char *disk;		/* name of the disk file */
 char	tape[MAXPATHLEN];	/* name of the tape file */
 char	*tapeprefix;	/* prefix of the tape file */
 char	*dumpdates;	/* name of the file containing dump date information*/
@@ -157,7 +157,7 @@ void 	Exit __P((int status));
 void	dumpabort __P((int signo));
 void	getfstab __P((void));
 
-char	*rawname __P((char *cp));
+const char *rawname __P((const char *cp));
 struct	dinode *getino __P((ino_t inum));
 
 /* rdump routines */

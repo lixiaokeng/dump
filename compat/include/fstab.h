@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: fstab.h,v 1.10 2000/12/21 11:14:53 stelian Exp $
+ *	$Id: fstab.h,v 1.11 2001/03/19 13:22:48 stelian Exp $
  */
 
 /*
@@ -75,7 +75,7 @@
 #define	FSTAB_XX	"ignore"	/* ignore totally */
 
 struct fstab {
-	char	*fs_spec;		/* block special device name */
+	const char *fs_spec;		/* block special device name */
 	char	*fs_file;		/* file system path prefix */
 	char	*fs_vfstype;		/* File system type, ufs, nfs */
 	char	*fs_mntops;		/* Mount options ala -o */

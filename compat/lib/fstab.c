@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: fstab.c,v 1.10 2000/12/21 11:14:53 stelian Exp $";
+	"$Id: fstab.c,v 1.11 2001/03/19 13:22:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -70,9 +70,9 @@ int fstabscan(void)
 	int typexx;
 #define	MAXLINELENGTH	1024
 	char subline[MAXLINELENGTH];
-	char *device_name;
 
 	for (;;) {
+		const char *device_name;
 		if (!(mnt = getmntent(_fs_fp)))
 			return 0;
 

@@ -41,21 +41,26 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.25 2000/12/21 11:14:54 stelian Exp $";
+	"$Id: traverse.c,v 1.26 2001/03/19 13:22:49 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
+#include <ctype.h>
+#include <stdio.h>
+#ifdef __STDC__
+#include <string.h>
+#include <unistd.h>
+#endif
+
 #include <sys/param.h>
 #include <sys/stat.h>
 #ifdef	__linux__
 #include <linux/ext2_fs.h>
+#include <ext2fs/ext2fs.h>
 #include <bsdcompat.h>
 #include <compaterr.h>
 #include <stdlib.h>
-#define swab32(x) ext2fs_swab32(x)
-#else	/* __linux__ */
-#define swab32(x) x
-#ifdef sunos
+#elif defined sunos
 #include <sys/vnode.h>
 
 #include <ufs/fs.h>
@@ -65,21 +70,9 @@ static const char rcsid[] =
 #include <ufs/ufs/dir.h>
 #include <ufs/ufs/dinode.h>
 #include <ufs/ffs/fs.h>
-#endif
 #endif	/* __linux__ */
 
 #include <protocols/dumprestore.h>
-
-#include <ctype.h>
-#include <stdio.h>
-#ifdef __STDC__
-#include <string.h>
-#include <unistd.h>
-#endif
-
-#ifdef	__linux__
-#include <ext2fs/ext2fs.h>
-#endif
 
 #include "dump.h"
 
@@ -106,36 +99,66 @@ static	int searchdir __P((ino_t ino, daddr_t blkno, long size, long filesize));
 #endif
 static	void mapfileino __P((ino_t ino, struct dinode const *dp, long *tapesize, int *dirskipped));
 static	int exclude_ino __P((ino_t ino));
+extern ino_t iexclude_list[IEXCLUDE_MAXNUM];	/* the inode exclude list */
+extern int iexclude_num;			/* number of elements in list */
 
-/* #define EXT3_FEATURE_INCOMPAT_RECOVER 	0x0004 */
-#ifdef EXT3_FEATURE_INCOMPAT_RECOVER
+/* Temporary fix waiting for Andreas fixes... */
+#define ext2_ino_t ino_t 
+#undef EXT3_FEATURE_INCOMPAT_RECOVER
+
+#ifndef EXT3_FEATURE_COMPAT_HAS_JOURNAL
+#define EXT3_FEATURE_COMPAT_HAS_JOURNAL		0x0004
+#endif
+#ifndef EXT2_FEATURE_INCOMPAT_FILETYPE
+#define EXT2_FEATURE_INCOMPAT_FILETYPE		0x0002
+#endif
+#ifndef EXT3_FEATURE_INCOMPAT_RECOVER
+#define EXT3_FEATURE_INCOMPAT_RECOVER		0x0004
 #define FORCE_OPEN	EXT2_FLAG_FORCE
+#define ext2_journal_ino(sb)	(*((__u32 *)sb + 0x38))
 #else
 #define FORCE_OPEN	0
+#define ext2_journal_ino(sb)	(sb->s_journal_inum)
+#endif
+#ifndef EXT3_FEATURE_INCOMPAT_JOURNAL_DEV
+#define EXT3_FEATURE_INCOMPAT_JOURNAL_DEV      0x0008
+#endif
+
+#ifndef EXT2_LIB_FEATURE_INCOMPAT_SUPP
+#define EXT2_LIB_FEATURE_INCOMPAT_SUPP (EXT3_FEATURE_INCOMPAT_RECOVER | \
+					EXT2_FEATURE_INCOMPAT_FILETYPE)
 #endif
 
 int dump_fs_open(const char *disk, ext2_filsys *fs)
 {
 	int retval;
-	struct ext2fs_sb *s;
 
 	retval = ext2fs_open(disk, FORCE_OPEN, 0, 0, unix_io_manager, fs);
-#if defined(EXT2_LIB_FEATURE_COMPAT_SUPP) && defined(EXT2_LIB_FEATURE_INCOMPAT_SUPP) && defined(EXT2_LIB_FEATURE_RO_COMPAT_SUPP) && defined(EXT2_ET_UNSUPP_FEATURE) && defined(EXT2_ET_RO_UNSUPP_FEATURE)
 	if (!retval) {
-		s = (struct ext2fs_sb *) (*fs)->super;
-		if ((s->s_feature_compat & ~EXT2_LIB_FEATURE_COMPAT_SUPP) ||
-#ifdef EXT3_FEATURE_INCOMPAT_RECOVER
-		    (s->s_feature_incompat & ~(EXT3_FEATURE_INCOMPAT_RECOVER | EXT2_LIB_FEATURE_INCOMPAT_SUPP))) {
-#else
-		    (s->s_feature_incompat & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP)) {
-#endif
+		struct ext2_super_block *es = (*fs)->super;
+		ext2_ino_t journal_ino = ext2_journal_ino(es);
+		if (es->s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV){
+			fprintf(stderr, "This an journal, not a filesystem!\n");
 			retval = EXT2_ET_UNSUPP_FEATURE;
+			ext2fs_close(*fs);
 		}
-		else if (s->s_feature_ro_compat & ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP) {
-			retval = EXT2_ET_RO_UNSUPP_FEATURE;
+		else if ((retval = es->s_feature_incompat &
+					~(EXT2_LIB_FEATURE_INCOMPAT_SUPP |
+					  EXT3_FEATURE_INCOMPAT_RECOVER))) {
+			fprintf(stderr,
+				"Unsupported feature(s) 0x%x in filesystem\n",
+				retval);
+			retval = EXT2_ET_UNSUPP_FEATURE;
+			ext2fs_close(*fs);
+		}
+		else if (es->s_feature_compat &
+				EXT3_FEATURE_COMPAT_HAS_JOURNAL && journal_ino &&
+				!exclude_ino(journal_ino)) {
+			iexclude_list[iexclude_num++] = journal_ino;
+			msg("Added ext3 journal inode %d to exclude list\n",
+					journal_ino);
 		}
 	}
-#endif /* defined && defined && defined... */
 	return retval;
 }
 
@@ -188,9 +211,6 @@ blockest(struct dinode const *dp)
 #endif
 	return (blkest + 1);
 }
-
-extern ino_t iexclude_list[IEXCLUDE_MAXNUM];	/* the inode exclude list */
-extern int iexclude_num;	/* number of elements in the list */
 
 /*
  * This tests whether an inode is in the exclude list 
@@ -1022,16 +1042,15 @@ dmpindir(ino_t ino, daddr_t blk, int ind_level, fsizeT *size)
 	 */
 #if defined(EXT2_FLAG_SWAP_BYTES)
 	if ((fs->flags & EXT2_FLAG_SWAP_BYTES) ||
-	    (fs->flags & EXT2_FLAG_SWAP_BYTES_READ)) {
+	    (fs->flags & EXT2_FLAG_SWAP_BYTES_READ))
 #endif
+	{
 		max = sblock->fs_bsize >> 2;
 		swapme = (blk_t *) idblk;
 		for (i = 0; i < max; i++, swapme++)
-			*swapme = swab32(*swapme);
-#if defined(EXT2_FLAG_SWAP_BYTES)
+			*swapme = ext2fs_swab32(*swapme);
 	}
-#endif
-#endif
+#endif /* __linux__ */
 	else
 		memset(idblk, 0, (int)sblock->fs_bsize);
 	if (ind_level <= 0) {
@@ -1111,29 +1130,20 @@ dumpmap(char *map, int type, ino_t ino)
 /*
  * Write a header record to the dump tape.
  */
+#if defined __linux__ && !defined(int32_t)
+#define int32_t __s32
+#endif
 void
 writeheader(ino_t ino)
 {
-#ifdef	__linux__
-	register __s32 sum, cnt, *lp;
-#else
 	register int32_t sum, cnt, *lp;
-#endif
 
 	spcl.c_inumber = ino;
 	spcl.c_magic = NFS_MAGIC;
 	spcl.c_checksum = 0;
-#ifdef	__linux__
-	lp = (__s32 *)&spcl;
-#else
 	lp = (int32_t *)&spcl;
-#endif
 	sum = 0;
-#ifdef	__linux__
-	cnt = sizeof(union u_spcl) / (4 * sizeof(__s32));
-#else
 	cnt = sizeof(union u_spcl) / (4 * sizeof(int32_t));
-#endif
 	while (--cnt >= 0) {
 		sum += *lp++;
 		sum += *lp++;

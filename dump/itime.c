@@ -41,32 +41,10 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: itime.c,v 1.15 2001/02/22 10:57:40 stelian Exp $";
+	"$Id: itime.c,v 1.16 2001/03/19 13:22:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
-#include <sys/param.h>
-#include <sys/time.h>
-#ifdef	__linux__
-#include <linux/ext2_fs.h>
-#include <time.h>
-#include <bsdcompat.h>
-#include <sys/file.h>
-#include <unistd.h>
-#else
-#ifdef sunos
-#include <sys/vnode.h>
-
-#include <ufs/fsdir.h>
-#include <ufs/inode.h>
-#include <ufs/fs.h>
-#else
-#include <ufs/ufs/dinode.h>
-#endif
-#endif
-
-#include <protocols/dumprestore.h>
-
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -75,9 +53,26 @@ static const char rcsid[] =
 #include <string.h>
 #endif
 
+#include <sys/param.h>
+#include <sys/time.h>
 #ifdef	__linux__
+#include <linux/ext2_fs.h>
 #include <ext2fs/ext2fs.h>
+#include <time.h>
+#include <bsdcompat.h>
+#include <sys/file.h>
+#include <unistd.h>
+#elif defined sunos
+#include <sys/vnode.h>
+
+#include <ufs/fsdir.h>
+#include <ufs/inode.h>
+#include <ufs/fs.h>
+#else
+#include <ufs/ufs/dinode.h>
 #endif
+
+#include <protocols/dumprestore.h>
 
 #include "dump.h"
 
@@ -161,12 +156,10 @@ getdumptime(int createdumpdates)
 {
 	register struct dumpdates *ddp;
 	register int i;
-	char *fname;
 
-	fname = disk;
 #ifdef FDEBUG
 	msg("Looking for name %s in dumpdates = %s for level = %c\n",
-		fname, dumpdates, level);
+		disk, dumpdates, level);
 #endif
 	spcl.c_ddate = 0;
 	lastlevel = '0';
@@ -185,7 +178,7 @@ getdumptime(int createdumpdates)
 	 *	and older date
 	 */
 	ITITERATE(i, ddp) {
-		if (strncmp(fname, ddp->dd_name, sizeof (ddp->dd_name)) != 0)
+		if (strncmp(disk, ddp->dd_name, sizeof (ddp->dd_name)) != 0)
 			continue;
 		if (ddp->dd_level >= level)
 			continue;
@@ -207,7 +200,6 @@ putdumptime(void)
 	register struct dumpdates *dtwalk;
 	register int i;
 	int fd;
-	char *fname;
 
 	if(uflag == 0)
 		return;
@@ -215,7 +207,6 @@ putdumptime(void)
 		quit("cannot rewrite %s: %s\n", dumpdates, strerror(errno));
 	fd = fileno(df);
 	(void) flock(fd, LOCK_EX);
-	fname = disk;
 	free((char *)ddatev);
 	ddatev = 0;
 	nddates = 0;
@@ -226,7 +217,7 @@ putdumptime(void)
 		quit("fseek: %s\n", strerror(errno));
 	spcl.c_ddate = 0;
 	ITITERATE(i, dtwalk) {
-		if (strncmp(fname, dtwalk->dd_name,
+		if (strncmp(disk, dtwalk->dd_name,
 				sizeof (dtwalk->dd_name)) != 0)
 			continue;
 		if (dtwalk->dd_level != level)
@@ -241,7 +232,7 @@ putdumptime(void)
 		(struct dumpdates *)calloc(1, sizeof (struct dumpdates));
 	nddates += 1;
   found:
-	(void) strncpy(dtwalk->dd_name, fname, sizeof (dtwalk->dd_name));
+	(void) strncpy(dtwalk->dd_name, disk, sizeof (dtwalk->dd_name));
 	dtwalk->dd_level = level;
 	dtwalk->dd_ddate = spcl.c_date;
 
