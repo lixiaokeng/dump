@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: interactive.c,v 1.21 2002/01/25 15:08:59 stelian Exp $";
+	"$Id: interactive.c,v 1.22 2002/02/04 12:07:38 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -83,9 +83,9 @@ extern char * __progname;
 
 static char *rl_gets (char *prompt);
 static void initialize_readline(void);
-static char **restore_completion (char *text, int start, int end);
-static char *command_generator(char *text, int state);
-static char *filename_generator(char *text, int state);
+static char **restore_completion (const char *text, int start, int end);
+static char *command_generator(const char *text, int state);
+static char *filename_generator(const char *text, int state);
 #endif
 
 #define round(a, b) (((a) + (b) - 1) / (b) * (b))
@@ -898,30 +898,8 @@ rl_gets (char *dir)
 	return (line_read);
 }
 
-static void 
-initialize_readline(void) 
-{
-	rl_attempted_completion_function = restore_completion;
-	rl_completion_entry_function = (Function *)NULL;
-	rl_completion_append_character = '\0';
-	rl_instream = terminal;
-}
-
-static char **
-restore_completion (char *text, int start, int end)
-{
-	char **matches;
-
-	if (start == 0)
-		matches = completion_matches (text, command_generator);
-	else
-		matches = completion_matches (text, filename_generator);
-
-	return (matches);
-}
-
 static char *
-command_generator(char *text, int state)
+command_generator(const char *text, int state)
 {
 	static int list_index, len;
 	char *name;
@@ -943,7 +921,7 @@ command_generator(char *text, int state)
 }
 
 static char *
-filename_generator(char *text, int state)
+filename_generator(const char *text, int state)
 {
 	static int list_index;
 	char *name;
@@ -1026,4 +1004,28 @@ filename_generator(char *text, int state)
 
 	return name;
 }
+
+static char **
+restore_completion (const char *text, int start, int end)
+{
+	char **matches;
+
+	if (start == 0)
+		matches = rl_completion_matches (text, command_generator);
+	else
+		matches = rl_completion_matches (text, filename_generator);
+
+	return (matches);
+}
+
+static void 
+initialize_readline(void) 
+{
+	rl_readline_name = "dump";
+	rl_attempted_completion_function = restore_completion;
+	rl_completion_entry_function = NULL;
+	rl_completion_append_character = '\0';
+	rl_instream = terminal;
+}
+
 #endif /* HAVE_READLINE */
