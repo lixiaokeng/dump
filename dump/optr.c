@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: optr.c,v 1.38 2004/04/21 08:55:51 stelian Exp $";
+	"$Id: optr.c,v 1.39 2004/07/05 15:12:45 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -444,7 +444,7 @@ allocfsent(struct mntent *fs)
 	/* Translade UUID=, LABEL= ... */
 	disk = get_device_name(fs->mnt_fsname);
 	if (disk == NULL)
-		quit("Cannot find a disk having %s\n", fs->mnt_fsname);
+		disk = strdup(fs->mnt_fsname);
 
 	/* Discard non block devices */
 	if (stat(disk, &buf) != 0 || !S_ISBLK(buf.st_mode)) {

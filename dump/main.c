@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.93 2004/06/02 09:22:49 stelian Exp $";
+	"$Id: main.c,v 1.94 2004/07/05 15:12:45 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -584,13 +584,9 @@ main(int argc, char *argv[])
 			diskparam[i] = '\0';
 
 	disk = get_device_name(diskparam);
-	if (!disk) {		/* null means the disk is some form
-				   of LABEL= or UID= but it was not
-				   found */
-		msg("Cannot find a disk having %s\n", diskparam);
-		msg("The ENTIRE dump is aborted.\n");
-		exit(X_STARTUP);
-	}
+	if (!disk)
+		disk = strdup(diskparam);
+
 	/*
 	 *	disk can be either the full special file name,
 	 *	the suffix of the special file name,

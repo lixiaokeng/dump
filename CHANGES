@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.252 2004/07/05 15:02:32 stelian Exp $
+$Id: CHANGES,v 1.253 2004/07/05 15:12:44 stelian Exp $
 
 Changes between versions 0.4b36 and 0.4b37 (released ??????????????)
 ====================================================================
@@ -28,6 +28,11 @@ Changes between versions 0.4b36 and 0.4b37 (released ??????????????)
 
 5.	Made dump use the blkid library when searching for devices
 	by label or uuid instead of dump's own routines.
+
+6.	Corrected a bug in dump where a wrong LABEL=... line in
+	/etc/fstab could prevent dump from dumping unrelated 
+	filesystems. Thanks to Bruce Lowekamp
+	<lowekamp@users.sourceforge.net> for reporting the bug.
 
 Changes between versions 0.4b35 and 0.4b36 (released April 21, 2004)
 ====================================================================
