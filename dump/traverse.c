@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.20 2000/09/26 13:17:09 stelian Exp $";
+	"$Id: traverse.c,v 1.21 2000/11/10 13:52:43 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -105,18 +105,19 @@ static	int searchdir __P((ino_t ino, daddr_t blkno, long size, long filesize));
 static	void mapfileino __P((ino_t ino, long *tapesize, int *dirskipped));
 static	int exclude_ino __P((ino_t ino));
 
-/* #define EXT3_FEATURE_INCOMPAT_RECOVER */
+/* #define EXT3_FEATURE_INCOMPAT_RECOVER 	0x0004 */
+#ifdef EXT3_FEATURE_INCOMPAT_RECOVER
+#define FORCE_OPEN	EXT2_FLAG_FORCE
+#else
+#define FORCE_OPEN	0
+#endif
 
 int dump_fs_open(const char *disk, ext2_filsys *fs)
 {
 	int retval;
 	struct ext2fs_sb *s;
 
-#ifdef EXT3_FEATURE_INCOMPAT_RECOVER
-	retval = ext2fs_open(disk, EXT2_FLAG_FORCE, 0, 0, unix_io_manager, fs);
-#else
-	retval = ext2fs_open(disk, 0, 0, 0, unix_io_manager, fs);
-#endif
+	retval = ext2fs_open(disk, FORCE_OPEN, 0, 0, unix_io_manager, fs);
 #if defined(EXT2_LIB_FEATURE_COMPAT_SUPP) && defined(EXT2_LIB_FEATURE_INCOMPAT_SUPP) && defined(EXT2_LIB_FEATURE_RO_COMPAT_SUPP) && defined(EXT2_ET_UNSUPP_FEATURE) && defined(EXT2_ET_RO_UNSUPP_FEATURE)
 	if (!retval) {
 		s = (struct ext2fs_sb *) (*fs)->super;

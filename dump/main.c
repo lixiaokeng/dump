@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.27 2000/11/10 13:22:10 stelian Exp $";
+	"$Id: main.c,v 1.28 2000/11/10 13:52:43 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -126,9 +126,9 @@ main(int argc, char *argv[])
 	char pathname[MAXPATHLEN];
 #endif
 	time_t tnow;
-	char labelstr[LBLSIZE];
 	char *diskparam;
 
+	spcl.c_label[0] = '\0';
 	spcl.c_date = 0;
 #ifdef	__linux__
 	(void)time4(&spcl.c_date);
@@ -148,7 +148,6 @@ main(int argc, char *argv[])
 	if ((tapeprefix = getenv("TAPE")) == NULL)
 		tapeprefix = _PATH_DEFTAPE;
 	dumpdates = _PATH_DUMPDATES;
-	strcpy(labelstr, "none");	/* XXX safe strcpy. */
 	if (TP_BSIZE / DEV_BSIZE == 0 || TP_BSIZE % DEV_BSIZE != 0)
 		quit("TP_BSIZE must be a multiple of DEV_BSIZE\n");
 	level = '0';
@@ -243,14 +242,14 @@ main(int argc, char *argv[])
 			 * the last must be '\0', so the limit on strlen()
 			 * is really LBLSIZE-1.
 			 */
-			strncpy(labelstr, optarg, LBLSIZE);
-			labelstr[LBLSIZE-1] = '\0';
+			strncpy(spcl.c_label, optarg, LBLSIZE);
+			spcl.c_label[LBLSIZE-1] = '\0';
 			if (strlen(optarg) > LBLSIZE-1) {
 				msg(
 		"WARNING Label `%s' is larger than limit of %d characters.\n",
 				    optarg, LBLSIZE-1);
 				msg("WARNING: Using truncated label `%s'.\n",
-				    labelstr);
+				    spcl.c_label);
 			}
 			break;
 
@@ -390,7 +389,7 @@ main(int argc, char *argv[])
 	 *      fstabsearch.
 	 */
 	if (strlen(disk) > 1 && disk[strlen(disk) - 1] == '/')
-	  disk[strlen(disk) - 1] = '\0';
+		disk[strlen(disk) - 1] = '\0';
 	/*
 	 *	disk can be either the full special file name,
 	 *	the suffix of the special file name,
@@ -401,8 +400,8 @@ main(int argc, char *argv[])
 		disk = rawname(dt->fs_spec);
 		(void)strncpy(spcl.c_dev, dt->fs_spec, NAMELEN);
 		(void)strncpy(spcl.c_filesys, dt->fs_file, NAMELEN);
-#ifdef	__linux__
 	} else {
+#ifdef	__linux__
 #ifdef	HAVE_REALPATH
 		if (realpath(disk, pathname) == NULL)
 #endif
@@ -434,14 +433,12 @@ main(int argc, char *argv[])
 				    NAMELEN);
 			}
 		}
-	}
 #else
-	} else {
 		(void)strncpy(spcl.c_dev, disk, NAMELEN);
 		(void)strncpy(spcl.c_filesys, "an unlisted file system",
 		    NAMELEN);
-	}
 #endif
+	}
 
 	if (directory[0] != 0) {
 		if (level != '0') {
@@ -453,10 +450,10 @@ main(int argc, char *argv[])
 			exit(X_STARTUP);
 		}
 	}
-	spcl.c_dev[NAMELEN-1]='\0';
-	spcl.c_filesys[NAMELEN-1]='\0';
-	(void)strncpy(spcl.c_label, labelstr, sizeof(spcl.c_label) - 1);
+	spcl.c_dev[NAMELEN-1] = '\0';
+	spcl.c_filesys[NAMELEN-1] = '\0';
 	(void)gethostname(spcl.c_host, NAMELEN);
+	spcl.c_host[NAMELEN-1] = '\0';
 	spcl.c_level = level - '0';
 	spcl.c_type = TS_TAPE;
 	if (!Tflag)
@@ -494,8 +491,6 @@ main(int argc, char *argv[])
 			msgtail("to %s on host %s\n", tape, host);
 		else
 			msgtail("to %s\n", tape);
-		msg("Label: %s\n", labelstr);
-
 	} /* end of size estimate */
 
 #ifdef	__linux__
@@ -514,6 +509,15 @@ main(int argc, char *argv[])
 	if ((diskfd = open(disk, O_RDONLY)) < 0) {
 		msg("Cannot open %s\n", disk);
 		exit(X_STARTUP);
+	}
+	/* if no user label specified, use ext2 filesystem label if available */
+	if (spcl.c_label[0] == '\0') {
+		if (fs->super->s_volume_name[0] != '\0') {
+			strncpy(spcl.c_label, fs->super->s_volume_name,LBLSIZE);
+			spcl.c_label[LBLSIZE-1] = '\0';
+		}
+		else
+			strcpy(spcl.c_label, "none");   /* safe strcpy. */
 	}
 	sync();
 	dev_bsize = DEV_BSIZE;
@@ -554,9 +558,13 @@ main(int argc, char *argv[])
 	usedinomap = (char *)calloc((unsigned) mapsize, sizeof(char));
 	dumpdirmap = (char *)calloc((unsigned) mapsize, sizeof(char));
 	dumpinomap = (char *)calloc((unsigned) mapsize, sizeof(char));
+	if (usedinomap == NULL || dumpdirmap == NULL || dumpinomap == NULL)
+		quit("out of memory allocating inode maps\n");
 	tapesize = 2 * (howmany(mapsize * sizeof(char), TP_BSIZE) + 1);
 
 	nonodump = spcl.c_level < honorlevel;
+
+	msg("Label: %s\n", spcl.c_label);
 
 #if defined(SIGINFO)
 	(void)signal(SIGINFO, statussig);

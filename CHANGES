@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.88 2000/11/10 13:22:10 stelian Exp $
+$Id: CHANGES,v 1.89 2000/11/10 13:52:43 stelian Exp $
 
 Changes between versions 0.4b19 and 0.4b20 (released ???????????????)
 =====================================================================
@@ -49,6 +49,11 @@ Changes between versions 0.4b19 and 0.4b20 (released ???????????????)
 10.	Made dump's -a (automatic end of tape detection) the
 	default. Specifying one of -B, -c, -d or -s options will
 	override the EOM detection. Thanks to Andreas Dilger
+	<adilger@turbolinux.com> for the patch.
+
+11.	Save the ext2 filesystem label into the dump volume label.
+	Specifying a volume label on the command line (-L option)
+	will override this feature. Thanks to Andreas Dilger
 	<adilger@turbolinux.com> for the patch.
 
 Changes between versions 0.4b18 and 0.4b19 (released August 20, 2000)
