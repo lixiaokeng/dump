@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.41 2002/07/19 14:57:39 stelian Exp $";
+	"$Id: main.c,v 1.42 2002/11/15 09:25:41 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -90,8 +90,8 @@ char	command = '\0';
 long	dumpnum = 1;
 long	volno = 0;
 long	ntrec;
-char	*dumpmap;
-char	*usedinomap;
+char	*dumpmap = NULL;
+char	*usedinomap = NULL;
 dump_ino_t maxino;
 time_t	dumptime;
 time_t	dumpdate;

@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.64 2002/07/29 12:00:34 stelian Exp $";
+	"$Id: tape.c,v 1.65 2002/11/15 09:25:42 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -374,15 +374,9 @@ setup(void)
 	getfile(xtrmap, xtrmapskip);
 	while (spcl.c_type == TS_ADDR) {
 		/* Recompute maxino and the map */
-		char *oldmap = usedinomap;
 		dump_ino_t oldmaxino = maxino;
 		maxino += (spcl.c_count * TP_BSIZE * NBBY) + 1;
-		map = calloc((unsigned)1, (unsigned)howmany(maxino, NBBY));
-		if (map == NULL)
-			errx(1, "no memory for active inode map");
-		usedinomap = map;
-		memcpy(usedinomap, oldmap, howmany(oldmaxino, NBBY));
-		free(oldmap);
+		resizemaps(oldmaxino, maxino);
 
 		spcl.c_dinode.di_size = spcl.c_count * TP_BSIZE;
 		getfile(xtrmap, xtrmapskip);

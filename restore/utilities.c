@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: utilities.c,v 1.20 2002/02/04 11:18:46 stelian Exp $";
+	"$Id: utilities.c,v 1.21 2002/11/15 09:25:42 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -543,3 +543,25 @@ Inode2Tapepos(dump_ino_t ino, long *tnum, long long *tpos, int exactmatch)
 	return 0;
 }
 #endif /* USE_QFA */
+
+void resizemaps(dump_ino_t oldmax, dump_ino_t newmax)
+{
+	char *map;
+
+	if (usedinomap) {
+		map = calloc((unsigned)1, (unsigned)howmany(newmax, NBBY));
+		if (map == NULL)
+			errx(1, "no memory for active inode map");
+		memcpy(map, usedinomap, howmany(oldmax, NBBY));
+		free(usedinomap);
+		usedinomap = map;
+	}
+	if (dumpmap) {
+		map = calloc((unsigned)1, (unsigned)howmany(newmax, NBBY));
+		if (map == NULL)
+			errx(1, "no memory for file dump list");
+		memcpy(map, dumpmap, howmany(oldmax, NBBY));
+		free(dumpmap);
+		dumpmap = map;
+	}
+}

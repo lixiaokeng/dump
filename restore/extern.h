@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: extern.h,v 1.19 2002/07/29 12:00:34 stelian Exp $
+ *	$Id: extern.h,v 1.20 2002/11/15 09:25:41 stelian Exp $
  */
 
 /*-
@@ -97,6 +97,7 @@ void		 removeoldleaves __P((void));
 void		 removeoldnodes __P((void));
 void		 renameit __P((char *, char *));
 int		 reply __P((const char *));
+void		 resizemaps __P((dump_ino_t, dump_ino_t));
 RST_DIR		*rst_opendir __P((const char *));
 struct direct	*rst_readdir __P((RST_DIR *));
 void		 rst_closedir __P((RST_DIR *dirp));
