@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.52 2001/07/18 13:12:33 stelian Exp $";
+	"$Id: main.c,v 1.53 2001/07/19 09:03:44 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -114,9 +114,11 @@ int 	maxbsize = 64*1024;     /* XXX MAXBSIZE from sys/param.h */
 static long numarg __P((const char *, long, long));
 static void obsolete __P((int *, char **[]));
 static void usage __P((void));
+static void do_exclude_from_file __P((char *));
+static void do_exclude_ino_str __P((char *));
 
-dump_ino_t iexclude_list[IEXCLUDE_MAXNUM];/* the inode exclude list */
-int iexclude_num = 0;			/* number of elements in the list */
+static dump_ino_t iexclude_list[IEXCLUDE_MAXNUM];/* the inode exclude list */
+static int iexclude_num = 0;			/* number of elements in the list */
 
 int
 main(int argc, char *argv[])
@@ -168,7 +170,7 @@ main(int argc, char *argv[])
 #endif /* USE_QFA */
 
 	while ((ch = getopt(argc, argv,
-			    "0123456789aB:b:cd:e:f:F:h:L:"
+			    "0123456789aB:b:cd:e:E:f:F:h:L:"
 #ifdef KERBEROS
 			    "k"
 #endif
@@ -224,19 +226,19 @@ main(int argc, char *argv[])
 			
 			                /* 04-Feb-00 ILC */
 		case 'e':		/* exclude an inode */
-			if (iexclude_num == IEXCLUDE_MAXNUM) {
-				msg("Too many -e options\n");
-				msg("The ENTIRE dump is aborted.\n");
-				exit(X_STARTUP);
+			{
+			char *p = optarg, *q;
+			while ((q = strchr(p, ','))) {
+				*q = '\0';
+				do_exclude_ino_str(p);
+				p = q + 1;
 			}
-		        iexclude_list[iexclude_num++] = numarg("inode to exclude",0L,0L);
-			if (iexclude_list[iexclude_num-1] <= ROOTINO) {
-				msg("Cannot exclude inode %ld\n", (long)iexclude_list[iexclude_num-1]);
-				msg("The ENTIRE dump is aborted.\n");
-				exit(X_STARTUP);
+			do_exclude_ino_str(p);
 			}
-			msg("Added %d to exclude list\n",
-			    iexclude_list[iexclude_num-1]);
+			break;
+
+		case 'E':		/* exclude inodes read from file */
+			do_exclude_from_file(optarg);
 			break;
 
 		case 'f':		/* output file */
@@ -888,12 +890,11 @@ usage(void)
 #endif
 		"MnSu"
 		"] [-B records] [-b blocksize] [-d density]\n"
-		"\t%s [-e inode#] [-f file] [-h level] "
+		"\t%s [-e inode#,inode#,...] [-E file] [-f file] [-h level] "
 #ifdef USE_QFA
 		"[-Q file] "
 #endif
-		"[-s feet]\n"
-		"\t%s [-T date] "
+		"\n\t%s [-s feet] [-T date] "
 #ifdef HAVE_ZLIB
 		"[-z zlevel] "
 #endif
@@ -1000,6 +1001,7 @@ obsolete(int *argcp, char **argvp[])
 		case 'b':
 		case 'd':
 		case 'e':
+		case 'E':
 		case 'f':
 		case 'F':
 		case 'h':
@@ -1040,4 +1042,75 @@ obsolete(int *argcp, char **argvp[])
 
 	/* Update argument count. */
 	*argcp = nargv - *argvp - 1;
+}
+
+/*
+ * This tests whether an inode is in the exclude list
+ */
+int
+exclude_ino(dump_ino_t ino)
+{
+	/* 04-Feb-00 ILC */
+	if (iexclude_num) {	/* if there are inodes in the exclude list */
+		int idx;	/* then check this inode against it */
+		for (idx = 0; idx < iexclude_num; idx++)
+			if (ino == iexclude_list[idx])
+				return 1;
+	}
+	return 0;
+}
+
+/*
+ * This tests adds an inode to the exclusion list if it isn't already there
+ */
+void
+do_exclude_ino(dump_ino_t ino)
+{
+	if (!exclude_ino(ino)) {
+		if (iexclude_num == IEXCLUDE_MAXNUM) {
+			msg("Too many exclude options\n");
+			msg("The ENTIRE dump is aborted.\n");
+			exit(X_STARTUP);
+		}
+		msg("Added inode %u to exclude list\n", ino);
+		iexclude_list[iexclude_num++] = ino;
+	}
+}
+
+static void
+do_exclude_ino_str(char * ino) {
+	char *r;
+	unsigned long inod;
+
+	inod = strtoul(ino, &r, 10);
+	if (*r != '\0' || inod <= ROOTINO) {
+		msg("Invalid inode argument %s\n", ino);
+		msg("The ENTIRE dump is aborted.\n");
+		exit(X_STARTUP);
+	}
+	do_exclude_ino(inod);
+}
+
+/*
+ * This reads a file containing one inode number per line and exclude them all
+ */
+static void 
+do_exclude_from_file(char *file) {
+	FILE *f;
+	char *p, fname[MAXPATHLEN];
+	
+
+	if (!( f = fopen(file, "r")) ) {
+		msg("Cannot open file for reading: %s\n", file);
+		msg("The ENTIRE dump is aborted.\n");
+		exit(X_STARTUP);
+	}
+	while (( p = fgets(fname, MAXPATHLEN, f))) {
+		if ( *p && *(p + strlen(p) - 1) == '\n' ) /* possible null string */
+			*(p + strlen(p) - 1) = '\0';
+		if ( !*p ) /* skip empty lines */
+			continue;
+		do_exclude_ino_str(p);
+	}
+	fclose(f);
 }

@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.29 2001/07/18 13:12:33 stelian Exp $
+.\"	$Id: dump.8.in,v 1.30 2001/07/19 09:03:44 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -44,7 +44,8 @@
 .Op Fl B Ar records
 .Op Fl b Ar blocksize
 .Op Fl d Ar density
-.Op Fl e Ar inode number
+.Op Fl e Ar inode numbers
+.Op Fl E Ar file
 .Op Fl f Ar file
 .Op Fl F Ar script
 .Op Fl h Ar level
@@ -141,12 +142,21 @@ The default blocksize is 10.
 Change the defaults for use with a cartridge tape drive, with a density
 of 8000 bpi, and a length of 1700 feet. Specifying a cartridge drive
 overrides the end-of-media detection.
-.It Fl e Ar inode
+.It Fl e Ar inodes
 Exclude 
-.Ar inode
-from the dump (you can use 
+.Ar inodes
+from the dump. The
+.Ar inodes
+parameter is a comma separated list of inode numbers (you can use
 .Ar stat 
 to find the inode number for a file or directory).
+.It Fl E Ar file
+Read list of inodes to be excluded from the dump from the text file
+.Ar file .
+The file 
+.Ar file
+should be an ordinary file containing inode numbers separated by
+newlines.
 .It Fl h Ar level
 Honor the user
 .Dq nodump

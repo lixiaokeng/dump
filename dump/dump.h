@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: dump.h,v 1.26 2001/07/18 13:12:33 stelian Exp $
+ *	$Id: dump.h,v 1.27 2001/07/19 09:03:44 stelian Exp $
  */
 
 /*-
@@ -187,6 +187,8 @@ int	rmtioctl __P((int cmd, int count));
 #endif /* RDUMP */
 
 void	interrupt __P((int signo));	/* in case operator bangs on console */
+int	exclude_ino __P((dump_ino_t ino));
+void	do_exclude_ino __P((dump_ino_t ino));
 
 /*
  *	Exit status codes

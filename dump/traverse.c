@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.35 2001/07/18 08:50:58 stelian Exp $";
+	"$Id: traverse.c,v 1.36 2001/07/19 09:03:44 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -102,9 +102,6 @@ static	void dmpindir __P((dump_ino_t ino, daddr_t blk, int level, fsizeT *size))
 static	int searchdir __P((dump_ino_t ino, daddr_t blkno, long size, long filesize));
 #endif
 static	void mapfileino __P((dump_ino_t ino, struct dinode const *dp, long *tapesize, int *dirskipped));
-static	int exclude_ino __P((dump_ino_t ino));
-extern dump_ino_t iexclude_list[IEXCLUDE_MAXNUM];	/* the inode exclude list */
-extern int iexclude_num;			/* number of elements in list */
 
 #ifdef HAVE_EXT2_JOURNAL_INUM
 #define ext2_journal_ino(sb) (sb->s_journal_inum)
@@ -162,13 +159,12 @@ int dump_fs_open(const char *disk, ext2_filsys *fs)
 		else {
 			if (es->s_feature_compat &
 				EXT3_FEATURE_COMPAT_HAS_JOURNAL && 
-				journal_ino && !exclude_ino(journal_ino)) {
-				iexclude_list[iexclude_num++] = journal_ino;
-				msg("Exclude ext3 journal inode %u\n",
+				journal_ino) {
+				msg("Exclude journal inode %u\n",
 				    journal_ino);
+				do_exclude_ino(journal_ino);
 			}
-			if (!exclude_ino(EXT2_RESIZE_INO))
-				iexclude_list[iexclude_num++] = EXT2_RESIZE_INO;
+			do_exclude_ino(EXT2_RESIZE_INO);
 		}
 	}
 	return retval;
@@ -222,22 +218,6 @@ blockest(struct dinode const *dp)
 	}
 #endif
 	return (blkest + 1);
-}
-
-/*
- * This tests whether an inode is in the exclude list 
- */
-int
-exclude_ino(dump_ino_t ino)
-{
-	/* 04-Feb-00 ILC */
-	if (iexclude_num) {	/* if there are inodes in the exclude list */
-		int idx;	/* then check this inode against it */
-		for (idx = 0; idx < iexclude_num; idx++)
-			if (ino == iexclude_list[idx])
-				return 1;
-	}
-	return 0;
 }
 
 /* Auxiliary macro to pick up files changed since previous dump. */
