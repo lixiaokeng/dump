@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.27 2001/08/13 16:17:52 stelian Exp $";
+	"$Id: main.c,v 1.28 2001/08/14 13:11:58 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -277,7 +277,19 @@ main(int argc, char *argv[])
 
 	atexit(cleanup);
 
-	setinput(inputdev);
+	if (command == 'C' && inputdev[0] != '/') {
+		/* since we chdir into the directory we are comparing
+		 * to, we must retain the full tape path */
+		char wd[MAXPATHLEN], fullpathinput[MAXPATHLEN];
+		if (!getcwd(wd, MAXPATHLEN))
+			err(1, "can't get current directory");
+		snprintf(fullpathinput, MAXPATHLEN, "%s/%s", wd, inputdev);
+		fullpathinput[MAXPATHLEN - 1] = '\0';
+printf("FULLPATH is %s\n", fullpathinput);
+		setinput(fullpathinput);
+	}
+	else
+		setinput(inputdev);
 
 	if (argc == 0 && !filelist) {
 		argc = 1;
