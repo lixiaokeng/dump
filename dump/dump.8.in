@@ -26,7 +26,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.54 2004/01/27 10:37:28 stelian Exp $
+.\"	$Id: dump.8.in,v 1.55 2004/02/18 16:26:41 stelian Exp $
 .\"
 .TH DUMP 8 "version __VERSION__ of __DATE__" BSD "System management commands"
 .SH NAME
@@ -195,7 +195,8 @@ media changes. If the name of the file is of the form
 or
 .I user@host:file
 .B dump
-writes to the named file on the remote host using
+writes to the named file on the remote host (which should already 
+exist, dump doesn't create a new remote file) using
 .BR rmt (8).
 The default path name of the remote
 .BR rmt (8)

@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.240 2004/01/28 10:02:31 stelian Exp $
+$Id: CHANGES,v 1.241 2004/02/18 16:26:40 stelian Exp $
 
 Changes between versions 0.4b35 and 0.4b36 (released ?????????????????)
 =======================================================================
@@ -23,6 +23,9 @@ Changes between versions 0.4b35 and 0.4b36 (released ?????????????????)
 	when the major/minor namespace will migrate to 32 bits.
 	Thanks to Zhang Jun <zhangjun@nanjing-fnst.com> for reporting
 	the bug.
+
+6.	Made explicit in the dump man page that dump will not create
+	a remote file, it will only write to an already existing one.
 
 Changes between versions 0.4b34 and 0.4b35 (released December 21, 2003)
 =======================================================================
