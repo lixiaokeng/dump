@@ -1,4 +1,4 @@
-$Id: TODO,v 1.9 2000/01/07 19:23:53 tiniou Exp $
+$Id: TODO,v 1.10 2000/01/13 13:54:04 stelian Exp $
 
 Need to verify:
 ---------------
@@ -42,3 +42,6 @@ All others:
 	     the   specified   archive_file   to   be  used  by
 	     ufsrestore(1M) to determine whether a file  is  in
 	     the dump file that is being restored.
+
+9.	Add a '--new-volume-script' option to dump (and restore),
+	such as found in tar.
