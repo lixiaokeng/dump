@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.233 2003/10/26 16:05:44 stelian Exp $
+$Id: CHANGES,v 1.234 2003/10/26 16:16:08 stelian Exp $
 
 Changes between versions 0.4b34 and 0.4b35 (released ??????????????)
 ====================================================================
@@ -22,7 +22,7 @@ Changes between versions 0.4b34 and 0.4b35 (released ??????????????)
 	different signature. Thanks to Mike Harris <mharris@redhat.com>
 	for reporting this bug.
 
-5.	Made dump/restore build on Solaris, making possible to
+5.	Made restore build on Solaris, making possible to
 	restore Linux's "enhanced" tapes. Thanks to Uwe Gohlke
 	<uwe@ugsoft.de> for the patch.
 
@@ -36,6 +36,7 @@ Changes between versions 0.4b34 and 0.4b35 (released ??????????????)
 	files and tapes. The remote access will however work only 
 	when the dump provided rmt version is used. If you want to
 	use another rmt server, please do not use the QFA feature.
+	Thanks to Uwe Gohlke <uwe@ugsoft.de> for the patch.
 
 Changes between versions 0.4b33 and 0.4b34 (released April 18, 2003)
 ====================================================================
