@@ -1,13 +1,13 @@
 Begin3
 Title:          dump and restore for Ext2fs
-Version:        0.4b28pre1
-Entered-date:   04APR02
+Version:        0.4b28
+Entered-date:   12APR02
 Description:    Port of the 4.4BSD dump and restore backup suite
 Keywords:       backup, filesystem, Ext2fs
 Author:         University of California, Berkeley
 Maintained-by:  stelian@popies.net (Stelian Pop)
 Primary-site:   http://dump.sourceforge.net/
-                0kB dump-0.4b28pre1.tar.gz
+                0kB dump-0.4b28.tar.gz
                 0 dump.lsm
 Original-site:  ftp.freebsd.org /pub/bsd-sources/4.4BSD-Lite2/sbin
                 dump/*
