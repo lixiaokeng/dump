@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.13 2000/01/25 14:14:12 stelian Exp $";
+	"$Id: main.c,v 1.14 2000/01/26 11:38:08 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -345,6 +345,12 @@ main(int argc, char *argv[])
 	set_operators();	/* /etc/group snarfed */
 	getfstab();		/* /etc/fstab snarfed */
 	/*
+	 *      disk may end in / and this can confuse
+	 *      fstabsearch.
+	 */
+	if (strlen(disk) > 1 && disk[strlen(disk) - 1] == '/')
+	  disk[strlen(disk) - 1] = '\0';
+	/*
 	 *	disk can be either the full special file name,
 	 *	the suffix of the special file name,
 	 *	the special name missing the leading '/',
@@ -367,10 +373,10 @@ main(int argc, char *argv[])
 		dt = fstabsearchdir(pathname, directory);
 		if (dt != NULL) {
 			char name[MAXPATHLEN];
+			(void)strncpy(spcl.c_dev, dt->fs_spec, NAMELEN);
 			(void)sprintf(name, "%s (dir %s)",
-				      dt->fs_spec, directory);
-			(void)strncpy(spcl.c_dev, name, NAMELEN);
-			(void)strncpy(spcl.c_filesys, dt->fs_file, NAMELEN);
+				      dt->fs_file, directory);
+			(void)strncpy(spcl.c_filesys, name, NAMELEN);
 			disk = rawname(dt->fs_spec);
 		} else {
 			(void)strncpy(spcl.c_dev, disk, NAMELEN);
@@ -421,9 +427,7 @@ main(int argc, char *argv[])
 #else
 			spcl.c_ddate == 0 ? "the epoch\n" : ctime(&spcl.c_ddate));
 #endif
-		msg("Dumping %s ", disk);
-		if (dt != NULL)
-			msgtail("(%s) ", dt->fs_file);
+		msg("Dumping %s (%s) ", disk, spcl.c_filesys);
 		if (host)
 			msgtail("to %s on host %s\n", tape, host);
 		else

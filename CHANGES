@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.37 2000/01/25 14:14:12 stelian Exp $
+$Id: CHANGES,v 1.38 2000/01/26 11:38:07 stelian Exp $
 
 Changes between versions 0.4b13 and 0.4b14 (released ????????????????)
 ======================================================================
@@ -9,6 +9,14 @@ Changes between versions 0.4b13 and 0.4b14 (released ????????????????)
 	to heap corruption (causing dump malfunction in many possible ways).
 	Thanks to Jan Sanislo <oystr@cs.washington.edu> for finding this
 	bug and submitting the patch.
+
+2.	Fixed the handling of the filesystem parameter in dump. A
+	'/mnt/disk' parameter caused the disk contents to be dumped,
+	but a '/mnt/disk/' parameter caused the mountpoint directory
+	to be dumped (generally an empty directory).
+
+3.	Improved the output of dump in order to tell which directory
+	it is currently dumping (when dumping a subtree).
 
 Changes between versions 0.4b12 and 0.4b13 (released January 21, 2000)
 ======================================================================

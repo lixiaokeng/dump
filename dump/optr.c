@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: optr.c,v 1.8 2000/01/21 10:17:41 stelian Exp $";
+	"$Id: optr.c,v 1.9 2000/01/26 11:38:08 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -427,8 +427,11 @@ allocfsent(struct fstab *fs)
 	register struct fstab *new;
 
 	new = (struct fstab *)malloc(sizeof (*fs));
-	if (new == NULL ||
-	    (new->fs_file = strdup(fs->fs_file)) == NULL ||
+	if (new == NULL)
+		quit("%s\n", strerror(errno));
+	if (strlen(fs->fs_file) > 1 && fs->fs_file[strlen(fs->fs_file) - 1] == '/')
+		fs->fs_file[strlen(fs->fs_file) - 1] = '\0';
+	if ((new->fs_file = strdup(fs->fs_file)) == NULL ||
 	    (new->fs_type = strdup(fs->fs_type)) == NULL ||
 	    (new->fs_spec = strdup(fs->fs_spec)) == NULL)
 		quit("%s\n", strerror(errno));
