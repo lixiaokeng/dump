@@ -6,12 +6,9 @@
  *
  */
 
-/*
- * Copyright (c) 1989, 1993
+/*-
+ * Copyright (c) 1993
  *	The Regents of the University of California.  All rights reserved.
- *
- * This code is derived from software contributed to Berkeley by
- * Guido van Rossum.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -41,56 +38,56 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)glob.h	8.1 (Berkeley) 6/2/93
+ *	@(#)err.h	8.1 (Berkeley) 6/2/93
+ *      $Id: compaterr.h,v 1.1 1999/10/11 12:59:17 stelian Exp $
  */
 
-#ifndef _GLOB_H_
-#define	_GLOB_H_
+#ifndef _ERR_H_
+#define	_ERR_H_
+
+#include <config.h>
+
+#if defined(HAVE_ERR) || defined(HAVE_ERRX) || defined(HAVE_VERR) || defined(HAVE_VERRX) || defined(HAVE_VWARN) || defined(HAVE_VWARNX) || defined(HAVE_WARN) || defined(HAVE_WARNX)
+#include <err.h>
+#endif
 
 #include <sys/cdefs.h>
 
-struct stat;
-typedef struct {
-	int gl_pathc;		/* Count of total paths so far. */
-	int gl_matchc;		/* Count of paths matching pattern. */
-	int gl_offs;		/* Reserved at beginning of gl_pathv. */
-	int gl_flags;		/* Copy of flags parameter to glob. */
-	char **gl_pathv;	/* List of paths matching pattern. */
-				/* Copy of errfunc parameter to glob. */
-	int (*gl_errfunc) __P((const char *, int));
+#include <stdarg.h>
 
-	/*
-	 * Alternate filesystem access methods for glob; replacement
-	 * versions of closedir(3), readdir(3), opendir(3), stat(2)
-	 * and lstat(2).
-	 */
-	void (*gl_closedir) __P((void *));
-	struct dirent *(*gl_readdir) __P((void *));	
-	void *(*gl_opendir) __P((const char *));
-	int (*gl_lstat) __P((const char *, struct stat *));
-	int (*gl_stat) __P((const char *, struct stat *));
-} glob_t;
+#ifndef	_BSD_VA_LIST_
+#define _BSD_VA_LIST_		va_list
+#endif
 
-#define	GLOB_APPEND	0x0001	/* Append to output from previous call. */
-#define	GLOB_DOOFFS	0x0002	/* Use gl_offs. */
-#define	GLOB_ERR	0x0004	/* Return on error. */
-#define	GLOB_MARK	0x0008	/* Append / to matching directories. */
-#define	GLOB_NOCHECK	0x0010	/* Return pattern itself if nothing matches. */
-#define	GLOB_NOSORT	0x0020	/* Don't sort. */
-
-#define	GLOB_ALTDIRFUNC	0x0040	/* Use alternately specified directory funcs. */
-#define	GLOB_BRACE	0x0080	/* Expand braces ala csh. */
-#define	GLOB_MAGCHAR	0x0100	/* Pattern had globbing characters. */
-#define	GLOB_NOMAGIC	0x0200	/* GLOB_NOCHECK without magic chars (csh). */
-#define	GLOB_QUOTE	0x0400	/* Quote special chars with \. */
-#define	GLOB_TILDE	0x0800	/* Expand tilde names from the passwd file. */
-
-#define	GLOB_NOSPACE	(-1)	/* Malloc call failed. */
-#define	GLOB_ABEND	(-2)	/* Unignored error. */
+#ifndef	__dead
+#define __dead			volatile
+#endif
 
 __BEGIN_DECLS
-int	glob __P((const char *, int, int (*)(const char *, int), glob_t *));
-void	globfree __P((glob_t *));
+#ifndef HAVE_ERR
+__dead void	err __P((int, const char *, ...));
+#endif
+#ifndef HAVE_VERR
+__dead void	verr __P((int, const char *, _BSD_VA_LIST_));
+#endif
+#ifndef HAVE_ERRX
+__dead void	errx __P((int, const char *, ...));
+#endif
+#ifndef HAVE_VERRX
+__dead void	verrx __P((int, const char *, _BSD_VA_LIST_));
+#endif
+#ifndef HAVE_WARN
+void		warn __P((const char *, ...));
+#endif
+#ifndef HAVE_VWARN
+void		vwarn __P((const char *, _BSD_VA_LIST_));
+#endif
+#ifndef HAVE_WARNX
+void		warnx __P((const char *, ...));
+#endif
+#ifndef HAVE_VWARNX
+void		vwarnx __P((const char *, _BSD_VA_LIST_));
+#endif
 __END_DECLS
 
-#endif /* !_GLOB_H_ */
+#endif /* !_ERR_H_ */

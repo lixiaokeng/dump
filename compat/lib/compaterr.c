@@ -42,10 +42,10 @@
 
 #if defined(LIBC_RCS) && !defined(lint)
 static const char rcsid[] =
-	"$Id: err.c,v 1.2 1999/10/11 12:53:21 stelian Exp $";
+	"$Id: compaterr.c,v 1.1 1999/10/11 12:59:17 stelian Exp $";
 #endif /* LIBC_RCS and not lint */
 
-#include <err.h>
+#include <compaterr.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,9 +57,20 @@ static const char rcsid[] =
 
 extern char *__progname;		/* Program name, from crt0. */
 
-static FILE *err_file; /* file to use for error output */
+#if !defined(HAVE_ERR) || !defined(HAVE_ERRX) || !defined(HAVE_VERR) || !defined(HAVE_VERRX) || !defined(HAVE_VWARN) || !defined(HAVE_VWARNX) || !defined(HAVE_WARN) || !defined(HAVE_WARNX)
+
+__BEGIN_DECLS
+__dead void     errc __P((int, int, const char *, ...));
+__dead void     verrc __P((int, int, const char *, _BSD_VA_LIST_));
+void            warnc __P((int, const char *, ...));
+void            vwarnc __P((int, const char *, _BSD_VA_LIST_));
+void            err_set_file __P((void *));
+void            err_set_exit __P((void (*)(int)));
+__END_DECLS
+
 static void (*err_exit)(int);
 
+static FILE *err_file; /* file to use for error output */
 /*
  * This is declared to take a `void *' so that the caller is not required
  * to include <stdio.h> first.  However, it is really a `FILE *', and the
@@ -80,6 +91,53 @@ err_set_exit(void (*ef)(int))
 	err_exit = ef;
 }
 
+__dead void
+errc(int eval, int code, const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	verrc(eval, code, fmt, ap);
+	va_end(ap);
+}
+
+__dead void
+verrc(int eval, int code, const char *fmt, va_list ap)
+{
+	if (err_file == 0)
+		err_set_file((FILE *)0);
+	fprintf(err_file, "%s: ", __progname);
+	if (fmt != NULL) {
+		vfprintf(err_file, fmt, ap);
+		fprintf(err_file, ": ");
+	}
+	fprintf(err_file, "%s\n", strerror(code));
+	if (err_exit)
+		err_exit(eval);
+	exit(eval);
+}
+
+void
+warnc(int code, const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	vwarnc(code, fmt, ap);
+	va_end(ap);
+}
+
+void
+vwarnc(int code, const char *fmt, va_list ap)
+{
+	if (err_file == 0)
+		err_set_file((FILE *)0);
+	fprintf(err_file, "%s: ", __progname);
+	if (fmt != NULL) {
+		vfprintf(err_file, fmt, ap);
+		fprintf(err_file, ": ");
+	}
+	fprintf(err_file, "%s\n", strerror(code));
+}
+#endif
 
 #ifndef	HAVE_ERR
 __dead void
@@ -94,45 +152,9 @@ err(int eval, const char *fmt, ...)
 
 #ifndef	HAVE_VERR
 __dead void
-verr(eval, fmt, ap)
-	int eval;
-	const char *fmt;
-	va_list ap;
+verr(int eval, const char *fmt, va_list ap)
 {
 	verrc(eval, errno, fmt, ap);
-}
-#endif
-
-#ifndef HAVE_ERRC
-__dead void
-errc(int eval, int code, const char *fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	verrc(eval, code, fmt, ap);
-	va_end(ap);
-}
-#endif
-
-#ifndef HAVE_VERRC
-__dead void
-verrc(eval, code, fmt, ap)
-	int eval;
-	int code;
-	const char *fmt;
-	va_list ap;
-{
-	if (err_file == 0)
-		err_set_file((FILE *)0);
-	fprintf(err_file, "%s: ", __progname);
-	if (fmt != NULL) {
-		vfprintf(err_file, fmt, ap);
-		fprintf(err_file, ": ");
-	}
-	fprintf(err_file, "%s\n", strerror(code));
-	if (err_exit)
-		err_exit(eval);
-	exit(eval);
 }
 #endif
 
@@ -149,10 +171,7 @@ errx(int eval, const char *fmt, ...)
 
 #ifndef	HAVE_VERRX
 __dead void
-verrx(eval, fmt, ap)
-	int eval;
-	const char *fmt;
-	va_list ap;
+verrx(int eval, const char *fmt, va_list ap)
 {
 	if (err_file == 0)
 		err_set_file((FILE *)0);
@@ -179,40 +198,9 @@ warn(const char *fmt, ...)
 
 #ifndef	HAVE_VWARN
 void
-vwarn(fmt, ap)
-	const char *fmt;
-	va_list ap;
+vwarn(const char *fmt, va_list ap)
 {
 	vwarnc(errno, fmt, ap);
-}
-#endif
-
-#ifndef HAVE_WARNC
-void
-warnc(int code, const char *fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	vwarnc(code, fmt, ap);
-	va_end(ap);
-}
-#endif
-
-#ifndef HAVE_VWARNC
-void
-vwarnc(code, fmt, ap)
-	int code;
-	const char *fmt;
-	va_list ap;
-{
-	if (err_file == 0)
-		err_set_file((FILE *)0);
-	fprintf(err_file, "%s: ", __progname);
-	if (fmt != NULL) {
-		vfprintf(err_file, fmt, ap);
-		fprintf(err_file, ": ");
-	}
-	fprintf(err_file, "%s\n", strerror(code));
 }
 #endif
 
@@ -229,9 +217,7 @@ warnx(const char *fmt, ...)
 
 #ifndef	HAVE_VWARNX
 void
-vwarnx(fmt, ap)
-	const char *fmt;
-	va_list ap;
+vwarnx(const char *fmt, va_list ap)
 {
 	if (err_file == 0)
 		err_set_file((FILE *)0);

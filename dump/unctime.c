@@ -44,7 +44,7 @@
 static char sccsid[] = "@(#)unctime.c	8.2 (Berkeley) 6/14/94";
 #endif
 static const char rcsid[] =
-	"$Id: unctime.c,v 1.2 1999/10/11 12:53:23 stelian Exp $";
+	"$Id: unctime.c,v 1.3 1999/10/11 12:59:19 stelian Exp $";
 #endif /* not lint */
 
 #include <time.h>
@@ -52,6 +52,17 @@ static const char rcsid[] =
 #include <stdlib.h>
 #include <string.h>
 #endif
+
+#include <sys/param.h>
+#include <stdio.h>
+
+#ifdef __linux__
+#include <linux/ext2_fs.h>
+#include <ext2fs/ext2fs.h>
+#include <bsdcompat.h>
+#endif
+
+#include "dump.h"
 
 /*
  * Convert a ctime(3) format string into a system format date.
@@ -71,12 +82,11 @@ static const char rcsid[] =
 #define	E_SECOND	17
 #define	E_YEAR		20
 
-static	int lookup __P((char *));
+static	int lookup __P((const char *));
 
 
 time_t
-unctime(str)
-	char *str;
+unctime(const char *str)
 {
 	struct tm then;
 	char dbuf[26];
@@ -99,10 +109,9 @@ static char months[] =
 	"JanFebMarAprMayJunJulAugSepOctNovDec";
 
 static int
-lookup(str)
-	char *str;
+lookup(const char *str)
 {
-	register char *cp, *cp2;
+	register const char *cp, *cp2;
 
 	for (cp = months, cp2 = str; *cp != '\0'; cp += 3)
 		if (strncmp(cp, cp2, 3) == 0)

@@ -44,7 +44,7 @@
 static char sccsid[] = "@(#)dumprmt.c	8.3 (Berkeley) 4/28/95";
 #endif
 static const char rcsid[] =
-	"$Id: dumprmt.c,v 1.2 1999/10/11 12:53:20 stelian Exp $";
+	"$Id: dumprmt.c,v 1.3 1999/10/11 12:59:16 stelian Exp $";
 #endif /* not lint */
 
 #ifdef __linux__
@@ -77,6 +77,8 @@ static const char rcsid[] =
 #include <protocols/dumprestore.h>
 
 #include <ctype.h>
+#include <errno.h>
+#include <compaterr.h>
 #include <netdb.h>
 #include <pwd.h>
 #include <stdio.h>
@@ -97,16 +99,16 @@ static const char rcsid[] =
 #define	TS_OPEN		1
 
 static	int rmtstate = TS_CLOSED;
-static	int rmtape;
-static	char *rmtpeer;
+static	int rmtape = -1;
+static	const char *rmtpeer = 0;
 
-static	int okname __P((char *));
-static	int rmtcall __P((char *, char *));
-static	void rmtconnaborted __P((/* int, int */));
+static	int okname __P((const char *));
+static	int rmtcall __P((const char *, const char *));
+static	void rmtconnaborted __P((int));
 static	int rmtgetb __P((void));
 static	void rmtgetconn __P((void));
-static	void rmtgets __P((char *, int));
-static	int rmtreply __P((char *));
+static	void rmtgets __P((char *, size_t));
+static	int rmtreply __P((const char *));
 #ifdef KERBEROS
 int	krcmd __P((char **, int /*u_short*/, char *, char *, int *, char *));
 #endif
@@ -114,16 +116,16 @@ int	krcmd __P((char **, int /*u_short*/, char *, char *, int *, char *));
 static	int errfd = -1;
 extern	int dokerberos;
 extern	int ntrec;		/* blocking factor on tape */
+#ifndef errno
+extern	int errno;
+#endif
 
 int
-rmthost(host)
-	char *host;
+rmthost(const char *host)
 {
-
-	rmtpeer = malloc(strlen(host) + 1);
 	if (rmtpeer)
-		strcpy(rmtpeer, host);
-	else
+		free((void *)rmtpeer);
+	if ((rmtpeer = strdup(host)) == NULL)
 		rmtpeer = host;
 	signal(SIGPIPE, rmtconnaborted);
 	rmtgetconn();
@@ -133,7 +135,7 @@ rmthost(host)
 }
 
 static void
-rmtconnaborted()
+rmtconnaborted(int signo)
 {
 	msg("Lost connection to remote host.\n");
 	if (errfd != -1) {
@@ -159,30 +161,26 @@ rmtconnaborted()
 	exit(X_ABORT);
 }
 
-void
-rmtgetconn()
+static void
+rmtgetconn(void)
 {
 	register char *cp;
 	register const char *rmt;
 	static struct servent *sp = NULL;
 	static struct passwd *pwd = NULL;
-	char *tuser;
+	const char *tuser;
 	int size;
 	int throughput;
 	int on;
 
 	if (sp == NULL) {
 		sp = getservbyname(dokerberos ? "kshell" : "shell", "tcp");
-		if (sp == NULL) {
-			msg("%s/tcp: unknown service\n",
+		if (sp == NULL)
+			errx(1, "%s/tcp: unknown service",
 			    dokerberos ? "kshell" : "shell");
-			exit(X_STARTUP);
-		}
 		pwd = getpwuid(getuid());
-		if (pwd == NULL) {
-			msg("who are you?\n");
-			exit(X_STARTUP);
-		}
+		if (pwd == NULL)
+			errx(1, "who are you?");
 	}
 	if ((cp = strchr(rmtpeer, '@')) != NULL) {
 		tuser = rmtpeer;
@@ -197,11 +195,11 @@ rmtgetconn()
 	msg("");
 #ifdef KERBEROS
 	if (dokerberos)
-		rmtape = krcmd(&rmtpeer, sp->s_port, tuser, rmt, &errfd,
+		rmtape = krcmd((char **)&rmtpeer, sp->s_port, tuser, rmt, &errfd,
 			       (char *)0);
 	else
 #endif
-		rmtape = rcmd(&rmtpeer, (u_short)sp->s_port, pwd->pw_name,
+		rmtape = rcmd((char **)&rmtpeer, (u_short)sp->s_port, pwd->pw_name,
 			      tuser, rmt, &errfd);
 	if (rmtape < 0) {
 		msg("login to %s as %s failed.\n", rmtpeer, tuser);
@@ -227,16 +225,15 @@ rmtgetconn()
 }
 
 static int
-okname(cp0)
-	char *cp0;
+okname(const char *cp0)
 {
-	register char *cp;
+	register const char *cp;
 	register int c;
 
 	for (cp = cp0; *cp; cp++) {
 		c = *cp;
 		if (!isascii(c) || !(isalnum(c) || c == '_' || c == '-')) {
-			msg("invalid user name %s\n", cp0);
+			warnx("invalid user name %s\n", cp0);
 			return (0);
 		}
 	}
@@ -244,19 +241,17 @@ okname(cp0)
 }
 
 int
-rmtopen(tape, mode)
-	char *tape;
-	int mode;
+rmtopen(const char *tape, int mode)
 {
-	char buf[256];
+	char buf[MAXPATHLEN];
 
-	(void)snprintf(buf, sizeof (buf), "O%.226s\n%d\n", tape, mode);
+	(void)snprintf(buf, sizeof (buf), "O%s\n%d\n", tape, mode);
 	rmtstate = TS_OPEN;
 	return (rmtcall(tape, buf));
 }
 
 void
-rmtclose()
+rmtclose(void)
 {
 
 	if (rmtstate != TS_OPEN)
@@ -266,14 +261,13 @@ rmtclose()
 }
 
 int
-rmtread(buf, count)
-	char *buf;
-	int count;
+rmtread(char *buf, size_t count)
 {
 	char line[30];
-	int n, i, cc;
+	int n, i;
+	ssize_t cc;
 
-	(void)snprintf(line, sizeof (line), "R%d\n", count);
+	(void)snprintf(line, sizeof (line), "R%u\n", (unsigned)count);
 	n = rmtcall("read", line);
 	if (n < 0)
 		/* rmtcall() properly sets errno for us on errors. */
@@ -281,15 +275,13 @@ rmtread(buf, count)
 	for (i = 0; i < n; i += cc) {
 		cc = read(rmtape, buf+i, n - i);
 		if (cc <= 0)
-			rmtconnaborted();
+			rmtconnaborted(0);
 	}
 	return (n);
 }
 
 int
-rmtwrite(buf, count)
-	char *buf;
-	int count;
+rmtwrite(const char *buf, size_t count)
 {
 	char line[30];
 
@@ -299,35 +291,8 @@ rmtwrite(buf, count)
 	return (rmtreply("write"));
 }
 
-void
-rmtwrite0(count)
-	int count;
-{
-	char line[30];
-
-	(void)snprintf(line, sizeof (line), "W%d\n", count);
-	write(rmtape, line, strlen(line));
-}
-
-void
-rmtwrite1(buf, count)
-	char *buf;
-	int count;
-{
-
-	write(rmtape, buf, count);
-}
-
 int
-rmtwrite2()
-{
-
-	return (rmtreply("write"));
-}
-
-int
-rmtseek(offset, pos)
-	int offset, pos;
+rmtseek(int offset, int pos)
 {
 	char line[80];
 
@@ -338,7 +303,7 @@ rmtseek(offset, pos)
 struct	mtget mts;
 
 struct mtget *
-rmtstatus()
+rmtstatus(void)
 {
 	register int i;
 	register char *cp;
@@ -352,8 +317,7 @@ rmtstatus()
 }
 
 int
-rmtioctl(cmd, count)
-	int cmd, count;
+rmtioctl(int cmd, int count)
 {
 	char buf[256];
 
@@ -364,22 +328,19 @@ rmtioctl(cmd, count)
 }
 
 static int
-rmtcall(cmd, buf)
-	char *cmd, *buf;
+rmtcall(const char *cmd, const char *buf)
 {
 
 	if (write(rmtape, buf, strlen(buf)) != strlen(buf))
-		rmtconnaborted();
+		rmtconnaborted(0);
 	return (rmtreply(cmd));
 }
 
 static int
-rmtreply(cmd)
-	char *cmd;
+rmtreply(const char *cmd)
 {
 	register char *cp;
 	char code[30], emsg[BUFSIZ];
-	extern int errno;
 
 	rmtgets(code, sizeof (code));
 	if (*code == 'E' || *code == 'F') {
@@ -398,26 +359,24 @@ rmtreply(cmd)
 
 		msg("Protocol to remote tape server botched (code \"%s\").\n",
 		    code);
-		rmtconnaborted();
+		rmtconnaborted(0);
 	}
 	return (atoi(code + 1));
 }
 
-int
-rmtgetb()
+static int
+rmtgetb(void)
 {
 	char c;
 
 	if (read(rmtape, &c, 1) != 1)
-		rmtconnaborted();
+		rmtconnaborted(0);
 	return (c);
 }
 
 /* Get a line (guaranteed to have a trailing newline). */
-void
-rmtgets(line, len)
-	char *line;
-	int len;
+static void
+rmtgets(char *line, size_t len)
 {
 	register char *cp = line;
 
@@ -433,5 +392,5 @@ rmtgets(line, len)
 	*cp = '\0';
 	msg("Protocol to remote tape server botched.\n");
 	msg("(rmtgets got \"%s\").\n", line);
-	rmtconnaborted();
+	rmtconnaborted(0);
 }

@@ -27,7 +27,7 @@ MANDIR=		/usr/man/man8
 #
 # Global include directories
 #
-GINC=		-I/usr/include/bsd -I$(top_builddir) -I$(top_srcdir)/compat/include
+GINC=		-I$(top_builddir) -I$(top_srcdir)/compat/include
 # indicate where the ext2fs library can be found (this is not needed if you
 # have run `make install-libs' in the e2fsprogs source directory).
 #GINC+=		-I/usr/src/e2fsprogs-0.5c/lib
@@ -38,7 +38,7 @@ GINC=		-I/usr/include/bsd -I$(top_builddir) -I$(top_srcdir)/compat/include
 # indicate where the ext2fs library can be found (this is not needed if you
 # have run `make install-libs' in the e2fsprogs source directory).
 #GLIBDIR=	-L/usr/src/e2fsprogs-0.5c/lib
-GLIBS=		-lbsd $(GLIBDIR) -L../compat/lib -lcompat -lext2fs -lcom_err
+GLIBS=		$(GLIBDIR) -L../compat/lib -lcompat -lext2fs -lcom_err
 
 #
 # Definitions (don't change them unless you know what you are doing)

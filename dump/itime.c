@@ -44,7 +44,7 @@
 static char sccsid[] = "@(#)itime.c	8.1 (Berkeley) 6/5/93";
 #endif
 static const char rcsid[] =
-	"$Id: itime.c,v 1.2 1999/10/11 12:53:22 stelian Exp $";
+	"$Id: itime.c,v 1.3 1999/10/11 12:59:18 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -93,7 +93,7 @@ static	int makedumpdate __P((struct dumpdates *, char *));
 static	void readdumptimes __P((FILE *));
 
 void
-initdumptimes()
+initdumptimes(void)
 {
 	FILE *df;
 
@@ -125,8 +125,7 @@ initdumptimes()
 }
 
 static void
-readdumptimes(df)
-	FILE *df;
+readdumptimes(FILE *df)
 {
 	register int i;
 	register struct	dumptime *dtwalk;
@@ -153,7 +152,7 @@ readdumptimes(df)
 }
 
 void
-getdumptime()
+getdumptime(void)
 {
 	register struct dumpdates *ddp;
 	register int i;
@@ -166,6 +165,12 @@ getdumptime()
 #endif
 	spcl.c_ddate = 0;
 	lastlevel = '0';
+
+	/* if we're not going to update dumpdates, there's no point in reading
+	   it, particularly since /var might not be mounted... wait until here
+	   to benefit from the initialization of variables needed by parent */
+	if (uflag == 0)
+		return;
 
 	initdumptimes();
 	/*
@@ -189,7 +194,7 @@ getdumptime()
 }
 
 void
-putdumptime()
+putdumptime(void)
 {
 	FILE *df;
 	register struct dumpdates *dtwalk;
@@ -250,9 +255,7 @@ putdumptime()
 }
 
 static void
-dumprecout(file, what)
-	FILE *file;
-	struct dumpdates *what;
+dumprecout(FILE *file, struct dumpdates *what)
 {
 
 	if (fprintf(file, DUMPOUTFMT,
@@ -265,14 +268,12 @@ dumprecout(file, what)
 int	recno;
 
 static int
-getrecord(df, ddatep)
-	FILE *df;
-	struct dumpdates *ddatep;
+getrecord(FILE *df, struct dumpdates *ddatep)
 {
 	char tbuf[BUFSIZ];
 
 	recno = 0;
-	if ( (fgets(tbuf, sizeof (tbuf), df)) != tbuf)
+	if (fgets(tbuf, sizeof (tbuf), df) == NULL)
 		return(-1);
 	recno++;
 	if (makedumpdate(ddatep, tbuf) < 0)
@@ -287,11 +288,9 @@ getrecord(df, ddatep)
 }
 
 static int
-makedumpdate(ddp, tbuf)
-	struct dumpdates *ddp;
-	char *tbuf;
+makedumpdate(struct dumpdates *ddp, char *tbuf)
 {
-	char un_buf[128];
+	char un_buf[BUFSIZ];
 
 	(void) sscanf(tbuf, DUMPINFMT, ddp->dd_name, &ddp->dd_level, un_buf);
 	ddp->dd_ddate = unctime(un_buf);

@@ -95,6 +95,7 @@ ext2_filsys fs;
 struct	fs *sblock;	/* the file system super block */
 char	sblock_buf[MAXBSIZE];
 #endif
+long	xferrate;       /* averaged transfer rate of all volumes */
 long	dev_bsize;	/* block size of underlying disk device */
 int	dev_bshift;	/* log2(dev_bsize) */
 int	tp_bshift;	/* log2(TP_BSIZE) */
@@ -104,15 +105,19 @@ int	tp_bshift;	/* log2(TP_BSIZE) */
 #endif
 
 /* operator interface functions */
-void	broadcast __P((char *message));
-void	lastdump __P((int arg));	/* int should be char */
+void	broadcast __P((const char *message));
+time_t	do_stats __P((void));
+void	lastdump __P((char arg));
 void	msg __P((const char *fmt, ...));
 void	msgtail __P((const char *fmt, ...));
-int	query __P((char *question));
+int	query __P((const char *question));
 void	quit __P((const char *fmt, ...));
 void	set_operators __P((void));
+#if defined(SIGINFO)
+void	statussig __P((int signo));
+#endif
 void	timeest __P((void));
-time_t	unctime __P((char *str));
+time_t	unctime __P((const char *str));
 
 /* mapping rouintes */
 struct	dinode;
@@ -139,9 +144,9 @@ void	close_rewind __P((void));
 void	dumpblock __P((daddr_t blkno, int size));
 void	startnewtape __P((int top));
 void	trewind __P((void));
-void	writerec __P((char *dp, int isspcl));
+void	writerec __P((const void *dp, int isspcl));
 
-__dead void Exit __P((int status));
+void 	Exit __P((int status));
 void	dumpabort __P((int signo));
 void	getfstab __P((void));
 
@@ -150,10 +155,14 @@ struct	dinode *getino __P((ino_t inum));
 
 /* rdump routines */
 #ifdef RDUMP
+int	rmthost __P((const char *host));
+int	rmtopen __P((const char *tape, int mode));
 void	rmtclose __P((void));
-int	rmthost __P((char *host));
-int	rmtopen __P((char *tape, int mode));
-int	rmtwrite __P((char *buf, int count));
+int	rmtread __P((char *buf, size_t count));
+int	rmtwrite __P((const char *buf, size_t count));
+int	rmtseek __P((int offset, int pos));
+struct mtget * rmtstatus __P((void));
+int	rmtioctl __P((int cmd, int count));
 #endif /* RDUMP */
 
 void	interrupt __P((int signo));	/* in case operator bangs on console */
@@ -162,7 +171,7 @@ void	interrupt __P((int signo));	/* in case operator bangs on console */
  *	Exit status codes
  */
 #define	X_FINOK		0	/* normal exit */
-#define X_STARTUP	1	/* startup error */
+#define	X_STARTUP	1	/* startup error */
 #define	X_REWRITE	2	/* restart writing from the check point */
 #define	X_ABORT		3	/* abort dump; don't attempt checkpointing */
 
@@ -173,9 +182,9 @@ void	interrupt __P((int signo));	/* in case operator bangs on console */
 #define DIALUP	"ttyd"			/* prefix for dialups */
 #endif
 
-struct	fstab *fstabsearch __P((char *key));	/* search fs_file and fs_spec */
+struct	fstab *fstabsearch __P((const char *key));	/* search fs_file and fs_spec */
 #ifdef	__linux__
-struct	fstab *fstabsearchdir __P((char *key, char *dir));	/* search fs_file and fs_spec */
+struct	fstab *fstabsearchdir __P((const char *key, char *dir));	/* search fs_file and fs_spec */
 #endif
 
 #ifndef NAME_MAX

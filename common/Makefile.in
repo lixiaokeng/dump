@@ -4,7 +4,7 @@ srcdir=		@srcdir@
 @MCONFIG@
 
 INC=		-I$(top_srcdir)/dump
-CFLAGS=		@CCOPTS@ -pipe $(GINC) $(INC) $(DEFS)
+CFLAGS=		@CCOPTS@ -pipe $(OPT) $(GINC) $(INC) $(DEFS)
 SRCS=		dumprmt.c
 OBJS=		dumprmt.o
 

@@ -58,7 +58,7 @@ static void error __P((int));
 static int fstabscan __P((void));
 
 static
-int fstabscan()
+int fstabscan(void)
 {
 	struct mntent	*mnt;
 	register char *cp;
@@ -111,7 +111,7 @@ int fstabscan()
 }
 
 struct fstab *
-getfsent()
+getfsent(void)
 {
 	if ((!_fs_fp && !setfsent()) || !fstabscan())
 		return((struct fstab *)NULL);
@@ -119,8 +119,7 @@ getfsent()
 }
 
 struct fstab *
-getfsspec(name)
-	register const char *name;
+getfsspec(const char *name)
 {
 	if (setfsent())
 		while (fstabscan())
@@ -130,8 +129,7 @@ getfsspec(name)
 }
 
 struct fstab *
-getfsfile(name)
-	register const char *name;
+getfsfile(const char *name)
 {
 	if (setfsent())
 		while (fstabscan())
@@ -140,7 +138,8 @@ getfsfile(name)
 	return((struct fstab *)NULL);
 }
 
-int setfsent()
+int
+setfsent(void)
 {
 	if (_fs_fp) {
 		rewind(_fs_fp);
@@ -153,7 +152,7 @@ int setfsent()
 }
 
 void
-endfsent()
+endfsent(void)
 {
 	if (_fs_fp) {
 		(void)endmntent(_fs_fp);
@@ -162,8 +161,7 @@ endfsent()
 }
 
 static
-void error(err)
-	int err;
+void error(int err)
 {
 	char *p;
 

@@ -44,7 +44,7 @@
 static char sccsid[] = "@(#)optr.c	8.2 (Berkeley) 1/6/94";
 #endif
 static const char rcsid[] =
-	"$Id: optr.c,v 1.2 1999/10/11 12:53:22 stelian Exp $";
+	"$Id: optr.c,v 1.3 1999/10/11 12:59:19 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -71,9 +71,9 @@ static const char rcsid[] =
 #include "dump.h"
 #include "pathnames.h"
 
-void	alarmcatch __P((/* int, int */));
+static	void alarmcatch __P((int));
 int	datesort __P((const void *, const void *));
-static	void sendmes __P((char *, char *));
+static	void sendmes __P((const char *, const char *));
 
 /*
  *	Query the operator; This previously-fascist piece of code
@@ -87,21 +87,23 @@ static	void sendmes __P((char *, char *));
  *	that dump needs attention.
  */
 static	int timeout;
-static	char *attnmessage;		/* attention message */
+static	const char *attnmessage;		/* attention message */
 
 int
-query(question)
-	char	*question;
+query(const char *question)
 {
 	char	replybuffer[64];
 	int	back, errcount;
 	FILE	*mytty;
+	time_t	firstprompt, when_answered;
+
+	firstprompt = time(NULL);
 
 	if ((mytty = fopen(_PATH_TTY, "r")) == NULL)
 		quit("fopen on %s fails: %s\n", _PATH_TTY, strerror(errno));
 	attnmessage = question;
 	timeout = 0;
-	alarmcatch();
+	alarmcatch(0);
 	back = -1;
 	errcount = 0;
 	do {
@@ -128,18 +130,26 @@ query(question)
 	if (signal(SIGALRM, sig) == SIG_IGN)
 		signal(SIGALRM, SIG_IGN);
 	(void) fclose(mytty);
+	when_answered = time(NULL);
+	/*
+	 * Adjust the base for time estimates to ignore time we spent waiting
+	 * for operator input.
+	 */
+	if (tstart_writing != 0)
+		tstart_writing += (when_answered - firstprompt);
 	return(back);
 }
 
-char lastmsg[100];
+char lastmsg[BUFSIZ];
 
 /*
  *	Alert the console operator, and enable the alarm clock to
  *	sleep for 2 minutes in case nobody comes to satisfy dump
  */
-void
-alarmcatch()
+static void
+alarmcatch(int signo)
 {
+	int save_errno = errno;
 	if (notify == 0) {
 		if (timeout == 0)
 			(void) fprintf(stderr,
@@ -158,14 +168,14 @@ alarmcatch()
 	signal(SIGALRM, alarmcatch);
 	(void) alarm(120);
 	timeout = 1;
+	errno = save_errno;
 }
 
 /*
  *	Here if an inquisitive operator interrupts the dump program
  */
 void
-interrupt(signo)
-	int signo;
+interrupt(int signo)
 {
 	msg("Interrupt received.\n");
 	if (query("Do you want to abort dump?"))
@@ -183,7 +193,7 @@ struct	group *gp;
  *	Get the names from the group entry "operator" to notify.
  */
 void
-set_operators()
+set_operators(void)
 {
 	if (!notify)		/*not going to notify*/
 		return;
@@ -203,8 +213,7 @@ struct tm *localclock;
  *	that the process control groups are not messed up
  */
 void
-broadcast(message)
-	char	*message;
+broadcast(const char *message)
 {
 	time_t		clock;
 	FILE	*f_utmp;
@@ -259,11 +268,10 @@ broadcast(message)
 }
 
 static void
-sendmes(tty, message)
-	char *tty, *message;
+sendmes(const char *tty, const char *message)
 {
 	char t[MAXPATHLEN], buf[BUFSIZ];
-	register char *cp;
+	register const char *cp;
 	int lmsg = 1;
 	FILE *f_tty;
 
@@ -281,7 +289,7 @@ DUMP: NEEDS ATTENTION: ",
 			if (*cp == '\0') {
 				if (lmsg) {
 					cp = message;
-					if (*cp == '\0')
+					if (!(cp && *cp != '\0'))
 						break;
 					lmsg = 0;
 				} else
@@ -302,7 +310,7 @@ DUMP: NEEDS ATTENTION: ",
 time_t	tschedule = 0;
 
 void
-timeest()
+timeest(void)
 {
 	time_t	tnow, deltat;
 
@@ -321,7 +329,7 @@ timeest()
 }
 
 void
-#if __STDC__
+#ifdef __STDC__
 msg(const char *fmt, ...)
 #else
 msg(fmt, va_alist)
@@ -335,7 +343,7 @@ msg(fmt, va_alist)
 #ifdef TDEBUG
 	(void) fprintf(stderr, "pid=%d ", getpid());
 #endif
-#if __STDC__
+#ifdef __STDC__
 	va_start(ap, fmt);
 #else
 	va_start(ap);
@@ -343,12 +351,12 @@ msg(fmt, va_alist)
 	(void) vfprintf(stderr, fmt, ap);
 	(void) fflush(stdout);
 	(void) fflush(stderr);
-	(void) vsprintf(lastmsg, fmt, ap);
+	(void) vsnprintf(lastmsg, sizeof(lastmsg), fmt, ap);
 	va_end(ap);
 }
 
 void
-#if __STDC__
+#ifdef __STDC__
 msgtail(const char *fmt, ...)
 #else
 msgtail(fmt, va_alist)
@@ -357,7 +365,7 @@ msgtail(fmt, va_alist)
 #endif
 {
 	va_list ap;
-#if __STDC__
+#ifdef __STDC__
 	va_start(ap, fmt);
 #else
 	va_start(ap);
@@ -367,7 +375,7 @@ msgtail(fmt, va_alist)
 }
 
 void
-#if __STDC__
+#ifdef __STDC__
 quit(const char *fmt, ...)
 #else
 quit(fmt, va_alist)
@@ -381,7 +389,7 @@ quit(fmt, va_alist)
 #ifdef TDEBUG
 	(void) fprintf(stderr, "pid=%d ", getpid());
 #endif
-#if __STDC__
+#ifdef __STDC__
 	va_start(ap, fmt);
 #else
 	va_start(ap);
@@ -398,9 +406,8 @@ quit(fmt, va_alist)
  *	we don't actually do it
  */
 
-struct fstab *
-allocfsent(fs)
-	register struct fstab *fs;
+static struct fstab *
+allocfsent(struct fstab *fs)
 {
 	register struct fstab *new;
 
@@ -423,7 +430,7 @@ struct	pfstab {
 static	struct pfstab *table;
 
 void
-getfstab()
+getfstab(void)
 {
 	register struct fstab *fs;
 	register struct pfstab *pf;
@@ -460,8 +467,7 @@ getfstab()
  * The file name can omit the leading '/'.
  */
 struct fstab *
-fstabsearch(key)
-	char *key;
+fstabsearch(const char *key)
 {
 	register struct pfstab *pf;
 	register struct fstab *fs;
@@ -489,9 +495,7 @@ fstabsearch(key)
 
 #ifdef	__linux__
 struct fstab *
-fstabsearchdir(key, directory)
-	char *key;
-	char *directory;
+fstabsearchdir(const char *key, char *directory)
 {
 	register struct pfstab *pf;
 	register struct fstab *fs;
@@ -526,8 +530,7 @@ fstabsearchdir(key, directory)
  *	Tell the operator what to do
  */
 void
-lastdump(arg)
-	char	arg;	/* w ==> just what to do; W ==> most recent dumps */
+lastdump(char arg) /* w ==> just what to do; W ==> most recent dumps */
 {
 	register int i;
 	register struct fstab *dt;
@@ -569,8 +572,7 @@ lastdump(arg)
 }
 
 int
-datesort(a1, a2)
-	const void *a1, *a2;
+datesort(const void *a1, const void *a2)
 {
 	struct dumpdates *d1 = *(struct dumpdates **)a1;
 	struct dumpdates *d2 = *(struct dumpdates **)a2;

@@ -11,7 +11,7 @@
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
 .\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgment:
+.\"    must display the following acknowledgement:
 .\"	This product includes software developed by the University of
 .\"	California, Berkeley and its contributors.
 .\" 4. Neither the name of the University nor the names of its contributors
@@ -31,14 +31,14 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     @(#)dump.8	8.3 (Berkeley) 5/1/95
-.\"	$Id: dump.8,v 1.2 1999/10/11 12:53:21 stelian Exp $
+.\"	$Id: dump.8,v 1.3 1999/10/11 12:59:18 stelian Exp $
 .\"
-.Dd May 1, 1995
+.Dd June 4, 1997
 .Dt DUMP 8
 .Os BSD 4
 .Sh NAME
 .Nm dump
-.Nd filesystem backup
+.Nd ext2 filesystem backup
 .Sh SYNOPSIS
 .Nm dump
 .Op Fl 0123456789acknu
@@ -68,12 +68,12 @@
 .in -\\n(iSu
 (The
 .Bx 4.3
-option syntax is implemented for backward compatibility, but
+option syntax is implemented for backward compatibility but
 is not documented here.)
 .Sh DESCRIPTION
 .Nm Dump
 examines files
-on a filesystem
+on an ext2 filesystem
 and determines which files
 need to be backed up. These files
 are copied to the given disk, tape or other
@@ -83,15 +83,15 @@ option below for doing remote backups).
 A dump that is larger than the output medium is broken into
 multiple volumes.
 On most media the size is determined by writing until an
-end-of-media indication is returned.  This can be enforced
+end-of-media indication is returned. This can be enforced
 by using the
 .Fl a
 option.
 .Pp
 On media that cannot reliably return an end-of-media indication
-(such as some cartridge tape drives)
+(such as some cartridge tape drives),
 each volume is of a fixed size;
-the actual size is determined by the tape size and density and/or
+the actual size is determined by the tape size, density and/or
 block count options below.
 By default, the same output file name is used for each volume
 after prompting the operator to change media.
@@ -108,10 +108,12 @@ guarantees the entire file system is copied
 option below).
 A level number above 0,
 incremental backup,
-tells dump to
+tells
+.Nm dump
+to
 copy all files new or modified since the
-last dump of any lower level.
-The default level is 0.
+last dump of the same or lower level.
+The default level is 9.
 .It Fl B Ar records
 The number of 1 KB blocks per volume.
 This option overrides the calculation of tape size
@@ -126,6 +128,13 @@ drive with hardware compression (where you can never be sure about
 the compression ratio).
 .It Fl b Ar blocksize
 The number of kilobytes per dump record.
+Since the IO system slices all requests into chunks of MAXBSIZE
+(typically 64KB), it is not possible to use a larger blocksize
+without having problems later with
+.Xr restore 8 .
+Therefore
+.Nm dump
+will constrain writes to MAXBSIZE.
 .It Fl c
 Change the defaults for use with a cartridge tape drive, with a density
 of 8000 bpi, and a length of 1700 feet.
@@ -149,7 +158,7 @@ Write the backup to
 .Ar file
 may be a special device file
 like
-.Pa /dev/rmt12
+.Pa /dev/st0
 (a tape drive),
 .Pa /dev/rsd1c
 (a floppy disk drive),
@@ -163,9 +172,9 @@ if the dump requires more volumes than the number of names given,
 the last file name will used for all remaining volumes after prompting
 for media changes.
 If the name of the file is of the form
-.Dq host:file ,
+.Dq host:file
 or
-.Dq user@host:file ,
+.Dq user@host:file
 .Nm
 writes to the named file on the remote host using
 .Xr rmt 8 .
@@ -214,7 +223,9 @@ The default tape length is 2300 feet.
 Use the specified date as the starting time for the dump
 instead of the time determined from looking in
 .Pa /etc/dumpdates .
-The format of date is the same as that of
+The format of
+.Ar date
+is the same as that of
 .Xr ctime 3 .
 This option is useful for automated dump scripts that wish to
 dump over a specific period of time.
@@ -253,7 +264,7 @@ The
 option causes
 .Nm
 to print out, for each file system in
-.Pa /etc/dumpdates
+.Pa /etc/dumpdates ,
 the most recent dump date and level,
 and highlights those file systems that should be dumped.
 If the
@@ -262,7 +273,9 @@ option is set, all other options are ignored, and
 .Nm
 exits immediately.
 .It Fl w
-Is like W, but prints only those filesystems which need to be dumped.
+Is like
+.Fl W ,
+but prints only those filesystems which need to be dumped.
 .El
 .Pp
 .Nm Dump
@@ -271,7 +284,7 @@ end of tape,
 end of dump,
 tape write error,
 tape open error or
-disk read error (if there are more than a threshold of 32).
+disk read error (if there is more than a threshold of 32).
 In addition to alerting all operators implied by the
 .Fl n
 key,
@@ -370,7 +383,7 @@ will be used to determine the pathname of the remote
 program.
 .Sh FILES
 .Bl -tag -width /etc/dumpdates -compact
-.It Pa /dev/rmt8
+.It Pa /dev/st0
 default tape unit to dump to
 .It Pa /etc/dumpdates
 dump date records
@@ -387,11 +400,17 @@ to find group
 .Sh DIAGNOSTICS
 Many, and verbose.
 .Pp
-Dump exits with zero status on success.
+.Nm Dump
+exits with zero status on success.
 Startup errors are indicated with an exit code of 1;
 abnormal termination is indicated with an exit code of 3.
 .Sh BUGS
-Fewer than 32 read errors on the filesystem are ignored.
+It might be considered a bug that this version of dump can only handle ext2
+filesystems.  Specifically, it does not work with FAT filesystems.
+.Pp
+Fewer than 32 read errors on the filesystem are ignored. If noticing
+read errors is important, the output from dump can be parsed to look for lines
+that contain the text 'read error'.
 .Pp
 Each reel requires a new process, so parent processes for
 reels already written just hang around until the entire tape
@@ -402,7 +421,7 @@ with the
 .Fl W
 or
 .Fl w
-options does not report filesystems that have never been recorded
+option does not report filesystems that have never been recorded
 in
 .Pa /etc/dumpdates ,
 even if listed in

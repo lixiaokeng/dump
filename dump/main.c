@@ -2,7 +2,7 @@
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
- *      Stelian Pop <pop@cybercable.fr>, 1999 
+ *	Stelian Pop <pop@cybercable.fr>, 1999 
  *
  */
 
@@ -50,7 +50,7 @@ static const char copyright[] =
 static char sccsid[] = "@(#)main.c	8.6 (Berkeley) 5/1/95";
 #endif
 static const char rcsid[] =
-	"$Id: main.c,v 1.2 1999/10/11 12:53:22 stelian Exp $";
+	"$Id: main.c,v 1.3 1999/10/11 12:59:18 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -74,7 +74,7 @@ static const char rcsid[] =
 #include <protocols/dumprestore.h>
 
 #include <ctype.h>
-#include <err.h>
+#include <compaterr.h>
 #include <fcntl.h>
 #include <fstab.h>
 #include <signal.h>
@@ -109,14 +109,13 @@ char	*host = NULL;	/* remote host (if any) */
 char	*__progname;
 #endif
 
-static long numarg __P((char *, long, long));
+int 	maxbsize = 64*1024;     /* XXX MAXBSIZE from sys/param.h */
+static long numarg __P((const char *, long, long));
 static void obsolete __P((int *, char **[]));
 static void usage __P((void));
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	register ino_t ino;
 	register int dirty;
@@ -131,6 +130,7 @@ main(argc, argv)
 	char directory[NAME_MAX];
 	char pathname[NAME_MAX];
 #endif
+	time_t tnow;
 	char labelstr[LBLSIZE];
 
 	spcl.c_date = 0;
@@ -186,6 +186,12 @@ main(argc, argv)
 		case 'b':		/* blocks per tape write */
 			ntrec = numarg("number of blocks per write",
 			    1L, 1000L);
+			if (ntrec > maxbsize/1024) {
+				msg("Please choose a blocksize <= %dKB\n",
+					maxbsize/1024);
+				exit(X_STARTUP);
+			}
+			bflag = 1;
 			break;
 
 		case 'c':		/* Tape is cart. not 9-track */
@@ -246,11 +252,9 @@ main(argc, argv)
 			}
 			Tflag = 1;
 			lastlevel = '?';
-			argc--;
-			argv++;
 			break;
 
-		case 'u':		/* update /etc/dumpdates */
+		case 'u':		/* update dumpdates */
 			uflag = 1;
 			break;
 
@@ -348,8 +352,7 @@ main(argc, argv)
 	 *	the special name missing the leading '/',
 	 *	the file system name with or without the leading '/'.
 	 */
-	dt = fstabsearch(disk);
-	if (dt != NULL) {
+	if ((dt = fstabsearch(disk)) != NULL) {
 		disk = rawname(dt->fs_spec);
 		(void)strncpy(spcl.c_dev, dt->fs_spec, NAMELEN);
 		(void)strncpy(spcl.c_filesys, dt->fs_file, NAMELEN);
@@ -391,7 +394,7 @@ main(argc, argv)
 	spcl.c_level = level - '0';
 	spcl.c_type = TS_TAPE;
 	if (!Tflag)
-	        getdumptime();		/* /etc/dumpdates snarfed */
+	        getdumptime();		/* dumpdates snarfed */
 
 	msg("Date of this level %c dump: %s", level,
 #ifdef	__linux
@@ -473,6 +476,10 @@ main(argc, argv)
 	tapesize = 3 * (howmany(mapsize * sizeof(char), TP_BSIZE) + 1);
 
 	nonodump = spcl.c_level < honorlevel;
+
+#if defined(SIGINFO)
+	(void)signal(SIGINFO, statussig);
+#endif
 
 	msg("mapping (Pass I) [regular files]\n");
 #ifdef	__linux__
@@ -606,26 +613,38 @@ main(argc, argv)
 		    tend_writing - tstart_writing,
 		    spcl.c_tapea / (tend_writing - tstart_writing));
 
+	tnow = do_stats();
 	putdumptime();
+#ifdef __linux__
+	msg("DUMP: Date of this level %c dump: %s", level,
+		spcl.c_date == 0 ? "the epoch\n" : ctime4(&spcl.c_date));
+#else
+	msg("DUMP: Date of this level %c dump: %s", level,
+		spcl.c_date == 0 ? "the epoch\n" : ctime(&spcl.c_date));
+#endif
+	msg("DUMP: Date this dump completed:  %s", ctime(&tnow));
+
+	msg("DUMP: Average transfer rate: %ld KB/s\n", xferrate / tapeno);
+
 	trewind();
 	broadcast("DUMP IS DONE!\7\7\n");
 	msg("DUMP IS DONE\n");
 	Exit(X_FINOK);
 	/* NOTREACHED */
-	exit(1);	/* gcc - shut up */
+	return 0;	/* gcc - shut up */
 }
 
 static void
-usage()
+usage(void)
 {
 	fprintf(stderr,
-		"usage: dump [-0123456789ac"
+		"usage: %s [-0123456789ac"
 #ifdef KERBEROS
 		"k"
 #endif
 		"nu] [-B records] [-b blocksize] [-d density] [-f file]\n"
 		"            [-h level] [-s feet] [-T date] filesystem\n"
-		"       dump [-W | -w]\n");
+		"       %s [-W | -w]\n", __progname, __progname);
 	exit(X_STARTUP);
 }
 
@@ -634,24 +653,21 @@ usage()
  * range (except that a vmax of 0 means unlimited).
  */
 static long
-numarg(meaning, vmin, vmax)
-	char *meaning;
-	long vmin, vmax;
+numarg(const char *meaning, long vmin, long vmax)
 {
 	char *p;
 	long val;
 
 	val = strtol(optarg, &p, 10);
 	if (*p)
-		errx(1, "illegal %s -- %s", meaning, optarg);
+		errx(X_STARTUP, "illegal %s -- %s", meaning, optarg);
 	if (val < vmin || (vmax && val > vmax))
-		errx(1, "%s must be between %ld and %ld", meaning, vmin, vmax);
+		errx(X_STARTUP, "%s must be between %ld and %ld", meaning, vmin, vmax);
 	return (val);
 }
 
 void
-sig(signo)
-	int signo;
+sig(int signo)
 {
 	switch(signo) {
 	case SIGALRM:
@@ -677,8 +693,7 @@ sig(signo)
 }
 
 char *
-rawname(cp)
-	char *cp;
+rawname(char *cp)
 {
 #ifdef	__linux__
 	return cp;
@@ -704,9 +719,7 @@ rawname(cp)
  *	getopt(3) will like.
  */
 static void
-obsolete(argcp, argvp)
-	int *argcp;
-	char **argvp[];
+obsolete(int *argcp, char **argvp[])
 {
 	int argc, flags;
 	char *ap, **argv, *flagsp=NULL, **nargv, *p=NULL;
@@ -723,7 +736,7 @@ obsolete(argcp, argvp)
 	/* Allocate space for new arguments. */
 	if ((*argvp = nargv = malloc((argc + 1) * sizeof(char *))) == NULL ||
 	    (p = flagsp = malloc(strlen(ap) + 2)) == NULL)
-		err(1, NULL);
+		err(X_STARTUP, "malloc new args");
 
 	*nargv++ = *argv;
 	argv += 2;
@@ -742,7 +755,7 @@ obsolete(argcp, argvp)
 				usage();
 			}
 			if ((nargv[0] = malloc(strlen(*argv) + 2 + 1)) == NULL)
-				err(1, NULL);
+				err(X_STARTUP, "malloc arg");
 			nargv[0][0] = '-';
 			nargv[0][1] = *ap;
 			(void)strcpy(&nargv[0][2], *argv);

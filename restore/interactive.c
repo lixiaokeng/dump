@@ -44,7 +44,7 @@
 static char sccsid[] = "@(#)interactive.c	8.5 (Berkeley) 5/1/95";
 #endif
 static const char rcsid[] =
-	"$Id: interactive.c,v 1.2 1999/10/11 12:53:23 stelian Exp $";
+	"$Id: interactive.c,v 1.3 1999/10/11 12:59:20 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -60,13 +60,16 @@ static const char rcsid[] =
 #include <protocols/dumprestore.h>
 
 #include <setjmp.h>
-#include <glob.h>
+#include <compaterr.h>
+#include <errno.h>
+#include <compatglob.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #ifdef	__linux__
 #include <ext2fs/ext2fs.h>
+extern char * __progname;
 #endif
 
 #include "restore.h"
@@ -111,7 +114,7 @@ static void	 printlist __P((char *, char *));
  * Read and execute commands from the terminal.
  */
 void
-runcmdshell()
+runcmdshell(void)
 {
 	register struct entry *np;
 	ino_t ino;
@@ -168,7 +171,8 @@ loop:
 			fprintf(stderr, "%s: not a directory\n", name);
 			break;
 		}
-		(void) strcpy(curdir, name);
+		(void) strncpy(curdir, name, sizeof(curdir));
+		curdir[sizeof(curdir) - 1] = '\0';
 		break;
 	/*
 	 * Delete elements from the extraction list.
@@ -319,10 +323,7 @@ loop:
  * eliminate any embedded ".." components.
  */
 static void
-getcmd(curdir, cmd, name, size, ap)
-	char *curdir, *cmd, *name;
-	struct arglist *ap;
-	int size;
+getcmd(char *curdir, char *cmd, char *name, int size, struct arglist *ap)
 {
 	register char *cp;
 	static char input[BUFSIZ];
@@ -340,7 +341,7 @@ getcmd(curdir, cmd, name, size, ap)
 	 * Read a command line and trim off trailing white space.
 	 */
 	do	{
-		fprintf(stderr, "restore > ");
+		fprintf(stderr, "%s > ", __progname);
 		(void) fflush(stderr);
 		(void) fgets(input, BUFSIZ, terminal);
 	} while (!feof(terminal) && input[0] == '\n');
@@ -408,8 +409,7 @@ retnext:
  * Strip off the next token of the input.
  */
 static char *
-copynext(input, output)
-	char *input, *output;
+copynext(char *input, char *output)
 {
 	register char *cp, *bp;
 	char quote;
@@ -458,9 +458,7 @@ copynext(input, output)
  * remove any embedded "." and ".." components.
  */
 void
-canon(rawname, canonname, len)
-	char *rawname, *canonname;
-	int len;
+canon(char *rawname, char *canonname, int len)
 {
 	register char *cp, *np;
 
@@ -470,10 +468,8 @@ canon(rawname, canonname, len)
 		(void) strcpy(canonname, ".");
 	else
 		(void) strcpy(canonname, "./");
-	if (strlen(canonname) + strlen(rawname) >= len) {
-		fprintf(stderr, "canonname: not enough buffer space\n");
-		done(1);
-	}
+	if (strlen(canonname) + strlen(rawname) >= len)
+		errx(1, "canonname: not enough buffer space");
 		
 	(void) strcat(canonname, rawname);
 	/*
@@ -514,11 +510,9 @@ canon(rawname, canonname, len)
  * Do an "ls" style listing of a directory
  */
 static void
-printlist(name, basename)
-	char *name;
-	char *basename;
+printlist(char *name, char *basename)
 {
-	register struct afile *fp, *list, *listp=NULL;
+	register struct afile *fp, *list, *listp = NULL;
 	register struct direct *dp;
 	struct afile single;
 	RST_DIR *dirp;
@@ -554,9 +548,9 @@ printlist(name, basename)
 		fprintf(stderr, "%s:\n", name);
 		entries = 0;
 		listp = list;
-		(void) strncpy(locname, name, MAXPATHLEN);
-		(void) strncat(locname, "/", MAXPATHLEN);
-		namelen = strlen(locname);
+		namelen = snprintf(locname, sizeof(locname), "%s/", name);
+		if (namelen >= sizeof(locname))
+			namelen = sizeof(locname) - 1;
 		while ((dp = rst_readdir(dirp))) {
 			if (dp == NULL)
 				break;
@@ -598,10 +592,7 @@ printlist(name, basename)
  * Read the contents of a directory.
  */
 static void
-mkentry(name, dp, fp)
-	char *name;
-	struct direct *dp;
-	register struct afile *fp;
+mkentry(char *name, struct direct *dp, struct afile *fp)
 {
 	char *cp;
 	struct entry *np;
@@ -661,13 +652,11 @@ mkentry(name, dp, fp)
  * Print out a pretty listing of a directory
  */
 static void
-formatf(list, nentry)
-	register struct afile *list;
-	int nentry;
+formatf(struct afile *list, int nentry)
 {
 	register struct afile *fp, *endlist;
 	int width, bigino, haveprefix, havepostfix;
-	int i, j, w, precision=0, columns, lines;
+	int i, j, w, precision = 0, columns, lines;
 
 	width = 0;
 	haveprefix = 0;
@@ -744,8 +733,7 @@ struct dirent {
 #endif	/* __linux__ */
 
 struct dirent *
-glob_readdir(dirp)
-	RST_DIR *dirp;
+glob_readdir(RST_DIR *dirp)
 {
 	struct direct *dp;
 	static struct dirent adirent;
@@ -768,9 +756,7 @@ glob_readdir(dirp)
  * Return st_mode information in response to stat or lstat calls
  */
 static int
-glob_stat(name, stp)
-	const char *name;
-	struct stat *stp;
+glob_stat(const char *name, struct stat *stp)
 {
 	register struct direct *dp;
 
@@ -789,8 +775,7 @@ glob_stat(name, stp)
  * Comparison routine for qsort.
  */
 static int
-fcmp(f1, f2)
-	register const void *f1, *f2;
+fcmp(const void *f1, const void *f2)
 {
 	return (strcmp(((struct afile *)f1)->fname,
 	    ((struct afile *)f2)->fname));
@@ -800,11 +785,13 @@ fcmp(f1, f2)
  * respond to interrupts
  */
 void
-onintr(signo)
-	int signo;
+onintr(int signo)
 {
+	int save_errno = errno;
+
 	if (command == 'i' && runshell)
 		longjmp(reset, 1);
 	if (reply("restore interrupted, continue") == FAIL)
-		done(1);
+		exit(1);
+	errno = save_errno;
 }

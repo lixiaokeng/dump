@@ -50,7 +50,7 @@ static const char copyright[] =
 static char sccsid[] = "@(#)main.c	8.6 (Berkeley) 5/4/95";
 #endif
 static const char rcsid[] =
-	"$Id: main.c,v 1.2 1999/10/11 12:53:23 stelian Exp $";
+	"$Id: main.c,v 1.3 1999/10/11 12:59:20 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -67,7 +67,7 @@ static const char rcsid[] =
 #endif	/* __linux__ */
 #include <protocols/dumprestore.h>
 
-#include <err.h>
+#include <compaterr.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -95,9 +95,9 @@ ino_t	maxino;
 time_t	dumptime;
 time_t	dumpdate;
 FILE 	*terminal;
+char	*tmpdir;
 int	compare_ignore_not_found;
 char	*filesys = NULL;
-char	*tmpdir = _PATH_TMP;
 
 #ifdef	__linux__
 char	*__progname;
@@ -107,13 +107,11 @@ static void obsolete __P((int *, char **[]));
 static void usage __P((void));
 
 int
-main(argc, argv)
-	int argc;
-	char *argv[];
+main(int argc, char *argv[])
 {
 	int ch;
 	ino_t ino;
-	char *inputdev;
+	char *inputdev = _PATH_DEFTAPE;
 	char *symtbl = "./restoresymtable";
 	char *p, name[MAXPATHLEN];
 
@@ -129,11 +127,17 @@ main(argc, argv)
 
 	if ((inputdev = getenv("TAPE")) == NULL)
 		inputdev = _PATH_DEFTAPE;
+	if ((tmpdir = getenv("TMPDIR")) == NULL)
+		tmpdir = _PATH_TMP;
+	if ((tmpdir = strdup(tmpdir)) == NULL)
+		err(1, "malloc tmpdir");
+	for (p = tmpdir + strlen(tmpdir) - 1; p >= tmpdir && *p == '/'; p--)
+		;                                                               
 	obsolete(&argc, &argv);
 #ifdef KERBEROS
-#define	optlist "b:CcdDf:hikmNRrs:tTuvxy"
+#define	optlist "b:CcdD:f:hikmNRrs:tT:uvxy"
 #else
-#define	optlist "b:CcdDf:himNRrs:tTuvxy"
+#define	optlist "b:CcdD:f:himNRrs:tT:uvxy"
 #endif
 	while ((ch = getopt(argc, argv, optlist)) != -1)
 		switch(ch) {
@@ -219,6 +223,8 @@ main(argc, argv)
 		(void) signal(SIGTERM, SIG_IGN);
 	setlinebuf(stderr);
 
+	atexit(cleanup);
+
 	setinput(inputdev);
 
 	if (argc == 0) {
@@ -233,21 +239,14 @@ main(argc, argv)
 	case 'C': {
 		struct stat stbuf;
 
-		vprintf(stdout, "Begin compare restore\n");
+		Vprintf(stdout, "Begin compare restore\n");
 		compare_ignore_not_found = 0;
 		setup();
 		printf("filesys = %s\n", filesys);
-		if (stat(filesys, &stbuf) < 0) {
-			fprintf(stderr, "cannot stat directory %s: %s\n",
-				filesys, strerror(errno));
-			exit(1);
-		} else {
-			if (chdir(filesys) < 0) {
-				fprintf(stderr, "cannot cd to %s: %s\n",
-					filesys, strerror(errno));
-				exit(1);
-			}
-		}
+		if (stat(filesys, &stbuf) < 0)
+			err(1, "cannot stat directory %s", filesys);
+		if (chdir(filesys) < 0)
+			err(1, "cannot cd to %s", filesys);
 		compare_ignore_not_found = dumptime > 0;
 		initsymtable((char *)0);
 		extractdirs(0);
@@ -275,11 +274,11 @@ main(argc, argv)
 			/*
 			 * This is an incremental dump tape.
 			 */
-			vprintf(stdout, "Begin incremental restore\n");
+			Vprintf(stdout, "Begin incremental restore\n");
 			initsymtable(symtbl);
 			extractdirs(1);
 			removeoldleaves();
-			vprintf(stdout, "Calculate node updates.\n");
+			Vprintf(stdout, "Calculate node updates.\n");
 			treescan(".", ROOTINO, nodeupdates);
 			findunreflinks();
 			removeoldnodes();
@@ -287,10 +286,10 @@ main(argc, argv)
 			/*
 			 * This is a level zero dump tape.
 			 */
-			vprintf(stdout, "Begin level 0 restore\n");
+			Vprintf(stdout, "Begin level 0 restore\n");
 			initsymtable((char *)0);
 			extractdirs(1);
-			vprintf(stdout, "Calculate extraction list.\n");
+			Vprintf(stdout, "Calculate extraction list.\n");
 			treescan(".", ROOTINO, nodeupdates);
 		}
 		createleaves(symtbl);
@@ -298,7 +297,7 @@ main(argc, argv)
 		setdirmodes(FORCE);
 		checkrestore();
 		if (dflag) {
-			vprintf(stdout, "Verify the directory structure\n");
+			Vprintf(stdout, "Verify the directory structure\n");
 			treescan(".", ROOTINO, verifyfile);
 		}
 		dumpsymtable(symtbl, (long)1);
@@ -354,13 +353,13 @@ main(argc, argv)
 			checkrestore();
 		break;
 	}
-	done(0);
+	exit(0);
 	/* NOTREACHED */
-	exit(1);	/* gcc shut up */
+	return 0;	/* gcc shut up */
 }
 
 static void
-usage()
+usage(void)
 {
 	(void)fprintf(stderr, "usage:\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n",
 	  "restore -i [-chkmuvy] [-b blocksize] [-f file] [-s fileno]",
@@ -368,7 +367,7 @@ usage()
 	  "restore -R [-ckuvy] [-b blocksize] [-f file] [-s fileno]",
 	  "restore -x [-chkmuvy] [-b blocksize] [-f file] [-s fileno] [file ...]",
 	  "restore -t [-chkuvy] [-b blocksize] [-f file] [-s fileno] [file ...]");
-	done(1);
+	exit(1);
 }
 
 /*
@@ -377,12 +376,10 @@ usage()
  *	getopt(3) will like.
  */
 static void
-obsolete(argcp, argvp)
-	int *argcp;
-	char **argvp[];
+obsolete(int *argcp, char **argvp[])
 {
 	int argc, flags;
-	char *ap, **argv, *flagsp=NULL, **nargv, *p=NULL;
+	char *ap, **argv, *flagsp = NULL, **nargv, *p = NULL;
 
 	/* Setup. */
 	argv = *argvp;
@@ -396,7 +393,7 @@ obsolete(argcp, argvp)
 	/* Allocate space for new arguments. */
 	if ((*argvp = nargv = malloc((argc + 1) * sizeof(char *))) == NULL ||
 	    (p = flagsp = malloc(strlen(ap) + 2)) == NULL)
-		err(1, NULL);
+		err(1, "malloc args");
 
 	*nargv++ = *argv;
 	argv += 2, argc -= 2;
@@ -411,7 +408,7 @@ obsolete(argcp, argvp)
 				usage();
 			}
 			if ((nargv[0] = malloc(strlen(*argv) + 2 + 1)) == NULL)
-				err(1, NULL);
+				err(1, "malloc arg");
 			nargv[0][0] = '-';
 			nargv[0][1] = *ap;
 			(void)strcpy(&nargv[0][2], *argv);

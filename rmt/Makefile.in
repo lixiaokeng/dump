@@ -3,7 +3,7 @@ srcdir=		@srcdir@
 
 @MCONFIG@
 
-CFLAGS=		@CCOPTS@ -pipe $(GINC) $(INC) $(DEFS)
+CFLAGS=		@CCOPTS@ -pipe $(OPT) $(GINC) $(INC) $(DEFS)
 LDFLAGS:=	$(LDFLAGS) @STATIC@
 LIBS=		$(GLIBS)
 

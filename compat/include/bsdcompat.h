@@ -205,6 +205,11 @@ struct old_bsd_inode {
 	__u32		di_spare[4];
 };
 
+struct bsdtimeval {    /* XXX alpha-*-linux is deviant */
+	__u32   tv_sec;
+	__u32   tv_usec;
+};
+
 /*
  * This is the new (4.4) BSD inode structure
  * copied from the FreeBSD 2.0 <ufs/ufs/dinode.h> include file
@@ -217,9 +222,9 @@ struct new_bsd_inode {
 		__u32		inumber;
 	}		di_u;
 	u_quad_t	di_size;
-	struct timeval	di_atime;
-	struct timeval	di_mtime;
-	struct timeval	di_ctime;
+	struct bsdtimeval	di_atime;
+	struct bsdtimeval	di_mtime;
+	struct bsdtimeval	di_ctime;
 	daddr_t		di_db[NDADDR];
 	daddr_t		di_ib[NIADDR];
 	__u32		di_flags;

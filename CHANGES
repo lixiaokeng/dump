@@ -1,3 +1,24 @@
+Changes between versions 0.4b5 and 0.4b6
+========================================
+
+1.	Integrated multiple patches from RedHat, Debian and SuSE:
+
+	- tweak dump/itime.c to not try to read dumpdates if the 'u' option 
+	  isn't specified.
+	- several fixes in the man pages.
+	- update the default tape device to /dev/st0.
+	- many updates for Linux Alpha (byte ordering, size_t etc).
+	- buffer overruns.
+	- use environment variable for TMPDIR (instead of /tmp).
+	- use sigjmp_buf instead of jmp_buf (RedHat bug #3260).
+	- workaround egcs bug (RedHat bugs #4281 and #2989).
+	- wire $(OPT) throughout Makefile's.
+
+2.	Fix some compile warnings, prototype all functions.
+
+3.	Use glibc err/glob instead of internal compatibility
+	routines (only if available).
+
 Changes between versions 0.4b4 and 0.4b5
 ========================================
 

@@ -3,7 +3,7 @@ srcdir=		@srcdir@
 
 @MCONFIG@
 
-CFLAGS=		@CCOPTS@ -pipe $(GINC) $(INC) $(DEFS) @DUMPDEBUG@
+CFLAGS=		@CCOPTS@ -pipe $(OPT) $(GINC) $(INC) $(DEFS) @DUMPDEBUG@
 LDFLAGS:=	$(LDFLAGS) @STATIC@
 LIBS=		$(GLIBS)
 DEPLIBS=	../compat/lib/libcompat.a
@@ -14,7 +14,7 @@ SRCS=		itime.c main.c optr.c tape.c traverse.c unctime.c
 OBJS=		itime.o main.o optr.o tape.o traverse.o unctime.o \
 		../common/dumprmt.o
 MAN8=		dump.8
-MLINKS=		$(MANDIR)/dump.8 $(MANDIR)/rdump.8
+MLINKS=		dump.8 $(MANDIR)/rdump.8
 
 all::		$(PROG)
 

@@ -39,16 +39,17 @@
  * SUCH DAMAGE.
  *
  *	@(#)extern.h	8.2 (Berkeley) 1/7/94
- *	$Id: extern.h,v 1.2 1999/10/11 12:53:23 stelian Exp $
+ *	$Id: extern.h,v 1.3 1999/10/11 12:59:20 stelian Exp $
  */
 
 struct entry	*addentry __P((char *, ino_t, int));
 long		 addfile __P((char *, ino_t, int));
 int		 addwhiteout __P((char *));
-void		 badentry __P((struct entry *, char *));
+void		 badentry __P((struct entry *, const char *));
 void	 	 canon __P((char *, char *, int));
 void		 checkrestore __P((void));
 void		 closemt __P((void));
+void		 cleanup __P((void));
 void		 comparefile __P((char *));
 void		 compareleaves __P((void));
 void		 createfiles __P((void));
@@ -58,7 +59,6 @@ long		 deletefile __P((char *, ino_t, int));
 void		 deleteino __P((ino_t));
 void		 delwhiteout __P((struct entry *));
 ino_t		 dirlookup __P((const char *));
-__dead void 	 done __P((int));
 void		 dumpsymtable __P((char *, long));
 void	 	 extractdirs __P((int));
 int		 extractfile __P((char *));
@@ -68,7 +68,7 @@ void		 freeentry __P((struct entry *));
 void		 freename __P((char *));
 int	 	 genliteraldir __P((char *, ino_t));
 char		*gentempname __P((struct entry *));
-void		 getfile __P((void (*)(char *, long), void (*)(char *, long)));
+void		 getfile __P((void (*)(char *, size_t), void (*)(char *, size_t)));
 void		 getvol __P((long));
 void		 initsymtable __P((char *));
 int	 	 inodetype __P((ino_t));
@@ -94,7 +94,7 @@ void		 removenode __P((struct entry *));
 void		 removeoldleaves __P((void));
 void		 removeoldnodes __P((void));
 void		 renameit __P((char *, char *));
-int		 reply __P((char *));
+int		 reply __P((const char *));
 RST_DIR		*rst_opendir __P((const char *));
 struct direct	*rst_readdir __P((RST_DIR *));
 void		 rst_closedir __P((RST_DIR *dirp));
@@ -110,12 +110,12 @@ void		 swabst __P((u_char *, u_char *));
 void	 	 treescan __P((char *, ino_t, long (*)(char *, ino_t, int)));
 ino_t		 upperbnd __P((ino_t));
 long		 verifyfile __P((char *, ino_t, int));
-void		 xtrnull __P((char *, long));
+void		 xtrnull __P((char *, size_t));
 
 /* From ../dump/dumprmt.c */
 void		rmtclose __P((void));
-int		rmthost __P((char *));
+int		rmthost __P((const char *));
 int		rmtioctl __P((int, int));
-int		rmtopen __P((char *, int));
-int		rmtread __P((char *, int));
+int		rmtopen __P((const char *, int));
+int		rmtread __P((const char *, int));
 int		rmtseek __P((int, int));

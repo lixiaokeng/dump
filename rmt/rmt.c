@@ -50,7 +50,7 @@ static const char copyright[] =
 static char sccsid[] = "@(#)rmt.c	8.1 (Berkeley) 6/6/93";
 #endif
 static const char rcsid[] =
-	"$Id: rmt.c,v 1.2 1999/10/11 12:53:25 stelian Exp $";
+	"$Id: rmt.c,v 1.3 1999/10/11 12:59:21 stelian Exp $";
 #endif /* not lint */
 
 /*
@@ -66,6 +66,12 @@ static const char rcsid[] =
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+#ifdef __linux__
+#include <linux/ext2_fs.h>
+#include <ext2fs/ext2fs.h>
+#include <bsdcompat.h>
+#endif
 
 int	tape = -1;
 
@@ -88,11 +94,9 @@ void	 error __P((int));
 void	 getstring __P((char *));
 
 int
-main(argc, argv)
-	int argc;
-	char **argv;
+main(int argc, char *argv[])
 {
-	int rval;
+	int rval = 0;
 	char c;
 	int n, i, cc;
 
@@ -218,9 +222,7 @@ ioerror:
 	goto top;
 }
 
-void
-getstring(bp)
-	char *bp;
+void getstring(char *bp)
 {
 	int i;
 	char *cp = bp;
@@ -235,9 +237,7 @@ getstring(bp)
 }
 
 char *
-checkbuf(record, size)
-	char *record;
-	int size;
+checkbuf(char *record, int size)
 {
 
 	if (size <= maxrecsize)
@@ -257,8 +257,7 @@ checkbuf(record, size)
 }
 
 void
-error(num)
-	int num;
+error(int num)
 {
 
 	DEBUG2("rmtd: E %d (%s)\n", num, strerror(num));

@@ -44,7 +44,7 @@
 static char sccsid[] = "@(#)traverse.c	8.7 (Berkeley) 6/15/95";
 #endif
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.2 1999/10/11 12:53:22 stelian Exp $";
+	"$Id: traverse.c,v 1.3 1999/10/11 12:59:19 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -52,10 +52,11 @@ static const char rcsid[] =
 #ifdef	__linux__
 #include <linux/ext2_fs.h>
 #include <bsdcompat.h>
-#include <err.h>
+#include <compaterr.h>
 #include <stdlib.h>
 #define swab32(x) ext2fs_swab32(x)
 #else	/* __linux__ */
+#define swab32(x) x
 #ifdef sunos
 #include <sys/vnode.h>
 
@@ -96,7 +97,7 @@ typedef	long fsizeT;
 #ifdef	__linux__
 static	int searchdir __P((struct ext2_dir_entry *dp, int offset,
 			   int blocksize, char *buf, void *private));
-long long llseek(int fildes, long long offset, int whence);
+loff_t llseek (int fd, loff_t offset, int origin);
 #else
 static	int dirindir __P((ino_t ino, daddr_t blkno, int level, long *size));
 static	void dmpindir __P((ino_t ino, daddr_t blk, int level, fsizeT *size));
@@ -111,8 +112,7 @@ static	int searchdir __P((ino_t ino, daddr_t blkno, long size, long filesize));
  * hence the estimate may be high.
  */
 long
-blockest(dp)
-	register struct dinode *dp;
+blockest(struct dinode *dp)
 {
 	long blkest, sizeest;
 
@@ -173,9 +173,7 @@ blockest(dp)
  * the directories in the filesystem.
  */
 int
-mapfiles(maxino, tapesize)
-	ino_t maxino;
-	long *tapesize;
+mapfiles(ino_t maxino, long *tapesize)
 {
 	register int mode;
 	register ino_t ino;
@@ -219,12 +217,7 @@ struct mapfile_context {
 };
 
 static int
-mapfilesindir(dirent, offset, blocksize, buf, private)
-	struct ext2_dir_entry *dirent;
-	int offset;
-	int blocksize;
-	char *buf;
-	void *private;
+mapfilesindir(struct ext2_dir_entry *dirent, int offset, int blocksize, char *buf, void *private)
 {
 	register struct dinode *dp;
 	register int mode;
@@ -270,10 +263,7 @@ mapfilesindir(dirent, offset, blocksize, buf, private)
  * the directories in the filesystem.
  */
 int
-mapfilesfromdir(maxino, tapesize, directory)
-	ino_t maxino;
-	long *tapesize;
-	char *directory;
+mapfilesfromdir(ino_t maxino, long *tapesize, char *directory)
 {
 	errcode_t retval;
 	struct mapfile_context mfc;
@@ -342,9 +332,7 @@ mapfilesfromdir(maxino, tapesize, directory)
  * pass using this algorithm.
  */
 int
-mapdirs(maxino, tapesize)
-	ino_t maxino;
-	long *tapesize;
+mapdirs(ino_t maxino, long *tapesize)
 {
 	register struct	dinode *dp;
 	register int isdir;
@@ -409,11 +397,7 @@ mapdirs(maxino, tapesize)
  * require the directory to be dumped.
  */
 static int
-dirindir(ino, blkno, ind_level, filesize)
-	ino_t ino;
-	daddr_t blkno;
-	int ind_level;
-	long *filesize;
+dirindir(ino_t ino, daddr_t blkno, int ind_level, long *filesize)
 {
 	int ret = 0;
 	register int i;
@@ -450,12 +434,7 @@ dirindir(ino, blkno, ind_level, filesize)
  */
 #ifdef	__linux__
 static	int
-searchdir(dp, offset, blocksize, buf, private)
-	struct ext2_dir_entry *dp;
-	int offset;
-	int blocksize;
-	char *buf;
-	void *private;
+searchdir(struct ext2_dir_entry *dp, int offset, int blocksize, char *buf, void *private)
 {
 	int *ret = (int *) private;
 
@@ -483,11 +462,7 @@ searchdir(dp, offset, blocksize, buf, private)
 #else	/* __linux__ */
 
 static int
-searchdir(ino, blkno, size, filesize)
-	ino_t ino;
-	daddr_t blkno;
-	register long size;
-	long filesize;
+searchdir(ino_t ino, daddr_t blkno, long size, long filesize)
 {
 	register struct direct *dp;
 	register long loc, ret = 0;
@@ -571,9 +546,7 @@ dumponeblock(ext2_filsys fs, blk_t *blocknr, int blockcnt, void *private)
  * Dump the contents of an inode to tape.
  */
 void
-dumpino(dp, ino)
-	register struct dinode *dp;
-	ino_t ino;
+dumpino(struct dinode *dp, ino_t ino)
 {
 	int cnt;
 	fsizeT size;
@@ -605,7 +578,7 @@ dumpino(dp, ino)
 	obi.di_gen = dp->di_gen;
 	memmove(&obi.di_db, &dp->di_db, (NDADDR + NIADDR) * sizeof(daddr_t));
 	if (dp->di_file_acl || dp->di_dir_acl)
-		warn("ACLs in inode #%d won't be dumped", ino);
+		warn("ACLs in inode #%ld won't be dumped", ino);
 	memmove(&spcl.c_dinode, &obi, sizeof(obi));
 #else	/* __linux__ */
 	spcl.c_dinode = *dp;
@@ -722,12 +695,7 @@ struct convert_dir_context {
  * size of the entry, and creates it in a temporary buffer
  */
 static int
-convert_dir(dirent, offset, blocksize, buf, private)
-	struct ext2_dir_entry *dirent;
-	int offset;
-	int blocksize;
-	char *buf;
-	void *private;
+convert_dir(struct ext2_dir_entry *dirent, int offset, int blocksize, char *buf, void *private)
 {
 	struct convert_dir_context *p;
 	struct direct *dp;
@@ -761,9 +729,7 @@ convert_dir(dirent, offset, blocksize, buf, private)
  * Dumps a directory to tape after converting it to the BSD format
  */
 void
-dumpdirino(dp, ino)
-	register struct dinode *dp;
-	ino_t ino;
+dumpdirino(struct dinode *dp, ino_t ino)
 {
 	fsizeT size;
 	char buf[TP_BSIZE];
@@ -786,8 +752,8 @@ dumpdirino(dp, ino)
 	   ext2fs directory to avoid problems ;-) */
 	cdc.buf = (char *)malloc(dp->di_size * 2 * sizeof(char));
 	if (cdc.buf == NULL)
-		err(1, "Cannot allocate buffer to convert directory #%ld\n",
-		    ino);
+		err(1, "Cannot allocate buffer to convert directory #%lu\n",
+		    (unsigned long)ino);
 	cdc.offset = 0;
 	cdc.prev_offset = 0;
 	cdc.bs = MIN(DIRBLKSIZ, TP_BSIZE);
@@ -821,7 +787,7 @@ dumpdirino(dp, ino)
 	obi.di_gen = dp->di_gen;
 	memmove(&obi.di_db, &dp->di_db, (NDADDR + NIADDR) * sizeof(daddr_t));
 	if (dp->di_file_acl || dp->di_dir_acl)
-		warn("ACLs in inode #%d won't be dumped", ino);
+		warn("ACLs in inode #%ld won't be dumped", ino);
 	memmove(&spcl.c_dinode, &obi, sizeof(obi));
 #else	/* __linux__ */
 	spcl.c_dinode = *dp;
@@ -866,11 +832,7 @@ dumpdirino(dp, ino)
  * Read indirect blocks, and pass the data blocks to be dumped.
  */
 static void
-dmpindir(ino, blk, ind_level, size)
-	ino_t ino;
-	daddr_t blk;
-	int ind_level;
-	fsizeT *size;
+dmpindir(ino_t ino, daddr_t blk, int ind_level, fsizeT *size)
 {
 	int i, cnt;
 #ifdef __linux__
@@ -926,10 +888,7 @@ dmpindir(ino, blk, ind_level, size)
  * Collect up the data into tape record sized buffers and output them.
  */
 void
-blksout(blkp, frags, ino)
-	daddr_t *blkp;
-	int frags;
-	ino_t ino;
+blksout(daddr_t *blkp, int frags, ino_t ino)
 {
 	register daddr_t *bp;
 	int i, j, count, blks, tbperdb;
@@ -949,12 +908,14 @@ blksout(blkp, frags, ino)
 		spcl.c_count = count - i;
 		writeheader(ino);
 		bp = &blkp[i / tbperdb];
-		for (j = i; j < count; j += tbperdb, bp++)
-			if (*bp != 0)
+		for (j = i; j < count; j += tbperdb, bp++) {
+			if (*bp != 0) {
 				if (j + tbperdb <= count)
 					dumpblock(*bp, (int)sblock->fs_bsize);
 				else
 					dumpblock(*bp, (count - j) * TP_BSIZE);
+			}
+		}
 		spcl.c_type = TS_ADDR;
 	}
 }
@@ -963,10 +924,7 @@ blksout(blkp, frags, ino)
  * Dump a map to the tape.
  */
 void
-dumpmap(map, type, ino)
-	char *map;
-	int type;
-	ino_t ino;
+dumpmap(char *map, int type, ino_t ino)
 {
 	register int i;
 	char *cp;
@@ -982,8 +940,7 @@ dumpmap(map, type, ino)
  * Write a header record to the dump tape.
  */
 void
-writeheader(ino)
-	ino_t ino;
+writeheader(ino_t ino)
 {
 #ifdef	__linux__
 	register __s32 sum, cnt, *lp;
@@ -1017,8 +974,7 @@ writeheader(ino)
 
 #ifdef	__linux__
 struct dinode *
-getino(inum)
-	ino_t inum;
+getino(ino_t inum)
 {
 	static struct dinode dinode;
 
@@ -1028,8 +984,7 @@ getino(inum)
 }
 #else	/* __linux__ */
 struct dinode *
-getino(inum)
-	ino_t inum;
+getino(ino_t inum)
 {
 	static daddr_t minino, maxino;
 	static struct dinode inoblock[MAXINOPB];
@@ -1055,10 +1010,7 @@ int	breaderrors = 0;
 #define	BREADEMAX 32
 
 void
-bread(blkno, buf, size)
-	daddr_t blkno;
-	char *buf;
-	int size;
+bread(daddr_t blkno, char *buf, int size)
 {
 	int cnt, i;
 	extern int errno;
