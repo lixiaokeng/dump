@@ -29,7 +29,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: restore.8.in,v 1.8 2000/03/08 11:25:58 stelian Exp $
+.\"	$Id: restore.8.in,v 1.9 2000/03/09 13:12:31 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt RESTORE 8
@@ -74,22 +74,7 @@
 .Op Fl f Ar file
 .Op Fl s Ar fileno
 .Op Fl T Ar directory
-.Op file ...
-.Nm restore
-.Fl t
-.Op Fl chkMNuvy
-.Op Fl b Ar blocksize
-.Op Fl f Ar file
-.Op Fl s Ar fileno
-.Op Fl T Ar directory
 .Op Fl X Ar filelist
-.Nm restore
-.Fl x
-.Op Fl chkmMNuvy
-.Op Fl b Ar blocksize
-.Op Fl f Ar file
-.Op Fl s Ar fileno
-.Op Fl T Ar directory
 .Op file ...
 .Nm restore
 .Fl x
@@ -99,6 +84,7 @@
 .Op Fl s Ar fileno
 .Op Fl T Ar directory
 .Op Fl X Ar filelist
+.Op file ...
 .Pp
 .in
 (The
@@ -407,9 +393,9 @@ The
 flag causes it to type the name of each file it treats
 preceded by its file type.
 .It Fl X Ar filelist
-Get the list of the files to be listed or extracted from the text file
+Read list of files to be listed or extracted from the text file
 .Ar filelist
-instead of reading them on the command line. This can be used in 
+in addition to those specified on the command line. This can be used in 
 conjunction with the
 .Fl t
 or
@@ -417,6 +403,10 @@ or
 commands. The file
 .Ar filelist
 should contain file names separated by newlines.
+.Ar filelist
+may be an ordinary file or
+.Ql Fl
+(the standard input).
 .It Fl y
 Do not ask the user whether to abort the restore in the event of an error.
 Always try to skip over the bad block(s) and continue.

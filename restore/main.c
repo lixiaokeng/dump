@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.10 2000/03/08 11:25:58 stelian Exp $";
+	"$Id: main.c,v 1.11 2000/03/09 13:12:31 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -88,6 +88,7 @@ FILE 	*terminal;
 char	*tmpdir;
 int	compare_ignore_not_found;
 char	filesys[NAMELEN];
+static const char *stdin_opt = NULL;
 
 #ifdef	__linux__
 char	*__progname;
@@ -95,6 +96,7 @@ char	*__progname;
 
 static void obsolete __P((int *, char **[]));
 static void usage __P((void));
+static void use_stdin __P((const char *));
 
 int
 main(int argc, char *argv[])
@@ -156,6 +158,8 @@ main(int argc, char *argv[])
 			dflag = 1;
 			break;
 		case 'f':
+			if( !strcmp(optarg,"-") )
+				use_stdin("-f");
 			inputdev = optarg;
 			break;
 		case 'h':
@@ -202,8 +206,13 @@ main(int argc, char *argv[])
 			vflag = 1;
 			break;
 		case 'X':
-			if ( !(filelist=fopen(optarg,"r")) )
-				errx(1, "can't open file for reading -- %s", optarg);
+			if( !strcmp(optarg,"-") ) {
+				use_stdin("-X");
+				filelist = stdin;
+			}
+			else
+				if ( !(filelist = fopen(optarg,"r")) )
+					errx(1, "can't open file for reading -- %s", optarg);
 			break;
 		case 'y':
 			yflag = 1;
@@ -227,7 +236,7 @@ main(int argc, char *argv[])
 
 	setinput(inputdev);
 
-	if (argc == 0) {
+	if (argc == 0 && !filelist) {
 		argc = 1;
 		*--argv = ".";
 	}
@@ -315,17 +324,21 @@ main(int argc, char *argv[])
 		checkrestore();
 		dumpsymtable(symtbl, (long)1);
 		break;
-		
+	
+/* handle file names from either text file (-X) or the command line */
 #define NEXTFILE(p) \
-	if (filelist) { \
-		if ((p = fgets(fname, MAXPATHLEN, filelist))) \
-			*(p + strlen(p) - 1) = '\0'; \
+	p = NULL; \
+	if (argc) { \
+		--argc; \
+		p = *argv++; \
 	} \
-	else { \
-		if (argc--) \
-			p = *argv++; \
-		else \
-			p = NULL; \
+	else if (filelist) { \
+		if ((p = fgets(fname, MAXPATHLEN, filelist))) { \
+			if ( *p && *(p + strlen(p) - 1) == '\n' ) /* possible null string */ \
+				*(p + strlen(p) - 1) = '\0'; \
+			if ( !*p ) /* skip empty lines */ \
+				continue; \
+			} \
 	}
 	
 	/*
@@ -388,14 +401,12 @@ usage(void)
 	(void)fprintf(stderr, 
 	  "%s %s\n", __progname, _DUMP_VERSION);
 	(void)fprintf(stderr,
-	  "usage:\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n",
+	  "usage:\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n",
 	  __progname, " -i [-ch" kerbflag "mMuvy] [-b blocksize] [-f file] [-s fileno]",
 	  __progname, " -r [-c" kerbflag "Muvy] [-b blocksize] [-f file] [-s fileno]",
 	  __progname, " -R [-c" kerbflag "Muvy] [-b blocksize] [-f file] [-s fileno]",
-	  __progname, " -x [-ch" kerbflag "mMuvy] [-b blocksize] [-f file] [-s fileno] [file ...]",
-	  __progname, " -x [-ch" kerbflag "mMuvy] [-b blocksize] [-f file] [-s fileno] [-X filelist]",
-	  __progname, " -t [-ch" kerbflag "Muvy] [-b blocksize] [-f file] [-s fileno] [file ...]",
-	  __progname, " -t [-ch" kerbflag "Muvy] [-b blocksize] [-f file] [-s fileno] [-X filelist]");
+	  __progname, " -x [-ch" kerbflag "mMuvy] [-b blocksize] [-f file] [-s fileno] [-X filelist] [file ...]",
+	  __progname, " -t [-ch" kerbflag "Muvy] [-b blocksize] [-f file] [-s fileno] [-X filelist] [file ...]");
 	exit(1);
 }
 
@@ -468,4 +479,17 @@ obsolete(int *argcp, char **argvp[])
 
 	/* Update argument count. */
 	*argcp = nargv - *argvp - 1;
+}
+
+/*
+ * use_stdin --
+ *	reserve stdin for opt (avoid conflicts)
+ */
+void
+use_stdin(const char *opt)
+{
+	if (stdin_opt)
+		errx(1, "can't handle standard input for both %s and %s",
+			stdin_opt, opt);
+	stdin_opt = opt;
 }
