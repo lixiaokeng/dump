@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.9 1999/11/21 16:01:47 tiniou Exp $";
+	"$Id: tape.c,v 1.10 2000/01/07 19:24:04 tiniou Exp $";
 #endif /* not lint */
 
 #ifdef __linux__
@@ -1029,8 +1029,10 @@ atomic_read(int fd, void *buf, size_t count)
 {
 	int got, need = count;
 
-	while ((got = read(fd, buf, need)) > 0 && (need -= got) > 0)
-		(char *)buf += got;
+	do {
+		while ((got = read(fd, buf, need)) > 0 && (need -= got) > 0)
+			(char *)buf += got;
+	} while (got == -1 && errno == EINTR);
 	return (got < 0 ? got : count - need);
 }
 
@@ -1044,7 +1046,9 @@ atomic_write(int fd, const void *buf, size_t count)
 {
 	int got, need = count;
 
-	while ((got = write(fd, buf, need)) > 0 && (need -= got) > 0)
-		(char *)buf += got;
+	do {
+		while ((got = write(fd, buf, need)) > 0 && (need -= got) > 0)
+			(char *)buf += got;
+	} while (got == -1 && errno == EINTR);
 	return (got < 0 ? got : count - need);
 }

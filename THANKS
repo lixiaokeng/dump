@@ -1,4 +1,4 @@
-$Id: THANKS,v 1.14 1999/12/17 10:14:27 tiniou Exp $
+$Id: THANKS,v 1.15 2000/01/07 19:23:53 tiniou Exp $
 
 Dump and restore were written by the people of the CSRG at the University
 of California, Berkeley.
@@ -24,10 +24,12 @@ Here is a partial list of them (if I have forgotten someone, please complain):
 
 Stephen Carr		sgcarr@civeng.adelaide.edu.au
 Rob Cermak		cermak@ahab.rutgers.edu
+Rainer Clasen		bj@ncc.cicely.de
 Abhijit Dasgupta	abhijit@ans.net
 Jason Fearon		jasonf@netrider.org.au
 Jeremy Fitzhardinge	jeremy@goop.org
 Eirik Fuller		eirik@netcom.com
+Eric Jergensen		eric@dvns.com
 Henry Katz		hkatz@hkatz.dialup.access.net
 Klaus Kudielka		kkudielk@cacofonix.nt.tuwien.ac.at
 Thorsten Kukuk		kukuk@suse.de
@@ -41,9 +43,11 @@ Lukas Nellen		L.Nellen@ThPhys.Uni-Heidelberg.DE
 Nuno Oliveira		nuno@eq.uc.pt
 Brent Olson		night@halcyon.com
 Bernhard Sadlowski	sadlowsk@Mathematik.Uni-Bielefeld.DE
+Patrik Schindler	poc@pocnet.net
 Chris Siebenmann	cks@utcc.utoronto.ca
 Bob Snyder		rsnyder@janet.advsys.com
 Matti Taskinen		mkt@rni.helsinki.fi
+Jason L Tibbitts III	tibbs@math.uh.edu
 Theodore Y. Ts'o 	tytso@mit.edu
 Stephen Tweedie		sct@dcs.ed.ac.uk
 Daniel Veillard		Daniel.Veillard@imag.fr

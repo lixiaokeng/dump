@@ -1,4 +1,4 @@
-$Id: TODO,v 1.8 1999/11/21 02:24:45 tiniou Exp $
+$Id: TODO,v 1.9 2000/01/07 19:23:53 tiniou Exp $
 
 Need to verify:
 ---------------
@@ -34,9 +34,11 @@ All others:
 6.	Add a compression mode using zlib on each file (see
 	http://www.cdrom.com/pub/infozip/zlib).
 
-7.	Add some support in dump and restore for numbering in sequence
-	the output files (when dumping to a file). Something like -N <prefix>
-	which creates (or reads) <prefix>-1, <prefix>-2 etc...
+7.	Make a bootable dump tape? I don't know if it is possible...
 
-8.	Make a bootable dump tape? I don't know if it is possible...
-
+8.	From Kjetil Torgrim Homme <kjetilho@ifi.uio.no>:
+	  a archive_file
+	     Archive file. Archive a dump table-of-contents  in
+	     the   specified   archive_file   to   be  used  by
+	     ufsrestore(1M) to determine whether a file  is  in
+	     the dump file that is being restored.

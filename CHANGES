@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.27 1999/12/17 10:21:30 tiniou Exp $
+$Id: CHANGES,v 1.28 2000/01/07 19:23:53 tiniou Exp $
 
 Changes between versions 0.4b11 and 0.4b12 (released ????????????????)
 ======================================================================
@@ -9,6 +9,25 @@ Changes between versions 0.4b11 and 0.4b12 (released ????????????????)
 2.	Fix for the exit code when using the size estimate option of
 	dump. Thanks to Matti Taskinen <mkt@rni.helsinki.fi> for
 	submitting the patch.
+
+3.	Handle EINTR in atomical reads/writes in dump, which was causing
+	dump to fail on some systems. Thanks to Eric Jergensen
+	<eric@dvns.com> for reporting the bug and submitting the patch.
+
+4.	Handle more than 16 characters for the device names in dumpdates.
+	(up to 255 now). Thanks to Rainer Clasen <bj@ncc.cicely.de> for
+	tracking down the problem and proposing the solution.
+
+5.	Fixed a bug in dump which prevented the creation of the
+	dumpdates file when doing a 0-level dump without already
+	having a dumpdates file. Thanks to Patrik Schindler 
+	<poc@pocnet.net> for reporting the bug.
+
+6.	Changed the way dump 'S' flag reports the size estimate
+	from number of blocks into bytes (making it compatible
+	with the Solaris version, and simplifying things for
+	amanda users). Thanks to Jason L Tibbitts III 
+	<tibbs@math.uh.edu> for reporting the bug.
 
 Changes between versions 0.4b10 and 0.4b11 (released December 5, 1999)
 ======================================================================

@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: itime.c,v 1.7 1999/10/31 19:48:28 tiniou Exp $";
+	"$Id: itime.c,v 1.8 2000/01/07 19:24:04 tiniou Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -168,10 +168,11 @@ getdumptime(int createdumpdates)
 	spcl.c_ddate = 0;
 	lastlevel = '0';
 
-	/* If this is a level 0 dump, there's no point in trying to read
+	/* If this is a level 0 dump, and we're not updating 
+	   dumpdates, there's no point in trying to read
 	   dumpdates.  It may not exist yet, or may not be mounted.  For
 	   incrementals, we *must* read dumpdates (fail if it's not there!) */
-	if (level == lastlevel)
+	if ( (level == lastlevel) && !createdumpdates)
 		return;
 	initdumptimes(createdumpdates);
 	if (ddatev == NULL)
@@ -261,7 +262,7 @@ static void
 dumprecout(FILE *file, struct dumpdates *what)
 {
 
-	if (fprintf(file, DUMPOUTFMT,
+	if (fprintf(file, "%s %c %s",
 		    what->dd_name,
 		    what->dd_level,
 		    ctime(&what->dd_ddate)) < 0)
@@ -293,10 +294,27 @@ getrecord(FILE *df, struct dumpdates *ddatep)
 static int
 makedumpdate(struct dumpdates *ddp, char *tbuf)
 {
-	char un_buf[BUFSIZ];
+	char *tok;
+	
+	/* device name */
+	if ( NULL == (tok = strsep( &tbuf, " ")) )
+		return(-1);
+	if ( strlen(tok) >  NAME_MAX )
+		return(-1);
+	strcpy(ddp->dd_name, tok);
 
-	(void) sscanf(tbuf, DUMPINFMT, ddp->dd_name, &ddp->dd_level, un_buf);
-	ddp->dd_ddate = unctime(un_buf);
+	/* eat whitespace */
+	for( ; *tbuf == ' ' ; tbuf++);
+
+	/* dump level */
+	ddp->dd_level = *tbuf;
+	++tbuf;
+
+	/* eat whitespace */
+	for( ; *tbuf == ' ' ; tbuf++);
+
+	/* dump date */
+	ddp->dd_ddate = unctime(tbuf);
 	if (ddp->dd_ddate < 0)
 		return(-1);
 	return(0);

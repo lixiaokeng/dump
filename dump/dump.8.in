@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.7 1999/12/06 21:37:50 tiniou Exp $
+.\"	$Id: dump.8.in,v 1.8 2000/01/07 19:24:04 tiniou Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -230,7 +230,7 @@ The default tape length is 2300 feet.
 Size estimate. Determine the amount of space
 that is needed to perform the dump without
 actually doing it, and display the estimated
-number of blocks it will take. This is useful
+number of bytes it will take. This is useful
 with incremental dumps to determine how many
 volumes of media will be needed.
 .It Fl T Ar date

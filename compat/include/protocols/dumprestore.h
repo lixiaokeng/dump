@@ -43,7 +43,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $Id: dumprestore.h,v 1.3 1999/10/11 13:31:09 stelian Exp $
+ * $Id: dumprestore.h,v 1.4 2000/01/07 19:24:04 tiniou Exp $
  */
 
 #ifndef _PROTOCOLS_DUMPRESTORE_H_
@@ -116,9 +116,5 @@ union u_spcl {
  */
 #define DR_NEWHEADER	0x0001	/* new format tape header */
 #define DR_NEWINODEFMT	0x0002	/* new format inodes on tape */
-
-#define	DUMPOUTFMT	"%-16s %c %s"		/* for printf */
-						/* name, level, ctime(date) */
-#define	DUMPINFMT	"%16s %c %[^\n]\n"	/* inverse for scanf */
 
 #endif /* !_DUMPRESTORE_H_ */
