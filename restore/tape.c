@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.30 2001/03/20 20:39:36 stelian Exp $";
+	"$Id: tape.c,v 1.31 2001/03/27 08:09:21 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1742,8 +1742,8 @@ findtapeblksize(void)
 		else {
 			/* read in the rest of the block based on bufsize */
 			len = bufsize - TP_BSIZE;
-			if (read_a_block(mt, tapebuf+TP_BSIZE, len, &i) <= 0
-			    || i != len)
+			if (read_a_block(mt, tapebuf+TP_BSIZE, len, &i) < 0
+			    || (i != len && i % TP_BSIZE != 0))
 				errx(1,"Error reading dump file header");
 			tbufptr = tapebuf;
 			numtrec = ntrec;
