@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.183 2002/07/01 11:54:39 stelian Exp $
+$Id: CHANGES,v 1.184 2002/07/01 11:57:11 stelian Exp $
 
 Changes between versions 0.4b29 and 0.4b30 (released ????????????????)
 ======================================================================
@@ -15,7 +15,12 @@ Changes between versions 0.4b29 and 0.4b30 (released ????????????????)
 3.	Fixed the tape length calculation when using large tapes
 	and compression. Thanks to Georg Lippold 
 	<g_lippold@sourceforge.net> for reporting the bug.
-	
+
+4.	Added a new set of examples in dump_on_cd_2 directory, based
+	on dump_on_cd examples but somewhat enhanced, supporting DVD
+	media, and localized in english and german. Thanks to
+	Georg Lippold <g_lippold@sourceforge.net> for the new scripts.
+
 Changes between versions 0.4b28 and 0.4b29 (released June 8, 2002)
 ==================================================================
 
