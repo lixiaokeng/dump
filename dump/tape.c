@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.28 2000/12/21 15:01:54 stelian Exp $";
+	"$Id: tape.c,v 1.29 2001/02/16 10:40:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -289,6 +289,8 @@ do_stats(void)
 #else
 					  ctime(&tnow));
 #endif
+	msg("Volume %d: %ld tape blocks (%.2fMB)\n", tapeno, 
+		blocks, ((double)blocks * TP_BSIZE / 1048576));
 	if (ttaken > 0) {
 		msg("Volume %d took %d:%02d:%02d\n", tapeno,
 			ttaken / 3600, (ttaken % 3600) / 60, ttaken % 60);
