@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.67 2002/01/25 14:59:53 stelian Exp $";
+	"$Id: main.c,v 1.68 2002/01/25 15:08:59 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -192,12 +192,12 @@ static int iexclude_num = 0;			/* number of elements in the list */
 int
 main(int argc, char *argv[])
 {
-	register dump_ino_t ino;
-	register int dirty;
-	register struct dinode *dp;
-	register struct	fstab *dt;
-	register char *map;
-	register int ch;
+	dump_ino_t ino;
+	int dirty;
+	struct dinode *dp;
+	struct	fstab *dt;
+	char *map;
+	int ch;
 	int i, anydirskipped;
 	int aflag = 0, bflag = 0, Tflag = 0, honorlevel = 1;
 	dump_ino_t maxino;
@@ -210,7 +210,7 @@ main(int argc, char *argv[])
 #endif
 	time_t tnow;
 	char *diskparam;
-	char *Apath;
+	char *Apath = NULL;
 
 	spcl.c_label[0] = '\0';
 	spcl.c_date = time(NULL);

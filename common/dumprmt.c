@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dumprmt.c,v 1.19 2002/01/16 09:32:14 stelian Exp $";
+	"$Id: dumprmt.c,v 1.20 2002/01/25 15:08:59 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -161,8 +161,8 @@ rmtconnaborted(int signo)
 static int
 rmtgetconn(void)
 {
-	register char *cp;
-	register const char *rmt;
+	char *cp;
+	const char *rmt;
 	static struct servent *sp = NULL;
 	static struct passwd *pwd = NULL;
 	const char *tuser;
@@ -259,8 +259,8 @@ rmtgetconn(void)
 static int
 okname(const char *cp0)
 {
-	register const char *cp;
-	register int c;
+	const char *cp;
+	int c;
 
 	for (cp = cp0; *cp; cp++) {
 		c = *cp;
@@ -337,8 +337,8 @@ struct	mtget mts;
 struct mtget *
 rmtstatus(void)
 {
-	register int i;
-	register char *cp;
+	int i;
+	char *cp;
 
 	if (rmtstate != TS_OPEN)
 		return (NULL);
@@ -371,7 +371,7 @@ rmtcall(const char *cmd, const char *buf)
 static int
 rmtreply(const char *cmd)
 {
-	register char *cp;
+	char *cp;
 	char code[30], emsg[BUFSIZ];
 
 	rmtgets(code, sizeof (code));
@@ -410,7 +410,7 @@ rmtgetb(void)
 static void
 rmtgets(char *line, size_t len)
 {
-	register char *cp = line;
+	char *cp = line;
 
 	while (len > 1) {
 		*cp = rmtgetb();

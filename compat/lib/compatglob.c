@@ -69,7 +69,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: compatglob.c,v 1.7 2002/01/16 09:32:14 stelian Exp $";
+	"$Id: compatglob.c,v 1.8 2002/01/25 15:08:59 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -564,7 +564,7 @@ glob2(Char *pathbuf, Char *pathend, Char *pattern, glob_t *pglob)
 static int
 glob3(Char *pathbuf, Char *pathend, Char *pattern, Char *restpattern, glob_t *pglob)
 {
-	register struct dirent *dp;
+	struct dirent *dp;
 	DIR *dirp;
 	int err;
 	char buf[MAXPATHLEN];
@@ -599,8 +599,8 @@ glob3(Char *pathbuf, Char *pathend, Char *pattern, Char *restpattern, glob_t *pg
 	else
 		readdirfunc = readdir;
 	while ((dp = (*readdirfunc)(dirp))) {
-		register u_char *sc;
-		register Char *dc;
+		u_char *sc;
+		Char *dc;
 
 		/* Initial DOT must be matched literally. */
 		if (dp->d_name[0] == DOT && *pattern != DOT)
@@ -642,8 +642,8 @@ glob3(Char *pathbuf, Char *pathend, Char *pattern, Char *restpattern, glob_t *pg
 static int
 globextend(const Char *path, glob_t *pglob)
 {
-	register char **pathv;
-	register int i;
+	char **pathv;
+	int i;
 	u_int newsize;
 	char *copy;
 	const Char *p;
@@ -727,8 +727,8 @@ match(Char *name, Char *pat, Char *patend)
 void
 globfree(glob_t *pglob)
 {
-	register int i;
-	register char **pp;
+	int i;
+	char **pp;
 
 	if (pglob->gl_pathv != NULL) {
 		pp = pglob->gl_pathv + pglob->gl_offs;
@@ -806,7 +806,7 @@ g_strcat(Char *dst, const Char *src)
 static void
 g_Ctoc(const Char *str, char *buf)
 {
-	register char *dc;
+	char *dc;
 
 	for (dc = buf; (*dc++ = *str++) != EOS;)
 		continue;
@@ -816,7 +816,7 @@ g_Ctoc(const Char *str, char *buf)
 static void
 qprintf(const char *str, Char *s)
 {
-	register Char *p;
+	Char *p;
 
 	(void)printf("%s:\n", str);
 	for (p = s; *p; p++)

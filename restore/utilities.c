@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: utilities.c,v 1.18 2002/01/25 14:59:53 stelian Exp $";
+	"$Id: utilities.c,v 1.19 2002/01/25 15:09:00 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -78,7 +78,7 @@ static const char rcsid[] =
 void
 pathcheck(char *name)
 {
-	register char *cp;
+	char *cp;
 	struct entry *ep;
 	char *start;
 
@@ -319,7 +319,7 @@ delwhiteout(struct entry *ep)
 dump_ino_t
 lowerbnd(dump_ino_t start)
 {
-	register struct entry *ep;
+	struct entry *ep;
 
 	for ( ; start < maxino; start++) {
 		ep = lookupino(start);
@@ -337,7 +337,7 @@ lowerbnd(dump_ino_t start)
 dump_ino_t
 upperbnd(dump_ino_t start)
 {
-	register struct entry *ep;
+	struct entry *ep;
 
 	for ( ; start > ROOTINO; start--) {
 		ep = lookupino(start);

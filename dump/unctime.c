@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: unctime.c,v 1.13 2002/01/16 09:32:14 stelian Exp $";
+	"$Id: unctime.c,v 1.14 2002/01/25 15:08:59 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -114,7 +114,7 @@ static char months[] =
 static int
 lookup(const char *str)
 {
-	register const char *cp, *cp2;
+	const char *cp, *cp2;
 
 	for (cp = months, cp2 = str; *cp != '\0'; cp += 3)
 		if (strncmp(cp, cp2, 3) == 0)

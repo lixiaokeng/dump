@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dirs.c,v 1.16 2002/01/16 09:32:14 stelian Exp $";
+	"$Id: dirs.c,v 1.17 2002/01/25 15:08:59 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -164,11 +164,11 @@ static struct direct	*searchdir __P((dump_ino_t, char *));
 void
 extractdirs(int genmode)
 {
-	register int i;
+	int i;
 #ifdef	__linux__
-	register struct new_bsd_inode *ip;
+	struct new_bsd_inode *ip;
 #else
-	register struct dinode *ip;
+	struct dinode *ip;
 #endif
 	struct inotab *itp;
 	struct direct nulldir;
@@ -252,8 +252,8 @@ skipdirs(void)
 void
 treescan(char *pname, dump_ino_t ino, long (*todo) __P((char *, dump_ino_t, int)))
 {
-	register struct inotab *itp;
-	register struct direct *dp;
+	struct inotab *itp;
+	struct direct *dp;
 	int namelen;
 	long bpt;
 	char locname[MAXPATHLEN + 1];
@@ -340,8 +340,8 @@ pathsearch(const char *pathname)
 static struct direct *
 searchdir(dump_ino_t inum, char *name)
 {
-	register struct direct *dp;
-	register struct inotab *itp;
+	struct direct *dp;
+	struct inotab *itp;
 	int len;
 
 	itp = inotablookup(inum);
@@ -364,9 +364,9 @@ static void
 putdir(char *buf, size_t size)
 {
 	struct direct cvtbuf;
-	register struct odirect *odp;
+	struct odirect *odp;
 	struct odirect *eodp;
-	register struct direct *dp;
+	struct direct *dp;
 	long loc, i;
 
 	if (cvtflag) {
@@ -509,7 +509,7 @@ rst_seekdir(RST_DIR *dirp, long loc, long base)
 struct direct *
 rst_readdir(RST_DIR *dirp)
 {
-	register struct direct *dp;
+	struct direct *dp;
 
 	for (;;) {
 		if (dirp->dd_loc == 0) {
@@ -590,8 +590,8 @@ rst_telldir(RST_DIR *dirp)
 static RST_DIR *
 opendirfile(const char *name)
 {
-	register RST_DIR *dirp;
-	register int fd;
+	RST_DIR *dirp;
+	int fd;
 
 	if ((fd = open(name, O_RDONLY)) == -1)
 		return (NULL);
@@ -674,7 +674,7 @@ setdirmodes(int flags)
 int
 genliteraldir(char *name, dump_ino_t ino)
 {
-	register struct inotab *itp;
+	struct inotab *itp;
 	int ofile, dp, i, size;
 	char buf[BUFSIZ];
 
@@ -730,7 +730,7 @@ allocinotab(dump_ino_t ino, struct new_bsd_inode *dip, long seekpt)
 allocinotab(dump_ino_t ino, struct dinode *dip, long seekpt)
 #endif
 {
-	register struct inotab	*itp;
+	struct inotab	*itp;
 	struct modeinfo node;
 
 	itp = calloc(1, sizeof(struct inotab));
@@ -769,7 +769,7 @@ allocinotab(dump_ino_t ino, struct dinode *dip, long seekpt)
 static struct inotab *
 inotablookup(dump_ino_t ino)
 {
-	register struct inotab *itp;
+	struct inotab *itp;
 
 	for (itp = inotab[INOHASH(ino)]; itp != NULL; itp = itp->t_next)
 		if (itp->t_ino == ino)

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.61 2002/01/25 14:59:53 stelian Exp $";
+	"$Id: tape.c,v 1.62 2002/01/25 15:08:59 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -593,8 +593,8 @@ close_rewind(void)
 void
 rollforward(void)
 {
-	register struct req *p, *q = NULL, *prev;
-	register struct slave *tslp;
+	struct req *p, *q = NULL, *prev;
+	struct slave *tslp;
 	int i, size, savedtapea, got;
 	union u_spcl *ntb, *otb;
 	struct slave_results returned;
@@ -966,7 +966,7 @@ enslave(void)
 #ifdef	LINUX_FORK_BUG
 	int i, j;
 #else
-	register int i, j;
+	int i, j;
 #endif
 
 	master = getpid();
@@ -1042,7 +1042,7 @@ enslave(void)
 void
 killall(void)
 {
-	register int i;
+	int i;
 
 	for (i = 0; i < SLAVES; i++)
 		if (slaves[i].pid > 0) {
@@ -1061,7 +1061,7 @@ killall(void)
 static void
 doslave(int cmd, int slave_number, int first)
 {
-	register int nread;
+	int nread;
 	int nextslave, size, eot_count, bufsize;
 	volatile int wrote = 0;
 	char *buffer;
@@ -1130,7 +1130,7 @@ doslave(int cmd, int slave_number, int first)
 	 * Get list of blocks to dump, read the blocks into tape buffer
 	 */
 	while ((nread = atomic_read( cmd, (char *)slp->req, reqsiz)) == reqsiz) {
-		register struct req *p = slp->req;
+		struct req *p = slp->req;
 
 		for (trecno = 0; trecno < ntrec;
 		     trecno += p->count, p += p->count) {

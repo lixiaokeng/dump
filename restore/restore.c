@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: restore.c,v 1.25 2002/01/25 14:59:53 stelian Exp $";
+	"$Id: restore.c,v 1.26 2002/01/25 15:08:59 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -108,7 +108,7 @@ listfile(char *name, dump_ino_t ino, int type)
 long
 addfile(char *name, dump_ino_t ino, int type)
 {
-	register struct entry *ep, *np;
+	struct entry *ep, *np;
 	long descend = hflag ? GOOD : FAIL;
 	char buf[100];
 
@@ -192,8 +192,8 @@ static struct entry *removelist;
 void
 removeoldleaves(void)
 {
-	register struct entry *ep, *nextep;
-	register dump_ino_t i, mydirino;
+	struct entry *ep, *nextep;
+	dump_ino_t i, mydirino;
 
 	Vprintf(stdout, "Mark entries to be removed.\n");
 	if ((ep = lookupino(WINO))) {
@@ -249,7 +249,7 @@ removeoldleaves(void)
 long
 nodeupdates(char *name, dump_ino_t ino, int type)
 {
-	register struct entry *ep, *np, *ip;
+	struct entry *ep, *np, *ip;
 	long descend = GOOD;
 	int lookuptype = 0;
 	int key = 0;
@@ -558,8 +558,8 @@ keyval(int key)
 void
 findunreflinks(void)
 {
-	register struct entry *ep, *np;
-	register dump_ino_t i;
+	struct entry *ep, *np;
+	dump_ino_t i;
 
 	Vprintf(stdout, "Find unreferenced names.\n");
 	for (i = ROOTINO; i < maxino; i++) {
@@ -606,7 +606,7 @@ findunreflinks(void)
 void
 removeoldnodes(void)
 {
-	register struct entry *ep, **prev;
+	struct entry *ep, **prev;
 	long change;
 
 	Vprintf(stdout, "Remove old nodes (directories).\n");
@@ -649,7 +649,7 @@ compare_entry(struct entry *ep, int do_compare)
 void
 compareleaves(void)
 {
-	register struct entry *ep;
+	struct entry *ep;
 	dump_ino_t first;
 	long curvol;
 
@@ -736,7 +736,7 @@ compareleaves(void)
 void
 createleaves(char *symtabfile)
 {
-	register struct entry *ep;
+	struct entry *ep;
 	dump_ino_t first;
 	long curvol;
 
@@ -835,8 +835,8 @@ createleaves(char *symtabfile)
 void
 createfiles(void)
 {
-	register dump_ino_t first, next, last;
-	register struct entry *ep;
+	dump_ino_t first, next, last;
+	struct entry *ep;
 	long curvol;
 #ifdef USE_QFA
 	long tnum, tmpcnt;
@@ -1016,8 +1016,8 @@ createfiles(void)
 void
 createlinks(void)
 {
-	register struct entry *np, *ep;
-	register dump_ino_t i;
+	struct entry *np, *ep;
+	dump_ino_t i;
 	char name[BUFSIZ];
 
 	if ((ep = lookupino(WINO))) {
@@ -1060,8 +1060,8 @@ createlinks(void)
 void
 checkrestore(void)
 {
-	register struct entry *ep;
-	register dump_ino_t i;
+	struct entry *ep;
+	dump_ino_t i;
 
 	Vprintf(stdout, "Check the symbol table.\n");
 	for (i = WINO; i < maxino; i++) {

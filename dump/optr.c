@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: optr.c,v 1.29 2002/01/16 09:32:14 stelian Exp $";
+	"$Id: optr.c,v 1.30 2002/01/25 15:08:59 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -285,7 +285,7 @@ static void
 sendmes(const char *tty, const char *message)
 {
 	char t[MAXPATHLEN], buf[BUFSIZ];
-	register const char *cp;
+	const char *cp;
 	int lmsg = 1;
 	FILE *f_tty;
 
@@ -426,7 +426,7 @@ quit(fmt, va_alist)
 static struct fstab *
 allocfsent(struct fstab *fs)
 {
-	register struct fstab *new;
+	struct fstab *new;
 
 	new = (struct fstab *)malloc(sizeof (*fs));
 	if (new == NULL)
@@ -499,8 +499,8 @@ getfstab(void)
 struct fstab *
 fstabsearch(const char *key)
 {
-	register struct pfstab *pf;
-	register struct fstab *fs;
+	struct pfstab *pf;
+	struct fstab *fs;
 	const char *rn;
 
 	for (pf = table; pf != NULL; pf = pf->pf_next) {
@@ -527,9 +527,9 @@ fstabsearch(const char *key)
 struct fstab *
 fstabsearchdir(const char *key, char *directory)
 {
-	register struct pfstab *pf;
-	register struct fstab *fs;
-	register struct fstab *found_fs = NULL;
+	struct pfstab *pf;
+	struct fstab *fs;
+	struct fstab *found_fs = NULL;
 	unsigned int size = 0;
 	struct stat buf;
 

@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.55 2002/01/25 14:59:53 stelian Exp $";
+	"$Id: tape.c,v 1.56 2002/01/25 15:09:00 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -853,7 +853,7 @@ skipfile(void)
 void
 getfile(void (*fill) __P((char *, size_t)), void (*skip) __P((char *, size_t)))
 {
-	register int i;
+	int i;
 	volatile int curblk = 0;
 	volatile quad_t size = spcl.c_dinode.di_size;
 	volatile int last_write_was_hole = 0;
@@ -2265,7 +2265,7 @@ findinode(struct s_spcl *header)
 static int
 checksum(int *buf)
 {
-	register int i, j;
+	int i, j;
 
 	j = sizeof(union u_spcl) / sizeof(int);
 	i = 0;

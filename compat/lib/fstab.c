@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: fstab.c,v 1.12 2002/01/16 09:32:14 stelian Exp $";
+	"$Id: fstab.c,v 1.13 2002/01/25 15:08:59 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -66,7 +66,7 @@ static
 int fstabscan(void)
 {
 	struct mntent	*mnt;
-	register char *cp;
+	char *cp;
 	int typexx;
 #define	MAXLINELENGTH	1024
 	char subline[MAXLINELENGTH];

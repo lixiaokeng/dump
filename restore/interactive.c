@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: interactive.c,v 1.20 2002/01/25 14:59:53 stelian Exp $";
+	"$Id: interactive.c,v 1.21 2002/01/25 15:08:59 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -129,7 +129,7 @@ static void	 printlist __P((char *, char *));
 void
 runcmdshell(void)
 {
-	register struct entry *np;
+	struct entry *np;
 	dump_ino_t ino;
 	struct arglist arglist;
 	char curdir[MAXPATHLEN];
@@ -357,7 +357,7 @@ loop:
 static void
 getcmd(char *curdir, char *cmd, char *name, int size, struct arglist *ap)
 {
-	register char *cp;
+	char *cp;
 	static char input[BUFSIZ];
 	char output[BUFSIZ];
 #	define rawname input	/* save space by reusing input buffer */
@@ -453,7 +453,7 @@ retnext:
 static char *
 copynext(char *input, char *output)
 {
-	register char *cp, *bp;
+	char *cp, *bp;
 	char quote;
 
 	for (cp = input; *cp == ' ' || *cp == '\t'; cp++)
@@ -502,7 +502,7 @@ copynext(char *input, char *output)
 void
 canon(char *rawname, char *canonname, int len)
 {
-	register char *cp, *np;
+	char *cp, *np;
 
 	if (strcmp(rawname, ".") == 0 || strncmp(rawname, "./", 2) == 0)
 		(void) strcpy(canonname, "");
@@ -554,8 +554,8 @@ canon(char *rawname, char *canonname, int len)
 static void
 printlist(char *name, char *basename)
 {
-	register struct afile *fp, *list, *listp = NULL;
-	register struct direct *dp;
+	struct afile *fp, *list, *listp = NULL;
+	struct direct *dp;
 	struct afile single;
 	RST_DIR *dirp;
 	int entries, len, namelen;
@@ -699,7 +699,7 @@ mkentry(char *name, struct direct *dp, struct afile *fp)
 static void
 formatf(struct afile *list, int nentry)
 {
-	register struct afile *fp, *endlist;
+	struct afile *fp, *endlist;
 	int width, bigino, haveprefix, havepostfix;
 	int i, j, w, precision = 0, columns, lines;
 
@@ -796,7 +796,7 @@ glob_readdir(RST_DIR *dirp)
 static int
 glob_stat(const char *name, struct stat *stp)
 {
-	register struct direct *dp;
+	struct direct *dp;
 	dp = pathsearch(name);
 	if (dp == NULL || (!dflag && TSTINO(dp->d_ino, dumpmap) == 0) ||
 	    (!vflag && dp->d_ino == WINO))

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: itime.c,v 1.21 2002/01/16 09:32:14 stelian Exp $";
+	"$Id: itime.c,v 1.22 2002/01/25 15:08:59 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -131,8 +131,8 @@ initdumptimes(int createdumpdates)
 static void
 readdumptimes(FILE *df)
 {
-	register int i;
-	register struct	dumptime *dtwalk;
+	int i;
+	struct	dumptime *dtwalk;
 
 	for (;;) {
 		dtwalk = (struct dumptime *)calloc(1, sizeof (struct dumptime));
@@ -158,8 +158,8 @@ readdumptimes(FILE *df)
 void
 getdumptime(int createdumpdates)
 {
-	register struct dumpdates *ddp;
-	register int i;
+	struct dumpdates *ddp;
+	int i;
 
 #ifdef FDEBUG
 	msg("Looking for name %s in dumpdates = %s for level = %c\n",
@@ -197,8 +197,8 @@ void
 putdumptime(void)
 {
 	FILE *df;
-	register struct dumpdates *dtwalk;
-	register int i;
+	struct dumpdates *dtwalk;
+	int i;
 	int fd;
 
 	if(uflag == 0)

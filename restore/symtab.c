@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: symtab.c,v 1.17 2002/01/16 09:32:14 stelian Exp $";
+	"$Id: symtab.c,v 1.18 2002/01/25 15:09:00 stelian Exp $";
 #endif /* not lint */
 
 /*
@@ -106,7 +106,7 @@ static void		 removeentry __P((struct entry *));
 struct entry *
 lookupino(dump_ino_t inum)
 {
-	register struct entry *ep;
+	struct entry *ep;
 
 	if (inum < WINO || inum >= maxino)
 		return (NULL);
@@ -142,7 +142,7 @@ addino(dump_ino_t inum, struct entry *np)
 void
 deleteino(dump_ino_t inum)
 {
-	register struct entry *next;
+	struct entry *next;
 	struct entry **prev;
 
 	if (inum < WINO || inum >= maxino)
@@ -165,8 +165,8 @@ deleteino(dump_ino_t inum)
 struct entry *
 lookupname(char *name)
 {
-	register struct entry *ep;
-	register char *np, *cp;
+	struct entry *ep;
+	char *np, *cp;
 	char buf[MAXPATHLEN];
 
 	cp = name;
@@ -216,7 +216,7 @@ lookupparent(char *name)
 char *
 myname(struct entry *ep)
 {
-	register char *cp;
+	char *cp;
 	static char namebuf[MAXPATHLEN];
 
 	for (cp = &namebuf[MAXPATHLEN - 2]; cp > &namebuf[ep->e_namlen]; ) {
@@ -243,7 +243,7 @@ static struct entry *freelist = NULL;
 struct entry *
 addentry(char *name, dump_ino_t inum, int type)
 {
-	register struct entry *np, *ep;
+	struct entry *np, *ep;
 
 	if (freelist != NULL) {
 		np = freelist;
@@ -291,7 +291,7 @@ addentry(char *name, dump_ino_t inum, int type)
 void
 freeentry(struct entry *ep)
 {
-	register struct entry *np;
+	struct entry *np;
 	dump_ino_t inum;
 
 	if (ep->e_flags != REMOVED)
@@ -362,7 +362,7 @@ moveentry(struct entry *ep, char *newname)
 static void
 removeentry(struct entry *ep)
 {
-	register struct entry *np;
+	struct entry *np;
 
 	np = ep->e_parent;
 	if (np->e_entries == ep) {
@@ -462,8 +462,8 @@ struct symtableheader {
 void
 dumpsymtable(char *filename, long checkpt)
 {
-	register struct entry *ep, *tep;
-	register dump_ino_t i;
+	struct entry *ep, *tep;
+	dump_ino_t i;
 	struct entry temp, *tentry;
 	long mynum = 1, stroff = 0;
 	FILE *fd;
@@ -550,11 +550,11 @@ initsymtable(char *filename)
 {
 	char *base;
 	long tblsize;
-	register struct entry *ep;
+	struct entry *ep;
 	struct entry *baseep, *lep;
 	struct symtableheader hdr;
 	struct stat stbuf;
-	register long i;
+	long i;
 	int fd;
 
 	Vprintf(stdout, "Initialize symbol table.\n");

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.41 2002/01/25 14:59:53 stelian Exp $";
+	"$Id: traverse.c,v 1.42 2002/01/25 15:08:59 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -241,7 +241,7 @@ blockest(struct dinode const *dp)
 static void
 mapfileino(dump_ino_t ino, struct dinode const *dp, long *tapesize, int *dirskipped)
 {
-	register int mode;
+	int mode;
 
 	/*
 	 * Skip inode if we've already marked it for dumping
@@ -335,7 +335,7 @@ mapfiles(dump_ino_t maxino, long *tapesize)
 int
 mapfiles(dump_ino_t maxino, long *tapesize)
 {
-	register dump_ino_t ino;
+	dump_ino_t ino;
 	int anydirskipped = 0;
 
 	for (ino = ROOTINO; ino < maxino; ino++)
@@ -407,8 +407,8 @@ struct mapfile_context {
 static int
 mapfilesindir(struct ext2_dir_entry *dirent, int offset, int blocksize, char *buf, void *private)
 {
-	register struct dinode const *dp;
-	register int mode;
+	struct dinode const *dp;
+	int mode;
 	errcode_t retval;
 	struct mapfile_context *mfc;
 	ext2_ino_t ino;
@@ -522,12 +522,12 @@ struct mapdirs_context {
 int
 mapdirs(dump_ino_t maxino, long *tapesize)
 {
-	register struct	dinode *dp;
-	register int isdir;
-	register char *map;
-	register dump_ino_t ino;
+	struct	dinode *dp;
+	int isdir;
+	char *map;
+	dump_ino_t ino;
 #ifndef __linux__
-	register int i;
+	int i;
 	long filesize;
 #else
 	struct mapdirs_context mdc;
@@ -606,7 +606,7 @@ static int
 dirindir(dump_ino_t ino, daddr_t blkno, int ind_level, long *filesize)
 {
 	int ret = 0;
-	register int i;
+	int i;
 	daddr_t	idblk[MAXNINDIR];
 
 	bread(fsbtodb(sblock, blkno), (char *)idblk, (int)sblock->fs_bsize);
@@ -691,8 +691,8 @@ searchdir(struct ext2_dir_entry *dp, int offset, int blocksize, char *buf, void 
 static int
 searchdir(dump_ino_t ino, daddr_t blkno, long size, long filesize)
 {
-	register struct direct *dp;
-	register long loc, ret = 0;
+	struct direct *dp;
+	long loc, ret = 0;
 	char dblk[MAXBSIZE];
 
 	bread(fsbtodb(sblock, blkno), dblk, (int)size);
@@ -1130,7 +1130,7 @@ dmpindir(dump_ino_t ino, daddr_t blk, int ind_level, fsizeT *size)
 void
 blksout(daddr_t *blkp, int frags, dump_ino_t ino)
 {
-	register daddr_t *bp;
+	daddr_t *bp;
 	int i, j, count, blks, tbperdb;
 
 	blks = howmany(frags * sblock->fs_fsize, TP_BSIZE);
@@ -1166,7 +1166,7 @@ blksout(daddr_t *blkp, int frags, dump_ino_t ino)
 void
 dumpmap(char *map, int type, dump_ino_t ino)
 {
-	register int i;
+	int i;
 	char *cp;
 
 	spcl.c_type = type;
