@@ -1,4 +1,12 @@
-$Id: CHANGES,v 1.147 2001/11/17 10:58:24 stelian Exp $
+$Id: CHANGES,v 1.148 2001/11/30 10:14:36 stelian Exp $
+
+Changes between versions 0.4b25 and 0.4b26 (released ?????????????????)
+=======================================================================
+
+1.	Added a set of backup scripts from Eugenio Diaz
+	<getnito@yahoo.com> in the examples section. It features
+	automatic (cron based) full and incremental dumping of
+	several filesystems on a separate filesystem.
 
 Changes between versions 0.4b24 and 0.4b25 (released November 17, 2001)
 =======================================================================
