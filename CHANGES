@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.174 2002/05/06 08:45:41 stelian Exp $
+$Id: CHANGES,v 1.175 2002/05/16 21:22:36 stelian Exp $
 
 Changes between versions 0.4b28 and 0.4b29 (released ??????????????)
 ====================================================================
@@ -15,6 +15,14 @@ Changes between versions 0.4b28 and 0.4b29 (released ??????????????)
 	which caused restore to fail when the inode maps were not entirely
 	contained on the first volume (when using really small volumes or
 	when dumping a huge number of inodes).
+
+3.	Fixed a problem in dump, where files in subdirectories of directories 
+	that have the nodump flag set (or being excluded with -e/-E) were 
+	sometimes incorrectly dumped (instead of being excluded). The original
+	fix is from David C Lawrence <tale@dd.org> in the FreeBSD version 
+	of dump: http://www.FreeBSD.org/cgi/query-pr.cgi?pr=32414
+	Thanks to Ted Grzesik <tedgyz@roostme.com> for reporting the bug and 
+	help testing the patch.
 	
 Changes between versions 0.4b27 and 0.4b28 (released April 12, 2002)
 ====================================================================

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.45 2002/04/11 09:19:07 stelian Exp $";
+	"$Id: traverse.c,v 1.46 2002/05/16 21:22:36 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -668,12 +668,13 @@ searchdir(struct ext2_dir_entry *dp, int offset, int blocksize, char *buf, void 
 		ip = getino(dp->inode);
 		if (TSTINO(dp->inode, dumpinomap)) {
 			CLRINO(dp->inode, dumpinomap);
-			CLRINO(dp->inode, usedinomap);
 			*tapesize -= blockest(ip);
 		}
-		/* Add dir back to the dir map, to propagate nodump */
+		/* Add dir back to the dir map and remove from
+		 * usedinomap to propagate nodump */
 		if ((ip->di_mode & IFMT) == IFDIR) {
 			SETINO(dp->inode, dumpdirmap);
+			CLRINO(dp->inode, usedinomap);
 			*ret |= HASSUBDIRS;
 		}
 	} else {
