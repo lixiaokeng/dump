@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: rmt.c,v 1.27 2003/10/26 16:05:49 stelian Exp $";
+	"$Id: rmt.c,v 1.28 2003/11/22 16:52:16 stelian Exp $";
 #endif /* not linux */
 
 /*
@@ -204,7 +204,25 @@ top:
 		getstring(pos);
 		DEBUG2("rmtd: L %s %s\n", count, pos);
 		if (!magtape) { /* traditional */
-			rval = LSEEK(tape, (OFF_T)atoll(count), atoi(pos));
+			switch (atoi(pos)) {
+			case SEEK_SET:
+			case SEEK_CUR:
+			case SEEK_END:
+				rval = LSEEK(tape, (OFF_T)atoll(count), atoi(pos));
+				break;
+#ifdef USE_QFA
+			case LSEEK_GET_TAPEPOS:
+				rval = LSEEK(tape, (OFF_T)0, SEEK_CUR);
+				break;
+			case LSEEK_GO2_TAPEPOS:
+				rval = LSEEK(tape, (OFF_T)atoll(count), SEEK_SET);
+				break;
+#endif /* USE_QFA */
+			default:
+				errno = EINVAL;
+				goto ioerror;
+				break;
+			}
 		}
 		else {
 			switch (atoi(pos)) {

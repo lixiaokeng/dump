@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.87 2003/10/26 16:05:47 stelian Exp $";
+	"$Id: main.c,v 1.88 2003/11/22 16:52:16 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -192,8 +192,8 @@ static void do_exclude_from_file __P((char *));
 static void do_exclude_ino_str __P((char *));
 static void incompat_flags __P((int, char, char));
 
-static char* iexclude_bitmap = NULL;	/* the inode exclude bitmap */
-static int iexclude_bitmap_bytes = 0;	/* size of bitmap in bytes */
+static char* iexclude_bitmap = NULL;		/* the inode exclude bitmap */
+static unsigned int iexclude_bitmap_bytes = 0;	/* size of bitmap in bytes */
 
 int
 main(int argc, char *argv[])
@@ -1282,12 +1282,12 @@ do_exclude_ino(dump_ino_t ino, const char *reason)
 				msg("allocating memory failed\n");
 				exit(X_STARTUP);
 			}
-			int j;
+			unsigned int j;
 			for (j = 0; j < iexclude_bitmap_bytes; j++)
 				iexclude_bitmap[j] = 0;
 		}
 		else {
-			int oldsize = iexclude_bitmap_bytes;
+			unsigned int oldsize = iexclude_bitmap_bytes;
 			iexclude_bitmap_bytes *= 
 				(ino / 8 + 1) / iexclude_bitmap_bytes + 1;
 			iexclude_bitmap = (char*) realloc(iexclude_bitmap, 

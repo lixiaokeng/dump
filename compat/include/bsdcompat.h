@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: bsdcompat.h,v 1.20 2003/10/26 16:05:46 stelian Exp $
+ *	$Id: bsdcompat.h,v 1.21 2003/11/22 16:52:16 stelian Exp $
  */
 
 #include <config.h>
@@ -87,7 +87,7 @@ typedef int8_t __s8;
 typedef int16_t __s16;
 typedef int32_t __s32;
 #ifndef u_int
-#typedef unsigned int u_int;
+typedef unsigned int u_int;
 #endif
 #ifndef u_int16_t
 typedef unsigned short u_int16_t;

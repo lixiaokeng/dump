@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.75 2003/10/26 16:05:48 stelian Exp $";
+	"$Id: tape.c,v 1.76 2003/11/22 16:52:16 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1000,12 +1000,10 @@ extractfinderinfoufs(char *name)
 	int flags;
 	mode_t mode;
 	struct timeval timep[2];
-	struct entry *ep;
-	int	sz;
-	attrinfo_block_t gABuf;
 	u_int32_t	uid;
 	u_int32_t	gid;
 	char	path[MAXPATHLEN], fname[MAXPATHLEN];
+	int toto;
 
 	curfile.name = name;
 	curfile.action = USING;

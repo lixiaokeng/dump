@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: utilities.c,v 1.23 2003/10/26 16:05:48 stelian Exp $";
+	"$Id: utilities.c,v 1.24 2003/11/22 16:52:16 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -506,7 +506,7 @@ void resizemaps(dump_ino_t oldmax, dump_ino_t newmax)
 void
 GetPathFile(char *source, char *path, char *fname)
 {
-	char	*p, *s;
+	char *p, *s;
 
 	*path = 0;
 	*fname = 0;
@@ -606,13 +606,13 @@ Inode2Tapepos(dump_ino_t ino, long *tnum, long long *tpos, int exactmatch)
 int
 GetSCSIIDFromPath(char *devPath, long *id)
 {
-	int				len;
-	char			fbuff[2048];
-	char			path[2048];
-	char			fname[2048];
-	char			*fpn = fname;
-	char			idstr[32];
-	char			*ip = idstr;
+	int	len;
+	char	fbuff[2048];
+	char	path[2048];
+	char	fname[2048];
+	char	*fpn = fname;
+	char	idstr[32];
+	char	*ip = idstr;
 
 	bzero(fbuff, sizeof(fbuff));
 	if ((len = readlink(devPath, fbuff, 2048)) == -1) {
@@ -643,17 +643,14 @@ int
 CreateAppleDoubleFileRes(char *oFile, FndrFileInfo *finderinfo, mode_t mode, int flags,
 		struct timeval *timep, u_int32_t uid, u_int32_t gid)
 {
-	int				err = 0;
-	int				fdout;
-	char			*p;
-	char			*f;
-	char			*pp;
+	int		err = 0;
+	int		fdout;
+	char		*p;
+	char		*pp;
 	ASDHeaderPtr	hp;
-	ASDEntryPtr		ep;
-	long			thesize;
-	long			n;
-	long			loops;
-	long			remain;
+	ASDEntryPtr	ep;
+	long		thesize;
+	long		n;
 
 
 	n = 1;	/* number of entries in double file ._ only finderinfo */

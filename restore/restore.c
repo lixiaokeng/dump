@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: restore.c,v 1.32 2003/10/26 16:05:48 stelian Exp $";
+	"$Id: restore.c,v 1.33 2003/11/22 16:52:16 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -817,6 +817,7 @@ finderres:
 				(void)extractfinderinfoufs(myname(ep));
 #else
 				msg("MacOSX not supported in this version, skipping\n");
+				skipfile();
 #endif
 				break;
 			case EXT_MACOSRESFORK:
@@ -824,6 +825,7 @@ finderres:
 				(void)extractresourceufs(myname(ep));
 #else
 				msg("MacOSX not supported in this version, skipping\n");
+				skipfile();
 #endif
 				break;
 			case EXT_ACL:
@@ -1077,6 +1079,7 @@ finderres:
 						(void)extractfinderinfoufs(myname(ep));
 #else
 						msg("MacOSX not supported in this version, skipping\n");
+						skipfile();
 #endif
 						break;
 					case EXT_MACOSRESFORK:
@@ -1084,6 +1087,7 @@ finderres:
 						(void)extractresourceufs(myname(ep));
 #else
 						msg("MacOSX not supported in this version, skipping\n");
+						skipfile();
 #endif
 						break;
 					case EXT_ACL:

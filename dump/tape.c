@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.78 2003/10/26 16:05:47 stelian Exp $";
+	"$Id: tape.c,v 1.79 2003/11/22 16:52:16 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1404,7 +1404,7 @@ dump_atomic_write(int fd, const void *buf, size_t count)
 		while ((got = write(fd, buf, need)) > 0 && (need -= got) > 0)
 			(char *)buf += got;
 	} while (got == -1 && errno == EINTR);
-	return (got < 0 ? got : count - need);
+	return (got < 0 ? got : (ssize_t)count - need);
 }
 
 
