@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.76 2003/04/09 10:42:57 stelian Exp $";
+	"$Id: tape.c,v 1.77 2003/04/18 07:47:57 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1133,10 +1133,10 @@ doslave(int cmd,
 	if (compressed) {
 		int bsiz = sizeof(struct tapebuf) + writesize;
 		/* Add extra space to deal with compression enlarging the buffer */
-		if (TP_BSIZE > writesize/64 + 19)
+		if (TP_BSIZE > writesize/16 + 67)
 			bsiz += TP_BSIZE;
 		else
-			bsiz += writesize/64 + 19;
+			bsiz += writesize/16 + 67;
 		comp_buf = malloc(bsiz);
 		if (comp_buf == NULL)
 			quit("couldn't allocate a compress buffer.\n");
