@@ -259,7 +259,7 @@ AC_ARG_WITH([dumpdatespath],
 [  --with-dumpdatespath=PATH  select path for dumpdates file],
 AC_MSG_RESULT(DUMPDATESPATH is $withval)
 DUMPDATESPATH=$withval,
-DUMPDATESPATH="/etc/dumpdates"
+DUMPDATESPATH="${sysconfdir}/dumpdates"
 echo "DUMPDATESPATH defaults to $DUMPDATESPATH"
 )dnl
 AC_SUBST(DUMPDATESPATH)

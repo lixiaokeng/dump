@@ -24,8 +24,10 @@ MANMODE=	@MANMODE@
 INSTALLBIN=	$(INSTALL) -o $(BINOWNER) -g $(BINGRP) -m $(BINMODE)
 INSTALLMAN=	$(INSTALL) -o $(MANOWNER) -g $(MANGRP) -m $(MANMODE)
 
-BINDIR=		/sbin
-MANDIR=		/usr/man/man8
+prefix=		@prefix@
+exec_prefix=	@exec_prefix@
+SBINDIR=	@sbindir@
+MANDIR=		@mandir@/man8
 
 DUMPDATESPATH=	@DUMPDATESPATH@
 #

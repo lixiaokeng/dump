@@ -73,7 +73,7 @@ rm -rf %{buildroot}
 mkdir -p %{buildroot}%{_sbindir}
 mkdir -p %{buildroot}%{_mandir}/man8
 
-%makeinstall BINDIR=%{buildroot}%{_sbindir} MANDIR=%{buildroot}%{_mandir}/man8 BINOWNER=$(id -un) BINGRP=$(id -gn) MANOWNER=$(id -un) MANGRP=$(id -gn)
+%makeinstall SBINDIR=%{buildroot}%{_sbindir} MANDIR=%{buildroot}%{_mandir}/man8 BINOWNER=$(id -un) BINGRP=$(id -gn) MANOWNER=$(id -un) MANGRP=$(id -gn)
 
 cp dump/dump.static %{buildroot}%{_sbindir}
 cp restore/restore.static %{buildroot}%{_sbindir}

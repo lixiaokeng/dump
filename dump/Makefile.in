@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.5 2001/02/21 16:13:05 stelian Exp $
+# $Id: Makefile.in,v 1.6 2001/04/06 10:09:40 stelian Exp $
 
 top_srcdir=	@top_srcdir@
 srcdir=		@srcdir@
@@ -11,12 +11,12 @@ LIBS=		$(GLIBS) @ZLIB@
 DEPLIBS=	../compat/lib/libcompat.a
 
 PROG=		dump
-LINKS=		${BINDIR}/dump ${BINDIR}/rdump
+LINKS=		${SBINDIR}/dump ${SBINDIR}/rdump
 SRCS=		itime.c main.c optr.c tape.c traverse.c unctime.c
 OBJS=		itime.o main.o optr.o tape.o traverse.o unctime.o \
 		../common/dumprmt.o
 MAN8=		dump.8
-MLINKS=		dump.8 $(MANDIR)/rdump.8
+MLINKS=		$(MANDIR)/dump.8 $(MANDIR)/rdump.8
 
 all::		$(PROG) dump.8
 
@@ -29,13 +29,14 @@ dump.8:		dump.8.in
 	    -e "s|__VERSION__|$(VERSION)|g" $< > $@
 
 install::	all
-	$(INSTALLBIN) $(PROG) $(BINDIR)
+	$(INSTALL) -d $(SBINDIR) $(MANDIR)
+	$(INSTALLBIN) $(PROG) $(SBINDIR)
 	$(INSTALLMAN) $(srcdir)/$(MAN8) $(MANDIR)
 	@set $(LINKS) $(MLINKS); \
 	while test $$# -ge 2; do \
-		l=$(DESTDIR)$$1; \
+		l=$$1; \
 		shift; \
-		t=$(DESTDIR)$$1; \
+		t=$$1; \
 		shift; \
 		echo $$t -\> $$l; \
 		$(RM) -f $$t; \

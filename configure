@@ -1532,7 +1532,7 @@ if test "${with_dumpdatespath+set}" = set; then
   echo "$ac_t""DUMPDATESPATH is $withval" 1>&6
 DUMPDATESPATH=$withval
 else
-  DUMPDATESPATH="/etc/dumpdates"
+  DUMPDATESPATH="${sysconfdir}/dumpdates"
 echo "DUMPDATESPATH defaults to $DUMPDATESPATH"
 
 fi

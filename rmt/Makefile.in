@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.4 1999/10/11 13:31:14 stelian Exp $
+# $Id: Makefile.in,v 1.5 2001/04/06 10:09:40 stelian Exp $
 
 top_srcdir=	@top_srcdir@
 srcdir=		@srcdir@
@@ -30,7 +30,8 @@ rmt.8:		rmt.8.in
 	    -e "s|__VERSION__|$(VERSION)|g" $< > $@
 
 install::	all
-	$(INSTALLBIN) $(PROG) $(BINDIR)
+	$(INSTALL) -d $(SBINDIR) $(MANDIR)
+	$(INSTALLBIN) $(PROG) $(SBINDIR)
 	$(INSTALLMAN) $(srcdir)/$(MAN8) $(MANDIR)
 
 clean::
