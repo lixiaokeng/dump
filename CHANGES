@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.144 2001/11/17 10:31:46 stelian Exp $
+$Id: CHANGES,v 1.145 2001/11/17 10:44:18 stelian Exp $
 
 Changes between versions 0.4b24 and 0.4b25 (released ??????????????????)
 ========================================================================
@@ -31,6 +31,10 @@ Changes between versions 0.4b24 and 0.4b25 (released ??????????????????)
 	many users and especially to Eros Albertazzi 
 	<eros@lamel.bo.cnr.it> for reporting this.
 
+7.	Found a workaroung for the dump deadlock problem (3 childs 
+	stuck in pause(), father in read()). The workaround seems
+	to work for me and several beta-testers. If it doesn't work
+	for you, please report back.
 	
 Changes between versions 0.4b23 and 0.4b24 (released September 12, 2001)
 ========================================================================

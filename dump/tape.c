@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.57 2001/09/12 10:21:49 stelian Exp $";
+	"$Id: tape.c,v 1.58 2001/11/17 10:44:18 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1040,6 +1040,12 @@ doslave(int cmd, int slave_number, int first)
 	union u_spcl *uspclptr;
 	struct s_spcl *spclptr;
 #endif /* USE_QFA */
+	sigset_t set;
+
+	sigemptyset(&set);
+	sigaddset(&set, SIGUSR2);
+	sigprocmask(SIG_BLOCK, &set, NULL);
+	sigemptyset(&set);
 
 	/*
 	 * Need our own seek pointer.
@@ -1178,7 +1184,7 @@ doslave(int cmd, int slave_number, int first)
 		if (sigsetjmp(jmpbuf, 1) == 0) {
 			ready = 1;
 			if (!caught)
-				(void) pause();
+				sigsuspend(&set);
 		}
 		ready = 0;
 		caught = 0;
