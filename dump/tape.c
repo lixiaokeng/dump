@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.80 2004/01/27 10:37:29 stelian Exp $";
+	"$Id: tape.c,v 1.81 2004/03/01 10:52:53 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -485,7 +485,7 @@ flushtape(void)
 	blockswritten += ntrec;
 	blocksthisvol += ntrec;
 	if (!pipeout && !unlimited) {
-		if (blocksperfiles[blocksperfiles_current]) {
+		if (blocksperfiles && blocksperfiles[blocksperfiles_current]) {
 			if ( compressed ? (bytes_written - tapea_bytes + SLAVES * (writesize + sizeof(struct tapebuf))) >= (((long long)blocksperfiles[blocksperfiles_current]) * 1024)
 					: blocksthisvol >= blocksperfiles[blocksperfiles_current] ) {
 				close_rewind();
@@ -872,7 +872,7 @@ restore_check_point:
 			tape[MAXPATHLEN - 1] = '\0';
 			msg("Dumping volume %d on %s\n", tapeno, tape);
 		}
-		if (blocksperfiles_current < *blocksperfiles)
+		if (blocksperfiles && blocksperfiles_current < *blocksperfiles)
 			blocksperfiles_current++;
 #ifdef RDUMP
 		while ((tapefd = (host ? rmtopen(tape, O_WRONLY|O_CREAT|O_TRUNC) : pipeout ? 
