@@ -1,4 +1,4 @@
-$Id: THANKS,v 1.45 2001/05/26 11:11:16 stelian Exp $
+$Id: THANKS,v 1.46 2001/07/18 09:50:48 stelian Exp $
 
 Dump and restore were written by the people of the CSRG at the University
 of California, Berkeley.
@@ -41,6 +41,7 @@ Ian Gordon		iangordon@users.sourceforge.net
 Andreas Hasenack	andreas@conectiva.com.br
 Christian Haul		haul@informatik.tu-darmstadt.de
 Jean-Paul van der Jagt	jeanpaul@dutepp0.et.tudelft.nl
+Helmut Jarausch		jarausch@igpm.rwth-aachen.de
 Eric Jergensen		eric@dvns.com
 Jeff Johnson		jbj@redhat.com
 Charles Karney		karney@users.sourceforge.net

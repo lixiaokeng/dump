@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.50 2001/07/18 09:12:05 stelian Exp $";
+	"$Id: main.c,v 1.51 2001/07/18 09:50:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -353,7 +353,7 @@ main(int argc, char *argv[])
 		tapeprefix = "standard output";
 	}
 
-	if (blocksperfile)
+	if (blocksperfile && !compressed)
 		blocksperfile = blocksperfile / ntrec * ntrec; /* round down */
 	else if (!unlimited) {
 		/*
@@ -518,6 +518,11 @@ main(int argc, char *argv[])
 	else
 		strncpy(tape, tapeprefix, MAXPATHLEN);
 	tape[MAXPATHLEN - 1] = '\0';
+
+	if (!pipeout) {
+		if (STAT(tape, &statbuf) != -1)
+			fifoout= statbuf.st_mode & S_IFIFO;
+	}
 
 	if (!sizest) {
 
@@ -820,7 +825,7 @@ main(int argc, char *argv[])
 
 	tnow = trewind();
 
-	if (pipeout)
+	if (pipeout || fifoout)
 		msg("%ld tape blocks (%.2fMB)\n", spcl.c_tapea,
 			((double)spcl.c_tapea * TP_BSIZE / 1048576));
 	else
@@ -923,7 +928,7 @@ sig(int signo)
 	case SIGHUP:
 	case SIGTERM:
 	case SIGTRAP:
-		if (pipeout)
+		if (pipeout || fifoout)
 			quit("Signal on pipe: cannot recover\n");
 		msg("Rewriting attempted as response to unknown signal: %d.\n", signo);
 		(void)fflush(stderr);

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.48 2001/07/18 09:12:05 stelian Exp $";
+	"$Id: tape.c,v 1.49 2001/07/18 09:50:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -443,12 +443,21 @@ flushtape(void)
 	nextblock = slp->tblock;
 	trecno = 0;
 	asize += tenths + returned.clen / density;
+	csize += returned.clen;
 	blockswritten += ntrec;
 	blocksthisvol += ntrec;
-	if (!pipeout && !unlimited && (blocksperfile ?
-	    (blocksthisvol >= blocksperfile) : (asize > tsize))) {
-		close_rewind();
-		startnewtape(0);
+	if (!pipeout && !unlimited) {
+		if (blocksperfile) {
+			if ( compressed ? csize >= blocksperfile * 1024
+					: blocksthisvol >= blocksperfile ) {
+				close_rewind();
+				startnewtape(0);
+			}
+		}
+		else if (asize > tsize) {
+			close_rewind();
+			startnewtape(0);
+		}
 	}
 	timeest();
 }
@@ -552,9 +561,11 @@ trewind(void)
 #endif
 		{
 			(void) close(tapefd);
-			while ((f = OPEN(tape, 0)) < 0)
-				sleep (10);
-			(void) close(f);
+			if (!fifoout) {
+				while ((f = OPEN(tape, 0)) < 0)
+					sleep (10);
+				(void) close(f);
+			}
 		}
 		eot_code = 1;
 		if (eot_script && spcl.c_type != TS_END) {
@@ -724,6 +735,7 @@ rollforward(void)
 	slp->count = lastspclrec + blks + 1 - spcl.c_tapea;
 	slp->inode = curino;
 	asize += tenths + returned.clen / density;
+	csize += returned.clen;
 	blockswritten += ntrec;
 	blocksthisvol += ntrec;
 #endif
@@ -880,6 +892,7 @@ restore_check_point:
 		enslave();  /* Share open tape file descriptor with slaves */
 
 		asize = 0;
+		csize = 0;
 		blocksthisvol = 0;
 		if (top)
 			newtape++;		/* new tape signal */

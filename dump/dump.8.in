@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.26 2001/04/10 13:42:22 stelian Exp $
+.\"	$Id: dump.8.in,v 1.27 2001/07/18 09:50:48 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -117,7 +117,8 @@ The default level is 9.
 .It Fl B Ar records
 The number of 1 kB blocks per volume.
 This option overrides the end-of-media detection, and calculation 
-of tape size based on length and density.
+of tape size based on length and density. If compression is on this
+limits the size of the compressed output per volume.
 .It Fl a
 .Dq auto-size .
 Bypass all tape length calculations, and write
@@ -482,6 +483,8 @@ that contain the text 'read error'.
 Each reel requires a new process, so parent processes for
 reels already written just hang around until the entire tape
 is written.
+.Pp
+The estimated number of tapes is not correct if compression is on.
 .Pp
 It would be nice if
 .Nm

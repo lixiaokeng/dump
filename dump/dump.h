@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: dump.h,v 1.24 2001/04/10 13:42:22 stelian Exp $
+ *	$Id: dump.h,v 1.25 2001/07/18 09:50:48 stelian Exp $
  */
 
 /*-
@@ -79,12 +79,14 @@ char	*eot_script;	/* end of volume script fiag */
 int	diskfd;		/* disk file descriptor */
 int	tapefd;		/* tape file descriptor */
 int	pipeout;	/* true => output to standard output */
+int	fifoout;	/* true => output to fifo */
 dump_ino_t curino;	/* current inumber; used globally */
 int	newtape;	/* new tape flag */
 int	density;	/* density in 0.1" units */
 long	tapesize;	/* estimated tape size, blocks */
 long	tsize;		/* tape size in 0.1" units */
 long	asize;		/* number of 0.1" units written on current tape */
+unsigned long csize;	/* number of compressed bytes written on current tape */
 int	etapes;		/* estimated number of tapes */
 int	nonodump;	/* if set, do not honor UF_NODUMP user flags */
 int	unlimited;	/* if set, write to end of medium */
