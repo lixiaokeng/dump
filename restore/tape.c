@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.69 2003/02/11 12:43:45 stelian Exp $";
+	"$Id: tape.c,v 1.70 2003/02/12 11:02:30 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -2085,7 +2085,8 @@ setmagtapein(void) {
 			magtapein = ioctl(mt, MTIOCGET, (char *)&mt_stat) == 0;
 	}
 
-	Vprintf(stdout,"Input is from %s\n", 
+	Vprintf(stdout,"Input is from a %s %s\n",
+			host ? "remote" : "local",
 			magtapein ? "tape" :
 			Vflag ? "multi-volume (no tape)" : "file/pipe");
 }

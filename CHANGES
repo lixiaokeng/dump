@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.215 2003/02/11 12:43:44 stelian Exp $
+$Id: CHANGES,v 1.216 2003/02/12 11:02:28 stelian Exp $
 
 Changes between versions 0.4b33 and 0.4b34 (released ?????????????????)
 =======================================================================
@@ -19,6 +19,10 @@ Changes between versions 0.4b33 and 0.4b34 (released ?????????????????)
 4.	Fixed restore to correctly access the archive file (-A argument)
 	even when using a remote tape. Thanks to Fabrice Bellet 
 	<fabrice@bellet.info> for reporting the bug.
+
+5.	Fixed (again) handling of long (largefile) seeks in rmt.
+	Thanks to Fabrice Bellet <fabrice@bellet.info> for reporting
+	the bug.
 
 Changes between versions 0.4b32 and 0.4b33 (released February 10, 2003)
 =======================================================================

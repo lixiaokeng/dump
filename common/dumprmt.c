@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dumprmt.c,v 1.24 2003/01/10 14:42:50 stelian Exp $";
+	"$Id: dumprmt.c,v 1.25 2003/02/12 11:02:29 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -104,12 +104,12 @@ int rshpid = -1;
 static	const char *rmtpeer = 0;
 
 static	int okname __P((const char *));
-static	int rmtcall __P((const char *, const char *));
+static	OFF_T rmtcall __P((const char *, const char *));
 static	void rmtconnaborted __P((int));
 static	int rmtgetb __P((void));
 static	int rmtgetconn __P((void));
 static	void rmtgets __P((char *, size_t));
-static	int rmtreply __P((const char *));
+static	OFF_T rmtreply __P((const char *));
 static  int piped_child __P((const char **command));
 #ifdef KERBEROS
 int	krcmd __P((char **, int /*u_short*/, char *, char *, int *, char *));
@@ -367,7 +367,7 @@ rmtioctl(int cmd, int count)
 	return (rmtcall("ioctl", buf));
 }
 
-static int
+static OFF_T
 rmtcall(const char *cmd, const char *buf)
 {
 
@@ -376,7 +376,7 @@ rmtcall(const char *cmd, const char *buf)
 	return (rmtreply(cmd));
 }
 
-static int
+static OFF_T
 rmtreply(const char *cmd)
 {
 	char *cp;
@@ -401,7 +401,7 @@ rmtreply(const char *cmd)
 		    code);
 		rmtconnaborted(0);
 	}
-	return (atoi(code + 1));
+	return (OFF_T)(atoll(code + 1));
 }
 
 static int

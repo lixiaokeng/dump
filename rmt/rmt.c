@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: rmt.c,v 1.22 2003/01/10 14:42:51 stelian Exp $";
+	"$Id: rmt.c,v 1.23 2003/02/12 11:02:31 stelian Exp $";
 #endif /* not linux */
 
 /*
@@ -122,7 +122,7 @@ void	 getstring __P((char *));
 int
 main(int argc, char *argv[])
 {
-	int rval = 0;
+	OFF_T rval = 0;
 	char c;
 	int n, i, cc, oflags;
 	unsigned long block = 0;
@@ -214,7 +214,7 @@ top:
 		rval = read(tape, record, n);
 		if (rval < 0)
 			goto ioerror;
-		(void)sprintf(resp, "A%d\n", rval);
+		(void)sprintf(resp, "A%lld\n", (long long)rval);
 		(void)write(1, resp, strlen(resp));
 		(void)write(1, record, rval);
 		block += n >> 10;
@@ -347,7 +347,7 @@ top:
 		  if (ioctl(tape, MTIOCGET, (char *)&mtget) < 0)
 			goto ioerror;
 		  rval = sizeof (mtget);
-		  (void)sprintf(resp, "A%d\n", rval);
+		  (void)sprintf(resp, "A%lld\n", (long long)rval);
 		  (void)write(1, resp, strlen(resp));
 		  (void)write(1, (char *)&mtget, sizeof (mtget));
 		  goto top;
@@ -407,8 +407,8 @@ top:
 		exit(3);
 	}
 respond:
-	DEBUG1("rmtd: A %d\n", rval);
-	(void)sprintf(resp, "A%d\n", rval);
+	DEBUG1("rmtd: A %lld\n", (long long)rval);
+	(void)sprintf(resp, "A%lld\n", (long long)rval);
 	(void)write(1, resp, strlen(resp));
 	goto top;
 ioerror:
