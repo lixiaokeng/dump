@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.90 2004/01/27 10:37:29 stelian Exp $";
+	"$Id: main.c,v 1.91 2004/01/27 10:46:55 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -186,7 +186,7 @@ char	*__progname;
 
 int 	maxbsize = 1024*1024;     /* XXX MAXBSIZE from sys/param.h */
 static long numarg __P((const char *, long, long));
-static long numlistarg __P((const char *, long, long));
+static long *numlistarg __P((const char *, long, long));
 static void obsolete __P((int *, char **[]));
 static void usage __P((void));
 static void do_exclude_from_file __P((char *));
@@ -1136,7 +1136,7 @@ numarg(const char *meaning, long vmin, long vmax)
  * and returns an array of longs with the first element containing the number
  * values in that array.
  */
-static long
+static long *
 numlistarg(const char *meaning, long vmin, long vmax)
 {
 	char *p;
