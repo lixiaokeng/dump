@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dumprmt.c,v 1.17 2001/06/18 10:58:28 stelian Exp $";
+	"$Id: dumprmt.c,v 1.18 2001/08/13 16:17:52 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -89,8 +89,8 @@ static const char rcsid[] =
 #include <ext2fs/ext2fs.h>
 #endif
 
-#include "pathnames.h"
-#include "dump.h"
+#include <pathnames.h>
+#include "dump.h"	/* for X_STARTUP, X_ABORT etc */
 
 #define	TS_CLOSED	0
 #define	TS_OPEN		1

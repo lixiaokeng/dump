@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: system.c,v 1.1 2001/07/18 12:54:06 stelian Exp $";
+	"$Id: system.c,v 1.2 2001/08/13 16:17:52 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -52,6 +52,7 @@ static const char rcsid[] =
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include "system.h"
 
 /*
  * Executes the command in a shell.

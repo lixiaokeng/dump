@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: restore.h,v 1.16 2001/07/18 12:54:06 stelian Exp $
+ *	$Id: restore.h,v 1.17 2001/08/13 16:17:52 stelian Exp $
  */
 
 /*
@@ -166,9 +166,9 @@ typedef struct rstdirdesc RST_DIR;
 #ifdef USE_QFA
 #define QFA_MAGIC	"495115637697"
 #define QFA_VERSION	"1.0"
-FILE	*gTapeposfp;
-char	*gTapeposfile;
-char	gTps[255];
-long	gSeekstart;
-int	tapeposflag;
+extern FILE	*gTapeposfp;
+extern char	*gTapeposfile;
+extern char	gTps[255];
+extern long	gSeekstart;
+extern int	tapeposflag;
 #endif /* USE_QFA */

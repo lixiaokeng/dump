@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: dump.h,v 1.29 2001/07/20 11:02:45 stelian Exp $
+ *	$Id: dump.h,v 1.30 2001/08/13 16:17:52 stelian Exp $
  */
 
 /*-
@@ -50,10 +50,10 @@
 /*
  * Dump maps used to describe what is to be dumped.
  */
-int	mapsize;	/* size of the state maps */
-char	*usedinomap;	/* map of allocated inodes */
-char	*dumpdirmap;	/* map of directories to be dumped */
-char	*dumpinomap;	/* map of files to be dumped */
+extern int	mapsize;	/* size of the state maps */
+extern char	*usedinomap;	/* map of allocated inodes */
+extern char	*dumpdirmap;	/* map of directories to be dumped */
+extern char	*dumpinomap;	/* map of files to be dumped */
 /*
  * Map manipulation macros.
  */
@@ -67,54 +67,54 @@ char	*dumpinomap;	/* map of files to be dumped */
 /*
  *	All calculations done in 0.1" units!
  */
-const char *disk;		/* name of the disk file */
-char	tape[MAXPATHLEN];	/* name of the tape file */
-char	*tapeprefix;	/* prefix of the tape file */
-char	*dumpdates;	/* name of the file containing dump date information*/
-char	lastlevel;	/* dump level of previous dump */
-char	level;		/* dump level of this dump */
-int	uflag;		/* update flag */
-int	Mflag;		/* multi-volume flag */
-char	*eot_script;	/* end of volume script fiag */
-int	diskfd;		/* disk file descriptor */
-int	tapefd;		/* tape file descriptor */
-int	pipeout;	/* true => output to standard output */
-int	fifoout;	/* true => output to fifo */
-dump_ino_t curino;	/* current inumber; used globally */
-int	newtape;	/* new tape flag */
-int	density;	/* density in 0.1" units */
-long	tapesize;	/* estimated tape size, blocks */
-long	tsize;		/* tape size in 0.1" units */
-long	asize;		/* number of 0.1" units written on current tape */
-int	etapes;		/* estimated number of tapes */
-int	nonodump;	/* if set, do not honor UF_NODUMP user flags */
-int	unlimited;	/* if set, write to end of medium */
-int	compressed;	/* if set, dump is to be compressed */
-long long bytes_written;/* total bytes written to tape */
-long	uncomprblks;	/* uncompressed blocks written to tape */
-int	notify;		/* notify operator flag */
-int	blockswritten;	/* number of blocks written on current tape */
-int	tapeno;		/* current tape number */
-time_t	tstart_writing;	/* when started writing the first tape block */
-time_t	tend_writing;	/* after writing the last tape block */
+extern const char *disk;	/* name of the disk file */
+extern char	tape[MAXPATHLEN];/* name of the tape file */
+extern char	*tapeprefix;	/* prefix of the tape file */
+extern char	*dumpdates;	/* name of the file containing dump date information*/
+extern char	lastlevel;	/* dump level of previous dump */
+extern char	level;		/* dump level of this dump */
+extern int	uflag;		/* update flag */
+extern int	Mflag;		/* multi-volume flag */
+extern char	*eot_script;	/* end of volume script fiag */
+extern int	diskfd;		/* disk file descriptor */
+extern int	tapefd;		/* tape file descriptor */
+extern int	pipeout;	/* true => output to standard output */
+extern int	fifoout;	/* true => output to fifo */
+extern dump_ino_t curino;	/* current inumber; used globally */
+extern int	newtape;	/* new tape flag */
+extern int	density;	/* density in 0.1" units */
+extern long	tapesize;	/* estimated tape size, blocks */
+extern long	tsize;		/* tape size in 0.1" units */
+extern long	asize;		/* number of 0.1" units written on current tape */
+extern int	etapes;		/* estimated number of tapes */
+extern int	nonodump;	/* if set, do not honor UF_NODUMP user flags */
+extern int	unlimited;	/* if set, write to end of medium */
+extern int	compressed;	/* if set, dump is to be compressed */
+extern long long bytes_written;/* total bytes written to tape */
+extern long	uncomprblks;	/* uncompressed blocks written to tape */
+extern int	notify;		/* notify operator flag */
+extern int	blockswritten;	/* number of blocks written on current tape */
+extern int	tapeno;		/* current tape number */
+extern time_t	tstart_writing;	/* when started writing the first tape block */
+extern time_t	tend_writing;	/* after writing the last tape block */
 #ifdef __linux__
-ext2_filsys fs;
+extern ext2_filsys fs;
 #else
-struct	fs *sblock;	/* the file system super block */
-char	sblock_buf[MAXBSIZE];
+extern struct	fs *sblock;	/* the file system super block */
+extern char	sblock_buf[MAXBSIZE];
 #endif
-long	xferrate;       /* averaged transfer rate of all volumes */
-long	dev_bsize;	/* block size of underlying disk device */
-int	dev_bshift;	/* log2(dev_bsize) */
-int	tp_bshift;	/* log2(TP_BSIZE) */
+extern long	xferrate;       /* averaged transfer rate of all volumes */
+extern long	dev_bsize;	/* block size of underlying disk device */
+extern int	dev_bshift;	/* log2(dev_bsize) */
+extern int	tp_bshift;	/* log2(TP_BSIZE) */
 
 #ifdef USE_QFA
 #define	QFA_MAGIC	"495115637697"
 #define QFA_VERSION	"1.0"
-int	gTapeposfd;
-char	*gTapeposfile;
-char	gTps[255];
-int32_t	gThisDumpDate;
+extern int	gTapeposfd;
+extern char	*gTapeposfile;
+extern char	gTps[255];
+extern int32_t	gThisDumpDate;
 int	GetTapePos __P((long *pos));
 #endif /* USE_QFA */
 
@@ -223,10 +223,10 @@ struct dumptime {
 	struct	dumpdates dt_value;
 	struct	dumptime *dt_next;
 };
-struct	dumptime *dthead;	/* head of the list version */
-int	nddates;		/* number of records (might be zero) */
-int	ddates_in;		/* we have read the increment file */
-struct	dumpdates **ddatev;	/* the arrayfied version */
+extern struct	dumptime *dthead;	/* head of the list version */
+extern int	nddates;		/* number of records (might be zero) */
+extern int	ddates_in;		/* we have read the increment file */
+extern struct	dumpdates **ddatev;	/* the arrayfied version */
 void	initdumptimes __P((int));
 void	getdumptime __P((int));
 void	putdumptime __P((void));
