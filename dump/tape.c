@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.37 2001/03/20 20:15:59 stelian Exp $";
+	"$Id: tape.c,v 1.38 2001/03/20 20:25:27 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1095,13 +1095,6 @@ doslave(int cmd, int slave_number)
 				       quit("master/slave protocol botched.\n");
 			}
 		}
-		if (sigsetjmp(jmpbuf, 1) == 0) {
-			ready = 1;
-			if (!caught)
-				(void) pause();
-		}
-		ready = 0;
-		caught = 0;
 
 		/* Try to write the data... */
 		wrote = 0;
@@ -1149,6 +1142,14 @@ doslave(int cmd, int slave_number)
 		/* compress the remaining blocks */
 		do_compress = compressed;
 #endif /* HAVE_ZLIB */
+
+		if (sigsetjmp(jmpbuf, 1) == 0) {
+			ready = 1;
+			if (!caught)
+				(void) pause();
+		}
+		ready = 0;
+		caught = 0;
 
 		while (eot_count < 10 && size < bufsize) {
 #ifdef RDUMP
