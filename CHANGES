@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.204 2003/01/10 10:31:06 stelian Exp $
+$Id: CHANGES,v 1.205 2003/01/10 10:52:48 stelian Exp $
 
 Changes between versions 0.4b32 and 0.4b33 (released ?????????????????)
 =======================================================================
@@ -26,6 +26,13 @@ Changes between versions 0.4b32 and 0.4b33 (released ?????????????????)
 	read errors will be ignored. This can be useful when running
 	dump from unattended sessions (like cron jobs). Thanks to
 	John I Wang <jiwang@users.sourceforge.net> for the suggestion.
+
+6.	Fixed the output of dump to indicate 'blocks' instead of
+	'tape blocks' in the various messages (blocks are always
+	1 Kilobyte, tape blocks are 1 BK * '-b' argument), and 
+	made it clearly print the current blocksize at the start of
+	a dump. Thanks to Michal Szymanski <msz@astrouw.edu.pl> for
+	the suggestions.
 
 Changes between versions 0.4b31 and 0.4b32 (released November 15, 2002)
 =======================================================================

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.79 2003/01/10 10:31:10 stelian Exp $";
+	"$Id: main.c,v 1.80 2003/01/10 10:52:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -163,7 +163,7 @@ int	notify = 0;	/* notify operator flag */
 int	blockswritten = 0;	/* number of blocks written on current tape */
 int	tapeno = 0;	/* current tape number */
 int	density = 0;	/* density in bytes/0.1" " <- this is for hilit19 */
-int	ntrec = NTREC;	/* # tape blocks in each tape record */
+int	ntrec = NTREC;	/* # blocks in each tape record */
 int	cartridge = 0;	/* Assume non-cartridge tape */
 #ifdef USE_QFA
 int	tapepos = 0; 	/* assume no QFA tapeposition needed by user */
@@ -750,6 +750,8 @@ main(int argc, char *argv[])
 
 	if (!sizest) {
 		msg("Label: %s\n", spcl.c_label);
+		
+		msg("Writing %d Kilobyte records\n", ntrec);
 
 		if (compressed)
 			msg("Compressing output at compression level %d (%s)\n", 
@@ -827,7 +829,7 @@ main(int argc, char *argv[])
 
 	if (pipeout || unlimited) {
 		tapesize += 1 + ntrec;	/* 1 map header + trailer blocks */
-		msg("estimated %ld tape blocks.\n", tapesize);
+		msg("estimated %ld blocks.\n", tapesize);
 	} else {
 		double fetapes;
 
@@ -867,7 +869,7 @@ main(int argc, char *argv[])
 		tapesize += (etapes - 1) *
 			(howmany(mapsize * sizeof(char), TP_BSIZE) + 1);
 		tapesize += etapes + ntrec;	/* headers + trailer blks */
-		msg("estimated %ld tape blocks on %3.2f tape(s).\n",
+		msg("estimated %ld blocks on %3.2f tape(s).\n",
 		    tapesize, fetapes);
 	}
 
@@ -976,10 +978,10 @@ main(int argc, char *argv[])
 	tnow = trewind();
 
 	if (pipeout || fifoout)
-		msg("%ld tape blocks (%.2fMB)\n", spcl.c_tapea,
+		msg("%ld blocks (%.2fMB)\n", spcl.c_tapea,
 			((double)spcl.c_tapea * TP_BSIZE / 1048576));
 	else
-		msg("%ld tape blocks (%.2fMB) on %d volume(s)\n",
+		msg("%ld blocks (%.2fMB) on %d volume(s)\n",
 		    spcl.c_tapea, 
 		    ((double)spcl.c_tapea * TP_BSIZE / 1048576),
 		    spcl.c_volume);

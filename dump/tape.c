@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.71 2002/07/29 12:00:33 stelian Exp $";
+	"$Id: tape.c,v 1.72 2003/01/10 10:52:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -336,7 +336,7 @@ do_stats(void)
 	blocks = spcl.c_tapea - tapea_volume;
 	msg("Volume %d completed at: %s", tapeno, ctime(&tnow));
 	if (! compressed)
-		msg("Volume %d %ld tape blocks (%.2fMB)\n", tapeno, 
+		msg("Volume %d %ld blocks (%.2fMB)\n", tapeno, 
 			blocks, ((double)blocks * TP_BSIZE / 1048576));
 	if (ttaken > 0) {
 		long volkb = (bytes_written - tapea_bytes) / 1024;
