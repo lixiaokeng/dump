@@ -9,7 +9,7 @@ Release: 1
 License: BSD
 URL: http://dump.sourceforge.net
 Group: Applications/Archiving
-Source: http://download.sourceforge.net/dump/dump-%{version}.tar.gz
+Source: dump-%{version}.tar.gz
 BuildPrereq: e2fsprogs-devel >= 1.18
 BuildPrereq: libtermcap-devel, readline-devel
 BuildPrereq: zlib-devel, bzip2-devel
