@@ -202,9 +202,10 @@ dnl
 AC_ARG_WITH([ldopts],
 [  --with-ldopts=LDOPTS       select linker command line options],
 AC_MSG_RESULT(LDFLAGS is $withval)
-LDFLAGS=$withval,
-LDFLAGS=)dnl
-AC_SUBST(LDFLAGS)
+LDOPTS=$withval
+LDFLAGS="$LDFLAGS $withval",
+LDOPTS=)dnl
+AC_SUBST(LDOPTS)
 
 dnl
 dnl set $(BINOWNER) from --with-binowner

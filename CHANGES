@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.150 2001/12/24 12:31:12 stelian Exp $
+$Id: CHANGES,v 1.151 2002/01/02 10:13:15 stelian Exp $
 
 Changes between versions 0.4b25 and 0.4b26 (released ?????????????????)
 =======================================================================
@@ -15,6 +15,10 @@ Changes between versions 0.4b25 and 0.4b26 (released ?????????????????)
 3.	Fixed several restore bugs occuring when trying to
 	restore some missing files on the tape. Thanks to Chris
 	Siebenmann <cks@utcc.utoronto.ca> for reporting the bug.
+
+4.	Fixed --with-ldopts configure argument passing, installing from
+	a separate object directory, makefile cleanups contributed
+	by <splite@purdue.edu>.
 
 Changes between versions 0.4b24 and 0.4b25 (released November 17, 2001)
 =======================================================================

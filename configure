@@ -1486,9 +1486,10 @@ fi
 if test "${with_ldopts+set}" = set; then
   withval="$with_ldopts"
   echo "$ac_t""LDFLAGS is $withval" 1>&6
-LDFLAGS=$withval
+LDOPTS=$withval
+LDFLAGS="$LDFLAGS $withval"
 else
-  LDFLAGS=
+  LDOPTS=
 fi
 
 
@@ -2616,6 +2617,7 @@ s%@OPTDEFS@%$OPTDEFS%g
 s%@READLINE@%$READLINE%g
 s%@LD@%$LD%g
 s%@CCOPTS@%$CCOPTS%g
+s%@LDOPTS@%$LDOPTS%g
 s%@BINOWNER@%$BINOWNER%g
 s%@BINGRP@%$BINGRP%g
 s%@BINMODE@%$BINMODE%g

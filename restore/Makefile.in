@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.9 2001/08/16 15:24:21 stelian Exp $
+# $Id: Makefile.in,v 1.10 2002/01/02 10:13:16 stelian Exp $
 
 top_srcdir=	@top_srcdir@
 srcdir=		@srcdir@
@@ -6,7 +6,7 @@ srcdir=		@srcdir@
 @MCONFIG@
 
 CFLAGS=		@CCOPTS@ -pipe $(OPT) $(DEFS) $(GINC) $(INC) @RESTOREDEBUG@
-LDFLAGS:=	$(LDFLAGS) @STATIC@
+LDFLAGS=	@LDOPTS@ @STATIC@
 LIBS=		$(GLIBS) -le2p @READLINE@ @ZLIB@ @BZLIB@
 DEPLIBS=	../compat/lib/libcompat.a
 
@@ -32,7 +32,7 @@ $(MAN8):	restore.8.in
 install::	all
 	$(INSTALL) -d $(SBINDIR) $(MANDIR)
 	$(INSTALLBIN) $(PROG) $(SBINDIR)
-	$(INSTALLMAN) $(srcdir)/$(MAN8) $(MANDIR)
+	$(INSTALLMAN) $(MAN8) $(MANDIR)
 	cd $(SBINDIR) && $(RM) -f $(RPROG) && $(LN_S) $(PROG) $(RPROG)
 	cd $(MANDIR) && $(RM) -f $(RMAN8) && $(LN_S) $(MAN8) $(RMAN8)
 
