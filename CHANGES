@@ -1,7 +1,7 @@
-$Id: CHANGES,v 1.53 2000/03/11 15:29:01 stelian Exp $
+$Id: CHANGES,v 1.54 2000/03/11 15:34:54 stelian Exp $
 
-Changes between versions 0.4b15 and 0.4b16 (released ?????????????)
-===================================================================
+Changes between versions 0.4b15 and 0.4b16 (released March 11, 2000)
+====================================================================
 
 1.	Fixed some several duplicate 'DUMP: DUMP:' in the
 	output of dump.
