@@ -2,9 +2,9 @@
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
- *      Stelian Pop <pop@cybercable.fr>, 1999
+ *	Stelian Pop <pop@cybercable.fr>, 1999
  *
- * $Id: bsdcompat.h,v 1.5 1999/10/11 13:31:08 stelian Exp $
+ *	$Id: bsdcompat.h,v 1.6 1999/10/13 09:57:18 stelian Exp $
  */
 
 #include <config.h>

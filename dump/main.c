@@ -3,7 +3,6 @@
  *	dump and restore backup suit
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *	Stelian Pop <pop@cybercable.fr>, 1999 
- *
  */
 
 /*-
@@ -37,9 +36,12 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $Id: main.c,v 1.5 1999/10/11 13:31:11 stelian Exp $
  */
+
+#ifndef lint
+static const char rcsid[] =
+	"$Id: main.c,v 1.6 1999/10/13 09:57:19 stelian Exp $";
+#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/time.h>
@@ -639,14 +641,24 @@ main(int argc, char *argv[])
 static void
 usage(void)
 {
+	char white[MAXPATHLEN];
+	int i;
+	
+	strncpy(white, __progname, MAXPATHLEN-1);
+	white[MAXPATHLEN-1] = '\0';
+	for (i=0; i<MAXPATHLEN; ++i)
+		if (white[i] != '\0') white[i] = ' ';
+
 	fprintf(stderr,
-		"usage: %s [-0123456789ac"
+		"%s %s\n", __progname, _DUMP_VERSION);
+	fprintf(stderr,
+		"usage:\t%s [-0123456789ac"
 #ifdef KERBEROS
 		"k"
 #endif
-		"nu] [-B records] [-b blocksize] [-d density] [-f file]\n"
-		"            [-h level] [-s feet] [-T date] filesystem\n"
-		"       %s [-W | -w]\n", __progname, __progname);
+		"nu] [-B records] [-b blocksize] [-d density]\n"
+		"\t%s [-f file] [-h level] [-s feet] [-T date] filesystem\n"
+		"\t%s [-W | -w]\n", __progname, white, __progname);
 	exit(X_STARTUP);
 }
 

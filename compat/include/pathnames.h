@@ -2,8 +2,9 @@
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
- *      Stelian Pop <pop@cybercable.fr>, 1999 
+ *	Stelian Pop <pop@cybercable.fr>, 1999 
  *
+ *	$Id: pathnames.h,v 1.5 1999/10/13 09:57:18 stelian Exp $
  */
 
 /*
@@ -37,14 +38,11 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $Id: pathnames.h.in,v 1.2 1999/10/11 13:31:09 stelian Exp $
  */
 
 #include <paths.h>
 
 #define	_PATH_DEFTAPE	"/dev/st0"
 #define	_PATH_DTMP	"/etc/dtmp"
-#define	_PATH_DUMPDATES	"__DUMPDATES__"
 #define	_PATH_LOCK	"/tmp/dumplockXXXXXX"
 #define	_PATH_RMT	"/etc/rmt"		/* path on remote host */

@@ -2,8 +2,7 @@
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
- *      Stelian Pop <pop@cybercable.fr>, 1999 
- *
+ *	Stelian Pop <pop@cybercable.fr>, 1999 
  */
 
 /*
@@ -37,9 +36,12 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $Id: utilities.c,v 1.5 1999/10/11 13:31:14 stelian Exp $
  */
+
+#ifndef lint
+static const char rcsid[] =
+	"$Id: utilities.c,v 1.6 1999/10/13 09:57:21 stelian Exp $";
+#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/stat.h>

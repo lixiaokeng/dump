@@ -2,9 +2,7 @@
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
- *      Stelian Pop <pop@cybercable.fr>, 1999
- *
- * $Id: dumprmt.c,v 1.5 1999/10/11 13:31:08 stelian Exp $
+ *	Stelian Pop <pop@cybercable.fr>, 1999
  */
 
 /*-
@@ -41,11 +39,8 @@
  */
 
 #ifndef lint
-#if 0
-static char sccsid[] = "@(#)dumprmt.c	8.3 (Berkeley) 4/28/95";
-#endif
 static const char rcsid[] =
-	"$Id: dumprmt.c,v 1.5 1999/10/11 13:31:08 stelian Exp $";
+	"$Id: dumprmt.c,v 1.6 1999/10/13 09:57:18 stelian Exp $";
 #endif /* not lint */
 
 #ifdef __linux__

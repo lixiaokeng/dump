@@ -1,19 +1,16 @@
-# $Id: Makefile.in,v 1.2 1999/10/11 13:31:08 stelian Exp $
+# $Id: Makefile.in,v 1.3 1999/10/13 09:57:18 stelian Exp $
 
 top_srcdir=	@top_srcdir@
 srcdir=		@srcdir@
 
 @MCONFIG@
 
-all::		pathnames.h
-
-pathnames.h:	pathnames.h.in
-	sed -e "s|__DUMPDATES__|$(DUMPDATESPATH)|g" $< > $@
+all::
 
 install::
 
 clean::
-	$(RM) -f \#* *~ core pathnames.h
+	$(RM) -f \#* *~ core
 
 distclean::	clean
 	$(RM) -f Makefile Makefile.old .depend

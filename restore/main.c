@@ -2,8 +2,7 @@
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
- *      Stelian Pop <pop@cybercable.fr>, 1999 
- *
+ *	Stelian Pop <pop@cybercable.fr>, 1999 
  */
 
 /*
@@ -37,9 +36,12 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $Id: main.c,v 1.5 1999/10/11 13:31:13 stelian Exp $
  */
+
+#ifndef lint
+static const char rcsid[] =
+	"$Id: main.c,v 1.6 1999/10/13 09:57:21 stelian Exp $";
+#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/stat.h>
@@ -354,12 +356,15 @@ usage(void)
 #else
 #define kerbflag
 #endif
-	(void)fprintf(stderr, "usage:\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n",
-	  "restore -i [-ch" kerbflag "muvy] [-b blocksize] [-f file] [-s fileno]",
-	  "restore -r [-c" kerbflag "uvy] [-b blocksize] [-f file] [-s fileno]",
-	  "restore -R [-c" kerbflag "uvy] [-b blocksize] [-f file] [-s fileno]",
-	  "restore -x [-ch" kerbflag "muvy] [-b blocksize] [-f file] [-s fileno] [file ...]",
-	  "restore -t [-ch" kerbflag "kuvy] [-b blocksize] [-f file] [-s fileno] [file ...]");
+	(void)fprintf(stderr, 
+	  "%s %s\n", __progname, _DUMP_VERSION);
+	(void)fprintf(stderr,
+	  "usage:\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n",
+	  __progname, " -i [-ch" kerbflag "muvy] [-b blocksize] [-f file] [-s fileno]",
+	  __progname, " -r [-c" kerbflag "uvy] [-b blocksize] [-f file] [-s fileno]",
+	  __progname, " -R [-c" kerbflag "uvy] [-b blocksize] [-f file] [-s fileno]",
+	  __progname, " -x [-ch" kerbflag "muvy] [-b blocksize] [-f file] [-s fileno] [file ...]",
+	  __progname, " -t [-ch" kerbflag "kuvy] [-b blocksize] [-f file] [-s fileno] [file ...]");
 	exit(1);
 }
 

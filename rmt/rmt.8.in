@@ -29,11 +29,11 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     $Id: rmt.8.in,v 1.2 1999/10/11 13:31:14 stelian Exp $
+.\"     $Id: rmt.8.in,v 1.3 1999/10/13 09:57:22 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt RMT 8
-.Os "__VERSION__"
+.Os "rmt __VERSION__"
 .Sh NAME
 .Nm rmt
 .Nd remote magtape protocol module

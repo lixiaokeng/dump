@@ -2,8 +2,9 @@
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
- *      Stelian Pop <pop@cybercable.fr>, 1999 
+ *	Stelian Pop <pop@cybercable.fr>, 1999
  *
+ *	$Id: dump.h,v 1.6 1999/10/13 09:57:19 stelian Exp $
  */
 
 /*-
@@ -37,8 +38,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $Id: dump.h,v 1.5 1999/10/11 13:31:11 stelian Exp $
  */
 
 #define MAXINOPB	(MAXBSIZE / sizeof(struct dinode))
