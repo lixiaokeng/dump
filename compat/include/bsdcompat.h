@@ -4,7 +4,7 @@
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *	Stelian Pop <pop@cybercable.fr>, 1999
  *
- *	$Id: bsdcompat.h,v 1.7 1999/10/22 18:12:32 tiniou Exp $
+ *	$Id: bsdcompat.h,v 1.8 1999/11/07 18:53:50 tiniou Exp $
  */
 
 #include <config.h>
@@ -125,6 +125,10 @@ struct dinode {
 #define DT_REG		 8
 #define DT_LNK		10
 #define DT_SOCK		12
+#endif
+
+#ifndef d_fileno
+#define d_fileno d_ino
 #endif
 
 struct direct {
