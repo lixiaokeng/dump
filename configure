@@ -1465,7 +1465,7 @@ if test "${with_binmode+set}" = set; then
   echo "$ac_t""BINMODE is $withval" 1>&6
 BINMODE=$withval
 else
-  BINMODE=6555
+  BINMODE=0755
 echo "BINMODE defaults to $BINMODE"
 
 fi
@@ -1501,7 +1501,7 @@ if test "${with_manmode+set}" = set; then
   echo "$ac_t""MANMODE is $withval" 1>&6
 MANMODE=$withval
 else
-  MANMODE=0444
+  MANMODE=0644
 echo "MANMODE defaults to $MANMODE"
 
 fi

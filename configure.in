@@ -198,7 +198,7 @@ AC_ARG_WITH([binmode],
 [  --with-binmode=MODE        select mode for binaries],
 AC_MSG_RESULT(BINMODE is $withval)
 BINMODE=$withval,
-BINMODE=6555
+BINMODE=0755
 echo "BINMODE defaults to $BINMODE"
 )dnl
 AC_SUBST(BINMODE)
@@ -234,7 +234,7 @@ AC_ARG_WITH([manmode],
 [  --with-manmode=MODE        select mode for manual pages],
 AC_MSG_RESULT(MANMODE is $withval)
 MANMODE=$withval,
-MANMODE=0444
+MANMODE=0644
 echo "MANMODE defaults to $MANMODE"
 )dnl
 AC_SUBST(MANMODE)

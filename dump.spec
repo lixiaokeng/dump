@@ -52,7 +52,7 @@ This packages contains statically linked versions of dump and restore.
 
 %build
 
-./configure --prefix=/usr --with-binmode=6755 --with-manowner=root --with-mangrp=root --with-manmode=0644 --enable-static
+./configure --prefix=/usr --with-binmode=0755 --with-manowner=root --with-mangrp=root --with-manmode=0644 --enable-static
 
 make OPT="$RPM_OPT_FLAGS -Wall -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wno-char-subscripts"
 
@@ -61,7 +61,7 @@ mv restore/restore restore/restore.static
 
 make distclean
 
-./configure --prefix=/usr --with-binmode=6755 --with-manowner=root --with-mangrp=root --with-manmode=0644 --enable-rmt --enable-readline
+./configure --prefix=/usr --with-binmode=0755 --with-manowner=root --with-mangrp=root --with-manmode=0644 --enable-rmt --enable-readline
 
 make OPT="$RPM_OPT_FLAGS -Wall -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wno-char-subscripts"
 
@@ -94,9 +94,9 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root)
 %doc CHANGES COPYRIGHT KNOWNBUGS MAINTAINERS README REPORTING-BUGS THANKS TODO dump.lsm
 %attr(0664,root,disk)	%config(noreplace) /etc/dumpdates
-%attr(6755,root,tty)	/sbin/dump
+%attr(0755,root,tty)	/sbin/dump
 /sbin/rdump
-%attr(6755,root,tty)	/sbin/restore
+%attr(0755,root,tty)	/sbin/restore
 /sbin/rrestore
 %{_prefix}/man/man8/dump.*
 %{_prefix}/man/man8/rdump.*
@@ -111,9 +111,9 @@ rm -rf $RPM_BUILD_ROOT
 
 %files -n dump-static
 %defattr(-,root,root)
-%attr(6755,root,tty)	/sbin/dump.static
+%attr(0755,root,tty)	/sbin/dump.static
 /sbin/rdump.static
-%attr(6755,root,tty)	/sbin/restore.static
+%attr(0755,root,tty)	/sbin/restore.static
 /sbin/rrestore.static
 
 %changelog
