@@ -4,7 +4,7 @@
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *	Stelian Pop <pop@cybercable.fr>, 1999-2000
  *
- *	$Id: pathnames.h,v 1.7 2000/02/26 01:35:48 stelian Exp $
+ *	$Id: pathnames.h,v 1.8 2000/11/10 09:35:07 stelian Exp $
  */
 
 /*
@@ -42,5 +42,13 @@
 
 #include <paths.h>
 
+#ifdef __linux__
+#include <sys/mtio.h>	/* use the same default tape as "mt" */
+#define _PATH_DEFTAPE	DEFTAPE
+#endif
+
+#ifndef _PATH_DEFTAPE
 #define	_PATH_DEFTAPE	"/dev/st0"
+#endif
+
 #define	_PATH_RMT	"/etc/rmt"		/* path on remote host */

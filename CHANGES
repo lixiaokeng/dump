@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.85 2000/11/03 18:28:58 stelian Exp $
+$Id: CHANGES,v 1.86 2000/11/10 09:35:07 stelian Exp $
 
 Changes between versions 0.4b19 and 0.4b20 (released ???????????????)
 =====================================================================
@@ -36,6 +36,10 @@ Changes between versions 0.4b19 and 0.4b20 (released ???????????????)
 
 7.	Restore the real uid and gid before invoking an external
 	RSH program (big hole when dump or restore is suid root!).
+
+8.	Get the values for the default tape device and the location
+	of fstab file from the system headers. Thanks to
+	Andreas Dilger <adilger@turbolinux.com> for the patch.
 
 Changes between versions 0.4b18 and 0.4b19 (released August 20, 2000)
 =====================================================================

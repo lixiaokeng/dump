@@ -4,7 +4,7 @@
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *	Stelian Pop <pop@cybercable.fr>, 1999-2000
  *
- *	$Id: fstab.h,v 1.5 2000/01/21 10:17:41 stelian Exp $
+ *	$Id: fstab.h,v 1.6 2000/11/10 09:35:07 stelian Exp $
  */
 
 /*
@@ -54,8 +54,14 @@
  * if type is "rq", then use concatenation of fs_file and "quotas" to locate
  * quota file.
  */
+#ifdef __linux__
+#include <mntent.h>
+#define _PATH_FSTAB	_PATH_MNTTAB
+#endif
+#ifndef _PATH_FSTAB
 #define	_PATH_FSTAB	"/etc/fstab"
-#define	FSTAB		"/etc/fstab"	/* deprecated */
+#endif
+#define	FSTAB		_PATH_FSTAB	/* deprecated */
 
 #define FSTAB_DEF	"defaults"	/* default mount option */
 #define	FSTAB_RW	"rw"		/* read/write device */
