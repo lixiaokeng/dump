@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.68 2002/05/21 15:48:46 stelian Exp $";
+	"$Id: tape.c,v 1.69 2002/07/01 11:54:40 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -479,7 +479,7 @@ flushtape(void)
 	blocksthisvol += ntrec;
 	if (!pipeout && !unlimited) {
 		if (blocksperfile) {
-			if ( compressed ? (bytes_written - tapea_bytes + SLAVES * (writesize + sizeof(struct tapebuf))) >= blocksperfile * 1024
+			if ( compressed ? (bytes_written - tapea_bytes + SLAVES * (writesize + sizeof(struct tapebuf))) >= (((long long)blocksperfile) * 1024)
 					: blocksthisvol >= blocksperfile ) {
 				close_rewind();
 				startnewtape(0);
