@@ -1,4 +1,4 @@
-$Id: THANKS,v 1.70 2002/11/15 09:49:39 stelian Exp $
+$Id: THANKS,v 1.71 2002/12/09 10:53:59 stelian Exp $
 
 Dump and restore were written by the people of the CSRG at the University
 of California, Berkeley.
@@ -58,6 +58,7 @@ Richard Johnson		Richard.Johnson3@ey.com
 Richard Jones           rich@annexia.org
 Charles Karney		karney@users.sourceforge.net
 Henry Katz		hkatz@hkatz.dialup.access.net
+Dragan Krnic		dkrnic@lycos.com
 Klaus Kudielka		kkudielk@cacofonix.nt.tuwien.ac.at
 Thorsten Kukuk		kukuk@suse.de
 Florian La Roche	florian@jurix.jura.uni-sb.de

@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.201 2002/11/28 08:54:00 stelian Exp $
+$Id: CHANGES,v 1.202 2002/12/09 10:53:59 stelian Exp $
 
 Changes between versions 0.4b32 and 0.4b33 (released ?????????????????)
 =======================================================================
@@ -10,6 +10,10 @@ Changes between versions 0.4b32 and 0.4b33 (released ?????????????????)
 2.	Fixed the endianess issues when reading compressed tapes.
 	Thanks to Dark Force <daq4th@users.sourceforge.net> for
 	reporting this bug and providing test cases.
+
+3.	Fixed the "ACL won't be dumped" warning message (which showed
+	an extra, unrelated error message). Thanks to Dragan Krnic
+	<dkrnic@lycos.com> for reporting this bug.
 
 Changes between versions 0.4b31 and 0.4b32 (released November 15, 2002)
 =======================================================================

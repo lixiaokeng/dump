@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.51 2002/09/02 12:20:26 stelian Exp $";
+	"$Id: traverse.c,v 1.52 2002/12/09 10:53:59 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -825,7 +825,7 @@ dumpino(struct dinode *dp, dump_ino_t ino, int metaonly)
 	nbi.di_uid = (((int32_t)dp->di_uidhigh) << 16) | dp->di_uid;
 	nbi.di_gid = (((int32_t)dp->di_gidhigh) << 16) | dp->di_gid;
 	if (dp->di_file_acl)
-		warn("ACLs in inode #%ld won't be dumped", (long)ino);
+		msg("ACLs in inode #%ld won't be dumped\n", (long)ino);
 	memmove(&spcl.c_dinode, &nbi, sizeof(nbi));
 #else	/* __linux__ */
 	spcl.c_dinode = *dp;
@@ -1083,7 +1083,7 @@ dumpdirino(struct dinode *dp, dump_ino_t ino)
 	nbi.di_uid = (((int32_t)dp->di_uidhigh) << 16) | dp->di_uid;
 	nbi.di_gid = (((int32_t)dp->di_gidhigh) << 16) | dp->di_gid;
 	if (dp->di_file_acl)
-		warn("ACLs in inode #%ld won't be dumped", (long)ino);
+		msg("ACLs in inode #%ld won't be dumped\n", (long)ino);
 	memmove(&spcl.c_dinode, &nbi, sizeof(nbi));
 #else	/* __linux__ */
 	spcl.c_dinode = *dp;
