@@ -1,7 +1,8 @@
 /*
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
- *	Remy Card <card@Linux.EU.Org>, 1994, 1995, 1996
+ *	Remy Card <card@Linux.EU.Org>, 1994-1997
+ *      Stelian Pop <pop@cybercable.fr>, 1999 
  *
  */
 
@@ -39,17 +40,21 @@
  */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)traverse.c	8.7 (Berkeley) 6/15/95";
+#endif
+static const char rcsid[] =
+	"$Id: traverse.c,v 1.2 1999/10/11 12:53:22 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
-#include <sys/time.h>
 #include <sys/stat.h>
 #ifdef	__linux__
 #include <linux/ext2_fs.h>
 #include <bsdcompat.h>
 #include <err.h>
 #include <stdlib.h>
+#define swab32(x) ext2fs_swab32(x)
 #else	/* __linux__ */
 #ifdef sunos
 #include <sys/vnode.h>
@@ -88,14 +93,13 @@ typedef	quad_t fsizeT;
 typedef	long fsizeT;
 #endif
 
-#ifndef	__linux__
-static	int dirindir __P((ino_t ino, daddr_t blkno, int level, long *size));
-#endif
-static	void dmpindir __P((ino_t ino, daddr_t blk, int level, fsizeT *size));
 #ifdef	__linux__
 static	int searchdir __P((struct ext2_dir_entry *dp, int offset,
 			   int blocksize, char *buf, void *private));
+long long llseek(int fildes, long long offset, int whence);
 #else
+static	int dirindir __P((ino_t ino, daddr_t blkno, int level, long *size));
+static	void dmpindir __P((ino_t ino, daddr_t blk, int level, fsizeT *size));
 static	int searchdir __P((ino_t ino, daddr_t blkno, long size, long filesize));
 #endif
 
@@ -343,10 +347,13 @@ mapdirs(maxino, tapesize)
 	long *tapesize;
 {
 	register struct	dinode *dp;
-	register int i, isdir;
+	register int isdir;
 	register char *map;
 	register ino_t ino;
+#ifndef __linux
+	register int i;
 	long filesize;
+#endif
 	int ret, change = 0;
 
 	isdir = 0;		/* XXX just to get gcc to shut up */
@@ -357,12 +364,11 @@ mapdirs(maxino, tapesize)
 			isdir >>= 1;
 		if ((isdir & 1) == 0 || TSTINO(ino, dumpinomap))
 			continue;
-#ifdef	__linux__
 		dp = getino(ino);
+#ifdef	__linux__
 		ret = 0;
 		ext2fs_dir_iterate(fs, ino, 0, NULL, searchdir, (void *) &ret);
 #else	/* __linux__ */
-		dp = getino(ino);
 		filesize = dp->di_size;
 		for (ret = 0, i = 0; filesize > 0 && i < NDADDR; i++) {
 			if (dp->di_db[i] != 0)
@@ -569,12 +575,14 @@ dumpino(dp, ino)
 	register struct dinode *dp;
 	ino_t ino;
 {
-	int ind_level, cnt;
+	int cnt;
 	fsizeT size;
 	char buf[TP_BSIZE];
 	struct old_bsd_inode obi;
 #ifdef	__linux__
 	struct block_context bc;
+#else
+	int ind_level;
 #endif
 
 	if (newtape) {
@@ -676,7 +684,7 @@ dumpino(dp, ino)
 	else
 		cnt = howmany(dp->di_size, sblock->fs_fsize);
 	blksout(&dp->di_db[0], cnt, ino);
-	if ((size = ((int)dp->di_size) - NDADDR * sblock->fs_bsize) <= 0)
+	if ((size = dp->di_size - NDADDR * sblock->fs_bsize) <= 0)
 		return;
 #ifdef	__linux__
 	bc.max = NINDIR(sblock) * EXT2_FRAGS_PER_BLOCK(fs->super);
@@ -865,10 +873,31 @@ dmpindir(ino, blk, ind_level, size)
 	fsizeT *size;
 {
 	int i, cnt;
+#ifdef __linux__
+	int max;
+	blk_t *swapme;
+#endif
 	daddr_t idblk[MAXNINDIR];
 
-	if (blk != 0)
+	if (blk != 0) {
 		bread(fsbtodb(sblock, blk), (char *)idblk, (int) sblock->fs_bsize);
+#ifdef __linux__
+	/* 
+	 * My RedHat 4.0 system doesn't have these flags; I haven't
+	 * upgraded e2fsprogs yet
+	 */
+#if defined(EXT2_FLAG_SWAP_BYTES)
+	if ((fs->flags & EXT2_FLAG_SWAP_BYTES) ||
+	    (fs->flags & EXT2_FLAG_SWAP_BYTES_READ)) {
+#endif
+		max = sblock->fs_bsize >> 2;
+		swapme = (blk_t *) idblk;
+		for (i = 0; i < max; i++, swapme++)
+			*swapme = swab32(*swapme);
+#if defined(EXT2_FLAG_SWAP_BYTES)
+	}
+#endif
+#endif
 	else
 		memset(idblk, 0, (int)sblock->fs_bsize);
 	if (ind_level <= 0) {
@@ -959,7 +988,7 @@ writeheader(ino)
 #ifdef	__linux__
 	register __s32 sum, cnt, *lp;
 #else
-	register long sum, cnt, *lp;
+	register int32_t sum, cnt, *lp;
 #endif
 
 	spcl.c_inumber = ino;
@@ -968,13 +997,13 @@ writeheader(ino)
 #ifdef	__linux__
 	lp = (__s32 *)&spcl;
 #else
-	lp = (long *)&spcl;
+	lp = (int32_t *)&spcl;
 #endif
 	sum = 0;
 #ifdef	__linux__
 	cnt = sizeof(union u_spcl) / (4 * sizeof(__s32));
 #else
-	cnt = sizeof(union u_spcl) / (4 * sizeof(long));
+	cnt = sizeof(union u_spcl) / (4 * sizeof(int32_t));
 #endif
 	while (--cnt >= 0) {
 		sum += *lp++;
@@ -1022,24 +1051,25 @@ getino(inum)
  * Error recovery is attempted at most BREADEMAX times before seeking
  * consent from the operator to continue.
  */
-int	breaderrors = 0;		
+int	breaderrors = 0;
 #define	BREADEMAX 32
 
 void
 bread(blkno, buf, size)
 	daddr_t blkno;
 	char *buf;
-	int size;	
+	int size;
 {
 	int cnt, i;
 	extern int errno;
 
 loop:
 #ifdef	__linux__
-	if (ext2_llseek(diskfd, ((ext2_loff_t)blkno << dev_bshift), 0) !=
+	if (llseek(diskfd, ((ext2_loff_t)blkno << dev_bshift), 0) !=
 			((ext2_loff_t)blkno << dev_bshift))
 #else
-	if ((int)lseek(diskfd, ((off_t)blkno << dev_bshift), 0) == -1)
+	if (lseek(diskfd, ((off_t)blkno << dev_bshift), 0) !=
+						((off_t)blkno << dev_bshift))
 #endif
 		msg("bread: lseek fails\n");
 	if ((cnt = read(diskfd, buf, size)) == size)
@@ -1081,10 +1111,11 @@ loop:
 	memset(buf, 0, size);
 	for (i = 0; i < size; i += dev_bsize, buf += dev_bsize, blkno++) {
 #ifdef	__linux__
-		if (ext2_llseek(diskfd, ((ext2_loff_t)blkno << dev_bshift), 0) !=
+		if (llseek(diskfd, ((ext2_loff_t)blkno << dev_bshift), 0) !=
 				((ext2_loff_t)blkno << dev_bshift))
 #else
-		if ((int)lseek(diskfd, ((off_t)blkno << dev_bshift), 0) == -1)
+		if (lseek(diskfd, ((off_t)blkno << dev_bshift), 0) !=
+						((off_t)blkno << dev_bshift))
 #endif
 			msg("bread: lseek2 fails!\n");
 		if ((cnt = read(diskfd, buf, (int)dev_bsize)) == dev_bsize)

@@ -219,7 +219,7 @@ fi
 dnl
 dnl Check for library functions
 dnl
-AC_CHECK_FUNCS(err errx verr verrx vwarn vwarnx warn warnx realpath)
+AC_CHECK_FUNCS(err errc errx verr verrc verrx vwarn vwarnc vwarnx warn warnc warnx realpath)
 
 dnl
 dnl Check for types

@@ -1,7 +1,8 @@
 /*
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
- *	Remy Card <card@Linux.EU.Org>, 1994, 1995, 1996
+ *	Remy Card <card@Linux.EU.Org>, 1994-1997
+ *      Stelian Pop <pop@cybercable.fr>, 1999 
  *
  */
 
@@ -44,12 +45,15 @@
  */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)tape.c	8.9 (Berkeley) 5/1/95";
+#endif
+static const char rcsid[] =
+	"$Id: tape.c,v 1.2 1999/10/11 12:53:24 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/file.h>
-#include <sys/ioctl.h>
 #include <sys/mtio.h>
 #include <sys/stat.h>
 
@@ -80,7 +84,7 @@ static char sccsid[] = "@(#)tape.c	8.9 (Berkeley) 5/1/95";
 static long	fssize = MAXBSIZE;
 static int	mt = -1;
 static int	pipein = 0;
-static char	magtape[BUFSIZ];
+static char	*magtape;
 static int	blkcnt;
 static int	numtrec;
 static char	*tapebuf;
@@ -120,6 +124,8 @@ static void	 xtrlnkskip __P((char *, long));
 static void	 xtrmap __P((char *, long));
 static void	 xtrmapskip __P((char *, long));
 static void	 xtrskip __P((char *, long));
+
+static int readmapflag;
 
 /*
  * Set up an input source
@@ -163,7 +169,11 @@ setinput(source)
 		pipein++;
 	}
 	setuid(getuid());	/* no longer need or want root privileges */
-	(void) strcpy(magtape, source);
+	magtape = strdup(source);
+	if (magtape == NULL) {
+		fprintf(stderr, "Cannot allocate space for magtape buffer\n");
+		done(1);
+	}
 }
 
 void
@@ -247,10 +257,12 @@ setup()
 		fprintf(stderr, "cannot stat .: %s\n", strerror(errno));
 		done(1);
 	}
-	if (stbuf.st_blksize > 0 && stbuf.st_blksize <= MAXBSIZE)
+	if (stbuf.st_blksize > 0 && stbuf.st_blksize < TP_BSIZE )
+		fssize = TP_BSIZE;
+	if (stbuf.st_blksize >= TP_BSIZE && stbuf.st_blksize <= MAXBSIZE)
 		fssize = stbuf.st_blksize;
 	if (((fssize - 1) & fssize) != 0) {
-		fprintf(stderr, "bad block size %d\n", fssize);
+		fprintf(stderr, "bad block size %ld\n", fssize);
 		done(1);
 	}
 	if (spcl.c_volume != 1) {
@@ -258,7 +270,7 @@ setup()
 		done(1);
 	}
 	if (gethead(&spcl) == FAIL) {
-		dprintf(stdout, "header read failed at %d blocks\n", blksread);
+		dprintf(stdout, "header read failed at %ld blocks\n", blksread);
 		panic("no header after volume mark!\n");
 	}
 	findinode(&spcl);
@@ -267,7 +279,7 @@ setup()
 		done(1);
 	}
 	maxino = (spcl.c_count * TP_BSIZE * NBBY) + 1;
-	dprintf(stdout, "maxino = %d\n", maxino);
+	dprintf(stdout, "maxino = %ld\n", maxino);
 	map = calloc((unsigned)1, (unsigned)howmany(maxino, NBBY));
 	if (map == NULL)
 		panic("no memory for active inode map\n");
@@ -297,14 +309,14 @@ setup()
  * Prompt user to load a new dump volume.
  * "Nextvol" is the next suggested volume to use.
  * This suggested volume is enforced when doing full
- * or incremental restores, but can be overrridden by
+ * or incremental restores, but can be overridden by
  * the user when only extracting a subset of the files.
  */
 void
 getvol(nextvol)
 	long nextvol;
 {
-	long newvol, savecnt, wantnext, i;
+	long newvol=0, savecnt=0, wantnext=0, i;
 	union u_spcl tmpspcl;
 #	define tmpbuf tmpspcl.s_spcl
 	char buf[TP_BSIZE];
@@ -327,7 +339,7 @@ again:
 	if (command == 'R' || command == 'r' || curfile.action != SKIP) {
 		newvol = nextvol;
 		wantnext = 1;
-	} else { 
+	} else {
 		newvol = 0;
 		wantnext = 0;
 	}
@@ -344,7 +356,7 @@ again:
 			strcpy(buf, ": ");
 			for (i = 1; i < 32; i++)
 				if (tapesread & (1 << i)) {
-					fprintf(stderr, "%s%d", buf, i);
+					fprintf(stderr, "%s%ld", buf, i);
 					strcpy(buf, ", ");
 				}
 			fprintf(stderr, "\n");
@@ -367,7 +379,7 @@ again:
 		return;
 	}
 	closemt();
-	fprintf(stderr, "Mount tape volume %d\n", newvol);
+	fprintf(stderr, "Mount tape volume %ld\n", newvol);
 	fprintf(stderr, "Enter ``none'' if there are no more tapes\n");
 	fprintf(stderr, "otherwise enter tape name (default: %s) ", magtape);
 	(void) fflush(stderr);
@@ -399,7 +411,7 @@ gethdr:
 	setdumpnum();
 	FLUSHTAPEBUF();
 	if (gethead(&tmpbuf) == FAIL) {
-		dprintf(stdout, "header read failed at %d blocks\n", blksread);
+		dprintf(stdout, "header read failed at %ld blocks\n", blksread);
 		fprintf(stderr, "tape is not dump tape\n");
 		volno = 0;
 		goto again;
@@ -431,7 +443,7 @@ gethdr:
  	 * If coming to this volume at random, skip to the beginning
  	 * of the next record.
  	 */
-	dprintf(stdout, "read %ld recs, tape starts with %ld\n", 
+	dprintf(stdout, "read %ld recs, tape starts with %d\n",
 		tpblksread, tmpbuf.c_firstrec);
  	if (tmpbuf.c_type == TS_TAPE && (tmpbuf.c_flags & DR_NEWHEADER)) {
  		if (!wantnext) {
@@ -444,7 +456,7 @@ gethdr:
 			 * -1 since we've read the volume header
 			 */
  			i = tpblksread - tmpbuf.c_firstrec - 1;
-			dprintf(stderr, "Skipping %d duplicate record%s.\n",
+			dprintf(stderr, "Skipping %ld duplicate record%s.\n",
 				i, i > 1 ? "s" : "");
  			while (--i >= 0)
  				readtape(buf);
@@ -510,7 +522,7 @@ setdumpnum()
 #ifdef RRESTORE
 	if (host)
 		rmtioctl(MTFSF, dumpnum - 1);
-	else 
+	else
 #endif
 		if (ioctl(mt, (int)MTIOCTOP, (char *)&tcom) < 0)
 			fprintf(stderr, "ioctl MTFSF: %s\n", strerror(errno));
@@ -609,22 +621,23 @@ extractfile(name)
 		return (linkit(lnkbuf, name, SYMLINK));
 #endif
 
-	case IFCHR:
-	case IFBLK:
-		vprintf(stdout, "extract special file %s\n", name);
+	case IFIFO:
+		vprintf(stdout, "extract fifo %s\n", name);
 		if (Nflag) {
 			skipfile();
 			return (GOOD);
 		}
-		if (mknod(name, mode, (int)curfile.dip->di_rdev) < 0) {
-			fprintf(stderr, "%s: cannot create special file: %s\n",
+		if (uflag && !Nflag)
+			(void)unlink(name);
+		if (mkfifo(name, mode) < 0) {
+			fprintf(stderr, "%s: cannot create fifo: %s\n",
 			    name, strerror(errno));
 			skipfile();
 			return (FAIL);
 		}
 		(void) chown(name, curfile.dip->di_uid, curfile.dip->di_gid);
 		(void) chmod(name, mode);
-#ifdef	__linux__
+#ifdef  __linux__
 		(void) fsetflags(name, flags);
 #else
 		(void) chflags(name, flags);
@@ -633,14 +646,17 @@ extractfile(name)
 		utimes(name, timep);
 		return (GOOD);
 
-	case IFIFO:
-		vprintf(stdout, "extract fifo %s\n", name);
+	case IFCHR:
+	case IFBLK:
+		vprintf(stdout, "extract special file %s\n", name);
 		if (Nflag) {
 			skipfile();
 			return (GOOD);
 		}
-		if (mkfifo(name, mode) < 0) {
-			fprintf(stderr, "%s: cannot create fifo: %s\n",
+		if (uflag)
+			(void)unlink(name);
+		if (mknod(name, mode, (int)curfile.dip->di_rdev) < 0) {
+			fprintf(stderr, "%s: cannot create special file: %s\n",
 			    name, strerror(errno));
 			skipfile();
 			return (FAIL);
@@ -662,6 +678,8 @@ extractfile(name)
 			skipfile();
 			return (GOOD);
 		}
+		if (uflag)
+			(void)unlink(name);
 		if ((ofile = open(name, O_WRONLY | O_CREAT | O_TRUNC,
 		    0666)) < 0) {
 			fprintf(stderr, "%s: cannot create file: %s\n",
@@ -735,7 +753,7 @@ getfile(fill, skip)
 	gettingfile++;
 loop:
 	for (i = 0; i < spcl.c_count; i++) {
-		if (spcl.c_addr[i]) {
+		if (readmapflag || spcl.c_addr[i]) {
 			readtape(&buf[curblk++][0]);
 			if (curblk == fssize / TP_BSIZE) {
 				(*fill)((char *)buf, (long)(size > TP_BSIZE ?
@@ -756,7 +774,7 @@ loop:
 		}
 		if ((size -= TP_BSIZE) <= 0) {
 			for (i++; i < spcl.c_count; i++)
-				if (spcl.c_addr[i])
+				if (readmapflag || spcl.c_addr[i])
 					readtape(junk);
 			break;
 		}
@@ -765,11 +783,11 @@ loop:
 		if (spcl.c_type == TS_ADDR)
 			goto loop;
 		dprintf(stdout,
-			"Missing address (header) block for %s at %d blocks\n",
+			"Missing address (header) block for %s at %ld blocks\n",
 			curfile.name, blksread);
 	}
 	if (curblk > 0) {
-		(*fill)((char *)buf, (curblk * TP_BSIZE) + size);
+		(*fill)((char *)buf, (long)((curblk * TP_BSIZE) + size));
 		last_write_was_hole = 0;
 	}
 	if (last_write_was_hole) {
@@ -792,7 +810,7 @@ xtrfile(buf, size)
 		return;
 	if (write(ofile, buf, (int) size) == -1) {
 		fprintf(stderr,
-		    "write error extracting inode %d, name %s\nwrite: %s\n",
+		    "write error extracting inode %ld, name %s\nwrite: %s\n",
 			curfile.ino, curfile.name, strerror(errno));
 		done(1);
 	}
@@ -810,7 +828,7 @@ xtrskip(buf, size)
 
 	if (lseek(ofile, size, SEEK_CUR) == -1) {
 		fprintf(stderr,
-		    "seek error extracting inode %d, name %s\nlseek: %s\n",
+		    "seek error extracting inode %ld, name %s\nlseek: %s\n",
 			curfile.ino, curfile.name, strerror(errno));
 		done(1);
 	}
@@ -897,7 +915,6 @@ do_cmpfiles(int fd_tape, int fd_disk, long size)
 #endif
 	static char buf_tape[BUFSIZ];
 	static char buf_disk[BUFSIZ];
-	int left = size;
 	int n_tape;
 	int n_disk;
 
@@ -941,7 +958,7 @@ cmpfiles(char *tapefile, char *diskfile, struct stat *sbuf_disk)
 
 	if (sbuf_disk->st_size != sbuf_tape.st_size) {
 		fprintf(stderr,
-			"%s: size changed from %d to %d.\n",
+			"%s: size changed from %ld to %ld.\n",
 			diskfile, sbuf_tape.st_size, sbuf_disk->st_size);
 #ifdef COMPARE_FAIL_KEEP_FILE
 		return (0);
@@ -1015,9 +1032,10 @@ comparefile(name)
 	}
 
 	curfile.name = name;
+	curfile.action = USING;
 	mode = curfile.dip->di_mode;
 
-	vprintf(stdout, "comparing %s (size: %d, mode: 0%o)\n", name,
+	vprintf(stdout, "comparing %s (size: %ld, mode: 0%o)\n", name,
 		sb.st_size, mode);
 
 	if (sb.st_mode != mode) {
@@ -1084,8 +1102,8 @@ comparefile(name)
 				name,
 				((int)curfile.dip->di_rdev >> 8) & 0xf,
 				(int)curfile.dip->di_rdev & 0xf,
-				(sb.st_rdev >> 8) & 0xf,
-				sb.st_rdev & 0xf);
+				((int)sb.st_rdev >> 8) & 0xf,
+				(int)sb.st_rdev & 0xf);
 		}
 		skipfile();
 		return;
@@ -1174,7 +1192,7 @@ getmore:
 			 */
 			if (i % TP_BSIZE != 0)
 				vprintf(stdout,
-				    "partial block read: %d should be %d\n",
+				    "partial block read: %ld should be %ld\n",
 				    i, ntrec * TP_BSIZE);
 			numtrec = i / TP_BSIZE;
 		}
@@ -1195,7 +1213,7 @@ getmore:
 			fprintf(stderr, "restoring %s\n", curfile.name);
 			break;
 		case SKIP:
-			fprintf(stderr, "skipping over inode %d\n",
+			fprintf(stderr, "skipping over inode %ld\n",
 				curfile.ino);
 			break;
 		}
@@ -1261,13 +1279,13 @@ findtapeblksize()
 		done(1);
 	}
 	if (i % TP_BSIZE != 0) {
-		fprintf(stderr, "Tape block size (%d) %s (%d)\n",
+		fprintf(stderr, "Tape block size (%ld) %s (%d)\n",
 			i, "is not a multiple of dump block size", TP_BSIZE);
 		done(1);
 	}
 	ntrec = i / TP_BSIZE;
 	numtrec = ntrec;
-	vprintf(stdout, "Tape block size is %d\n", ntrec);
+	vprintf(stdout, "Tape block size is %ld\n", ntrec);
 }
 
 void
@@ -1297,32 +1315,32 @@ gethead(buf)
 	long i;
 	union {
 		quad_t	qval;
-		long	val[2];
+		int32_t	val[2];
 	} qcvt;
 	union u_ospcl {
 		char dummy[TP_BSIZE];
 		struct	s_ospcl {
-			long	c_type;
-			long	c_date;
-			long	c_ddate;
-			long	c_volume;
-			long	c_tapea;
+			int32_t	c_type;
+			int32_t	c_date;
+			int32_t	c_ddate;
+			int32_t	c_volume;
+			int32_t	c_tapea;
 			u_short	c_inumber;
-			long	c_magic;
-			long	c_checksum;
+			int32_t	c_magic;
+			int32_t	c_checksum;
 			struct odinode {
 				unsigned short odi_mode;
 				u_short	odi_nlink;
 				u_short	odi_uid;
 				u_short	odi_gid;
-				long	odi_size;
-				long	odi_rdev;
+				int32_t	odi_size;
+				int32_t	odi_rdev;
 				char	odi_addr[36];
-				long	odi_atime;
-				long	odi_mtime;
-				long	odi_ctime;
+				int32_t	odi_atime;
+				int32_t	odi_mtime;
+				int32_t	odi_ctime;
 			} c_dinode;
-			long	c_count;
+			int32_t	c_count;
 			char	c_addr[256];
 		} s_ospcl;
 	} u_ospcl;
@@ -1339,12 +1357,15 @@ gethead(buf)
 		}
 		if (checksum((int *)buf) == FAIL)
 			return (FAIL);
-		if (Bcvt)
+		if (Bcvt) {
 			swabst((u_char *)"8l4s31l", (u_char *)buf);
+			swabst((u_char *)"l",(u_char *) &buf->c_level);
+			swabst((u_char *)"2l",(u_char *) &buf->c_flags);
+		}
 		goto good;
 	}
 	readtape((char *)(&u_ospcl.s_ospcl));
-	memset((char *)buf, 0, (long)TP_BSIZE);
+	memset(buf, 0, (long)TP_BSIZE);
 	buf->c_type = u_ospcl.s_ospcl.c_type;
 	buf->c_date = u_ospcl.s_ospcl.c_date;
 	buf->c_ddate = u_ospcl.s_ospcl.c_ddate;
@@ -1391,6 +1412,7 @@ good:
 		qcvt.val[0] = i;
 		buf->c_dinode.di_size = qcvt.qval;
 	}
+	readmapflag = 0;
 
 	switch (buf->c_type) {
 
@@ -1401,8 +1423,11 @@ good:
 		 */
 		buf->c_inumber = 0;
 		buf->c_dinode.di_size = buf->c_count * TP_BSIZE;
-		for (i = 0; i < buf->c_count; i++)
-			buf->c_addr[i]++;
+		if (buf->c_count > TP_NINDIR)
+			readmapflag = 1;
+		else 
+			for (i = 0; i < buf->c_count; i++)
+				buf->c_addr[i]++;
 		break;
 
 	case TS_TAPE:
@@ -1422,7 +1447,7 @@ good:
 		break;
 	}
 	/*
-	 * If we are restoring a filesystem with old format inodes, 
+	 * If we are restoring a filesystem with old format inodes,
 	 * copy the uid/gid to the new location.
 	 */
 	if (oldinofmt) {
@@ -1466,24 +1491,24 @@ accthdr(header)
 		fprintf(stderr, "Used inodes map header");
 		break;
 	case TS_INODE:
-		fprintf(stderr, "File header, ino %d", previno);
+		fprintf(stderr, "File header, ino %ld", previno);
 		break;
 	case TS_ADDR:
-		fprintf(stderr, "File continuation header, ino %d", previno);
+		fprintf(stderr, "File continuation header, ino %ld", previno);
 		break;
 	case TS_END:
 		fprintf(stderr, "End of tape header");
 		break;
 	}
 	if (predict != blksread - 1)
-		fprintf(stderr, "; predicted %d blocks, got %d blocks",
+		fprintf(stderr, "; predicted %ld blocks, got %ld blocks",
 			predict, blksread - 1);
 	fprintf(stderr, "\n");
 newcalc:
 	blks = 0;
 	if (header->c_type != TS_END)
 		for (i = 0; i < header->c_count; i++)
-			if (header->c_addr[i] != 0)
+			if (readmapflag || header->c_addr[i] != 0)
 				blks++;
 	predict = blks;
 	blksread = 0;
@@ -1556,7 +1581,8 @@ findinode(header)
 		}
 	} while (header->c_type == TS_ADDR);
 	if (skipcnt > 0)
-		fprintf(stderr, "resync restore, skipped %d blocks\n", skipcnt);
+		fprintf(stderr, "resync restore, skipped %ld blocks\n",
+		    skipcnt);
 	skipcnt = 0;
 }
 
@@ -1575,13 +1601,13 @@ checksum(buf)
 	} else {
 		/* What happens if we want to read restore tapes
 			for a 16bit int machine??? */
-		do 
+		do
 			i += swabl(*buf++);
 		while (--j);
 	}
-			
+
 	if (i != CHECKSUM) {
-		fprintf(stderr, "Checksum error %o, inode %d file %s\n", i,
+		fprintf(stderr, "Checksum error %o, inode %ld file %s\n", i,
 			curfile.ino, curfile.name);
 		return(FAIL);
 	}
@@ -1656,7 +1682,7 @@ swabst(cp, sp)
 		case '5': case '6': case '7': case '8': case '9':
 			n = (n * 10) + (*cp++ - '0');
 			continue;
-		
+
 		case 's': case 'w': case 'h':
 			if (n == 0)
 				n = 1;

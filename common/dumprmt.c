@@ -1,7 +1,8 @@
 /*
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
- *	Remy Card <card@Linux.EU.Org>, 1994, 1995, 1996
+ *	Remy Card <card@Linux.EU.Org>, 1994-1997
+ *      Stelian Pop <pop@cybercable.fr>, 1999
  *
  */
 
@@ -39,17 +40,25 @@
  */
 
 #ifndef lint
-static char sccsid[] = "@(#)dumprmt.c	8.2 (Berkeley) 4/28/95";
+#if 0
+static char sccsid[] = "@(#)dumprmt.c	8.3 (Berkeley) 4/28/95";
+#endif
+static const char rcsid[] =
+	"$Id: dumprmt.c,v 1.2 1999/10/11 12:53:20 stelian Exp $";
 #endif /* not lint */
 
+#ifdef __linux__
+#include <sys/types.h>
+#include <linux/types.h>
+#endif
 #include <sys/param.h>
 #include <sys/mtio.h>
-#include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #ifdef __linux__
 #include <linux/ext2_fs.h>
 #include <bsdcompat.h>
+#include <signal.h>
 #else
 #ifdef sunos
 #include <sys/vnode.h>
@@ -61,15 +70,15 @@ static char sccsid[] = "@(#)dumprmt.c	8.2 (Berkeley) 4/28/95";
 #endif
 
 #include <netinet/in.h>
+#include <netinet/in_systm.h>
+#include <netinet/ip.h>
 #include <netinet/tcp.h>
 
 #include <protocols/dumprestore.h>
 
 #include <ctype.h>
-#include <err.h>
 #include <netdb.h>
 #include <pwd.h>
-#include <signal.h>
 #include <stdio.h>
 #ifdef __STDC__
 #include <stdlib.h>
@@ -98,7 +107,12 @@ static	int rmtgetb __P((void));
 static	void rmtgetconn __P((void));
 static	void rmtgets __P((char *, int));
 static	int rmtreply __P((char *));
+#ifdef KERBEROS
+int	krcmd __P((char **, int /*u_short*/, char *, char *, int *, char *));
+#endif
 
+static	int errfd = -1;
+extern	int dokerberos;
 extern	int ntrec;		/* blocking factor on tape */
 
 int
@@ -121,41 +135,79 @@ rmthost(host)
 static void
 rmtconnaborted()
 {
+	msg("Lost connection to remote host.\n");
+	if (errfd != -1) {
+		fd_set r;
+		struct timeval t;
 
-	errx(1, "Lost connection to remote host.");
+		FD_ZERO(&r);
+		FD_SET(errfd, &r);
+		t.tv_sec = 0;
+		t.tv_usec = 0;
+		if (select(errfd + 1, &r, NULL, NULL, &t)) {
+			int i;
+			char buf[2048];
+
+			if ((i = read(errfd, buf, sizeof(buf) - 1)) > 0) {
+				buf[i] = '\0';
+				msg("on %s: %s%s", rmtpeer, buf,
+					buf[i - 1] == '\n' ? "" : "\n");
+			}
+		}
+	}
+
+	exit(X_ABORT);
 }
 
 void
 rmtgetconn()
 {
 	register char *cp;
+	register const char *rmt;
 	static struct servent *sp = NULL;
 	static struct passwd *pwd = NULL;
-#ifdef notdef
-	static int on = 1;
-#endif
 	char *tuser;
 	int size;
-	int maxseg;
+	int throughput;
+	int on;
 
 	if (sp == NULL) {
-		sp = getservbyname("shell", "tcp");
-		if (sp == NULL)
-			errx(1, "shell/tcp: unknown service");
+		sp = getservbyname(dokerberos ? "kshell" : "shell", "tcp");
+		if (sp == NULL) {
+			msg("%s/tcp: unknown service\n",
+			    dokerberos ? "kshell" : "shell");
+			exit(X_STARTUP);
+		}
 		pwd = getpwuid(getuid());
-		if (pwd == NULL)
-			errx(1, "who are you?");
+		if (pwd == NULL) {
+			msg("who are you?\n");
+			exit(X_STARTUP);
+		}
 	}
 	if ((cp = strchr(rmtpeer, '@')) != NULL) {
 		tuser = rmtpeer;
 		*cp = '\0';
 		if (!okname(tuser))
-			exit(1);
+			exit(X_STARTUP);
 		rmtpeer = ++cp;
 	} else
 		tuser = pwd->pw_name;
-	rmtape = rcmd(&rmtpeer, (u_short)sp->s_port, pwd->pw_name, tuser,
-	    _PATH_RMT, (int *)0);
+	if ((rmt = getenv("RMT")) == NULL)
+		rmt = _PATH_RMT;
+	msg("");
+#ifdef KERBEROS
+	if (dokerberos)
+		rmtape = krcmd(&rmtpeer, sp->s_port, tuser, rmt, &errfd,
+			       (char *)0);
+	else
+#endif
+		rmtape = rcmd(&rmtpeer, (u_short)sp->s_port, pwd->pw_name,
+			      tuser, rmt, &errfd);
+	if (rmtape < 0) {
+		msg("login to %s as %s failed.\n", rmtpeer, tuser);
+		return;
+	}
+	(void)fprintf(stderr, "Connection to %s established.\n", rmtpeer);
 	size = ntrec * TP_BSIZE;
 	if (size > 60 * 1024)		/* XXX */
 		size = 60 * 1024;
@@ -165,15 +217,13 @@ rmtgetconn()
 	    setsockopt(rmtape, SOL_SOCKET, SO_SNDBUF, &size, sizeof (size)) < 0)
 		    size -= TP_BSIZE;
 	(void)setsockopt(rmtape, SOL_SOCKET, SO_RCVBUF, &size, sizeof (size));
-	maxseg = 1024;
-	if (setsockopt(rmtape, IPPROTO_TCP, TCP_MAXSEG,
-	    &maxseg, sizeof (maxseg)) < 0)
-		perror("TCP_MAXSEG setsockopt");
-
-#ifdef notdef
+	throughput = IPTOS_THROUGHPUT;
+	if (setsockopt(rmtape, IPPROTO_IP, IP_TOS,
+	    &throughput, sizeof(throughput)) < 0)
+		perror("IP_TOS:IPTOS_THROUGHPUT setsockopt");
+	on = 1;
 	if (setsockopt(rmtape, IPPROTO_TCP, TCP_NODELAY, &on, sizeof (on)) < 0)
 		perror("TCP_NODELAY setsockopt");
-#endif
 }
 
 static int
@@ -186,7 +236,7 @@ okname(cp0)
 	for (cp = cp0; *cp; cp++) {
 		c = *cp;
 		if (!isascii(c) || !(isalnum(c) || c == '_' || c == '-')) {
-			warnx("invalid user name: %s", cp0);
+			msg("invalid user name %s\n", cp0);
 			return (0);
 		}
 	}
@@ -200,7 +250,7 @@ rmtopen(tape, mode)
 {
 	char buf[256];
 
-	(void)sprintf(buf, "O%s\n%d\n", tape, mode);
+	(void)snprintf(buf, sizeof (buf), "O%.226s\n%d\n", tape, mode);
 	rmtstate = TS_OPEN;
 	return (rmtcall(tape, buf));
 }
@@ -222,19 +272,16 @@ rmtread(buf, count)
 {
 	char line[30];
 	int n, i, cc;
-	extern errno;
 
-	(void)sprintf(line, "R%d\n", count);
+	(void)snprintf(line, sizeof (line), "R%d\n", count);
 	n = rmtcall("read", line);
-	if (n < 0) {
-		errno = n;
-		return (-1);
-	}
+	if (n < 0)
+		/* rmtcall() properly sets errno for us on errors. */
+		return (n);
 	for (i = 0; i < n; i += cc) {
 		cc = read(rmtape, buf+i, n - i);
-		if (cc <= 0) {
+		if (cc <= 0)
 			rmtconnaborted();
-		}
 	}
 	return (n);
 }
@@ -246,7 +293,7 @@ rmtwrite(buf, count)
 {
 	char line[30];
 
-	(void)sprintf(line, "W%d\n", count);
+	(void)snprintf(line, sizeof (line), "W%d\n", count);
 	write(rmtape, line, strlen(line));
 	write(rmtape, buf, count);
 	return (rmtreply("write"));
@@ -258,7 +305,7 @@ rmtwrite0(count)
 {
 	char line[30];
 
-	(void)sprintf(line, "W%d\n", count);
+	(void)snprintf(line, sizeof (line), "W%d\n", count);
 	write(rmtape, line, strlen(line));
 }
 
@@ -284,7 +331,7 @@ rmtseek(offset, pos)
 {
 	char line[80];
 
-	(void)sprintf(line, "L%d\n%d\n", offset, pos);
+	(void)snprintf(line, sizeof (line), "L%d\n%d\n", offset, pos);
 	return (rmtcall("seek", line));
 }
 
@@ -312,7 +359,7 @@ rmtioctl(cmd, count)
 
 	if (count < 0)
 		return (-1);
-	(void)sprintf(buf, "I%d\n%d\n", cmd, count);
+	(void)snprintf(buf, sizeof (buf), "I%d\n%d\n", cmd, count);
 	return (rmtcall("ioctl", buf));
 }
 
@@ -332,15 +379,15 @@ rmtreply(cmd)
 {
 	register char *cp;
 	char code[30], emsg[BUFSIZ];
+	extern int errno;
 
 	rmtgets(code, sizeof (code));
 	if (*code == 'E' || *code == 'F') {
 		rmtgets(emsg, sizeof (emsg));
 		msg("%s: %s", cmd, emsg);
-		if (*code == 'F') {
+		errno = atoi(code + 1);
+		if (*code == 'F')
 			rmtstate = TS_CLOSED;
-			return (-1);
-		}
 		return (-1);
 	}
 	if (*code != 'A') {

@@ -1,7 +1,8 @@
 /*
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
- *	Remy Card <card@Linux.EU.Org>, 1994, 1995, 1996
+ *	Remy Card <card@Linux.EU.Org>, 1994-1997
+ *      Stelian Pop <pop@cybercable.fr>, 1999 
  *
  */
 
@@ -81,13 +82,14 @@ long	tsize;		/* tape size in 0.1" units */
 long	asize;		/* number of 0.1" units written on current tape */
 int	etapes;		/* estimated number of tapes */
 int	nonodump;	/* if set, do not honor UF_NODUMP user flags */
+int	unlimited;	/* if set, write to end of medium */
 
 int	notify;		/* notify operator flag */
 int	blockswritten;	/* number of blocks written on current tape */
 int	tapeno;		/* current tape number */
 time_t	tstart_writing;	/* when started writing the first tape block */
+time_t	tend_writing;	/* after writing the last tape block */
 #ifdef __linux__
-time_t tend_writing;	/* after writing the last tape block */
 ext2_filsys fs;
 #else
 struct	fs *sblock;	/* the file system super block */
@@ -123,7 +125,7 @@ int	mapdirs __P((ino_t maxino, long *tapesize));
 
 /* file dumping routines */
 void	blksout __P((daddr_t *blkp, int frags, ino_t ino));
-void	bread __P((daddr_t blkno, char *buf, int size));	
+void	bread __P((daddr_t blkno, char *buf, int size));
 void	dumpino __P((struct dinode *dp, ino_t ino));
 #ifdef	__linux__
 void	dumpdirino __P((struct dinode *dp, ino_t ino));
@@ -160,6 +162,7 @@ void	interrupt __P((int signo));	/* in case operator bangs on console */
  *	Exit status codes
  */
 #define	X_FINOK		0	/* normal exit */
+#define X_STARTUP	1	/* startup error */
 #define	X_REWRITE	2	/* restart writing from the check point */
 #define	X_ABORT		3	/* abort dump; don't attempt checkpointing */
 
@@ -238,7 +241,7 @@ extern char *strncpy();
 extern char *strcat();
 extern time_t time();
 extern void endgrent();
-extern __dead void exit();
+extern void exit();
 extern off_t lseek();
 extern const char *strerror();
 #endif

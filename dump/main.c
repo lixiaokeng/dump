@@ -1,7 +1,8 @@
 /*
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
- *	Remy Card <card@Linux.EU.Org>, 1994, 1995, 1996
+ *	Remy Card <card@Linux.EU.Org>, 1994-1997
+ *      Stelian Pop <pop@cybercable.fr>, 1999 
  *
  */
 
@@ -39,13 +40,17 @@
  */
 
 #ifndef lint
-static char copyright[] =
+static const char copyright[] =
 "@(#) Copyright (c) 1980, 1991, 1993, 1994\n\
 	The Regents of the University of California.  All rights reserved.\n";
 #endif /* not lint */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)main.c	8.6 (Berkeley) 5/1/95";
+#endif
+static const char rcsid[] =
+	"$Id: main.c,v 1.2 1999/10/11 12:53:22 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -70,7 +75,6 @@ static char sccsid[] = "@(#)main.c	8.6 (Berkeley) 5/1/95";
 
 #include <ctype.h>
 #include <err.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <fstab.h>
 #include <signal.h>
@@ -93,9 +97,10 @@ static char sccsid[] = "@(#)main.c	8.6 (Berkeley) 5/1/95";
 int	notify = 0;	/* notify operator flag */
 int	blockswritten = 0;	/* number of blocks written on current tape */
 int	tapeno = 0;	/* current tape number */
-int	density = 0;	/* density in bytes/0.1" */
+int	density = 0;	/* density in bytes/0.1" " <- this is for hilit19 */
 int	ntrec = NTREC;	/* # tape blocks in each tape record */
 int	cartridge = 0;	/* Assume non-cartridge tape */
+int	dokerberos = 0;	/* Use Kerberos authentication */
 long	dev_bsize = 1;	/* recalculated below */
 long	blocksperfile;	/* output blocks per file */
 char	*host = NULL;	/* remote host (if any) */
@@ -114,7 +119,7 @@ main(argc, argv)
 	char *argv[];
 {
 	register ino_t ino;
-	register int dirty; 
+	register int dirty;
 	register struct dinode *dp;
 	register struct	fstab *dt;
 	register char *map;
@@ -126,6 +131,7 @@ main(argc, argv)
 	char directory[NAME_MAX];
 	char pathname[NAME_MAX];
 #endif
+	char labelstr[LBLSIZE];
 
 	spcl.c_date = 0;
 #ifdef	__linux__
@@ -141,29 +147,45 @@ main(argc, argv)
 #endif
 
 	tsize = 0;	/* Default later, based on 'c' option for cart tapes */
-	tape = _PATH_DEFTAPE;
+	if ((tape = getenv("TAPE")) == NULL)
+		tape = _PATH_DEFTAPE;
 	dumpdates = _PATH_DUMPDATES;
 	temp = _PATH_DTMP;
+	strcpy(labelstr, "none");	/* XXX safe strcpy. */
 	if (TP_BSIZE / DEV_BSIZE == 0 || TP_BSIZE % DEV_BSIZE != 0)
 		quit("TP_BSIZE must be a multiple of DEV_BSIZE\n");
 	level = '0';
+
 	if (argc < 2)
 		usage();
 
 	obsolete(&argc, &argv);
-	while ((ch = getopt(argc, argv, "0123456789B:b:cd:f:h:ns:T:uWw")) != -1)		switch (ch) {
+#ifdef KERBEROS
+#define optstring "0123456789aB:b:cd:f:h:kL:ns:T:uWw"
+#else
+#define optstring "0123456789aB:b:cd:f:h:L:ns:T:uWw"
+#endif
+	while ((ch = getopt(argc, argv, optstring)) != -1)
+#undef optstring
+		switch (ch) {
 		/* dump level */
 		case '0': case '1': case '2': case '3': case '4':
 		case '5': case '6': case '7': case '8': case '9':
 			level = ch;
 			break;
 
+		case 'a':		/* `auto-size', Write to EOM. */
+			unlimited = 1;
+			break;
+
 		case 'B':		/* blocks per output file */
-			blocksperfile = numarg("blocks per file", 1L, 0L);
+			blocksperfile = numarg("number of blocks per file",
+			    1L, 0L);
 			break;
 
 		case 'b':		/* blocks per tape write */
-			ntrec = numarg("blocks per write", 1L, 1000L);
+			ntrec = numarg("number of blocks per write",
+			    1L, 1000L);
 			break;
 
 		case 'c':		/* Tape is cart. not 9-track */
@@ -184,6 +206,29 @@ main(argc, argv)
 			honorlevel = numarg("honor level", 0L, 10L);
 			break;
 
+#ifdef KERBEROS
+		case 'k':
+			dokerberos = 1;
+			break;
+#endif
+
+		case 'L':
+			/*
+			 * Note that although there are LBLSIZE characters,
+			 * the last must be '\0', so the limit on strlen()
+			 * is really LBLSIZE-1.
+			 */
+			strncpy(labelstr, optarg, LBLSIZE);
+			labelstr[LBLSIZE-1] = '\0';
+			if (strlen(optarg) > LBLSIZE-1) {
+				msg(
+		"WARNING Label `%s' is larger than limit of %d characters.\n",
+				    optarg, LBLSIZE-1);
+				msg("WARNING: Using truncated label `%s'.\n",
+				    labelstr);
+			}
+			break;
+
 		case 'n':		/* notify operators */
 			notify = 1;
 			break;
@@ -197,10 +242,13 @@ main(argc, argv)
 			if (spcl.c_ddate < 0) {
 				(void)fprintf(stderr, "bad time \"%s\"\n",
 				    optarg);
-				exit(X_ABORT);
+				exit(X_STARTUP);
 			}
 			Tflag = 1;
 			lastlevel = '?';
+			argc--;
+			argv++;
+			break;
 
 		case 'u':		/* update /etc/dumpdates */
 			uflag = 1;
@@ -209,7 +257,7 @@ main(argc, argv)
 		case 'W':		/* what to do */
 		case 'w':
 			lastdump(ch);
-			exit(0);	/* do nothing else */
+			exit(X_FINOK);	/* do nothing else */
 
 		default:
 			usage();
@@ -219,7 +267,7 @@ main(argc, argv)
 
 	if (argc < 1) {
 		(void)fprintf(stderr, "Must specify disk or filesystem\n");
-		exit(X_ABORT);
+		exit(X_STARTUP);
 	}
 	disk = *argv++;
 	argc--;
@@ -228,12 +276,12 @@ main(argc, argv)
 		while (argc--)
 			(void)fprintf(stderr, " %s", *argv++);
 		(void)fprintf(stderr, "\n");
-		exit(X_ABORT);
+		exit(X_STARTUP);
 	}
 	if (Tflag && uflag) {
 	        (void)fprintf(stderr,
 		    "You cannot use the T and u flags together.\n");
-		exit(X_ABORT);
+		exit(X_STARTUP);
 	}
 	if (strcmp(tape, "-") == 0) {
 		pipeout++;
@@ -242,7 +290,7 @@ main(argc, argv)
 
 	if (blocksperfile)
 		blocksperfile = blocksperfile / ntrec * ntrec; /* round down */
-	else {
+	else if (!unlimited) {
 		/*
 		 * Determine how to default tape size and density
 		 *
@@ -251,6 +299,7 @@ main(argc, argv)
 		 * 9-track	6250 bpi (625 bytes/.1")	2300 ft.
 		 * cartridge	8000 bpi (100 bytes/.1")	1700 ft.
 		 *						(450*4 - slop)
+		 * hilit19 hits again: "
 		 */
 		if (density == 0)
 			density = cartridge ? 100 : 160;
@@ -263,11 +312,15 @@ main(argc, argv)
 		tape = strchr(host, ':');
 		*tape++ = '\0';
 #ifdef RDUMP
+		if (index(tape, '\n')) {
+		    (void)fprintf(stderr, "invalid characters in tape\n");
+		    exit(X_STARTUP);
+		}
 		if (rmthost(host) == 0)
-			exit(X_ABORT);
+			exit(X_STARTUP);
 #else
 		(void)fprintf(stderr, "remote dump not enabled\n");
-		exit(X_ABORT);
+		exit(X_STARTUP);
 #endif
 	}
 	(void)setuid(getuid()); /* rmthost() is the only reason to be setuid */
@@ -331,7 +384,9 @@ main(argc, argv)
 		    NAMELEN);
 	}
 #endif
-	(void)strcpy(spcl.c_label, "none");
+	spcl.c_dev[NAMELEN-1]='\0';
+	spcl.c_filesys[NAMELEN-1]='\0';
+	(void)strncpy(spcl.c_label, labelstr, sizeof(spcl.c_label) - 1);
 	(void)gethostname(spcl.c_host, NAMELEN);
 	spcl.c_level = level - '0';
 	spcl.c_type = TS_TAPE;
@@ -357,6 +412,7 @@ main(argc, argv)
 		msgtail("to %s on host %s\n", tape, host);
 	else
 		msgtail("to %s\n", tape);
+	msg("Label: %s\n", labelstr);
 
 #ifdef	__linux__
 	retval = ext2fs_open(disk, 0, 0, 0, unix_io_manager, &fs);
@@ -364,16 +420,16 @@ main(argc, argv)
 		com_err(disk, retval, "while opening filesystem");
 		if (retval == EXT2_ET_REV_TOO_HIGH)
 			printf ("Get a newer version of dump!\n");
-		exit(X_ABORT);
+		exit(X_STARTUP);
 	}
 	if (fs->super->s_rev_level > DUMP_CURRENT_REV) {
 		com_err(disk, retval, "while opening filesystem");
 		printf ("Get a newer version of dump!\n");
-		exit(X_ABORT);
+		exit(X_STARTUP);
 	}
 	if ((diskfd = open(disk, O_RDONLY)) < 0) {
 		msg("Cannot open %s\n", disk);
-		exit(X_ABORT);
+		exit(X_STARTUP);
 	}
 	sync();
 	dev_bsize = DEV_BSIZE;
@@ -390,7 +446,7 @@ main(argc, argv)
 #else	/* __linux __*/
 	if ((diskfd = open(disk, O_RDONLY)) < 0) {
 		msg("Cannot open %s\n", disk);
-		exit(X_ABORT);
+		exit(X_STARTUP);
 	}
 	sync();
 	sblock = (struct fs *)sblock_buf;
@@ -404,7 +460,6 @@ main(argc, argv)
 	tp_bshift = ffs(TP_BSIZE) - 1;
 	if (TP_BSIZE != (1 << tp_bshift))
 		quit("TP_BSIZE (%d) is not a power of 2", TP_BSIZE);
-	spcl.c_flags |= DR_NEWINODEFMT;
 #ifdef FS_44INODEFMT
 	if (sblock->fs_inodefmt >= FS_44INODEFMT)
 		spcl.c_flags |= DR_NEWINODEFMT;
@@ -434,7 +489,7 @@ main(argc, argv)
 		anydirskipped = mapdirs(maxino, &tapesize);
 	}
 
-	if (pipeout) {
+	if (pipeout || unlimited) {
 		tapesize += 10;	/* 10 trailer blocks */
 		msg("estimated %ld tape blocks.\n", tapesize);
 	} else {
@@ -447,28 +502,28 @@ main(argc, argv)
 			   the end of each block written, and not in mid-block.
 			   Assume no erroneous blocks; this can be compensated
 			   for with an artificially low tape size. */
-			fetapes = 
-			(	  tapesize	/* blocks */
+			fetapes =
+			(	  (double) tapesize	/* blocks */
 				* TP_BSIZE	/* bytes/block */
-				* (1.0/density)	/* 0.1" / byte */
+				* (1.0/density)	/* 0.1" / byte " */
 			  +
-				  tapesize	/* blocks */
+				  (double) tapesize	/* blocks */
 				* (1.0/ntrec)	/* streaming-stops per block */
-				* 15.48		/* 0.1" / streaming-stop */
-			) * (1.0 / tsize );	/* tape / 0.1" */
+				* 15.48		/* 0.1" / streaming-stop " */
+			) * (1.0 / tsize );	/* tape / 0.1" " */
 		} else {
 			/* Estimate number of tapes, for old fashioned 9-track
 			   tape */
 			int tenthsperirg = (density == 625) ? 3 : 7;
 			fetapes =
-			(	  tapesize	/* blocks */
+			(	  (double) tapesize	/* blocks */
 				* TP_BSIZE	/* bytes / block */
-				* (1.0/density)	/* 0.1" / byte */
+				* (1.0/density)	/* 0.1" / byte " */
 			  +
-				  tapesize	/* blocks */
+				  (double) tapesize	/* blocks */
 				* (1.0/ntrec)	/* IRG's / block */
-				* tenthsperirg	/* 0.1" / IRG */
-			) * (1.0 / tsize );	/* tape / 0.1" */
+				* tenthsperirg	/* 0.1" / IRG " */
+			) * (1.0 / tsize );	/* tape / 0.1" " */
 		}
 		etapes = fetapes;		/* truncating assignment */
 		etapes++;
@@ -484,7 +539,8 @@ main(argc, argv)
 	 * Allocate tape buffer.
 	 */
 	if (!alloctape())
-		quit("can't allocate tape buffers - try a smaller blocking factor.\n");
+		quit(
+	"can't allocate tape buffers - try a smaller blocking factor.\n");
 
 	startnewtape(1);
 	(void)time((time_t *)&(tstart_writing));
@@ -532,18 +588,16 @@ main(argc, argv)
 		(void)dumpino(dp, ino);
 	}
 
-#ifdef	__linux__
 	(void)time((time_t *)&(tend_writing));
-#endif
 	spcl.c_type = TS_END;
 	for (i = 0; i < ntrec; i++)
 		writeheader(maxino - 1);
 	if (pipeout)
-		msg("DUMP: %ld tape blocks\n",spcl.c_tapea);
+		msg("DUMP: %ld tape blocks\n", spcl.c_tapea);
 	else
 		msg("DUMP: %ld tape blocks on %d volumes(s)\n",
 		    spcl.c_tapea, spcl.c_volume);
-#ifdef	__linux__
+
 	/* report dump performance, avoid division through zero */
 	if (tend_writing - tstart_writing == 0)
 		msg("finished in less than a second\n");
@@ -551,22 +605,28 @@ main(argc, argv)
 		msg("finished in %d seconds, throughput %d KBytes/sec\n",
 		    tend_writing - tstart_writing,
 		    spcl.c_tapea / (tend_writing - tstart_writing));
-#endif
+
 	putdumptime();
 	trewind();
 	broadcast("DUMP IS DONE!\7\7\n");
 	msg("DUMP IS DONE\n");
 	Exit(X_FINOK);
 	/* NOTREACHED */
+	exit(1);	/* gcc - shut up */
 }
 
 static void
 usage()
 {
-
-	(void)fprintf(stderr, "usage: dump [-0123456789cnu] [-B records] [-b blocksize] [-d density] [-f file]\n            [-h level] [-s feet] [-T date] filesystem\n");
-	(void)fprintf(stderr, "       dump [-W | -w]\n");
-	exit(1);
+	fprintf(stderr,
+		"usage: dump [-0123456789ac"
+#ifdef KERBEROS
+		"k"
+#endif
+		"nu] [-B records] [-b blocksize] [-d density] [-f file]\n"
+		"            [-h level] [-s feet] [-T date] filesystem\n"
+		"       dump [-W | -w]\n");
+	exit(X_STARTUP);
 }
 
 /*
@@ -629,18 +689,19 @@ rawname(cp)
 	if (dp == NULL)
 		return (NULL);
 	*dp = '\0';
-	(void)strcpy(rawbuf, cp);
+	(void)strncpy(rawbuf, cp, MAXPATHLEN - 1);
+	rawbuf[MAXPATHLEN-1] = '\0';
 	*dp = '/';
-	(void)strcat(rawbuf, "/r");
-	(void)strcat(rawbuf, dp + 1);
+	(void)strncat(rawbuf, "/r", MAXPATHLEN - 1 - strlen(rawbuf));
+	(void)strncat(rawbuf, dp + 1, MAXPATHLEN - 1 - strlen(rawbuf));
 	return (rawbuf);
 #endif	/* __linux__ */
 }
 
 /*
  * obsolete --
- *     Change set of key letters and ordered arguments into something
- *     getopt(3) will like.
+ *	Change set of key letters and ordered arguments into something
+ *	getopt(3) will like.
  */
 static void
 obsolete(argcp, argvp)
@@ -648,7 +709,7 @@ obsolete(argcp, argvp)
 	char **argvp[];
 {
 	int argc, flags;
-	char *ap, **argv, *flagsp, **nargv, *p;
+	char *ap, **argv, *flagsp=NULL, **nargv, *p=NULL;
 
 	/* Setup. */
 	argv = *argvp;
@@ -677,7 +738,8 @@ obsolete(argcp, argvp)
 		case 's':
 		case 'T':
 			if (*argv == NULL) {
-				warnx("option requires an argument -- %c", *ap);				usage();
+				warnx("option requires an argument -- %c", *ap);
+				usage();
 			}
 			if ((nargv[0] = malloc(strlen(*argv) + 2 + 1)) == NULL)
 				err(1, NULL);
@@ -704,7 +766,7 @@ obsolete(argcp, argvp)
 	}
 
 	/* Copy remaining arguments. */
-	while (*nargv++ = *argv++);
+	while ((*nargv++ = *argv++));
 
 	/* Update argument count. */
 	*argcp = nargv - *argvp - 1;

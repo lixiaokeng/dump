@@ -1,11 +1,13 @@
 /*
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
- *	Remy Card <card@Linux.EU.Org>, 1994, 1995, 1996
+ *	Remy Card <card@Linux.EU.Org>, 1994-1997
+ *      Stelian Pop <pop@cybercable.fr>, 1999
  *
  */
 
 #include <config.h>
+#include <sys/time.h>
 
 #define	__dead		volatile
 

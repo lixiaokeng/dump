@@ -1,7 +1,8 @@
 /*
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
- *	Remy Card <card@Linux.EU.Org>, 1994, 1995, 1996
+ *	Remy Card <card@Linux.EU.Org>, 1994-1997
+ *      Stelian Pop <pop@cybercable.fr>, 1999 
  *
  */
 
@@ -44,13 +45,16 @@
  */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)dirs.c	8.7 (Berkeley) 5/1/95";
+#endif
+static const char rcsid[] =
+	"$Id: dirs.c,v 1.2 1999/10/11 12:53:23 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/file.h>
 #include <sys/stat.h>
-#include <sys/time.h>
 
 #ifdef	__linux__
 #include <linux/ext2_fs.h>
@@ -58,10 +62,10 @@ static char sccsid[] = "@(#)dirs.c	8.7 (Berkeley) 5/1/95";
 #else	/* __linux__ */
 #include <ufs/ufs/dinode.h>
 #include <ufs/ufs/dir.h>
-#include <ufs/ffs/fs.h>
 #endif	/* __linux__ */
 #include <protocols/dumprestore.h>
 
+#include <err.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -86,8 +90,8 @@ static char sccsid[] = "@(#)dirs.c	8.7 (Berkeley) 5/1/95";
 struct inotab {
 	struct	inotab *t_next;
 	ino_t	t_ino;
-	long	t_seekpt;
-	long	t_size;
+	int32_t	t_seekpt;
+	int32_t	t_size;
 };
 static struct inotab *inotab[HASHSIZE];
 
@@ -110,8 +114,8 @@ struct modeinfo {
 #define DIRBLKSIZ 1024
 struct rstdirdesc {
 	int	dd_fd;
-	long	dd_loc;
-	long	dd_size;
+	int32_t	dd_loc;
+	int32_t	dd_size;
 	char	dd_buf[DIRBLKSIZ];
 };
 
@@ -121,9 +125,9 @@ struct rstdirdesc {
 static long	seekpt;
 static FILE	*df, *mf;
 static RST_DIR	*dirp;
-static char	dirfile[32] = "#";	/* No file */
-static char	modefile[32] = "#";	/* No file */
-static char	dot[2] = ".";		/* So it can be modified */
+static char	dirfile[MAXPATHLEN] = "#";	/* No file */
+static char	modefile[MAXPATHLEN] = "#";	/* No file */
+static char	dot[2] = ".";			/* So it can be modified */
 
 /*
  * Format of old style directories.
@@ -167,32 +171,37 @@ extractdirs(genmode)
 #endif
 	struct inotab *itp;
 	struct direct nulldir;
+	int fd;
 
 	vprintf(stdout, "Extract directories from tape\n");
-	(void) sprintf(dirfile, "%s/rstdir%d", tmpdir, dumpdate);
-	df = fopen(dirfile, "w");
-	if (df == NULL) {
-		fprintf(stderr,
-		    "restore: %s - cannot create directory temporary\n",
-		    dirfile);
-		fprintf(stderr, "fopen: %s\n", strerror(errno));
+	(void) sprintf(dirfile, "%s/rstdir%ld", tmpdir, dumpdate);
+	if (command != 'r' && command != 'R') {
+		(void *) strcat(dirfile, "-XXXXXX");
+		fd = mkstemp(dirfile);
+	} else
+		fd = open(dirfile, O_RDWR|O_CREAT|O_EXCL, 0666);
+	if (fd == -1 || (df = fdopen(fd, "w")) == NULL) {
+		if (fd != -1)
+			close(fd);
+		warn("%s - cannot create directory temporary\nfopen", dirfile);
 		done(1);
 	}
 	if (genmode != 0) {
-		(void) sprintf(modefile, "%s/rstmode%d", tmpdir, dumpdate);
-		mf = fopen(modefile, "w");
-		if (mf == NULL) {
-			fprintf(stderr,
-			    "restore: %s - cannot create modefile \n",
-			    modefile);
-			fprintf(stderr, "fopen: %s\n", strerror(errno));
+		(void) sprintf(modefile, "%s/rstmode%ld", tmpdir, dumpdate);
+		if (command != 'r' && command != 'R') {
+			(void *) strcat(modefile, "-XXXXXX");
+			fd = mkstemp(modefile);
+		} else
+			fd = open(modefile, O_RDWR|O_CREAT|O_EXCL, 0666);
+		if (fd == -1 || (mf = fdopen(fd, "w")) == NULL) {
+			if (fd != -1)
+				close(fd);
+			warn("%s - cannot create modefile\nfopen", modefile);
 			done(1);
 		}
 	}
 	nulldir.d_ino = 0;
-#ifdef	__linux__
 	nulldir.d_type = DT_DIR;
-#endif
 	nulldir.d_namlen = 1;
 	(void) strcpy(nulldir.d_name, "/");
 	nulldir.d_reclen = DIRSIZ(0, &nulldir);
@@ -234,7 +243,7 @@ skipdirs()
 }
 
 /*
- *	Recursively find names and inumbers of all files in subtree 
+ *	Recursively find names and inumbers of all files in subtree
  *	pname and pass them off to be processed.
  */
 void
@@ -266,8 +275,9 @@ treescan(pname, ino, todo)
 	 * begin search through the directory
 	 * skipping over "." and ".."
 	 */
-	(void) strncpy(locname, pname, MAXPATHLEN);
-	(void) strncat(locname, "/", MAXPATHLEN);
+	(void) strncpy(locname, pname, sizeof(locname) - 1);
+	locname[sizeof(locname) - 1] = '\0';
+	(void) strncat(locname, "/", sizeof(locname) - strlen(locname));
 	namelen = strlen(locname);
 	rst_seekdir(dirp, itp->t_seekpt, itp->t_seekpt);
 	dp = rst_readdir(dirp); /* "." */
@@ -287,9 +297,9 @@ treescan(pname, ino, todo)
 	 */
 	while (dp != NULL) {
 		locname[namelen] = '\0';
-		if (namelen + dp->d_namlen >= MAXPATHLEN) {
+		if (namelen + dp->d_namlen >= sizeof(locname)) {
 			fprintf(stderr, "%s%s: name exceeds %d char\n",
-				locname, dp->d_name, MAXPATHLEN);
+				locname, dp->d_name, sizeof(locname) - 1);
 		} else {
 			(void) strncat(locname, dp->d_name, (int)dp->d_namlen);
 			treescan(locname, dp->d_ino, todo);
@@ -317,7 +327,7 @@ pathsearch(pathname)
 	while (*path == '/')
 		path++;
 	dp = NULL;
-	while ((name = strsep(&path, "/")) != NULL && *name /* != NULL */) {
+	while ((name = strsep(&path, "/")) != NULL && *name != '\0') {
 		if ((dp = searchdir(ino, name)) == NULL)
 			return (NULL);
 		ino = dp->d_ino;
@@ -482,9 +492,7 @@ dcvt(odp, ndp)
 
 	memset(ndp, 0, (long)(sizeof *ndp));
 	ndp->d_ino =  odp->d_ino;
-#ifdef	__linux__
 	ndp->d_type = DT_UNKNOWN;
-#endif
 	(void) strncpy(ndp->d_name, odp->d_name, ODIRSIZ);
 	ndp->d_namlen = strlen(ndp->d_name);
 	ndp->d_reclen = DIRSIZ(0, ndp);
@@ -507,7 +515,7 @@ rst_seekdir(dirp, loc, base)
 		return;
 	loc -= base;
 	if (loc < 0)
-		fprintf(stderr, "bad seek pointer to rst_seekdir %d\n", loc);
+		fprintf(stderr, "bad seek pointer to rst_seekdir %ld\n", loc);
 	(void) lseek(dirp->dd_fd, base + (loc & ~(DIRBLKSIZ - 1)), SEEK_SET);
 	dirp->dd_loc = loc & (DIRBLKSIZ - 1);
 	if (dirp->dd_loc != 0)
@@ -525,7 +533,7 @@ rst_readdir(dirp)
 
 	for (;;) {
 		if (dirp->dd_loc == 0) {
-			dirp->dd_size = read(dirp->dd_fd, dirp->dd_buf, 
+			dirp->dd_size = read(dirp->dd_fd, dirp->dd_buf,
 			    DIRBLKSIZ);
 			if (dirp->dd_size <= 0) {
 				dprintf(stderr, "error reading directory\n");
@@ -539,9 +547,8 @@ rst_readdir(dirp)
 		dp = (struct direct *)(dirp->dd_buf + dirp->dd_loc);
 		if (dp->d_reclen == 0 ||
 		    dp->d_reclen > DIRBLKSIZ + 1 - dirp->dd_loc) {
-			dprintf(stderr, "corrupted directory: bad reclen %d\n"
-				"dd_loc = %d, dd_size = %d\n",
-				dp->d_reclen, dirp->dd_loc, dirp->dd_size);
+			dprintf(stderr, "corrupted directory: bad reclen %d\n",
+				dp->d_reclen);
 			return (NULL);
 		}
 		dirp->dd_loc += dp->d_reclen;
@@ -632,9 +639,15 @@ setdirmodes(flags)
 	struct modeinfo node;
 	struct entry *ep;
 	char *cp;
-	
+
 	vprintf(stdout, "Set directory mode, owner, and times.\n");
-	(void) sprintf(modefile, "%s/rstmode%d", tmpdir, dumpdate);
+	if (command == 'r' || command == 'R')
+		(void) sprintf(modefile, "%s/rstmode%ld", tmpdir, dumpdate);
+	if (modefile[0] == '#') {
+		panic("modefile not defined\n");
+		fprintf(stderr, "directory mode, owner, and times not set\n");
+		return;
+	}
 	mf = fopen(modefile, "r");
 	if (mf == NULL) {
 		fprintf(stderr, "fopen: %s\n", strerror(errno));
@@ -706,14 +719,14 @@ genliteraldir(name, ino)
 		size = i < BUFSIZ ? i : BUFSIZ;
 		if (read(dp, buf, (int) size) == -1) {
 			fprintf(stderr,
-				"write error extracting inode %d, name %s\n",
+				"write error extracting inode %ld, name %s\n",
 				curfile.ino, curfile.name);
 			fprintf(stderr, "read: %s\n", strerror(errno));
 			done(1);
 		}
 		if (!Nflag && write(ofile, buf, (int) size) == -1) {
 			fprintf(stderr,
-				"write error extracting inode %d, name %s\n",
+				"write error extracting inode %ld, name %s\n",
 				curfile.ino, curfile.name);
 			fprintf(stderr, "write: %s\n", strerror(errno));
 			done(1);
@@ -803,7 +816,7 @@ inotablookup(ino)
 /*
  * Clean up and exit
  */
-__dead void
+void
 done(exitcode)
 	int exitcode;
 {

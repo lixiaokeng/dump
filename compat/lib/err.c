@@ -1,7 +1,8 @@
 /*
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
- *	Remy Card <card@Linux.EU.Org>, 1994, 1995, 1996
+ *	Remy Card <card@Linux.EU.Org>, 1994-1997
+ *      Stelian Pop <pop@cybercable.fr>, 1999
  *
  */
 
@@ -36,11 +37,13 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
+ *	From: @(#)err.c	8.1 (Berkeley) 6/4/93
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "@(#)err.c	8.1 (Berkeley) 6/4/93";
-#endif /* LIBC_SCCS and not lint */
+#if defined(LIBC_RCS) && !defined(lint)
+static const char rcsid[] =
+	"$Id: err.c,v 1.2 1999/10/11 12:53:21 stelian Exp $";
+#endif /* LIBC_RCS and not lint */
 
 #include <err.h>
 #include <errno.h>
@@ -48,34 +51,43 @@ static char sccsid[] = "@(#)err.c	8.1 (Berkeley) 6/4/93";
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef __STDC__
 #include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 
 #include <config.h>
 
 extern char *__progname;		/* Program name, from crt0. */
 
+static FILE *err_file; /* file to use for error output */
+static void (*err_exit)(int);
+
+/*
+ * This is declared to take a `void *' so that the caller is not required
+ * to include <stdio.h> first.  However, it is really a `FILE *', and the
+ * manual page documents it as such.
+ */
+void
+err_set_file(void *fp)
+{
+	if (fp)
+		err_file = fp;
+	else
+		err_file = stderr;
+}
+
+void
+err_set_exit(void (*ef)(int))
+{
+	err_exit = ef;
+}
+
+
 #ifndef	HAVE_ERR
 __dead void
-#ifdef __STDC__
 err(int eval, const char *fmt, ...)
-#else
-err(eval, fmt, va_alist)
-	int eval;
-	const char *fmt;
-	va_dcl
-#endif
 {
 	va_list ap;
-#if __STDC__
 	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
-	verr(eval, fmt, ap);
+	verrc(eval, errno, fmt, ap);
 	va_end(ap);
 }
 #endif
@@ -87,36 +99,49 @@ verr(eval, fmt, ap)
 	const char *fmt;
 	va_list ap;
 {
-	int sverrno;
+	verrc(eval, errno, fmt, ap);
+}
+#endif
 
-	sverrno = errno;
-	(void)fprintf(stderr, "%s: ", __progname);
+#ifndef HAVE_ERRC
+__dead void
+errc(int eval, int code, const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	verrc(eval, code, fmt, ap);
+	va_end(ap);
+}
+#endif
+
+#ifndef HAVE_VERRC
+__dead void
+verrc(eval, code, fmt, ap)
+	int eval;
+	int code;
+	const char *fmt;
+	va_list ap;
+{
+	if (err_file == 0)
+		err_set_file((FILE *)0);
+	fprintf(err_file, "%s: ", __progname);
 	if (fmt != NULL) {
-		(void)vfprintf(stderr, fmt, ap);
-		(void)fprintf(stderr, ": ");
+		vfprintf(err_file, fmt, ap);
+		fprintf(err_file, ": ");
 	}
-	(void)fprintf(stderr, "%s\n", strerror(sverrno));
+	fprintf(err_file, "%s\n", strerror(code));
+	if (err_exit)
+		err_exit(eval);
 	exit(eval);
 }
 #endif
 
 #ifndef	HAVE_ERRX
 __dead void
-#if __STDC__
 errx(int eval, const char *fmt, ...)
-#else
-errx(eval, fmt, va_alist)
-	int eval;
-	const char *fmt;
-	va_dcl
-#endif
 {
 	va_list ap;
-#if __STDC__
 	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
 	verrx(eval, fmt, ap);
 	va_end(ap);
 }
@@ -129,31 +154,25 @@ verrx(eval, fmt, ap)
 	const char *fmt;
 	va_list ap;
 {
-	(void)fprintf(stderr, "%s: ", __progname);
+	if (err_file == 0)
+		err_set_file((FILE *)0);
+	fprintf(err_file, "%s: ", __progname);
 	if (fmt != NULL)
-		(void)vfprintf(stderr, fmt, ap);
-	(void)fprintf(stderr, "\n");
+		vfprintf(err_file, fmt, ap);
+	fprintf(err_file, "\n");
+	if (err_exit)
+		err_exit(eval);
 	exit(eval);
 }
 #endif
 
 #ifndef	HAVE_WARN
 void
-#if __STDC__
 warn(const char *fmt, ...)
-#else
-warn(fmt, va_alist)
-	const char *fmt;
-	va_dcl
-#endif
 {
 	va_list ap;
-#if __STDC__
 	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
-	vwarn(fmt, ap);
+	vwarnc(errno, fmt, ap);
 	va_end(ap);
 }
 #endif
@@ -164,34 +183,45 @@ vwarn(fmt, ap)
 	const char *fmt;
 	va_list ap;
 {
-	int sverrno;
+	vwarnc(errno, fmt, ap);
+}
+#endif
 
-	sverrno = errno;
-	(void)fprintf(stderr, "%s: ", __progname);
+#ifndef HAVE_WARNC
+void
+warnc(int code, const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	vwarnc(code, fmt, ap);
+	va_end(ap);
+}
+#endif
+
+#ifndef HAVE_VWARNC
+void
+vwarnc(code, fmt, ap)
+	int code;
+	const char *fmt;
+	va_list ap;
+{
+	if (err_file == 0)
+		err_set_file((FILE *)0);
+	fprintf(err_file, "%s: ", __progname);
 	if (fmt != NULL) {
-		(void)vfprintf(stderr, fmt, ap);
-		(void)fprintf(stderr, ": ");
+		vfprintf(err_file, fmt, ap);
+		fprintf(err_file, ": ");
 	}
-	(void)fprintf(stderr, "%s\n", strerror(sverrno));
+	fprintf(err_file, "%s\n", strerror(code));
 }
 #endif
 
 #ifndef	HAVE_WARNX
 void
-#ifdef __STDC__
 warnx(const char *fmt, ...)
-#else
-warnx(fmt, va_alist)
-	const char *fmt;
-	va_dcl
-#endif
 {
 	va_list ap;
-#ifdef __STDC__
 	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
 	vwarnx(fmt, ap);
 	va_end(ap);
 }
@@ -203,9 +233,11 @@ vwarnx(fmt, ap)
 	const char *fmt;
 	va_list ap;
 {
-	(void)fprintf(stderr, "%s: ", __progname);
+	if (err_file == 0)
+		err_set_file((FILE *)0);
+	fprintf(err_file, "%s: ", __progname);
 	if (fmt != NULL)
-		(void)vfprintf(stderr, fmt, ap);
-	(void)fprintf(stderr, "\n");
+		vfprintf(err_file, fmt, ap);
+	fprintf(err_file, "\n");
 }
 #endif

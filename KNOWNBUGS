@@ -5,7 +5,11 @@ Known bugs and limitations of the dump/restore port
 	resynchronizing itself on a multi-volume dump.  Thus, some files are
 	not restored.
 
+	Update: this is fixed in 4.0b5, needs succes reports!
+
 2.	I have tried to minimize changes in the BSD source and some parts
 	may look ugly.  dump/tape.c is really awfull but this is pure BSD
 	code :-)  Maybe, I should replace it with a simpler and cleaner
 	version.
+
+3.	Kerberos mode is _NOT_ tested.

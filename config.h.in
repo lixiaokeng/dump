@@ -12,6 +12,9 @@
 /* Define if you have the err function.  */
 #undef HAVE_ERR
 
+/* Define if you have the errc function.  */
+#undef HAVE_ERRC
+
 /* Define if you have the errx function.  */
 #undef HAVE_ERRX
 
@@ -21,17 +24,26 @@
 /* Define if you have the verr function.  */
 #undef HAVE_VERR
 
+/* Define if you have the verrc function.  */
+#undef HAVE_VERRC
+
 /* Define if you have the verrx function.  */
 #undef HAVE_VERRX
 
 /* Define if you have the vwarn function.  */
 #undef HAVE_VWARN
 
+/* Define if you have the vwarnc function.  */
+#undef HAVE_VWARNC
+
 /* Define if you have the vwarnx function.  */
 #undef HAVE_VWARNX
 
 /* Define if you have the warn function.  */
 #undef HAVE_WARN
+
+/* Define if you have the warnc function.  */
+#undef HAVE_WARNC
 
 /* Define if you have the warnx function.  */
 #undef HAVE_WARNX

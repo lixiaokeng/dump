@@ -1,7 +1,8 @@
 /*
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
- *	Remy Card <card@Linux.EU.Org>, 1994, 1995, 1996
+ *	Remy Card <card@Linux.EU.Org>, 1994-1997
+ *      Stelian Pop <pop@cybercable.fr>, 1999 
  *
  */
 
@@ -39,34 +40,36 @@
  */
 
 #ifndef lint
-static char copyright[] =
+static const char copyright[] =
 "@(#) Copyright (c) 1983, 1993\n\
 	The Regents of the University of California.  All rights reserved.\n";
 #endif /* not lint */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)main.c	8.6 (Berkeley) 5/4/95";
+#endif
+static const char rcsid[] =
+	"$Id: main.c,v 1.2 1999/10/11 12:53:23 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
-#include <sys/time.h>
 #include <sys/stat.h>
+#include <errno.h>
 
 #ifdef	__linux__
 #include <linux/ext2_fs.h>
 #include <bsdcompat.h>
+#include <signal.h>
+#include <string.h>
 #else	/* __linux__ */
 #include <ufs/ufs/dinode.h>
-#include <ufs/ffs/fs.h>
 #endif	/* __linux__ */
 #include <protocols/dumprestore.h>
 
 #include <err.h>
-#include <errno.h>
-#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 
 #ifdef	__linux__
@@ -80,6 +83,8 @@ static char sccsid[] = "@(#)main.c	8.6 (Berkeley) 5/4/95";
 
 int	bflag = 0, cvtflag = 0, dflag = 0, vflag = 0, yflag = 0;
 int	hflag = 1, mflag = 1, Nflag = 0;
+int	uflag = 0;
+int	dokerberos = 0;
 char	command = '\0';
 long	dumpnum = 1;
 long	volno = 0;
@@ -108,19 +113,29 @@ main(argc, argv)
 {
 	int ch;
 	ino_t ino;
-	char *inputdev = _PATH_DEFTAPE;
+	char *inputdev;
 	char *symtbl = "./restoresymtable";
 	char *p, name[MAXPATHLEN];
 
-	if (argc < 2)
-		usage();
+	/* Temp files should *not* be readable.  We set permissions later. */
+	(void) umask(077);
 
 #ifdef	__linux__
 	__progname = argv[0];
 #endif
 
+	if (argc < 2)
+		usage();
+
+	if ((inputdev = getenv("TAPE")) == NULL)
+		inputdev = _PATH_DEFTAPE;
 	obsolete(&argc, &argv);
-	while ((ch = getopt(argc, argv, "b:CcdD:f:himNRrs:tT:vxy")) != EOF)
+#ifdef KERBEROS
+#define	optlist "b:CcdDf:hikmNRrs:tTuvxy"
+#else
+#define	optlist "b:CcdDf:himNRrs:tTuvxy"
+#endif
+	while ((ch = getopt(argc, argv, optlist)) != -1)
 		switch(ch) {
 		case 'b':
 			/* Change default tape blocksize. */
@@ -149,6 +164,11 @@ main(argc, argv)
 		case 'h':
 			hflag = 0;
 			break;
+#ifdef KERBEROS
+		case 'k':
+			dokerberos = 1;
+			break;
+#endif
 		case 'C':
 		case 'i':
 		case 'R':
@@ -174,6 +194,9 @@ main(argc, argv)
 				errx(1, "illegal dump number -- %s", optarg);
 			if (dumpnum <= 0)
 				errx(1, "dump number must be greater than 0");
+			break;
+		case 'u':
+			uflag = 1;
 			break;
 		case 'v':
 			vflag = 1;
@@ -301,7 +324,7 @@ main(argc, argv)
 		extractdirs(0);
 		initsymtable((char *)0);
 		while (argc--) {
-			canon(*argv++, name);
+			canon(*argv++, name, sizeof(name));
 			ino = dirlookup(name);
 			if (ino == 0)
 				continue;
@@ -316,7 +339,7 @@ main(argc, argv)
 		extractdirs(1);
 		initsymtable((char *)0);
 		while (argc--) {
-			canon(*argv++, name);
+			canon(*argv++, name, sizeof(name));
 			ino = dirlookup(name);
 			if (ino == 0)
 				continue;
@@ -333,16 +356,18 @@ main(argc, argv)
 	}
 	done(0);
 	/* NOTREACHED */
+	exit(1);	/* gcc shut up */
 }
 
 static void
 usage()
 {
 	(void)fprintf(stderr, "usage:\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n",
-	  "restore -i [-chmvy] [-b blocksize] [-f file] [-s fileno]",
-	  "restore -r [-cvy] [-b blocksize] [-f file] [-s fileno]",
-	  "restore -R [-cvy] [-b blocksize] [-f file] [-s fileno]",
-	  "restore -x [-chmvy] [-b blocksize] [-f file] [-s fileno] [file ...]",	  "restore -t [-chvy] [-b blocksize] [-f file] [-s fileno] [file ...]");
+	  "restore -i [-chkmuvy] [-b blocksize] [-f file] [-s fileno]",
+	  "restore -r [-ckuvy] [-b blocksize] [-f file] [-s fileno]",
+	  "restore -R [-ckuvy] [-b blocksize] [-f file] [-s fileno]",
+	  "restore -x [-chkmuvy] [-b blocksize] [-f file] [-s fileno] [file ...]",
+	  "restore -t [-chkuvy] [-b blocksize] [-f file] [-s fileno] [file ...]");
 	done(1);
 }
 
@@ -357,7 +382,7 @@ obsolete(argcp, argvp)
 	char **argvp[];
 {
 	int argc, flags;
-	char *ap, **argv, *flagsp, **nargv, *p;
+	char *ap, **argv, *flagsp=NULL, **nargv, *p=NULL;
 
 	/* Setup. */
 	argv = *argvp;
@@ -374,7 +399,7 @@ obsolete(argcp, argvp)
 		err(1, NULL);
 
 	*nargv++ = *argv;
-	argv += 2;
+	argv += 2, argc -= 2;
 
 	for (flags = 0; *ap; ++ap) {
 		switch (*ap) {
@@ -410,7 +435,7 @@ obsolete(argcp, argvp)
 	}
 
 	/* Copy remaining arguments. */
-	while (*nargv++ = *argv++);
+	while ((*nargv++ = *argv++));
 
 	/* Update argument count. */
 	*argcp = nargv - *argvp - 1;

@@ -1,7 +1,8 @@
 /*
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
- *	Remy Card <card@Linux.EU.Org>, 1994, 1995, 1996
+ *	Remy Card <card@Linux.EU.Org>, 1994-1997
+ *      Stelian Pop <pop@cybercable.fr>, 1999 
  *
  */
 
@@ -38,26 +39,29 @@
  * SUCH DAMAGE.
  *
  *	@(#)extern.h	8.2 (Berkeley) 1/7/94
+ *	$Id: extern.h,v 1.2 1999/10/11 12:53:23 stelian Exp $
  */
 
 struct entry	*addentry __P((char *, ino_t, int));
 long		 addfile __P((char *, ino_t, int));
+int		 addwhiteout __P((char *));
 void		 badentry __P((struct entry *, char *));
-void	 	 canon __P((char *, char *));
+void	 	 canon __P((char *, char *, int));
 void		 checkrestore __P((void));
 void		 closemt __P((void));
+void		 comparefile __P((char *));
+void		 compareleaves __P((void));
 void		 createfiles __P((void));
 void		 createleaves __P((char *));
-void		 compareleaves __P((void));
 void		 createlinks __P((void));
 long		 deletefile __P((char *, ino_t, int));
 void		 deleteino __P((ino_t));
+void		 delwhiteout __P((struct entry *));
 ino_t		 dirlookup __P((const char *));
 __dead void 	 done __P((int));
 void		 dumpsymtable __P((char *, long));
 void	 	 extractdirs __P((int));
 int		 extractfile __P((char *));
-void		 comparefile __P((char *));
 void		 findunreflinks __P((void));
 char		*flagvalues __P((struct entry *));
 void		 freeentry __P((struct entry *));

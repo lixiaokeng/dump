@@ -1,7 +1,8 @@
 /*
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
- *	Remy Card <card@Linux.EU.Org>, 1994, 1995, 1996
+ *	Remy Card <card@Linux.EU.Org>, 1994-1997
+ *      Stelian Pop <pop@cybercable.fr>, 1999
  *
  */
 
@@ -45,8 +46,8 @@
  *	@(#)dumprestore.h	8.2 (Berkeley) 1/21/94
  */
 
-#ifndef _DUMPRESTORE_H_
-#define _DUMPRESTORE_H_
+#ifndef _PROTOCOLS_DUMPRESTORE_H_
+#define _PROTOCOLS_DUMPRESTORE_H_
 
 /*
  * TP_BSIZE is the size of file blocks on the dump tapes.
@@ -74,29 +75,29 @@
 union u_spcl {
 	char dummy[TP_BSIZE];
 	struct	s_spcl {
-		__s32	c_type;		    /* record type (see below) */
-		__u32	c_date;		    /* date of this dump */
-		__u32	c_ddate;	    /* date of previous dump */
-		__s32	c_volume;	    /* dump volume number */
+		int32_t	c_type;		    /* record type (see below) */
+		time_t	c_date;		    /* date of this dump */
+		time_t	c_ddate;	    /* date of previous dump */
+		int32_t	c_volume;	    /* dump volume number */
 		daddr_t	c_tapea;	    /* logical block of this record */
 		ino_t	c_inumber;	    /* number of inode */
-		__s32	c_magic;	    /* magic number (see above) */
-		__s32	c_checksum;	    /* record checksum */
+		int32_t	c_magic;	    /* magic number (see above) */
+		int32_t	c_checksum;	    /* record checksum */
 #ifdef	__linux__
 		struct	new_bsd_inode c_dinode;
 #else
 		struct	dinode	c_dinode;   /* ownership and mode of inode */
 #endif
-		__s32	c_count;	    /* number of valid c_addr entries */
+		int32_t	c_count;	    /* number of valid c_addr entries */
 		char	c_addr[TP_NINDIR];  /* 1 => data; 0 => hole in inode */
 		char	c_label[LBLSIZE];   /* dump label */
-		__s32	c_level;	    /* level of this dump */
+		int32_t	c_level;	    /* level of this dump */
 		char	c_filesys[NAMELEN]; /* name of dumpped file system */
 		char	c_dev[NAMELEN];	    /* name of dumpped device */
 		char	c_host[NAMELEN];    /* name of dumpped host */
-		__s32	c_flags;	    /* additional information */
-		__s32	c_firstrec;	    /* first record on volume */
-		__s32	c_spare[32];	    /* reserved for future uses */
+		int32_t	c_flags;	    /* additional information */
+		int32_t	c_firstrec;	    /* first record on volume */
+		int32_t	c_spare[32];	    /* reserved for future uses */
 	} s_spcl;
 } u_spcl;
 #define spcl u_spcl.s_spcl

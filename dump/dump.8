@@ -11,7 +11,7 @@
 .\"    notice, this list of conditions and the following disclaimer in the
 .\"    documentation and/or other materials provided with the distribution.
 .\" 3. All advertising materials mentioning features or use of this software
-.\"    must display the following acknowledgement:
+.\"    must display the following acknowledgment:
 .\"	This product includes software developed by the University of
 .\"	California, Berkeley and its contributors.
 .\" 4. Neither the name of the University nor the names of its contributors
@@ -31,6 +31,7 @@
 .\" SUCH DAMAGE.
 .\"
 .\"     @(#)dump.8	8.3 (Berkeley) 5/1/95
+.\"	$Id: dump.8,v 1.2 1999/10/11 12:53:21 stelian Exp $
 .\"
 .Dd May 1, 1995
 .Dt DUMP 8
@@ -40,22 +41,24 @@
 .Nd filesystem backup
 .Sh SYNOPSIS
 .Nm dump
-.Op Fl 0123456789cnu
+.Op Fl 0123456789acknu
 .Op Fl B Ar records
 .Op Fl b Ar blocksize
 .Op Fl d Ar density
 .Op Fl f Ar file
 .Op Fl h Ar level
+.Op Fl L Ar label
 .Op Fl s Ar feet
 .Op Fl T Ar date
 .Ar filesystem
 .Nm dump
-.Op Fl 0123456789cnu
+.Op Fl 0123456789acknu
 .Op Fl B Ar records
 .Op Fl b Ar blocksize
 .Op Fl d Ar density
 .Op Fl f Ar file
 .Op Fl h Ar level
+.Op Fl L Ar label
 .Op Fl s Ar feet
 .Op Fl T Ar date
 .Ar directory
@@ -80,7 +83,11 @@ option below for doing remote backups).
 A dump that is larger than the output medium is broken into
 multiple volumes.
 On most media the size is determined by writing until an
-end-of-media indication is returned.
+end-of-media indication is returned.  This can be enforced
+by using the
+.Fl a
+option.
+.Pp
 On media that cannot reliably return an end-of-media indication
 (such as some cartridge tape drives)
 each volume is of a fixed size;
@@ -90,7 +97,7 @@ By default, the same output file name is used for each volume
 after prompting the operator to change media.
 .Pp
 The following options are supported by
-.Nm dump :
+.Nm Ns :
 .Bl -tag -width Ds
 .It Fl 0\-9
 Dump levels.
@@ -103,17 +110,35 @@ A level number above 0,
 incremental backup,
 tells dump to
 copy all files new or modified since the
-last dump of the same or lower level.
-The default level is 9.
+last dump of any lower level.
+The default level is 0.
 .It Fl B Ar records
-The number of dump records per volume.
+The number of 1 KB blocks per volume.
 This option overrides the calculation of tape size
 based on length and density.
+.It Fl a
+.Dq auto-size .
+Bypass all tape length considerations, and enforce writing
+until an end-of-media indication is returned.  This fits best
+for most modern tape drives.  Use of this option is particularly
+recommended when appending to an existing tape, or using a tape
+drive with hardware compression (where you can never be sure about
+the compression ratio).
 .It Fl b Ar blocksize
 The number of kilobytes per dump record.
 .It Fl c
-Modify the calculation of the default density and tape size to be more
-appropriate for cartridge tapes.
+Change the defaults for use with a cartridge tape drive, with a density
+of 8000 bpi, and a length of 1700 feet.
+.It Fl h Ar level
+Honor the user
+.Dq nodump
+flag
+.Dp Dv UF_NODUMP
+only for dumps at or above the given
+.Ar level .
+The default honor level is 1,
+so that incremental backups omit such files
+but full backups retain them.
 .It Fl d Ar density
 Set tape density to
 .Ar density .
@@ -127,7 +152,7 @@ like
 .Pa /dev/rmt12
 (a tape drive),
 .Pa /dev/rsd1c
-(a disk drive),
+(a floppy disk drive),
 an ordinary file,
 or
 .Ql Fl
@@ -141,22 +166,36 @@ If the name of the file is of the form
 .Dq host:file ,
 or
 .Dq user@host:file ,
-.Nm dump
+.Nm
 writes to the named file on the remote host using
 .Xr rmt 8 .
-.It Fl h Ar level
-Honor the user
-.Dq nodump
-flag
-.Dp Dv UF_NODUMP
-only for dumps at or above the given
-.Ar level .
-The default honor level is 1,
-so that incremental backups omit such files
-but full backups retain them.
+The default path name of the remote
+.Xr rmt 8
+program is
+.\" rmt path, is the path on the remote host
+.Pa /etc/rmt ;
+this can be overridden by the environment variable
+.Ev RMT .
+.It Fl k
+Use Kerberos authentication to talk to remote tape servers.  (Only
+available if this option was enabled when
+.Nm
+was compiled.)
+.It Fl L Ar label
+The user-supplied text string
+.Ar label
+is placed into the dump header, where tools like
+.Xr restore 8
+and
+.Xr file 1
+can access it.
+Note that this label is limited
+to be at most LBLSIZE (currently 16) characters, which must include
+the terminating
+.Ql \e0 .
 .It Fl n
 Whenever
-.Nm dump
+.Nm
 requires operator attention,
 notify all operators in the group
 .Dq operator
@@ -166,7 +205,7 @@ by means similar to a
 Attempt to calculate the amount of tape needed
 at a particular density.
 If this amount is exceeded,
-.Nm dump
+.Nm
 prompts for a new tape.
 It is recommended to be a bit conservative on this option.
 The default tape length is 2300 feet.
@@ -212,7 +251,7 @@ and
 The
 .Fl W
 option causes
-.Nm dump
+.Nm
 to print out, for each file system in
 .Pa /etc/dumpdates
 the most recent dump date and level,
@@ -220,7 +259,7 @@ and highlights those file systems that should be dumped.
 If the
 .Fl W
 option is set, all other options are ignored, and
-.Nm dump
+.Nm
 exits immediately.
 .It Fl w
 Is like W, but prints only those filesystems which need to be dumped.
@@ -236,15 +275,15 @@ disk read error (if there are more than a threshold of 32).
 In addition to alerting all operators implied by the
 .Fl n
 key,
-.Nm dump
+.Nm
 interacts with the operator on
 .Em dump's
 control terminal at times when
-.Nm dump
+.Nm
 can no longer proceed,
 or if something is grossly wrong.
 All questions
-.Nm dump
+.Nm
 poses
 .Em must
 be answered by typing
@@ -254,10 +293,10 @@ or
 appropriately.
 .Pp
 Since making a dump involves a lot of time and effort for full dumps,
-.Nm dump
+.Nm
 checkpoints itself at the start of each tape volume.
 If writing that volume fails for some reason,
-.Nm dump
+.Nm
 will,
 with operator permission,
 restart itself from the checkpoint
@@ -272,7 +311,7 @@ the time to the tape change.
 The output is verbose,
 so that others know that the terminal
 controlling
-.Nm dump
+.Nm
 is busy,
 and will be for some time.
 .Pp
@@ -309,6 +348,26 @@ used, also on a cyclical basis.
 .Pp
 After several months or so, the daily and weekly tapes should get
 rotated out of the dump cycle and fresh tapes brought in.
+.Sh ENVIRONMENT
+.Bl -tag -width Fl
+.It Ev TAPE
+If no -f option was specified,
+.Nm
+will use the device specified via
+.Ev TAPE
+as the dump device.
+.Ev TAPE
+may be of the form
+.Qq tapename ,
+.Qq host:tapename ,
+or
+.Qq user@host:tapename .
+.It Ev RMT
+The environment variable
+.Ev RMT
+will be used to determine the pathname of the remote
+.Xr rmt 8
+program.
 .Sh FILES
 .Bl -tag -width /etc/dumpdates -compact
 .It Pa /dev/rmt8
@@ -322,10 +381,9 @@ to find group
 .Em operator
 .El
 .Sh SEE ALSO
+.Xr fstab 5 ,
 .Xr restore 8 ,
-.Xr rmt 8 ,
-.Xr dump 5 ,
-.Xr fstab 5
+.Xr rmt 8
 .Sh DIAGNOSTICS
 Many, and verbose.
 .Pp
@@ -351,14 +409,22 @@ even if listed in
 .Pa /etc/fstab .
 .Pp
 It would be nice if
-.Nm dump
+.Nm
 knew about the dump sequence,
 kept track of the tapes scribbled on,
 told the operator which tape to mount when,
 and provided more assistance
 for the operator running
 .Xr restore .
+.Pp
+.Nm Dump
+cannot do remote backups without being run as root, due to its
+security history.  This will be fixed in a later version of
+.Bx Free .
+Presently, it works if you set it setuid (like it used to be), but this
+might constitute a security risk.
 .Sh HISTORY
 A
-.Nm dump
-command appeared in Version 6 AT&T UNIX.
+.Nm
+command appeared in
+.At v6 .

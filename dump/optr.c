@@ -1,7 +1,8 @@
 /*
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
- *	Remy Card <card@Linux.EU.Org>, 1994, 1995, 1996
+ *	Remy Card <card@Linux.EU.Org>, 1994-1997
+ *      Stelian Pop <pop@cybercable.fr>, 1999 
  *
  */
 
@@ -39,7 +40,11 @@
  */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)optr.c	8.2 (Berkeley) 1/6/94";
+#endif
+static const char rcsid[] =
+	"$Id: optr.c,v 1.2 1999/10/11 12:53:22 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -49,26 +54,18 @@ static char sccsid[] = "@(#)optr.c	8.2 (Berkeley) 1/6/94";
 #include <errno.h>
 #include <fstab.h>
 #include <grp.h>
-#include <signal.h>
 #include <stdio.h>
-#ifdef __STDC__
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#endif
-#include <tzfile.h>
-#ifdef __STDC__
 #include <unistd.h>
-#endif
 #include <utmp.h>
-#ifndef __STDC__
-#include <varargs.h>
-#endif
 
 #ifdef __linux__
 #include <linux/ext2_fs.h>
 #include <ext2fs/ext2fs.h>
 #include <bsdcompat.h>
+#include <signal.h>
 #endif
 
 #include "dump.h"
@@ -184,7 +181,7 @@ struct	group *gp;
 
 /*
  *	Get the names from the group entry "operator" to notify.
- */	
+ */
 void
 set_operators()
 {
@@ -265,13 +262,13 @@ static void
 sendmes(tty, message)
 	char *tty, *message;
 {
-	char t[50], buf[BUFSIZ];
+	char t[MAXPATHLEN], buf[BUFSIZ];
 	register char *cp;
 	int lmsg = 1;
 	FILE *f_tty;
 
 	(void) strcpy(t, _PATH_DEV);
-	(void) strcat(t, tty);
+	(void) strncat(t, tty, sizeof t - strlen(_PATH_DEV) - 1);
 
 	if ((f_tty = fopen(t, "w")) != NULL) {
 		setbuf(f_tty, buf);
@@ -313,7 +310,7 @@ timeest()
 	if (tnow >= tschedule) {
 		tschedule = tnow + 300;
 		if (blockswritten < 500)
-			return;	
+			return;
 		deltat = tstart_writing - tnow +
 			(1.0 * (tnow - tstart_writing))
 			/ blockswritten * tapesize;
@@ -559,7 +556,7 @@ lastdump(arg)
 		dt = fstabsearch(dtwalk->dd_name);
 		dumpme = (dt != NULL &&
 		    dt->fs_freq != 0 &&
-		    dtwalk->dd_ddate < tnow - (dt->fs_freq * SECSPERDAY));
+		    dtwalk->dd_ddate < tnow - (dt->fs_freq * 86400));
 		if (arg != 'w' || dumpme)
 			(void) printf(
 			    "%c %8s\t(%6s) Last dump: Level %c, Date %s\n",

@@ -1,3 +1,20 @@
+Changes between versions 0.4b4 and 0.4b5
+========================================
+
+1.	Integrated the changes from FreeBSD-3.1-RELEASE
+	(mostly bug fixes, buffer overruns, dump has now an "automatic
+	tape length calculation" flag, dump/restore can use kerberos now
+	(this is NOT tested), use environment variables for TAPE and
+	RMT etc.).
+
+2.	Integrated three RedHat patches ("glibc", "kernel" and "bread" patches)
+
+3.	Corrected a bug in restore when using 'C' option with multi-volumes
+	tapes (files splited accros two tapes give "size changed" errors
+	when comparing).
+
+4.	Corrected the long standing bug when dumping multiple tapes.
+	This works for me, needs further testing.
 
 Changes between versions 0.4b3 and 0.4b4
 ========================================

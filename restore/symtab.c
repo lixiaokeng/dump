@@ -1,7 +1,8 @@
 /*
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
- *	Remy Card <card@Linux.EU.Org>, 1994, 1995, 1996
+ *	Remy Card <card@Linux.EU.Org>, 1994-1997
+ *      Stelian Pop <pop@cybercable.fr>, 1999 
  *
  */
 
@@ -39,7 +40,11 @@
  */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)symtab.c	8.3 (Berkeley) 4/28/95";
+#endif
+static const char rcsid[] =
+	"$Id: symtab.c,v 1.2 1999/10/11 12:53:24 stelian Exp $";
 #endif /* not lint */
 
 /*
@@ -167,8 +172,11 @@ lookupname(name)
 
 	cp = name;
 	for (ep = lookupino(ROOTINO); ep != NULL; ep = ep->e_entries) {
-		for (np = buf; *cp != '/' && *cp != '\0'; )
+		for (np = buf; *cp != '/' && *cp != '\0' &&
+				np < &buf[sizeof(buf)]; )
 			*np++ = *cp++;
+		if (np == &buf[sizeof(buf)])
+			break;
 		*np = '\0';
 		for ( ; ep != NULL; ep = ep->e_sibling)
 			if (strcmp(ep->e_name, buf) == 0)
@@ -227,7 +235,7 @@ myname(ep)
 }
 
 /*
- * Unused symbol table entries are linked together on a freelist
+ * Unused symbol table entries are linked together on a free list
  * headed by the following pointer.
  */
 static struct entry *freelist = NULL;
@@ -271,7 +279,7 @@ addentry(name, inum, type)
 	if (type & LINK) {
 		ep = lookupino(inum);
 		if (ep == NULL)
-			panic("link to non-existant name\n");
+			panic("link to non-existent name\n");
 		np->e_ino = inum;
 		np->e_links = ep->e_links;
 		ep->e_links = np;
@@ -383,12 +391,12 @@ removeentry(ep)
 
 /*
  * Table of unused string entries, sorted by length.
- * 
+ *
  * Entries are allocated in STRTBLINCR sized pieces so that names
  * of similar lengths can use the same entry. The value of STRTBLINCR
  * is chosen so that every entry has at least enough space to hold
  * a "struct strtbl" header. Thus every entry can be linked onto an
- * apprpriate free list.
+ * appropriate free list.
  *
  * NB. The macro "allocsize" below assumes that "struct strhdr"
  *     has a size that is a power of two.
@@ -439,7 +447,7 @@ freename(name)
 	char *name;
 {
 	struct strhdr *tp, *np;
-	
+
 	tp = &strtblhdr[strlen(name) / STRTBLINCR];
 	np = (struct strhdr *)name;
 	np->next = tp->next;
@@ -450,13 +458,13 @@ freename(name)
  * Useful quantities placed at the end of a dumped symbol table.
  */
 struct symtableheader {
-	long	volno;
-	long	stringsize;
-	long	entrytblsize;
+	int32_t	volno;
+	int32_t	stringsize;
+	int32_t	entrytblsize;
 	time_t	dumptime;
 	time_t	dumpdate;
 	ino_t	maxino;
-	long	ntrec;
+	int32_t	ntrec;
 };
 
 /*
@@ -484,10 +492,10 @@ dumpsymtable(filename, checkpt)
 	}
 	clearerr(fd);
 	/*
-	 * Assign indicies to each entry
+	 * Assign indices to each entry
 	 * Write out the string entries
 	 */
-	for (i = WINO; i < maxino; i++) {
+	for (i = WINO; i <= maxino; i++) {
 		for (ep = lookupino(i); ep != NULL; ep = ep->e_links) {
 			ep->e_index = mynum++;
 			(void) fwrite(ep->e_name, sizeof(char),
@@ -499,7 +507,7 @@ dumpsymtable(filename, checkpt)
 	 */
 	tep = &temp;
 	stroff = 0;
-	for (i = WINO; i < maxino; i++) {
+	for (i = WINO; i <= maxino; i++) {
 		for (ep = lookupino(i); ep != NULL; ep = ep->e_links) {
 			memmove(tep, ep, (long)sizeof(struct entry));
 			tep->e_name = (char *)stroff;

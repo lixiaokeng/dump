@@ -1,7 +1,8 @@
 /*
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
- *	Remy Card <card@Linux.EU.Org>, 1994, 1995, 1996
+ *	Remy Card <card@Linux.EU.Org>, 1994-1997
+ *      Stelian Pop <pop@cybercable.fr>, 1999 
  *
  */
 
@@ -39,9 +40,17 @@
  */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)tape.c	8.4 (Berkeley) 5/1/95";
+#endif
+static const char rcsid[] =
+	"$Id: tape.c,v 1.2 1999/10/11 12:53:22 stelian Exp $";
 #endif /* not lint */
 
+#ifdef __linux__
+#include <sys/types.h>
+#include <linux/types.h>
+#endif
 #include <sys/param.h>
 #include <sys/socket.h>
 #include <sys/time.h>
@@ -80,7 +89,6 @@ int	write(), read();
 #include <ext2fs/ext2fs.h>
 #endif
 #include "dump.h"
-#include "pathnames.h"
 
 int	writesize;		/* size of malloc()ed buffer for tape */
 long	lastspclrec = -1;	/* tape block number of last written header */
@@ -92,7 +100,7 @@ extern	int cartridge;
 extern	char *host;
 char	*nexttape;
 
-static	int atomic __P((int (*)(), int, char *, int));
+static	int atomic __P((ssize_t (*)(), int, char *, int));
 static	void doslave __P((int, int));
 static	void enslave __P((void));
 static	void flushtape __P((void));
@@ -153,7 +161,7 @@ alloctape()
 	 * repositioning after stopping, i.e, streaming mode, where the gap is
 	 * variable, 0.30" to 0.45".  The gap is maximal when the tape stops.
 	 */
-	if (blocksperfile == 0)
+	if (blocksperfile == 0 && !unlimited)
 		tenths = writesize / density +
 		    (cartridge ? 16 : density == 625 ? 5 : 8);
 	/*
@@ -321,7 +329,7 @@ flushtape()
 	asize += tenths;
 	blockswritten += ntrec;
 	blocksthisvol += ntrec;
-	if (!pipeout && (blocksperfile ?
+	if (!pipeout && !unlimited && (blocksperfile ?
 	    (blocksthisvol >= blocksperfile) : (asize > tsize))) {
 		close_rewind();
 		startnewtape(0);
@@ -337,12 +345,12 @@ trewind()
 
 	for (f = 0; f < SLAVES; f++) {
 		/*
-		 * Drain the results, but unlike EOT we DO (or should) care 
-		 * what the return values were, since if we detect EOT after 
-		 * we think we've written the last blocks to the tape anyway, 
+		 * Drain the results, but unlike EOT we DO (or should) care
+		 * what the return values were, since if we detect EOT after
+		 * we think we've written the last blocks to the tape anyway,
 		 * we have to replay those blocks with rollforward.
 		 *
-		 * fixme: punt for now.  
+		 * fixme: punt for now.
 		 */
 		if (slaves[f].sent) {
 			if (atomic(read, slaves[f].fd, (char *)&got, sizeof got)
@@ -385,9 +393,16 @@ trewind()
 void
 close_rewind()
 {
+	time_t tstart_changevol, tend_changevol;
+
 	trewind();
 	if (nexttape)
 		return;
+#ifdef  __linux__
+        (void)time4(&(tstart_changevol));
+#else
+	(void)time((time_t *)&(tstart_changevol));
+#endif
 	if (!nogripe) {
 		msg("Change Volumes: Mount volume #%d\n", tapeno+1);
 		broadcast("CHANGE DUMP VOLUMES!\7\7\n");
@@ -397,6 +412,13 @@ close_rewind()
 			dumpabort(0);
 			/*NOTREACHED*/
 		}
+#ifdef  __linux__
+	(void)time4(&(tend_changevol));
+#else
+	(void)time((time_t *)&(tend_changevol));
+#endif
+	if ((tstart_changevol != (time_t)-1) && (tend_changevol != (time_t)-1))
+		tstart_writing += (tend_changevol - tstart_changevol);
 }
 
 void
@@ -406,13 +428,17 @@ rollforward()
 	register struct slave *tslp;
 	int i, size, savedtapea, got;
 	union u_spcl *ntb, *otb;
+#ifdef __linux__
+	int blks;
+	long lastfirstrec;
+#endif
 	tslp = &slaves[SLAVES];
 	ntb = (union u_spcl *)tslp->tblock[1];
 
 	/*
-	 * Each of the N slaves should have requests that need to 
-	 * be replayed on the next tape.  Use the extra slave buffers 
-	 * (slaves[SLAVES]) to construct request lists to be sent to 
+	 * Each of the N slaves should have requests that need to
+	 * be replayed on the next tape.  Use the extra slave buffers
+	 * (slaves[SLAVES]) to construct request lists to be sent to
 	 * each slave in turn.
 	 */
 	for (i = 0; i < SLAVES; i++) {
@@ -420,7 +446,7 @@ rollforward()
 		otb = (union u_spcl *)slp->tblock;
 
 		/*
-		 * For each request in the current slave, copy it to tslp. 
+		 * For each request in the current slave, copy it to tslp.
 		 */
 
 		prev = NULL;
@@ -457,6 +483,9 @@ rollforward()
 			dumpabort(0);
 		}
 		slp->sent = 1;
+#ifdef __linux__
+		lastfirstrec = slp->firstrec;
+#endif
 		if (++slp >= &slaves[SLAVES])
 			slp = &slaves[0];
 
@@ -464,8 +493,8 @@ rollforward()
 
 		if (prev->dblk != 0) {
 			/*
-			 * If the last one was a disk block, make the 
-			 * first of this one be the last bit of that disk 
+			 * If the last one was a disk block, make the
+			 * first of this one be the last bit of that disk
 			 * block...
 			 */
 			q->dblk = prev->dblk +
@@ -473,7 +502,7 @@ rollforward()
 			ntb = (union u_spcl *)tslp->tblock;
 		} else {
 			/*
-			 * It wasn't a disk block.  Copy the data to its 
+			 * It wasn't a disk block.  Copy the data to its
 			 * new location in the buffer.
 			 */
 			q->dblk = 0;
@@ -484,7 +513,11 @@ rollforward()
 	slp->req[0] = *q;
 	nextblock = slp->tblock;
 	if (q->dblk == 0)
+#ifdef __linux__
+		*(union u_spcl *)(*(nextblock)++) = *(union u_spcl *)tslp->tblock;
+#else
 		nextblock++;
+#endif
 	trecno = 1;
 
 	/*
@@ -503,6 +536,22 @@ rollforward()
 			quit("EOT detected at start of the tape!\n");
 		}
 	}
+
+#ifdef __linux__
+	blks = 0;
+	if (spcl.c_type != TS_END) {
+		for (i = 0; i < spcl.c_count; i++)
+			if (spcl.c_addr[i] != 0)
+				blks++;
+	}
+
+	slp->firstrec = lastfirstrec + ntrec;
+	slp->count = lastspclrec + blks + 1 - spcl.c_tapea;
+	slp->inode = curino;
+	asize += tenths;
+	blockswritten += ntrec;
+	blocksthisvol += ntrec;
+#endif
 }
 
 /*
@@ -571,7 +620,7 @@ restore_check_point:
 			case X_FINOK:
 				msg("Child %d finishes X_FINOK\n", childpid);
 				break;
-			case X_ABORT:	
+			case X_ABORT:
 				msg("Child %d finishes X_ABORT\n", childpid);
 				break;
 			case X_REWRITE:
@@ -621,7 +670,7 @@ restore_check_point:
 		while ((tapefd = (host ? rmtopen(tape, 2) :
 			pipeout ? 1 : open(tape, O_WRONLY|O_CREAT, 0666))) < 0)
 #else
-		while ((tapefd = (pipeout ? 1 : 
+		while ((tapefd = (pipeout ? 1 :
 				  open(tape, O_WRONLY|O_CREAT, 0666))) < 0)
 #endif
 		    {
@@ -636,7 +685,7 @@ restore_check_point:
 		blocksthisvol = 0;
 		if (top)
 			newtape++;		/* new tape signal */
-		spcl.c_count = slp->count; 
+		spcl.c_count = slp->count;
 		/*
 		 * measure firstrec in TP_BSIZE units since restore doesn't
 		 * know the correct ntrec value...
@@ -671,7 +720,7 @@ dumpabort(signo)
 	Exit(X_ABORT);
 }
 
-__dead void
+void
 Exit(status)
 	int status;
 {
@@ -751,7 +800,6 @@ enslave()
 			quit("master/slave protocol botched 4\n");
 #endif
 
-	/* write pid of next slave to each slave */
 	for (i = 0; i < SLAVES; i++)
 		(void) atomic(write, slaves[i].fd, 
 			      (char *) &slaves[(i + 1) % SLAVES].pid, 
@@ -766,8 +814,10 @@ killall()
 	register int i;
 
 	for (i = 0; i < SLAVES; i++)
-		if (slaves[i].pid > 0)
+		if (slaves[i].pid > 0) {
 			(void) kill(slaves[i].pid, SIGKILL);
+			slaves[i].sent = 0;
+		}
 }
 
 /*
@@ -788,9 +838,6 @@ doslave(cmd, slave_number)
 	errcode_t retval;
 #endif
 
-#ifdef TDEBUG
-	msg("slave %d, pid %d\n", slave_number, getpid());
-#endif
 	/*
 	 * Need our own seek pointer.
 	 */
@@ -825,7 +872,7 @@ doslave(cmd, slave_number)
 					p->count * TP_BSIZE);
 			} else {
 				if (p->count != 1 || atomic(read, cmd,
-				    (char *)slp->tblock[trecno], 
+				    (char *)slp->tblock[trecno],
 				    TP_BSIZE) != TP_BSIZE)
 				       quit("master/slave protocol botched.\n");
 			}
@@ -839,6 +886,7 @@ doslave(cmd, slave_number)
 		caught = 0;
 
 		/* Try to write the data... */
+		wrote = 0;
 		eot_count = 0;
 		size = 0;
 
@@ -852,9 +900,9 @@ doslave(cmd, slave_number)
 				wrote = write(tapefd, slp->tblock[0]+size,
 				    writesize-size);
 #ifdef WRITEDEBUG
-			msg("slave %d wrote %d\n", slave_number, wrote);
+			printf("slave %d wrote %d\n", slave_number, wrote);
 #endif
-			if (wrote < 0) 
+			if (wrote < 0)
 				break;
 			if (wrote == 0)
 				eot_count++;
@@ -862,19 +910,23 @@ doslave(cmd, slave_number)
 		}
 
 #ifdef WRITEDEBUG
-		if (size != writesize) 
-		 msg("slave %d only wrote %d out of %d bytes and gave up.\n",
+		if (size != writesize)
+		 printf("slave %d only wrote %d out of %d bytes and gave up.\n",
 		     slave_number, size, writesize);
 #endif
+
+		/*
+		 * Handle ENOSPC as an EOT condition.
+		 */
+		if (wrote < 0 && errno == ENOSPC) {
+			wrote = 0;
+			eot_count++;
+		}
 
 		if (eot_count > 0)
 			size = 0;
 
-		/*
-		 * fixme: Pyramids running OSx return ENOSPC
-		 * at EOT on 1/2 inch drives.
-		 */
-		if (size < 0) {
+		if (wrote < 0) {
 			(void) kill(master, SIGUSR1);
 			for (;;)
 				(void) sigpause(0);
@@ -884,7 +936,7 @@ doslave(cmd, slave_number)
 			 * (for EOT handling)
 			 */
 			(void) atomic(write, cmd, (char *)&size, sizeof size);
-		} 
+		}
 
 		/*
 		 * If partial write, don't want next slave to go.
@@ -903,7 +955,8 @@ doslave(cmd, slave_number)
  */
 static int
 atomic(func, fd, buf, count)
-	int (*func)(), fd;
+	ssize_t (*func)();
+	int fd;
 	char *buf;
 	int count;
 {

@@ -1,7 +1,8 @@
 /*
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
- *	Remy Card <card@Linux.EU.Org>, 1994, 1995, 1996
+ *	Remy Card <card@Linux.EU.Org>, 1994-1997
+ *      Stelian Pop <pop@cybercable.fr>, 1999 
  *
  */
 
@@ -39,20 +40,17 @@
  */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)unctime.c	8.2 (Berkeley) 6/14/94";
+#endif
+static const char rcsid[] =
+	"$Id: unctime.c,v 1.2 1999/10/11 12:53:23 stelian Exp $";
 #endif /* not lint */
 
-#include <sys/types.h>
-
-#include <stdio.h>
 #include <time.h>
 #ifdef __STDC__
 #include <stdlib.h>
 #include <string.h>
-#endif
-
-#ifndef __P
-#include <sys/cdefs.h>
 #endif
 
 /*

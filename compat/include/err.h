@@ -1,7 +1,8 @@
 /*
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
- *	Remy Card <card@Linux.EU.Org>, 1994, 1995, 1996
+ *	Remy Card <card@Linux.EU.Org>, 1994-1997
+ *      Stelian Pop <pop@cybercable.fr>, 1999 
  *
  */
 
@@ -38,6 +39,7 @@
  * SUCH DAMAGE.
  *
  *	@(#)err.h	8.1 (Berkeley) 6/2/93
+ *      $Id: err.h,v 1.2 1999/10/11 12:53:20 stelian Exp $
  */
 
 #ifndef _ERR_H_
@@ -58,12 +60,18 @@
 __BEGIN_DECLS
 __dead void	err __P((int, const char *, ...));
 __dead void	verr __P((int, const char *, _BSD_VA_LIST_));
+__dead void	errc __P((int, int, const char *, ...));
+__dead void	verrc __P((int, int, const char *, _BSD_VA_LIST_));
 __dead void	errx __P((int, const char *, ...));
 __dead void	verrx __P((int, const char *, _BSD_VA_LIST_));
 void		warn __P((const char *, ...));
 void		vwarn __P((const char *, _BSD_VA_LIST_));
+void		warnc __P((int, const char *, ...));
+void		vwarnc __P((int, const char *, _BSD_VA_LIST_));
 void		warnx __P((const char *, ...));
 void		vwarnx __P((const char *, _BSD_VA_LIST_));
+void		err_set_file __P((void *));
+void		err_set_exit __P((void (*)(int))); 
 __END_DECLS
 
 #endif /* !_ERR_H_ */

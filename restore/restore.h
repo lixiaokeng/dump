@@ -1,7 +1,8 @@
 /*
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
- *	Remy Card <card@Linux.EU.Org>, 1994, 1995, 1996
+ *	Remy Card <card@Linux.EU.Org>, 1994-1997
+ *      Stelian Pop <pop@cybercable.fr>, 1999 
  *
  */
 
@@ -54,13 +55,14 @@ extern int	dflag;		/* print out debugging info */
 extern int	hflag;		/* restore heirarchies */
 extern int	mflag;		/* restore by name instead of inode number */
 extern int	Nflag;		/* do not write the disk */
+extern int	uflag;		/* unlink symlink targets */
 extern int	vflag;		/* print out actions taken */
 extern int	yflag;		/* always try to recover from tape errors */
 /*
  * Global variables
  */
 extern char	*dumpmap; 	/* map of inodes on this dump tape */
-extern char	*usedinomap; 	/* map of inodes to be deleted */
+extern char	*usedinomap; 	/* map of inodes that are in use on this fs */
 extern ino_t	maxino;		/* highest numbered inode in this file system */
 extern long	dumpnum;	/* location of the dump on this tape */
 extern long	volno;		/* current volume being read */

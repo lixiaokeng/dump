@@ -1,7 +1,8 @@
 /*
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
- *	Remy Card <card@Linux.EU.Org>, 1994, 1995, 1996
+ *	Remy Card <card@Linux.EU.Org>, 1994-1997
+ *      Stelian Pop <pop@cybercable.fr>, 1999 
  *
  */
 
@@ -39,7 +40,11 @@
  */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)utilities.c	8.5 (Berkeley) 4/28/95";
+#endif
+static const char rcsid[] =
+	"$Id: utilities.c,v 1.2 1999/10/11 12:53:25 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -56,7 +61,6 @@ static char sccsid[] = "@(#)utilities.c	8.5 (Berkeley) 4/28/95";
 
 #include <errno.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -78,7 +82,7 @@ pathcheck(name)
 	struct entry *ep;
 	char *start;
 
-	start = strrchr(name, '/');
+	start = strchr(name, '/');
 	if (start == 0)
 		return;
 	for (cp = start; *cp != '\0'; cp++) {
@@ -131,7 +135,7 @@ gentempname(ep)
 		i++;
 	if (np == NULL)
 		badentry(ep, "not on ino list");
-	(void) sprintf(name, "%s%d%d", TMPHDR, i, ep->e_ino);
+	(void) sprintf(name, "%s%ld%lu", TMPHDR, i, (u_long)ep->e_ino);
 	return (name);
 }
 
@@ -163,7 +167,8 @@ newnode(np)
 		badentry(np, "newnode: not a node");
 	cp = myname(np);
 	if (command == 'C') return;
-	if (!Nflag && mkdir(cp, 0777) < 0) {
+
+	if (!Nflag && mkdir(cp, 0777) < 0 && !uflag) {
 		np->e_flags |= EXISTED;
 		fprintf(stderr, "warning: %s: %s\n", cp, strerror(errno));
 		return;
@@ -226,6 +231,10 @@ linkit(existing, new, type)
 	int type;
 {
 
+	/* if we want to unlink first, do it now so *link() won't fail */
+	if (uflag && !Nflag)
+		(void)unlink(new);
+
 	if (type == SYMLINK) {
 		if (!Nflag && symlink(existing, new) < 0) {
 			fprintf(stderr,
@@ -234,11 +243,29 @@ linkit(existing, new, type)
 			return (FAIL);
 		}
 	} else if (type == HARDLINK) {
-		if (!Nflag && link(existing, new) < 0) {
-			fprintf(stderr,
-			    "warning: cannot create hard link %s->%s: %s\n",
-			    new, existing, strerror(errno));
-			return (FAIL);
+		int ret;
+
+		if (!Nflag && (ret = link(existing, new)) < 0) {
+
+#ifndef __linux__
+			struct stat s;
+
+			/*
+			 * Most likely, the schg flag is set.  Clear the
+			 * flags and try again.
+			 */
+			if (stat(existing, &s) == 0 && s.st_flags != 0 &&
+			    chflags(existing, 0) == 0) {
+				ret = link(existing, new);
+				chflags(existing, s.st_flags);
+			}
+#endif
+			if (ret < 0) {
+				fprintf(stderr, "warning: cannot create "
+				    "hard link %s->%s: %s\n",
+				    new, existing, strerror(errno));
+				return (FAIL);
+			}
 		}
 	} else {
 		panic("linkit: unknown type %d\n", type);
@@ -251,7 +278,7 @@ linkit(existing, new, type)
 
 #ifndef	__linux__
 /*
- * Create a whiteout
+ * Create a whiteout.
  */
 int
 addwhiteout(name)
@@ -351,7 +378,7 @@ badentry(ep, msg)
 		    "next hashchain name: %s\n", myname(ep->e_next));
 	fprintf(stderr, "entry type: %s\n",
 		ep->e_type == NODE ? "NODE" : "LEAF");
-	fprintf(stderr, "inode number: %ld\n", ep->e_ino);
+	fprintf(stderr, "inode number: %lu\n", (u_long)ep->e_ino);
 	panic("flags: %s\n", flagvalues(ep));
 }
 
@@ -390,7 +417,7 @@ dirlookup(name)
 {
 	struct direct *dp;
 	ino_t ino;
- 
+
 	ino = ((dp = pathsearch(name)) == NULL) ? 0 : dp->d_ino;
 
 	if (ino == 0 || TSTINO(ino, dumpmap) == 0)

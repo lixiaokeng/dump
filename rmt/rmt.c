@@ -1,7 +1,8 @@
 /*
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
- *	Remy Card <card@Linux.EU.Org>, 1994, 1995, 1996
+ *	Remy Card <card@Linux.EU.Org>, 1994-1997
+ *      Stelian Pop <pop@cybercable.fr>, 1999 
  *
  */
 
@@ -39,13 +40,17 @@
  */
 
 #ifndef lint
-static char copyright[] =
+static const char copyright[] =
 "@(#) Copyright (c) 1983, 1993\n\
 	The Regents of the University of California.  All rights reserved.\n";
 #endif /* not lint */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)rmt.c	8.1 (Berkeley) 6/6/93";
+#endif
+static const char rcsid[] =
+	"$Id: rmt.c,v 1.2 1999/10/11 12:53:25 stelian Exp $";
 #endif /* not lint */
 
 /*
@@ -111,7 +116,12 @@ top:
 		getstring(device);
 		getstring(mode);
 		DEBUG2("rmtd: O %s %s\n", device, mode);
-		tape = open(device, atoi(mode));
+		/*
+		 * XXX the rmt protocol does not provide a means to
+		 * specify the permission bits; allow rw for everyone,
+		 * as modified by the users umask
+		 */
+		tape = open(device, atoi(mode), 0666);
 		if (tape < 0)
 			goto ioerror;
 		goto respond;
@@ -188,6 +198,12 @@ top:
 		  goto top;
 		}
 
+        case 'V':               /* version */
+                getstring(op);
+                DEBUG1("rmtd: V %s\n", op);
+                rval = 2;
+                goto respond;
+
 	default:
 		DEBUG1("rmtd: garbage command %c\n", c);
 		exit(3);
@@ -246,6 +262,6 @@ error(num)
 {
 
 	DEBUG2("rmtd: E %d (%s)\n", num, strerror(num));
-	(void)sprintf(resp, "E%d\n%s\n", num, strerror(num));
+	(void)snprintf(resp, sizeof(resp), "E%d\n%s\n", num, strerror(num));
 	(void)write(1, resp, strlen(resp));
 }

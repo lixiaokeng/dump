@@ -1,7 +1,8 @@
 /*
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
- *	Remy Card <card@Linux.EU.Org>, 1994, 1995, 1996
+ *	Remy Card <card@Linux.EU.Org>, 1994-1997
+ *      Stelian Pop <pop@cybercable.fr>, 1999
  *
  */
 
@@ -112,7 +113,7 @@ int fstabscan()
 struct fstab *
 getfsent()
 {
-	if (!_fs_fp && !setfsent() || !fstabscan())
+	if ((!_fs_fp && !setfsent()) || !fstabscan())
 		return((struct fstab *)NULL);
 	return(&_fs_fstab);
 }

@@ -1,7 +1,8 @@
 /*
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
- *	Remy Card <card@Linux.EU.Org>, 1994, 1995, 1996
+ *	Remy Card <card@Linux.EU.Org>, 1994-1997
+ *      Stelian Pop <pop@cybercable.fr>, 1999 
  *
  */
 
@@ -39,11 +40,14 @@
  */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)restore.c	8.3 (Berkeley) 9/13/94";
+#endif
+static const char rcsid[] =
+	"$Id: restore.c,v 1.2 1999/10/11 12:53:24 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
-#include <sys/stat.h>
 
 #ifdef	__linux__
 #include <sys/time.h>
@@ -80,7 +84,7 @@ listfile(name, ino, type)
 	if (TSTINO(ino, dumpmap) == 0)
 		return (descend);
 	vprintf(stdout, "%s", type == LEAF ? "leaf" : "dir ");
-	fprintf(stdout, "%10d\t%s\n", ino, name);
+	fprintf(stdout, "%10ld\t%s\n", ino, name);
 	return (descend);
 }
 
@@ -105,7 +109,7 @@ addfile(name, ino, type)
 	if (ino == WINO && command == 'i' && !vflag)
 		return (descend);
 	if (!mflag) {
-		(void) sprintf(buf, "./%u", ino);
+		(void) sprintf(buf, "./%lu", ino);
 		name = buf;
 		if (type == NODE) {
 			(void) genliteraldir(name, ino);
@@ -153,7 +157,7 @@ deletefile(name, ino, type)
 	return (descend);
 }
 
-/* 
+/*
  * The following four routines implement the incremental
  * restore algorithm. The first removes old entries, the second
  * does renames and calculates the extraction list, the third
@@ -162,7 +166,7 @@ deletefile(name, ino, type)
  *
  * Directories cannot be immediately deleted, as they may have
  * other files in them which need to be moved out first. As
- * directories to be deleted are found, they are put on the 
+ * directories to be deleted are found, they are put on the
  * following deletion list. After all deletions and renames
  * are done, this list is actually deleted.
  */
@@ -180,7 +184,7 @@ removeoldleaves()
 	register ino_t i, mydirino;
 
 	vprintf(stdout, "Mark entries to be removed.\n");
-	if (ep = lookupino(WINO)) {
+	if ((ep = lookupino(WINO))) {
 		vprintf(stdout, "Delete whiteouts\n");
 		for ( ; ep != NULL; ep = nextep) {
 			nextep = ep->e_links;
@@ -247,7 +251,7 @@ nodeupdates(name, ino, type)
 #		define MODECHG	0x8	/* mode of inode changed */
 
 	/*
-	 * This routine is called once for each element in the 
+	 * This routine is called once for each element in the
 	 * directory hierarchy, with a full path name.
 	 * The "type" value is incorrectly specified as LEAF for
 	 * directories that are not on the dump tape.
@@ -438,7 +442,7 @@ nodeupdates(name, ino, type)
 	 * that we need to rename, so we delete it from the symbol
 	 * table, and put it on the list to be deleted eventually.
 	 * Conversely if a directory is to be created, it must be
-	 * done immediately, rather than waiting until the 
+	 * done immediately, rather than waiting until the
 	 * extraction phase.
 	 */
 	case ONTAPE|INOFND|MODECHG:
@@ -449,8 +453,12 @@ nodeupdates(name, ino, type)
 		}
 		if (ip->e_type == LEAF) {
 			/* changing from leaf to node */
-			removeleaf(ip);
-			freeentry(ip);
+			for (ip = lookupino(ino); ip != NULL; ip = ip->e_links) {
+				if (ip->e_type != LEAF)
+					badentry(ip, "NODE and LEAF links to same inode");
+				removeleaf(ip);
+				freeentry(ip);
+			}
 			ip = addentry(name, ino, type);
 			newnode(ip);
 		} else {
@@ -468,7 +476,7 @@ nodeupdates(name, ino, type)
 		break;
 
 	/*
-	 * A hard link to a diirectory that has been removed.
+	 * A hard link to a directory that has been removed.
 	 * Ignore it.
 	 */
 	case NAMEFND:
@@ -486,7 +494,7 @@ nodeupdates(name, ino, type)
 	 */
 	case NULL:
 		if (compare_ignore_not_found) break;
-		fprintf(stderr, "%s: (inode %d) not found on tape\n",
+		fprintf(stderr, "%s: (inode %ld) not found on tape\n",
 			name, ino);
 		break;
 
@@ -509,7 +517,7 @@ nodeupdates(name, ino, type)
 	default:
 		panic("[%s] %s: impossible state\n", keyval(key), name);
 		break;
-	}	
+	}
 	return (descend);
 }
 
@@ -615,6 +623,7 @@ removeoldnodes()
 /* current copy of this file on disk.  If do_compare is 0, then just */
 /* make our caller think we did it--this is used to handle hard links */
 /* to files and devices. */
+void
 compare_entry(struct entry *ep, int do_compare)
 {
 	if ((ep->e_flags & (NEW|EXTRACT)) == 0)
@@ -660,7 +669,7 @@ compareleaves()
 		 * on the next incremental tape.
 		 */
 		if (first != curfile.ino) {
-			fprintf(stderr, "expected next file %d, got %d\n",
+			fprintf(stderr, "expected next file %ld, got %ld\n",
 				first, curfile.ino);
 			skipfile();
 			goto next;
@@ -726,12 +735,12 @@ createleaves(symtabfile)
 		/*
 		 * If we find files on the tape that have no corresponding
 		 * directory entries, then we must have found a file that
-		 * was created while the dump was in progress. Since we have 
+		 * was created while the dump was in progress. Since we have
 		 * no name for it, we discard it knowing that it will be
 		 * on the next incremental tape.
 		 */
 		if (first != curfile.ino) {
-			fprintf(stderr, "expected next file %d, got %d\n",
+			fprintf(stderr, "expected next file %ld, got %ld\n",
 				first, curfile.ino);
 			skipfile();
 			goto next;
@@ -744,7 +753,7 @@ createleaves(symtabfile)
 		/*
 		 * If the file is to be extracted, then the old file must
 		 * be removed since its type may change from one leaf type
-		 * to another (eg "file" to "character special").
+		 * to another (e.g. "file" to "character special").
 		 */
 		if ((ep->e_flags & EXTRACT) != 0) {
 			removeleaf(ep);
@@ -754,7 +763,7 @@ createleaves(symtabfile)
 		ep->e_flags &= ~(NEW|EXTRACT);
 		/*
 		 * We checkpoint the restore after every tape reel, so
-		 * as to simplify the amount of work re quired by the
+		 * as to simplify the amount of work required by the
 		 * 'R' command.
 		 */
 	next:
@@ -865,7 +874,7 @@ createlinks()
 	register ino_t i;
 	char name[BUFSIZ];
 
-	if (ep = lookupino(WINO)) {
+	if ((ep = lookupino(WINO))) {
 		vprintf(stdout, "Add whiteouts\n");
 		for ( ; ep != NULL; ep = ep->e_links) {
 			if ((ep->e_flags & NEW) == 0)
@@ -914,7 +923,7 @@ checkrestore()
 			ep->e_flags &= ~KEEP;
 			if (ep->e_type == NODE)
 				ep->e_flags &= ~(NEW|EXISTED);
-			if (ep->e_flags /* != NULL */)
+			if (ep->e_flags != 0)
 				badentry(ep, "incomplete operations");
 		}
 	}

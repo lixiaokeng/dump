@@ -1,7 +1,8 @@
 /*
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
- *	Remy Card <card@Linux.EU.Org>, 1994, 1995, 1996
+ *	Remy Card <card@Linux.EU.Org>, 1994-1997
+ *      Stelian Pop <pop@cybercable.fr>, 1999 
  *
  */
 
@@ -39,11 +40,14 @@
  */
 
 #ifndef lint
+#if 0
 static char sccsid[] = "@(#)interactive.c	8.5 (Berkeley) 5/1/95";
+#endif
+static const char rcsid[] =
+	"$Id: interactive.c,v 1.2 1999/10/11 12:53:23 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
-#include <sys/time.h>
 #include <sys/stat.h>
 
 #ifdef	__linux__
@@ -52,7 +56,6 @@ static char sccsid[] = "@(#)interactive.c	8.5 (Berkeley) 5/1/95";
 #else	/* __linux__ */
 #include <ufs/ufs/dinode.h>
 #include <ufs/ufs/dir.h>
-#include <ufs/ffs/fs.h>
 #endif	/* __linux__ */
 #include <protocols/dumprestore.h>
 
@@ -98,7 +101,7 @@ struct arglist {
 static char	*copynext __P((char *, char *));
 static int	 fcmp __P((const void *, const void *));
 static void	 formatf __P((struct afile *, int));
-static void	 getcmd __P((char *, char *, char *, struct arglist *));
+static void	 getcmd __P((char *, char *, char *, int, struct arglist *));
 struct dirent	*glob_readdir __P((RST_DIR *dirp));
 static int	 glob_stat __P((const char *, struct stat *));
 static void	 mkentry __P((char *, struct direct *, struct afile *));
@@ -125,7 +128,7 @@ runcmdshell()
 	arglist.glob.gl_closedir = (void *)rst_closedir;
 	arglist.glob.gl_lstat = glob_stat;
 	arglist.glob.gl_stat = glob_stat;
-	canon("/", curdir);
+	canon("/", curdir, sizeof(curdir));
 loop:
 	if (setjmp(reset) != 0) {
 		if (arglist.freeglob != 0) {
@@ -137,7 +140,7 @@ loop:
 		volno = 0;
 	}
 	runshell = 1;
-	getcmd(curdir, cmd, name, &arglist);
+	getcmd(curdir, cmd, name, sizeof(name), &arglist);
 	switch (cmd[0]) {
 	/*
 	 * Add elements to the extraction list.
@@ -316,9 +319,10 @@ loop:
  * eliminate any embedded ".." components.
  */
 static void
-getcmd(curdir, cmd, name, ap)
+getcmd(curdir, cmd, name, size, ap)
 	char *curdir, *cmd, *name;
 	struct arglist *ap;
+	int size;
 {
 	register char *cp;
 	static char input[BUFSIZ];
@@ -356,7 +360,8 @@ getcmd(curdir, cmd, name, ap)
 	 * If no argument, use curdir as the default.
 	 */
 	if (*cp == '\0') {
-		(void) strcpy(name, curdir);
+		(void) strncpy(name, curdir, size);
+		name[size - 1] = '\0';
 		return;
 	}
 	nextarg = cp;
@@ -373,16 +378,14 @@ getnext:
 	 * If it is an absolute pathname, canonicalize it and return it.
 	 */
 	if (rawname[0] == '/') {
-		canon(rawname, name);
+		canon(rawname, name, size);
 	} else {
 		/*
 		 * For relative pathnames, prepend the current directory to
 		 * it then canonicalize and return it.
 		 */
-		(void) strcpy(output, curdir);
-		(void) strcat(output, "/");
-		(void) strcat(output, rawname);
-		canon(output, name);
+		snprintf(output, sizeof(output), "%s/%s", curdir, rawname);
+		canon(output, name, size);
 	}
 	if (glob(name, GLOB_ALTDIRFUNC, NULL, &ap->glob) < 0)
 		fprintf(stderr, "%s: out of memory\n", ap->cmd);
@@ -392,7 +395,8 @@ getnext:
 	ap->argcnt = ap->glob.gl_pathc;
 
 retnext:
-	strcpy(name, ap->glob.gl_pathv[ap->glob.gl_pathc - ap->argcnt]);
+	strncpy(name, ap->glob.gl_pathv[ap->glob.gl_pathc - ap->argcnt], size);
+	name[size - 1] = '\0';
 	if (--ap->argcnt == 0) {
 		ap->freeglob = 0;
 		globfree(&ap->glob);
@@ -438,7 +442,7 @@ copynext(input, output)
 		 */
 		quote = *cp++;
 		while (*cp != quote && *cp != '\0')
-			*bp++ = *cp++ /* | 0200 */;
+			*bp++ = *cp++ | 0200;
 		if (*cp++ == '\0') {
 			fprintf(stderr, "missing %c\n", quote);
 			cp--;
@@ -451,11 +455,12 @@ copynext(input, output)
 
 /*
  * Canonicalize file names to always start with ``./'' and
- * remove any imbedded "." and ".." components.
+ * remove any embedded "." and ".." components.
  */
 void
-canon(rawname, canonname)
+canon(rawname, canonname, len)
 	char *rawname, *canonname;
+	int len;
 {
 	register char *cp, *np;
 
@@ -465,6 +470,11 @@ canon(rawname, canonname)
 		(void) strcpy(canonname, ".");
 	else
 		(void) strcpy(canonname, "./");
+	if (strlen(canonname) + strlen(rawname) >= len) {
+		fprintf(stderr, "canonname: not enough buffer space\n");
+		done(1);
+	}
+		
 	(void) strcat(canonname, rawname);
 	/*
 	 * Eliminate multiple and trailing '/'s
@@ -508,7 +518,7 @@ printlist(name, basename)
 	char *name;
 	char *basename;
 {
-	register struct afile *fp, *list, *listp;
+	register struct afile *fp, *list, *listp=NULL;
 	register struct direct *dp;
 	struct afile single;
 	RST_DIR *dirp;
@@ -531,8 +541,7 @@ printlist(name, basename)
 		}
 	} else {
 		entries = 0;
-/*		while ((dp = rst_readdir(dirp)) && (dp->d_ino != 0)) */
-		while (dp = rst_readdir(dirp))
+		while ((dp = rst_readdir(dirp)))
 			entries++;
 		rst_closedir(dirp);
 		list = (struct afile *)malloc(entries * sizeof(struct afile));
@@ -548,7 +557,7 @@ printlist(name, basename)
 		(void) strncpy(locname, name, MAXPATHLEN);
 		(void) strncat(locname, "/", MAXPATHLEN);
 		namelen = strlen(locname);
-		while (dp = rst_readdir(dirp)) {
+		while ((dp = rst_readdir(dirp))) {
 			if (dp == NULL)
 				break;
 			if (!dflag && TSTINO(dp->d_ino, dumpmap) == 0)
@@ -609,12 +618,6 @@ mkentry(name, dp, fp)
 		fp->prefix = '*';
 	else
 		fp->prefix = ' ';
-#if	0
-	if (inodetype(dp->d_ino) == NODE)
-		fp->postfix = '/';
-	else
-		fp->postfix = ' ';
-#else	/* __linux__ */
 	switch(dp->d_type) {
 
 	default:
@@ -651,7 +654,6 @@ mkentry(name, dp, fp)
 			fp->postfix = ' ';
 		break;
 	}
-#endif	/* __linux__ */
 	return;
 }
 
@@ -665,7 +667,7 @@ formatf(list, nentry)
 {
 	register struct afile *fp, *endlist;
 	int width, bigino, haveprefix, havepostfix;
-	int i, j, w, precision, columns, lines;
+	int i, j, w, precision=0, columns, lines;
 
 	width = 0;
 	haveprefix = 0;
@@ -700,7 +702,7 @@ formatf(list, nentry)
 		for (j = 0; j < columns; j++) {
 			fp = &list[j * lines + i];
 			if (vflag) {
-				fprintf(stderr, "%*d ", precision, fp->fnum);
+				fprintf(stderr, "%*ld ", precision, fp->fnum);
 				fp->len += precision + 1;
 			}
 			if (haveprefix) {
@@ -757,11 +759,7 @@ glob_readdir(dirp)
 	if (dp == NULL)
 		return (NULL);
 	adirent.d_fileno = dp->d_ino;
-#ifdef	__linux__
 	adirent.d_namlen = dp->d_namlen;
-#else
-	adirent.d_namlen = dp->d_namlen & 0xff;
-#endif
 	memmove(adirent.d_name, dp->d_name, dp->d_namlen + 1);
 	return (&adirent);
 }
