@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.12 2000/01/21 10:17:41 stelian Exp $";
+	"$Id: main.c,v 1.13 2000/01/25 14:14:12 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -595,6 +595,11 @@ main(int argc, char *argv[])
 		if ((dp->di_mode & IFMT) != IFDIR)
 			continue;
 #ifdef	__linux__
+		/*
+		 * Skip directory inodes deleted and not yes reallocated...
+		 */
+		if (dp->di_nlink == 0 || dp->di_dtime != 0)
+			continue;
 		(void)dumpdirino(dp, ino);
 #else
 		(void)dumpino(dp, ino);
@@ -603,8 +608,6 @@ main(int argc, char *argv[])
 
 	msg("dumping (Pass IV) [regular files]\n");
 	for (map = dumpinomap, ino = 1; ino < maxino; ino++) {
-		int mode;
-
 		if (((ino - 1) % NBBY) == 0)	/* map is offset by 1 */
 			dirty = *map++;
 		else
@@ -615,9 +618,14 @@ main(int argc, char *argv[])
 		 * Skip inodes deleted and reallocated as directories.
 		 */
 		dp = getino(ino);
-		mode = dp->di_mode & IFMT;
-		if (mode == IFDIR)
+		if ((dp->di_mode & IFMT) == IFDIR)
 			continue;
+#ifdef __linux__
+		/*
+		 * No need to check here for deleted and not yes reallocated inodes
+		 * since this is done in dumpino().
+		 */
+#endif
 		(void)dumpino(dp, ino);
 	}
 
