@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.30 2001/11/13 12:11:05 stelian Exp $";
+	"$Id: main.c,v 1.31 2001/11/13 12:11:42 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -288,7 +288,6 @@ main(int argc, char *argv[])
 			err(1, "can't get current directory");
 		snprintf(fullpathinput, MAXPATHLEN, "%s/%s", wd, inputdev);
 		fullpathinput[MAXPATHLEN - 1] = '\0';
-printf("FULLPATH is %s\n", fullpathinput);
 		setinput(fullpathinput);
 	}
 	else
