@@ -1,4 +1,12 @@
-$Id: CHANGES,v 1.228 2003/04/18 07:57:16 stelian Exp $
+$Id: CHANGES,v 1.229 2003/05/07 14:45:18 stelian Exp $
+
+Changes between versions 0.4b34 and 0.4b35 (released ??????????????)
+====================================================================
+
+1.	Added a note in the dump man page saying that the default
+	blocksize can be 32 if -d is used with a high density argument.
+	Thanks to Antonios Christofides <A.Christofides@itia.ntua.gr>
+	for the patch.
 
 Changes between versions 0.4b33 and 0.4b34 (released April 18, 2003)
 ====================================================================

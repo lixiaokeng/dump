@@ -26,7 +26,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.52 2003/03/31 09:42:57 stelian Exp $
+.\"	$Id: dump.8.in,v 1.53 2003/05/07 14:45:20 stelian Exp $
 .\"
 .TH DUMP 8 "version __VERSION__ of __DATE__" BSD "System management commands"
 .SH NAME
@@ -113,8 +113,11 @@ to be used by
 to determine whether a file is in the dump file that is being restored.
 .TP
 .BI \-b " blocksize"
-The number of kilobytes per dump record. The default blocksize is 10
-and the maximal value is 1024.
+The number of kilobytes per dump record. The default blocksize is 10,
+unless the
+.B \-d
+option has been used to specify a tape density of 6250BPI or more,
+in which case the default blocksize is 32. Th maximal value is 1024.
 Note however that, since the IO system slices all requests into chunks
 of 
 .B MAXBSIZE
