@@ -2,7 +2,7 @@
 # XXX --enable-kerberos		needs krcmd
 %define	myoptions --with-binmode=6755 --with-manowner=root --with-mangrp=root --with-manmode=0644 --with-dumpdates="%{_sysconfdir}/dumpdates" --enable-readline --enable-largefile --enable-qfa
 
-Summary: Programs for backing up and restoring filesystems.
+Summary: Programs for backing up and restoring ext2/ext3 filesystems.
 Name: dump
 Version: 0.4b22
 Release: 1
@@ -10,7 +10,7 @@ License: BSD
 Group: Applications/Archiving
 Source: http://download.sourceforge.net/dump/dump-%{version}.tar.gz
 Requires: rmt
-BuildRequires: e2fsprogs-devel
+BuildPrereq: e2fsprogs-devel, libtermcap-devel, readline-devel
 BuildRoot: %{_tmppath}/%{name}-root
 
 %description
@@ -58,7 +58,11 @@ This packages contains statically linked versions of dump and restore.
 %build
 %configure %{myoptions} --enable-static
 
-make OPT="$RPM_OPT_FLAGS -Wall -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wno-char-subscripts"
+%ifarch alpha
+RPM_OPT_FLAGS=""
+%endif
+make OPT="$RPM_OPT_FLAGS -Wall -Wpointer-arith -Wstrict-prototypes \
+                         -Wmissing-prototypes -Wno-char-subscripts"
 
 mv dump/dump dump/dump.static
 mv restore/restore restore/restore.static
@@ -67,7 +71,8 @@ make distclean
 
 %configure %{myoptions} --enable-rmt
 
-make OPT="$RPM_OPT_FLAGS -Wall -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wno-char-subscripts"
+make OPT="$RPM_OPT_FLAGS -Wall -Wpointer-arith -Wstrict-prototypes \
+                         -Wmissing-prototypes -Wno-char-subscripts"
 
 %install
 rm -rf %{buildroot}
