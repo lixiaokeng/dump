@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.36 2001/03/20 10:02:48 stelian Exp $";
+	"$Id: tape.c,v 1.37 2001/03/20 20:15:59 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -303,7 +303,7 @@ do_stats(void)
 		if (compressed) {
 			double rate = .0005 + (double) blocks / (double) volkb;
 			msg("Volume %d %ldKB uncompressed, %ldKB compressed,"
-				" compression ratio %1.3f\n",
+				" %1.3f:1\n",
 				tapeno, blocks, volkb, rate);
 		}
 	}
@@ -1038,7 +1038,7 @@ doslave(int cmd, int slave_number)
 	char *buffer;
 #ifdef HAVE_ZLIB
 	struct tapebuf *comp_buf = NULL;
-	int compresult, complevel = 6, do_compress = 0;
+	int compresult, do_compress = 0;
 	unsigned long worklen;
 #endif /* HAVE_ZLIB */
 	struct slave_results returns;
@@ -1113,7 +1113,6 @@ doslave(int cmd, int slave_number)
 
 #ifdef HAVE_ZLIB
 		/* 
-		 * The first NR_SLAVE blocks are not compressed.
 		 * When writing a compressed dump, each block is
 		 * written from struct tapebuf with an 4 byte prefix
 		 * followed by the data. This can be less than
@@ -1121,6 +1120,7 @@ doslave(int cmd, int slave_number)
 		 * length read to the compressed length in the header
 		 * to verify that the read was good. Blocks which don't
 		 * compress well are written uncompressed.
+		 * The first block written by each slave is not compressed.
 		 */
 
 		if (compressed) {
@@ -1128,7 +1128,7 @@ doslave(int cmd, int slave_number)
 			worklen = TP_BSIZE + writesize;
 			if (do_compress)
 				compresult = compress2(comp_buf->buf, &worklen,
-					(char *)slp->tblock[0], writesize, complevel);
+					(char *)slp->tblock[0], writesize, compressed);
 			if (compresult == Z_OK && worklen <= writesize-32) {
 				/* write the compressed buffer */
 				comp_buf->length = worklen;

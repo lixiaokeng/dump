@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.37 2001/03/20 10:02:48 stelian Exp $";
+	"$Id: main.c,v 1.38 2001/03/20 20:15:43 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -94,7 +94,7 @@ long	dev_bsize = 1;	/* recalculated below */
 long	blocksperfile;	/* output blocks per file */
 char	*host = NULL;	/* remote host (if any) */
 int	sizest = 0;	/* return size estimate only */
-int	compressed = 0;	/* use zlib to compress the output */
+int	compressed = 0;	/* use zlib to compress the output, compress level 1-9 */
 long long bytes_written = 0; /* total bytes written */
 long	uncomprblks = 0;/* uncompressed blocks written */
 
@@ -160,7 +160,7 @@ main(int argc, char *argv[])
 #endif
 			    "Mns:ST:uWw"
 #ifdef HAVE_ZLIB
-			    "z"
+			    "z::"
 #endif
 			    )) != -1)
 #undef optstring
@@ -292,7 +292,9 @@ main(int argc, char *argv[])
 			exit(X_FINOK);	/* do nothing else */
 #ifdef HAVE_ZLIB
 		case 'z':
-			compressed = 1;
+			compressed = 2;
+			if (optarg)
+				compressed = numarg("compress level", 1L, 9L);
 			break;
 #endif /* HAVE_ZLIB */
 
@@ -569,6 +571,9 @@ main(int argc, char *argv[])
 
 	msg("Label: %s\n", spcl.c_label);
 
+	if (compressed)
+		msg("Compressing output at compression level %d\n", compressed);
+
 #if defined(SIGINFO)
 	(void)signal(SIGINFO, statussig);
 #endif
@@ -736,7 +741,7 @@ main(int argc, char *argv[])
 		long tapekb = bytes_written / 1024;
 		double rate = .0005 + (double) spcl.c_tapea / tapekb;
 		msg("Wrote %ldKB uncompressed, %ldKB compressed,"
-			" compression ratio %1.3f\n",
+			" %1.3f:1\n",
 			spcl.c_tapea, tapekb, rate);
 	}
 
@@ -772,9 +777,11 @@ usage(void)
 #ifdef HAVE_ZLIB
 		"z"
 #endif
-		"] [-B records] [-b blocksize] [-d density]\n"
-		"\t%s [-e inode#] [-f file] [-h level] [-s feet] [-T date] filesystem\n"
-		"\t%s [-W | -w]\n", __progname, white, __progname);
+		"] [-B records] [-b blocksize]\n"
+		"\t%s [-d density] [-e inode#] [-f file] [-h level] [-s feet]\n"
+		"\t%s [-T date] [-z zlevel] filesystem\n"
+		"\t%s [-W | -w]\n", 
+		__progname, white, white, __progname);
 	exit(X_STARTUP);
 }
 

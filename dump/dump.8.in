@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.21 2001/03/18 15:35:44 stelian Exp $
+.\"	$Id: dump.8.in,v 1.22 2001/03/20 20:15:43 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -40,7 +40,7 @@
 .Nd ext2 filesystem backup
 .Sh SYNOPSIS
 .Nm dump
-.Op Fl 0123456789ackMnSuz
+.Op Fl 0123456789ackMnSu
 .Op Fl B Ar records
 .Op Fl b Ar blocksize
 .Op Fl d Ar density
@@ -51,6 +51,7 @@
 .Op Fl L Ar label
 .Op Fl s Ar feet
 .Op Fl T Ar date
+.Op Fl z Ar compression level
 .Ar file-to-dump
 .Nm dump
 .Op Fl W Li \&| Fl w
@@ -315,13 +316,15 @@ Is like
 but prints only recognized filesystems in
 .Pa /etc/fstab
 which need to be dumped.
-.It Fl z
+.It Fl z Ar compression level
 Compress every block to be written on the tape using zlib library. This
 option will work only when dumping to a file or pipe or, when dumping
 to a tape drive, if the tape drive is capable of writing variable 
 length blocks. You will need at least the 0.4b22 version of restore in 
 order to extract compressed tapes. Tapes written using compression will
-not be compatible with the BSD tape format.
+not be compatible with the BSD tape format. The (optional) parameter 
+specifies the compression level zlib will use. The default compression
+level is 2.
 .El
 .Pp
 .Nm Dump
