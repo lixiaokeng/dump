@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dirs.c,v 1.28 2004/05/25 10:39:30 stelian Exp $";
+	"$Id: dirs.c,v 1.29 2004/12/15 11:00:01 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -148,9 +148,11 @@ struct odirect {
 };
 
 #if defined(__linux__) || defined(sunos)
-static struct inotab	*allocinotab __P((dump_ino_t, struct new_bsd_inode *, OFF_T));
+static struct inotab	*allocinotab __P((dump_ino_t, OFF_T));
+static void		 savemodeinfo __P((dump_ino_t, struct new_bsd_inode *));
 #else
-static struct inotab	*allocinotab __P((dump_ino_t, struct dinode *, OFF_T));
+static struct inotab	*allocinotab __P((dump_ino_t, OFF_T));
+static void		 savemodeinfo __P((dump_ino_t, struct dinode *));
 #endif
 static void		 dcvt __P((struct odirect *, struct direct *));
 static void		 flushent __P((void));
@@ -177,13 +179,14 @@ extractdirs(int genmode)
 {
 	int i;
 #if defined(__linux__) || defined(sunos)
-	struct new_bsd_inode *ip;
+	struct new_bsd_inode ip;
 #else
-	struct dinode *ip;
+	struct dinode ip;
 #endif
 	struct inotab *itp;
 	struct direct nulldir;
 	int fd;
+	dump_ino_t ino;
 
 	Vprintf(stdout, "Extract directories from tape\n");
 	(void) snprintf(dirfile, sizeof(dirfile), "%s/rstdir%ld", tmpdir,
@@ -222,8 +225,8 @@ extractdirs(int genmode)
 	for (;;) {
 		curfile.name = "<directory file - name unknown>";
 		curfile.action = USING;
-		ip = curfile.dip;
-		if (ip == NULL || (ip->di_mode & IFMT) != IFDIR) {
+		ino = curfile.ino;
+		if (curfile.dip == NULL || (curfile.dip->di_mode & IFMT) != IFDIR) {
 			if ( fclose(df) == EOF )
 				err(1, "cannot write to file %s", dirfile);
 			dirp = opendirfile(dirfile);
@@ -236,8 +239,26 @@ extractdirs(int genmode)
 				panic("Root directory is not on tape\n");
 			return;
 		}
-		itp = allocinotab(curfile.ino, ip, seekpt);
+		memcpy(&ip, curfile.dip, sizeof(ip));
+		itp = allocinotab(ino, seekpt);
 		getfile(putdir, xtrnull);
+		while (spcl.c_flags & DR_EXTATTRIBUTES) {
+			switch (spcl.c_extattributes) {
+			case EXT_MACOSFNDRINFO:
+				msg("MacOSX attributes not supported, skipping\n");
+				skipfile();
+				break;
+			case EXT_MACOSRESFORK:
+				msg("MacOSX attributes not supported, skipping\n");
+				skipfile();
+				break;
+			case EXT_XATTR:
+				msg("EA/ACLs attributes not supported, skipping\n");
+				skipfile();
+				break;
+			}
+		}
+		savemodeinfo(ino, &ip);
 		putent(&nulldir);
 		flushent();
 		itp->t_size = seekpt - itp->t_seekpt;
@@ -678,7 +699,7 @@ setdirmodes(int flags)
 			(void) chmod(cp, node.mode);
 			if (node.flags)
 #ifdef	__linux__
-				(void) fsetflags(cp, node.flags);
+				(void) lsetflags(cp, node.flags);
 #else
 #ifdef sunos
 #else
@@ -686,6 +707,87 @@ setdirmodes(int flags)
 #endif
 #endif
 			utimes(cp, node.timep);
+			ep->e_flags &= ~NEW;
+		}
+	}
+	if (ferror(mf))
+		panic("error setting directory modes\n");
+	(void) fclose(mf);
+}
+
+/*
+ * In restore -C mode, tests the attributes for all directories
+ */
+void
+comparedirmodes(void)
+{
+	FILE *mf;
+	struct modeinfo node;
+	struct entry *ep;
+	char *cp;
+
+	Vprintf(stdout, "Compare directories modes, owner, attributes.\n");
+	if (modefile[0] == '#') {
+		panic("modefile not defined\n");
+		fprintf(stderr, "directory mode, owner, and times not set\n");
+		return;
+	}
+	mf = fopen(modefile, "r");
+	if (mf == NULL) {
+		warn("fopen");
+		fprintf(stderr, "cannot open mode file %s\n", modefile);
+		fprintf(stderr, "directory mode, owner, and times not set\n");
+		return;
+	}
+	clearerr(mf);
+	for (;;) {
+		(void) fread((char *)&node, 1, sizeof(struct modeinfo), mf);
+		if (feof(mf))
+			break;
+		ep = lookupino(node.ino);
+		if (ep == NULL) {
+			panic("cannot find directory inode %d\n", node.ino);
+		} else {
+			cp = myname(ep);
+			struct STAT sb;
+			unsigned long newflags;
+
+			if (LSTAT(cp, &sb) < 0) {
+				warn("%s: does not exist", cp);
+				do_compare_error;
+				continue;
+			}
+
+			Vprintf(stdout, "comparing directory %s\n", cp);
+
+			if (sb.st_mode != node.mode) {
+				fprintf(stderr, "%s: mode changed from 0%o to 0%o.\n",
+					cp, node.mode & 07777, sb.st_mode & 07777);
+				do_compare_error;
+			}
+			if (sb.st_uid != node.uid) {
+				fprintf(stderr, "%s: uid changed from %d to %d.\n",
+					cp, node.uid, sb.st_uid);
+				do_compare_error;
+			}
+			if (sb.st_gid != node.gid) {
+				fprintf(stderr, "%s: gid changed from %d to %d.\n",
+					cp, node.gid, sb.st_gid);
+				do_compare_error;
+			}
+#ifdef	__linux__
+			if (lgetflags(cp, &newflags) < 0) {
+				warn("%s: lgetflags failed", cp);
+				do_compare_error;
+			}
+			else {
+				if (newflags != node.flags) {
+					fprintf(stderr, "%s: flags changed from 0x%08x to 0x%08lx.\n",
+						cp, node.flags, newflags);
+					do_compare_error;
+				}
+			}
+#endif
 			ep->e_flags &= ~NEW;
 		}
 	}
@@ -751,13 +853,12 @@ inodetype(dump_ino_t ino)
  */
 static struct inotab *
 #if defined(__linux__) || defined(sunos)
-allocinotab(dump_ino_t ino, struct new_bsd_inode *dip, OFF_T seekpt)
+allocinotab(dump_ino_t ino, OFF_T seekpt)
 #else
-allocinotab(dump_ino_t ino, struct dinode *dip, OFF_T seekpt)
+allocinotab(dump_ino_t ino, OFF_T seekpt)
 #endif
 {
 	struct inotab	*itp;
-	struct modeinfo node;
 
 	itp = calloc(1, sizeof(struct inotab));
 	if (itp == NULL)
@@ -766,8 +867,19 @@ allocinotab(dump_ino_t ino, struct dinode *dip, OFF_T seekpt)
 	inotab[INOHASH(ino)] = itp;
 	itp->t_ino = ino;
 	itp->t_seekpt = seekpt;
+	return itp;
+}
+
+static void
+#if defined(__linux__) || defined(sunos)
+savemodeinfo(dump_ino_t ino, struct new_bsd_inode *dip) {
+#else
+savemodeinfo(dump_ino_t ino, struct dinode *dip) {
+#endif
+	struct modeinfo node;
+
 	if (mf == NULL)
-		return (itp);
+		return;
 	node.ino = ino;
 #if defined(__linux__) || defined(sunos)
 	node.timep[0].tv_sec = dip->di_atime.tv_sec;
@@ -786,7 +898,6 @@ allocinotab(dump_ino_t ino, struct dinode *dip, OFF_T seekpt)
 	node.gid = dip->di_gid;
 	if ( fwrite((char *)&node, 1, sizeof(struct modeinfo), mf) != sizeof(struct modeinfo) )
 		err(1,"cannot write to file %s", modefile);
-	return (itp);
 }
 
 /*

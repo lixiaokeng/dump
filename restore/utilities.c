@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: utilities.c,v 1.25 2004/12/14 14:07:58 stelian Exp $";
+	"$Id: utilities.c,v 1.26 2004/12/15 11:00:01 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -269,10 +269,10 @@ linkit(char *existing, char *new, int type)
 			 */
 #ifdef sunos
 #else
-			if (fgetflags (existing, &s) != -1 &&
-			    fsetflags (existing, 0) != -1) {
+			if (lgetflags (existing, &s) != -1 &&
+			    lsetflags (existing, 0) != -1) {
 			    	ret = link(existing, new);
-				fsetflags(existing, s);
+				lsetflags(existing, s);
 			}
 #endif
 #endif
@@ -724,9 +724,46 @@ CreateAppleDoubleFileRes(char *oFile, FndrFileInfo *finderinfo, mode_t mode, int
 	(void)fchown(fdout, uid, gid);
 	(void)fchmod(fdout, mode);
 	close(fdout);
-	(void)fsetflags(oFile, flags);
+	(void)lsetflags(oFile, flags);
 	utimes(oFile, timep);
 	free(pp);
 	return err;
 }
 #endif /* DUMP_MACOSX */
+
+int
+lgetflags(const char *path, unsigned long *flags)
+{
+	int err;
+	struct STAT sb;
+
+	err = LSTAT(path, &sb);
+	if (err < 0)
+		return err;
+
+	if (S_ISLNK(sb.st_mode) || S_ISFIFO(sb.st_mode)) {
+		// no way to get/set flags on a symlink
+		*flags = 0;
+		return 0;
+	}
+	else
+		return fgetflags(path, flags);
+}
+
+int
+lsetflags(const char *path, unsigned long flags)
+{
+	int err;
+	struct STAT sb;
+
+	err = LSTAT(path, &sb);
+	if (err < 0)
+		return err;
+
+	if (S_ISLNK(sb.st_mode) || S_ISFIFO(sb.st_mode)) {
+		// no way to get/set flags on a symlink
+		return 0;
+	}
+	else
+		return fsetflags(path, flags);
+}

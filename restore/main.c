@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.46 2004/04/13 13:04:33 stelian Exp $";
+	"$Id: main.c,v 1.47 2004/12/15 11:00:01 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -427,9 +427,10 @@ main(int argc, char *argv[])
 			err(1, "cannot cd to %s", filesys);
 		compare_ignore_not_found = dumptime > 0;
 		initsymtable((char *)0);
-		extractdirs(0);
+		extractdirs(1);
 		treescan(".", ROOTINO, nodeupdates);
 		compareleaves();
+		comparedirmodes();
 		checkrestore();
 		if (compare_errors) {
 			printf("Some files were modified!\n");

@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: restore.c,v 1.34 2004/12/14 14:07:57 stelian Exp $";
+	"$Id: restore.c,v 1.35 2004/12/15 11:00:01 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -665,7 +665,10 @@ compare_entry(struct entry *ep, int do_compare)
 		badentry(ep, "unexpected file on tape");
 		do_compare_error;
 	}
-	if (do_compare) (void) comparefile(myname(ep));
+	if (do_compare) {
+		(void) comparefile(myname(ep));
+		skipxattr();
+	}
 	ep->e_flags &= ~(NEW|EXTRACT);
 }
 
@@ -821,38 +824,8 @@ createleaves(char *symtabfile)
 		else
 			doremove = 0;
 		(void) extractfile(ep, doremove);
+		skipxattr();
 		ep->e_flags &= ~(NEW|EXTRACT);
-
-finderres:
-		if ((first == curfile.ino) && (spcl.c_flags & DR_EXTATTRIBUTES)) {
-			switch (spcl.c_extattributes) {
-			case EXT_MACOSFNDRINFO:
-#ifdef DUMP_MACOSX
-				(void)extractfinderinfoufs(myname(ep));
-#else
-				msg("MacOSX not supported in this version, skipping\n");
-				skipfile();
-#endif
-				break;
-			case EXT_MACOSRESFORK:
-#ifdef DUMP_MACOSX
-				(void)extractresourceufs(myname(ep));
-#else
-				msg("MacOSX not supported in this version, skipping\n");
-				skipfile();
-#endif
-				break;
-			case EXT_ACL:
-				msg("ACLs not supported in this version, skipping\n");
-				skipfile();
-				break;
-			default:
-				msg("unexpected inode extension %ld, skipping\n", spcl.c_extattributes);
-				skipfile();
-				break;
-			}
-			goto finderres;
-		}
 
 		/*
 		 * We checkpoint the restore after every tape reel, so
@@ -1084,37 +1057,7 @@ createfiles(void)
 			} else {
 #endif /* USE_QFA */
 				(void) extractfile(ep, 0);
-
-finderres:
-				if ((next == curfile.ino) && (spcl.c_flags & DR_EXTATTRIBUTES)) {
-					switch (spcl.c_extattributes) {
-					case EXT_MACOSFNDRINFO:
-#ifdef DUMP_MACOSX
-						(void)extractfinderinfoufs(myname(ep));
-#else
-						msg("MacOSX not supported in this version, skipping\n");
-						skipfile();
-#endif
-						break;
-					case EXT_MACOSRESFORK:
-#ifdef DUMP_MACOSX
-						(void)extractresourceufs(myname(ep));
-#else
-						msg("MacOSX not supported in this version, skipping\n");
-						skipfile();
-#endif
-						break;
-					case EXT_ACL:
-						msg("ACLs not supported in this version, skipping\n");
-						skipfile();
-						break;
-					default:
-						msg("unexpected inode extension %ld, skipping\n", spcl.c_extattributes);
-						skipfile();
-						break;
-					}
-					goto finderres;
-				}
+				skipxattr();
 
 #ifdef USE_QFA
 			}

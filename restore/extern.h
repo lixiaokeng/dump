@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: extern.h,v 1.23 2003/10/26 16:05:48 stelian Exp $
+ *	$Id: extern.h,v 1.24 2004/12/15 11:00:01 stelian Exp $
  */
 
 /*-
@@ -107,6 +107,7 @@ void		 rst_closedir __P((RST_DIR *dirp));
 void	 	 runcmdshell __P((void));
 char		*savename __P((char *));
 void	 	 setdirmodes __P((int));
+void		 comparedirmodes __P((void));
 void		 setinput __P((char *));
 void		 setup __P((void));
 void	 	 skipdirs __P((void));
@@ -131,6 +132,9 @@ int fsetflags __P((const char *, unsigned long));
 int fgetflags __P((const char *, unsigned long *));
 int setflags __P((int, unsigned long));
 
+int lsetflags __P((const char *, unsigned long));
+int lgetflags __P((const char *, unsigned long *));
+
 #ifdef USE_QFA
 int	Inode2Tapepos __P((dump_ino_t, long *, long long *, int));
 int	GetTapePos __P((long long *));
@@ -152,5 +156,4 @@ int	extractresourceufs __P((char *));
 int	CreateAppleDoubleFileRes __P((char *, FndrFileInfo *, mode_t, int, struct timeval *, u_int32_t, u_int32_t));
 #endif
 
-
-
+void	skipxattr __P((void));

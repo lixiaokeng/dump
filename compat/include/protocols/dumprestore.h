@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: dumprestore.h,v 1.22 2004/07/01 09:14:49 stelian Exp $
+ *	$Id: dumprestore.h,v 1.23 2004/12/15 11:00:01 stelian Exp $
  */
 
 /*
@@ -150,7 +150,7 @@ union u_spcl {
 #define EXT_REGULAR		0
 #define EXT_MACOSFNDRINFO	1
 #define EXT_MACOSRESFORK	2
-#define EXT_ACL			3
+#define EXT_XATTR		3
 
 
 /*

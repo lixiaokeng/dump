@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.83 2004/12/10 13:31:21 stelian Exp $";
+	"$Id: tape.c,v 1.84 2004/12/15 11:00:01 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -168,6 +168,8 @@ static void	 xtrmap __P((char *, size_t));
 static void	 xtrmapskip __P((char *, size_t));
 static void	 xtrskip __P((char *, size_t));
 static void	 setmagtapein __P((void));
+static int	 extractattr __P((char *));
+static void	 compareattr __P((char *));
 
 #if defined(HAVE_ZLIB) || defined(HAVE_BZLIB) || defined(HAVE_LZO)
 static void	newcomprbuf __P((int));
@@ -840,14 +842,19 @@ extractfile(struct entry *ep, int doremove)
 		return (GOOD);
 
 	case IFDIR:
+	{
+		int ret;
 		if (mflag) {
 			if (ep == NULL || ep->e_flags & EXTRACT)
 				panic("unextracted directory %s\n", name);
 			skipfile();
 			return (GOOD);
 		}
-		Vprintf(stdout, "extract file %s\n", name);
-		return (genliteraldir(name, curfile.ino));
+		Vprintf(stdout, "extract dir %s\n", name);
+		ret = genliteraldir(name, curfile.ino);
+		extractattr(name);
+		return ret;
+	}
 
 	case IFLNK:
 	{
@@ -873,6 +880,7 @@ extractfile(struct entry *ep, int doremove)
 #ifdef HAVE_LCHOWN
 		(void) lchown(name, luid, lgid);
 #endif
+		extractattr(name);
 		return (GOOD);
 	}
 
@@ -895,7 +903,7 @@ extractfile(struct entry *ep, int doremove)
 		(void) chmod(name, mode);
 		if (flags)
 #ifdef  __linux__
-			(void) fsetflags(name, flags);
+			(void) lsetflags(name, flags);
 #else
 #ifdef sunos
 			{
@@ -907,6 +915,7 @@ extractfile(struct entry *ep, int doremove)
 #endif
 #endif
 		skipfile();
+		extractattr(name);
 		utimes(name, timep);
 		return (GOOD);
 
@@ -931,8 +940,8 @@ extractfile(struct entry *ep, int doremove)
 		if (flags)
 #ifdef	__linux__
 			{
-			warn("%s: fsetflags called on a special file", name);
-			(void) fsetflags(name, flags);
+			warn("%s: lsetflags called on a special file", name);
+			(void) lsetflags(name, flags);
 			}
 #else
 #ifdef sunos
@@ -948,6 +957,7 @@ extractfile(struct entry *ep, int doremove)
 #endif
 #endif
 		skipfile();
+		extractattr(name);
 		utimes(name, timep);
 		return (GOOD);
 
@@ -979,7 +989,7 @@ extractfile(struct entry *ep, int doremove)
 		(void) chmod(name, mode);
 		if (flags)
 #ifdef	__linux__
-			(void) fsetflags(name, flags);
+			(void) lsetflags(name, flags);
 #else
 #ifdef sunos
 			{
@@ -990,11 +1000,46 @@ extractfile(struct entry *ep, int doremove)
 			(void) chflags(name, flags);
 #endif
 #endif
+		extractattr(name);
 		utimes(name, timep);
 		return (GOOD);
 	}
 	}
 	/* NOTREACHED */
+}
+
+static int
+extractattr(char *path)
+{
+	while (spcl.c_flags & DR_EXTATTRIBUTES) {
+		switch (spcl.c_extattributes) {
+		case EXT_MACOSFNDRINFO:
+#ifdef DUMP_MACOSX
+			(void)extractfinderinfoufs(path);
+#else
+			msg("MacOSX not supported in this version, skipping\n");
+			skipfile();
+#endif
+			break;
+		case EXT_MACOSRESFORK:
+#ifdef DUMP_MACOSX
+			(void)extractresourceufs(path);
+#else
+			msg("MacOSX not supported in this version, skipping\n");
+			skipfile();
+#endif
+			break;
+		case EXT_XATTR:
+			msg("EA/ACLs not supported in this version, skipping\n");
+			skipfile();
+			break;
+		default:
+			msg("unexpected inode extension %ld, skipping\n", spcl.c_extattributes);
+			skipfile();
+			break;
+		}
+	}
+	return GOOD;
 }
 
 #ifdef DUMP_MACOSX
@@ -1161,7 +1206,7 @@ extractresourceufs(char *name)
 		(void) fchown(ofile, uid, gid);
 		(void) fchmod(ofile, mode);
 		(void) close(ofile);
-		(void) fsetflags(oFileRsrc, flags);
+		(void) lsetflags(oFileRsrc, flags);
 		utimes(oFileRsrc, timep);
 		return (GOOD);
 	}
@@ -1189,6 +1234,17 @@ skipfile(void)
 
 	curfile.action = SKIP;
 	getfile(xtrnull, xtrnull);
+}
+
+/*
+ * skip over any extended attributes.
+ */
+void
+skipxattr(void)
+{
+
+	while (spcl.c_flags & DR_EXTATTRIBUTES)
+		skipfile();
 }
 
 /*
@@ -1539,6 +1595,31 @@ cmpfiles(char *tapefile, char *diskfile, struct STAT *sbuf_disk)
 }
 #endif /* !COMPARE_ONTHEFLY */
 
+static void
+compareattr(char *name)
+{
+	while (spcl.c_flags & DR_EXTATTRIBUTES) {
+		switch (spcl.c_extattributes) {
+		case EXT_MACOSFNDRINFO:
+			msg("MacOSX not supported for comparision in this version, skipping\n");
+			skipfile();
+			break;
+		case EXT_MACOSRESFORK:
+			msg("MacOSX not supported for comparision in this version, skipping\n");
+			skipfile();
+			break;
+		case EXT_XATTR:
+			msg("EA/ACLs not supported for comparision in this version, skipping\n");
+			skipxattr();
+			break;
+		default:
+			msg("unexpected inode extension %ld, skipping\n", spcl.c_extattributes);
+			skipfile();
+			break;
+		}
+	}
+}
+
 #if !COMPARE_ONTHEFLY
 static char tmpfilename[MAXPATHLEN];
 #endif
@@ -1546,17 +1627,23 @@ static char tmpfilename[MAXPATHLEN];
 void
 comparefile(char *name)
 {
-	unsigned int mode;
+	mode_t mode;
+	uid_t uid;
+	uid_t gid;
+	unsigned int flags;
+	unsigned long newflags;
 	struct STAT sb;
 	int r;
 #if !COMPARE_ONTHEFLY
 	static char *tmpfile = NULL;
 	struct STAT stemp;
 #endif
-
 	curfile.name = name;
 	curfile.action = USING;
 	mode = curfile.dip->di_mode;
+	flags = curfile.dip->di_flags;
+	uid = curfile.dip->di_uid;
+	gid =  curfile.dip->di_gid;
 
 	if ((mode & IFMT) == IFSOCK) {
 		Vprintf(stdout, "skipped socket %s\n", name);
@@ -1579,6 +1666,29 @@ comparefile(char *name)
 			name, mode & 07777, sb.st_mode & 07777);
 		do_compare_error;
 	}
+	if (sb.st_uid != uid) {
+		fprintf(stderr, "%s: uid changed from %d to %d.\n",
+			name, uid, sb.st_uid);
+		do_compare_error;
+	}
+	if (sb.st_gid != gid) {
+		fprintf(stderr, "%s: gid changed from %d to %d.\n",
+			name, gid, sb.st_gid);
+		do_compare_error;
+	}
+#ifdef  __linux__
+	if (lgetflags(name, &newflags) < 0) {
+		warn("%s: lgetflags failed", name);
+		do_compare_error;
+	}
+	else {
+		if (newflags != flags) {
+			fprintf(stderr, "%s: flags changed from 0x%08x to 0x%08lx.\n",
+				name, flags, newflags);
+			do_compare_error;
+		}
+	}
+#endif
 	if (spcl.c_flags & DR_METAONLY) {
 		skipfile();
 		return;
@@ -1594,6 +1704,7 @@ comparefile(char *name)
 
 	case IFDIR:
 		skipfile();
+		compareattr(name);
 		return;
 
 	case IFLNK: {
@@ -1629,6 +1740,7 @@ comparefile(char *name)
 			do_compare_error;
 			return;
 		}
+		compareattr(name);
 		return;
 	}
 
@@ -1653,6 +1765,7 @@ comparefile(char *name)
 			do_compare_error;
 		}
 		skipfile();
+		compareattr(name);
 		return;
 
 	case IFREG:
@@ -1701,6 +1814,7 @@ comparefile(char *name)
 		unlink(tmpfile);
 #endif
 #endif /* COMPARE_ONTHEFLY */
+		compareattr(name);
 		return;
 	}
 	/* NOTREACHED */
