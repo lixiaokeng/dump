@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.88 2003/11/22 16:52:16 stelian Exp $";
+	"$Id: main.c,v 1.89 2004/01/04 10:48:35 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1276,13 +1276,13 @@ do_exclude_ino(dump_ino_t ino, const char *reason)
 	/* check for enough mem; initialize */
 	if ((ino/8 + 1) > iexclude_bitmap_bytes) {
 		if (iexclude_bitmap_bytes == 0) {
+			unsigned int j;
 			iexclude_bitmap_bytes = 2 * (ino/8 + 1);
 			iexclude_bitmap = (char*) malloc(iexclude_bitmap_bytes);
 			if (iexclude_bitmap == NULL) {
 				msg("allocating memory failed\n");
 				exit(X_STARTUP);
 			}
-			unsigned int j;
 			for (j = 0; j < iexclude_bitmap_bytes; j++)
 				iexclude_bitmap[j] = 0;
 		}
