@@ -1,5 +1,5 @@
-VERSION=	0.4b33
-DATE=		February 10, 2003
+VERSION=	0.4b34
+DATE=		April 18, 2003
 
 AR=		@AR@
 CC=		@CC@
