@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: symtab.c,v 1.22 2003/10/26 16:05:48 stelian Exp $";
+	"$Id: symtab.c,v 1.23 2004/12/14 14:07:58 stelian Exp $";
 #endif /* not lint */
 
 /*
@@ -100,6 +100,25 @@ static long entrytblsize;
 static void		 addino __P((dump_ino_t, struct entry *));
 static struct entry	*lookupparent __P((char *));
 static void		 removeentry __P((struct entry *));
+static int		 dir_hash __P((char *));
+
+/*
+ * Returns a hash given a file name
+ */
+static int
+dir_hash(char *name)
+{
+	unsigned long hash0 = 0x12a3fe2d, hash1 = 0x37abe8f9;
+	int len = strlen(name);
+	
+	while (len--) {
+		unsigned long hash = hash1 + (hash0 ^ (*name++ * 7152373));
+		if (hash & 0x80000000) hash -= 0x7fffffff;
+		hash1 = hash0;
+		hash0 = hash; 
+	}       
+	return hash0 % DIRHASH_SIZE;
+}
 
 /*
  * Look up an entry by inode number
@@ -166,21 +185,45 @@ deleteino(dump_ino_t inum)
 struct entry *
 lookupname(char *name)
 {
-	struct entry *ep;
+	struct entry *ep, *oldep;
 	char *np, *cp;
 	char buf[MAXPATHLEN];
 
 	cp = name;
-	for (ep = lookupino(ROOTINO); ep != NULL; ep = ep->e_entries) {
+
+	ep = lookupino(ROOTINO);
+	while (ep != NULL) {
 		for (np = buf; *cp != '/' && *cp != '\0' &&
 				np < &buf[sizeof(buf)]; )
 			*np++ = *cp++;
 		if (np == &buf[sizeof(buf)])
 			break;
 		*np = '\0';
-		for ( ; ep != NULL; ep = ep->e_sibling)
-			if (strcmp(ep->e_name, buf) == 0)
-				break;
+
+		oldep = ep;
+
+		if (strcmp(ep->e_name, buf) != 0 &&
+		    ep->e_entries != NULL) {
+
+			ep = ep->e_entries[dir_hash(buf)];
+			for ( ; ep != NULL; ep = ep->e_sibling)
+				if (strcmp(ep->e_name, buf) == 0)
+					break;
+
+			/* search all hash lists for renamed inodes */
+			if (ep == NULL) {
+				int j;
+				for (j = 0; j < DIRHASH_SIZE; j++) {
+					ep = oldep->e_entries[j];
+					for ( ; ep != NULL; ep = ep->e_sibling)
+						if (strcmp(ep->e_name, buf) == 0)
+							break;
+					if (ep != NULL)
+						break;
+				}
+			}
+		}
+
 		if (ep == NULL)
 			break;
 		if (*cp++ == '\0')
@@ -256,6 +299,11 @@ addentry(char *name, dump_ino_t inum, int type)
 			errx(1, "no memory to extend symbol table");
 	}
 	np->e_type = type & ~LINK;
+	if (type & NODE) {
+		np->e_entries = calloc(1, DIRHASH_SIZE * sizeof(struct entry *));
+		if (np->e_entries == NULL)
+			panic("unable to allocate directory entries\n");
+	}
 	ep = lookupparent(name);
 	if (ep == NULL) {
 		if (inum != ROOTINO || lookupino(ROOTINO) != NULL)
@@ -269,8 +317,8 @@ addentry(char *name, dump_ino_t inum, int type)
 	np->e_name = savename(strrchr(name, '/') + 1);
 	np->e_namlen = strlen(np->e_name);
 	np->e_parent = ep;
-	np->e_sibling = ep->e_entries;
-	ep->e_entries = np;
+	np->e_sibling = ep->e_entries[dir_hash(np->e_name)];
+	ep->e_entries[dir_hash(np->e_name)] = np;
 	if (type & LINK) {
 		ep = lookupino(inum);
 		if (ep == NULL)
@@ -300,8 +348,13 @@ freeentry(struct entry *ep)
 	if (ep->e_type == NODE) {
 		if (ep->e_links != NULL)
 			badentry(ep, "freeing referenced directory");
-		if (ep->e_entries != NULL)
-			badentry(ep, "freeing non-empty directory");
+		if (ep->e_entries != NULL) {
+			int i;
+			for (i = 0; i < DIRHASH_SIZE; i++) {
+				if (ep->e_entries[i] != NULL) 
+					badentry(ep, "freeing non-empty directory");
+			}
+		}
 	}
 	if (ep->e_ino != 0) {
 		np = lookupino(ep->e_ino);
@@ -344,8 +397,8 @@ moveentry(struct entry *ep, char *newname)
 	if (np != ep->e_parent) {
 		removeentry(ep);
 		ep->e_parent = np;
-		ep->e_sibling = np->e_entries;
-		np->e_entries = ep;
+		ep->e_sibling = np->e_entries[dir_hash(ep->e_name)];
+		np->e_entries[dir_hash(ep->e_name)] = ep;
 	}
 	cp = strrchr(newname, '/') + 1;
 	freename(ep->e_name);
@@ -363,20 +416,40 @@ moveentry(struct entry *ep, char *newname)
 static void
 removeentry(struct entry *ep)
 {
-	struct entry *np;
+	struct entry *np = ep->e_parent;
+	struct entry *entry = np->e_entries[dir_hash(ep->e_name)];
 
-	np = ep->e_parent;
-	if (np->e_entries == ep) {
-		np->e_entries = ep->e_sibling;
+	if (entry == ep) {
+		np->e_entries[dir_hash(ep->e_name)] = ep->e_sibling;
 	} else {
-		for (np = np->e_entries; np != NULL; np = np->e_sibling) {
+		for (np = entry; np != NULL; np = np->e_sibling) {
 			if (np->e_sibling == ep) {
 				np->e_sibling = ep->e_sibling;
 				break;
 			}
 		}
-		if (np == NULL)
+		if (np == NULL) {
+
+			/* search all hash lists for renamed inodes */
+			int j;
+			for (j = 0; j < DIRHASH_SIZE; j++) {
+				np = ep->e_parent;
+				entry = np->e_entries[j];
+				if (entry == ep) {
+					np->e_entries[j] = ep->e_sibling;
+					return;
+				}
+				else {
+					for (np = entry; np != NULL; np = np->e_sibling) {
+						if (np->e_sibling == ep) {
+							np->e_sibling = ep->e_sibling;
+							return;
+						}
+					}
+				}
+			}
 			badentry(ep, "cannot find entry in parent list");
+		}
 	}
 }
 
@@ -449,6 +522,7 @@ freename(char *name)
 struct symtableheader {
 	int32_t	volno;
 	int32_t	stringsize;
+	int32_t hashsize;
 	int32_t	entrytblsize;
 	time_t	dumptime;
 	time_t	dumpdate;
@@ -466,9 +540,10 @@ dumpsymtable(char *filename, long checkpt)
 	struct entry *ep, *tep;
 	dump_ino_t i;
 	struct entry temp, *tentry;
-	long mynum = 1, stroff = 0;
+	long mynum = 1, stroff = 0, hashoff = 0;
 	FILE *fd;
 	struct symtableheader hdr;
+	struct entry *temphash[DIRHASH_SIZE];
 
 	Vprintf(stdout, "Check pointing the restore\n");
 	if (Nflag)
@@ -491,10 +566,27 @@ dumpsymtable(char *filename, long checkpt)
 		}
 	}
 	/*
+	 * Write out e_entries tables
+	 */
+	for (i = WINO; i <= maxino; i++) {
+		for (ep = lookupino(i); ep != NULL; ep = ep->e_links) {
+			if (ep->e_entries != NULL) {
+				int j;
+				memcpy(temphash, ep->e_entries, DIRHASH_SIZE * sizeof(struct entry *));
+				for (j = 0; j < DIRHASH_SIZE; j++) {
+					if (temphash[j])
+						temphash[j] = (struct entry *)ep->e_entries[j]->e_index;
+				}
+				fwrite(temphash, DIRHASH_SIZE, sizeof(struct entry *), fd);
+			}
+		}
+	}
+	/*
 	 * Convert pointers to indexes, and output
 	 */
 	tep = &temp;
 	stroff = 0;
+	hashoff = 0;
 	for (i = WINO; i <= maxino; i++) {
 		for (ep = lookupino(i); ep != NULL; ep = ep->e_links) {
 			memmove(tep, ep, sizeof(struct entry));
@@ -507,9 +599,10 @@ dumpsymtable(char *filename, long checkpt)
 			if (ep->e_sibling != NULL)
 				tep->e_sibling =
 					(struct entry *)ep->e_sibling->e_index;
-			if (ep->e_entries != NULL)
-				tep->e_entries =
-					(struct entry *)ep->e_entries->e_index;
+			if (ep->e_entries != NULL) {
+				tep->e_entries = (struct entry **)hashoff;
+				hashoff += DIRHASH_SIZE * sizeof(struct entry *);
+			}
 			if (ep->e_next != NULL)
 				tep->e_next =
 					(struct entry *)ep->e_next->e_index;
@@ -530,6 +623,7 @@ dumpsymtable(char *filename, long checkpt)
 	hdr.maxino = maxino;
 	hdr.entrytblsize = entrytblsize;
 	hdr.stringsize = stroff;
+	hdr.hashsize = hashoff;
 	hdr.dumptime = dumptime;
 	hdr.dumpdate = dumpdate;
 	hdr.ntrec = ntrec;
@@ -617,7 +711,7 @@ initsymtable(char *filename)
 	entrytblsize = hdr.entrytblsize;
 	entry = (struct entry **)
 		(base + tblsize - (entrytblsize * sizeof(struct entry *)));
-	baseep = (struct entry *)(base + hdr.stringsize - sizeof(struct entry));
+	baseep = (struct entry *)(base + hdr.stringsize + hdr.hashsize - sizeof(struct entry));
 	lep = (struct entry *)entry;
 	for (i = 0; i < entrytblsize; i++) {
 		if (entry[i] == NULL)
@@ -631,8 +725,16 @@ initsymtable(char *filename)
 			ep->e_sibling = &baseep[(long)ep->e_sibling];
 		if (ep->e_links != NULL)
 			ep->e_links = &baseep[(long)ep->e_links];
-		if (ep->e_entries != NULL)
-			ep->e_entries = &baseep[(long)ep->e_entries];
+		if (ep->e_type == NODE) {
+			int i;
+			ep->e_entries = (struct entry **)(base + hdr.stringsize + (long)ep->e_entries);
+			for (i = 0; i < DIRHASH_SIZE; i++) {
+				if (ep->e_entries[i])
+					ep->e_entries[i] = &baseep[(long)ep->e_entries[i]];
+			}
+		}
+		else
+			ep->e_entries = NULL;
 		if (ep->e_next != NULL)
 			ep->e_next = &baseep[(long)ep->e_next];
 	}

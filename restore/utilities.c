@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: utilities.c,v 1.24 2003/11/22 16:52:16 stelian Exp $";
+	"$Id: utilities.c,v 1.25 2004/12/14 14:07:58 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -187,8 +187,13 @@ removenode(struct entry *ep)
 
 	if (ep->e_type != NODE)
 		badentry(ep, "removenode: not a node");
-	if (ep->e_entries != NULL)
-		badentry(ep, "removenode: non-empty directory");
+	if (ep->e_entries != NULL) {
+		int i;
+		for (i = 0; i < DIRHASH_SIZE; i++) {
+			if (ep->e_entries[i] != NULL)
+				badentry(ep, "removenode: non-empty directory");
+		}
+	}
 	ep->e_flags |= REMOVED;
 	ep->e_flags &= ~TMPNAME;
 	cp = myname(ep);
@@ -371,8 +376,15 @@ badentry(struct entry *ep, const char *msg)
 	fprintf(stderr, "parent name %s\n", myname(ep->e_parent));
 	if (ep->e_sibling != NULL)
 		fprintf(stderr, "sibling name: %s\n", myname(ep->e_sibling));
-	if (ep->e_entries != NULL)
-		fprintf(stderr, "next entry name: %s\n", myname(ep->e_entries));
+	if (ep->e_entries != NULL) {
+		int i;
+		for (i = 0; i < DIRHASH_SIZE; i++) {
+			if (ep->e_entries[i] != NULL) {
+				fprintf(stderr, "next entry name: %s\n", myname(ep->e_entries[0]));
+				break;
+			}
+		}
+	}
 	if (ep->e_links != NULL)
 		fprintf(stderr, "next link name: %s\n", myname(ep->e_links));
 	if (ep->e_next != NULL)

@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: restore.h,v 1.29 2004/04/13 13:04:33 stelian Exp $
+ *	$Id: restore.h,v 1.30 2004/12/14 14:07:58 stelian Exp $
  */
 
 /*
@@ -92,6 +92,8 @@ extern int	compare_errors;	/* did we encounter any compare errors? */
 extern char	filesys[NAMELEN];/* name of dumped filesystem */
 extern dump_ino_t volinfo[];	/* which inode on which volume archive info */
 
+#define DIRHASH_SIZE 1024
+
 /*
  * Each file in the file system is described by one of these entries
  */
@@ -105,7 +107,7 @@ struct entry {
 	struct	entry *e_parent;	/* pointer to parent directory (..) */
 	struct	entry *e_sibling;	/* next element in this directory (.) */
 	struct	entry *e_links;		/* hard links to this inode */
-	struct	entry *e_entries;	/* for directories, their entries */
+	struct	entry **e_entries;	/* for directories, their entries */
 	struct	entry *e_next;		/* hash chain list */
 };
 /* types */

@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: restore.c,v 1.33 2003/11/22 16:52:16 stelian Exp $";
+	"$Id: restore.c,v 1.34 2004/12/14 14:07:57 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -572,19 +572,24 @@ findunreflinks(void)
 {
 	struct entry *ep, *np;
 	dump_ino_t i;
+	int j;
 
 	Vprintf(stdout, "Find unreferenced names.\n");
 	for (i = ROOTINO; i < maxino; i++) {
 		ep = lookupino(i);
 		if (ep == NULL || ep->e_type == LEAF || TSTINO(i, dumpmap) == 0)
 			continue;
-		for (np = ep->e_entries; np != NULL; np = np->e_sibling) {
-			if (np->e_flags == 0) {
-				Dprintf(stdout,
-				    "%s: remove unreferenced name\n",
-				    myname(np));
-				removeleaf(np);
-				freeentry(np);
+		if (ep->e_entries == NULL)
+			continue;
+		for (j = 0; j < DIRHASH_SIZE; j++) {
+			for (np = ep->e_entries[j]; np != NULL; np = np->e_sibling) {
+				if (np->e_flags == 0) {
+					Dprintf(stdout,
+					    "%s: remove unreferenced name\n",
+					    myname(np));
+					removeleaf(np);
+					freeentry(np);
+				}
 			}
 		}
 	}
@@ -592,15 +597,19 @@ findunreflinks(void)
 	 * Any leaves remaining in removed directories is unreferenced.
 	 */
 	for (ep = removelist; ep != NULL; ep = ep->e_next) {
-		for (np = ep->e_entries; np != NULL; np = np->e_sibling) {
-			if (np->e_type == LEAF) {
-				if (np->e_flags != 0)
-					badentry(np, "unreferenced with flags");
-				Dprintf(stdout,
-				    "%s: remove unreferenced name\n",
-				    myname(np));
-				removeleaf(np);
-				freeentry(np);
+		if (ep->e_entries == NULL)
+			continue;
+		for (j = 0; j < DIRHASH_SIZE; j++) {
+			for (np = ep->e_entries[j]; np != NULL; np = np->e_sibling) {
+				if (np->e_type == LEAF) {
+					if (np->e_flags != 0)
+						badentry(np, "unreferenced with flags");
+					Dprintf(stdout,
+					    "%s: remove unreferenced name\n",
+					    myname(np));
+					removeleaf(np);
+					freeentry(np);
+				}
 			}
 		}
 	}
@@ -627,8 +636,13 @@ removeoldnodes(void)
 		prev = &removelist;
 		for (ep = removelist; ep != NULL; ep = *prev) {
 			if (ep->e_entries != NULL) {
-				prev = &ep->e_next;
-				continue;
+				int i;
+				for (i = 0; i < DIRHASH_SIZE; i++) {
+					if (ep->e_entries[i] != NULL) {
+						prev = &ep->e_next;
+						continue;
+					}
+				}
 			}
 			*prev = ep->e_next;
 			removenode(ep);
