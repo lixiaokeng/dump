@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.223 2003/03/31 09:42:54 stelian Exp $
+$Id: CHANGES,v 1.224 2003/03/31 10:09:37 stelian Exp $
 
 Changes between versions 0.4b33 and 0.4b34 (released ?????????????????)
 =======================================================================
@@ -75,6 +75,9 @@ Changes between versions 0.4b33 and 0.4b34 (released ?????????????????)
 	<jarausch@igpm.rwth-aachen.de> for the patch and to 
 	Markus Oberhumer <markus@oberhumer.com> for giving special permission
 	to include his miniLZO project (GPL licensed) in dump/restore.
+
+17.	Some small buffer overruns fixes in rmt. Thanks to Antonomasia
+	<ant@notatla.demon.co.uk> for reporting the bugs.
 
 Changes between versions 0.4b32 and 0.4b33 (released February 10, 2003)
 =======================================================================

@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: rmt.c,v 1.24 2003/03/30 15:40:40 stelian Exp $";
+	"$Id: rmt.c,v 1.25 2003/03/31 10:09:41 stelian Exp $";
 #endif /* not linux */
 
 /*
@@ -187,6 +187,8 @@ top:
 	case 'W':
 		getstring(count);
 		n = atoi(count);
+		if (n < 1)
+			exit(2);
 		DEBUG2("rmtd: W %s (block = %lu)\n", count, block);
 		record = checkbuf(record, n);
 		for (i = 0; i < n; i += cc) {
@@ -417,7 +419,7 @@ void getstring(char *bp)
 	int i;
 	char *cp = bp;
 
-	for (i = 0; i < SSIZE; i++) {
+	for (i = 0; i < SSIZE - 1; i++) {
 		if (read(0, cp+i, 1) != 1)
 			exit(0);
 		if (cp[i] == '\n')
