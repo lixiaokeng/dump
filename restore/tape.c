@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.56 2002/01/25 15:09:00 stelian Exp $";
+	"$Id: tape.c,v 1.57 2002/01/31 10:25:55 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -367,6 +367,7 @@ setup(void)
 	usedinomap = map;
 	curfile.action = USING;
 	getfile(xtrmap, xtrmapskip);
+	findinode(&spcl);
 	if (spcl.c_type != TS_BITS)
 		errx(1, "Cannot find file dump list");
 	map = calloc((unsigned)1, (unsigned)howmany(maxino, NBBY));
@@ -382,6 +383,7 @@ setup(void)
 	 */
 	if (oldinofmt == 0)
 		SETINO(WINO, dumpmap);
+	findinode(&spcl);
 }
 
 /*
