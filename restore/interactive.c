@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: interactive.c,v 1.9 2000/02/26 01:35:48 stelian Exp $";
+	"$Id: interactive.c,v 1.10 2000/05/28 17:50:27 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -459,7 +459,7 @@ copynext(char *input, char *output)
 		 */
 		quote = *cp++;
 		while (*cp != quote && *cp != '\0')
-			*bp++ = *cp++ | 0200;
+			*bp++ = *cp++;
 		if (*cp++ == '\0') {
 			fprintf(stderr, "missing %c\n", quote);
 			cp--;
