@@ -45,7 +45,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.9 1999/11/22 21:39:42 tiniou Exp $";
+	"$Id: tape.c,v 1.10 2000/01/13 09:38:26 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -262,7 +262,7 @@ setup(void)
 	if (spcl.c_type != TS_CLRI)
 		errx(1, "Cannot find file removal list");
 	maxino = (spcl.c_count * TP_BSIZE * NBBY) + 1;
-	Dprintf(stdout, "maxino = %ld\n", maxino);
+	Dprintf(stdout, "maxino = %ld\n", (long)maxino);
 	map = calloc((unsigned)1, (unsigned)howmany(maxino, NBBY));
 	if (map == NULL)
 		panic("no memory for active inode map\n");
@@ -1439,7 +1439,7 @@ accthdr(struct s_spcl *header)
 		fprintf(stderr, "File header, ino %lu", (unsigned long)previno);
 		break;
 	case TS_ADDR:
-		fprintf(stderr, "File continuation header, ino %ld", previno);
+		fprintf(stderr, "File continuation header, ino %ld", (long)previno);
 		break;
 	case TS_END:
 		fprintf(stderr, "End of tape header");

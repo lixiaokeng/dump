@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.12 2000/01/09 23:47:33 tiniou Exp $";
+	"$Id: traverse.c,v 1.13 2000/01/13 09:38:26 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -667,7 +667,7 @@ dumpino(struct dinode *dp, ino_t ino)
 	obi.di_gen = dp->di_gen;
 	memmove(&obi.di_db, &dp->di_db, (NDADDR + NIADDR) * sizeof(daddr_t));
 	if (dp->di_file_acl || dp->di_dir_acl)
-		warn("ACLs in inode #%ld won't be dumped", ino);
+		warn("ACLs in inode #%ld won't be dumped", (long)ino);
 	memmove(&spcl.c_dinode, &obi, sizeof(obi));
 #else	/* __linux__ */
 	spcl.c_dinode = *dp;
@@ -850,7 +850,7 @@ dumpdirino(struct dinode *dp, ino_t ino)
 	/* Do the conversion */
 	retval = ext2fs_dir_iterate(fs, ino, 0, NULL, convert_dir, (void *)&cdc);
 	if (retval) {
-		com_err(disk, retval, "while converting directory #%ld\n", ino);
+		com_err(disk, retval, "while converting directory #%ld\n", (long)ino);
 		exit(X_ABORT);
 	}
 	/* Fix the last entry */
@@ -877,7 +877,7 @@ dumpdirino(struct dinode *dp, ino_t ino)
 	obi.di_gen = dp->di_gen;
 	memmove(&obi.di_db, &dp->di_db, (NDADDR + NIADDR) * sizeof(daddr_t));
 	if (dp->di_file_acl || dp->di_dir_acl)
-		warn("ACLs in inode #%ld won't be dumped", ino);
+		warn("ACLs in inode #%ld won't be dumped", (long)ino);
 	memmove(&spcl.c_dinode, &obi, sizeof(obi));
 #else	/* __linux__ */
 	spcl.c_dinode = *dp;

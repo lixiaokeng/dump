@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: interactive.c,v 1.6 1999/10/13 09:57:20 stelian Exp $";
+	"$Id: interactive.c,v 1.7 2000/01/13 09:38:26 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -690,7 +690,7 @@ formatf(struct afile *list, int nentry)
 		for (j = 0; j < columns; j++) {
 			fp = &list[j * lines + i];
 			if (vflag) {
-				fprintf(stderr, "%*ld ", precision, fp->fnum);
+				fprintf(stderr, "%*ld ", precision, (long)fp->fnum);
 				fp->len += precision + 1;
 			}
 			if (haveprefix) {
