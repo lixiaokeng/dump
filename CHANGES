@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.15 1999/11/11 16:13:57 tiniou Exp $
+$Id: CHANGES,v 1.16 1999/11/17 22:46:40 tiniou Exp $
 
 Changes between versions 0.4b9 and 0.4b10 (released ???????????????)
 ====================================================================
@@ -9,6 +9,11 @@ Changes between versions 0.4b9 and 0.4b10 (released ???????????????)
 	<sadlowsk@Mathematik.Uni-Bielefeld.DE> for reporting the bug
 	and helping me resolve this and other minor libc5 compiling
 	glitches.
+
+2.	Fix a problem when dumping a ext2fs with the 'filetype'
+	feature enabled. Thanks to Patrick J. LoPresti 
+	<patl@cag.lcs.mit.edu> for reporting the bug and to
+	Theodore Y. Ts'o <tytso@mit.edu> for providing the patch.
 
 Changes between versions 0.4b8 and 0.4b9 (released November 5, 1999)
 ====================================================================

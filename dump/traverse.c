@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.7 1999/11/02 09:35:56 tiniou Exp $";
+	"$Id: traverse.c,v 1.8 1999/11/17 22:46:43 tiniou Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -698,7 +698,7 @@ convert_dir(struct ext2_dir_entry *dirent, int offset, int blocksize, char *buf,
 
 	p = (struct convert_dir_context *)private;
 
-	reclen = EXT2_DIR_REC_LEN(dirent->name_len + 1);
+	reclen = EXT2_DIR_REC_LEN((dirent->name_len & 0xFF) + 1);
 	if (((p->offset + reclen - 1) / p->bs) != (p->offset / p->bs)) {
 		dp = (struct direct *)(p->buf + p->prev_offset);
 		dp->d_reclen += p->bs - (p->offset % p->bs);
@@ -709,8 +709,8 @@ convert_dir(struct ext2_dir_entry *dirent, int offset, int blocksize, char *buf,
 	dp->d_ino = dirent->inode;
 	dp->d_reclen = reclen;
 	dp->d_type = 0;
-	dp->d_namlen = dirent->name_len;
-	strncpy(dp->d_name, dirent->name, dirent->name_len);
+	dp->d_namlen = dirent->name_len & 0xFF;
+	strncpy(dp->d_name, dirent->name, dp->d_namlen);
 	dp->d_name[dp->d_namlen] = '\0';
 	p->prev_offset = p->offset;
 	p->offset += reclen;
