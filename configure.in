@@ -481,6 +481,17 @@ if test "$ac_cv_func_glob" = "yes"; then
 fi
 
 dnl
+dnl Check for OpenSSL, for ermt
+dnl
+if test "$ERMT" != ""; then
+	AC_CHECK_HEADER(openssl/evp.h, [evp_h=yes], [evp_h=no])
+	AC_CHECK_LIB(crypto, EVP_CIPHER_CTX_set_padding, [crypto_lib=yes], [crypto_lib=no])
+	if test "$evp_h" = no -o "$crypto_lib" = no; then
+		AC_MSG_ERROR(You need to install the OpenSSL library (version 0.9.7a or later), or configure without --enable-ermt)
+	fi
+fi
+
+dnl
 dnl Check for types
 dnl
 AC_CHECK_TYPE(quad_t, int64_t)
