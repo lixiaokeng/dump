@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.77 2004/01/27 10:18:17 stelian Exp $";
+	"$Id: tape.c,v 1.78 2004/01/28 10:02:35 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1643,10 +1643,10 @@ comparefile(char *name)
 			fprintf(stderr,
 				"%s: device changed from %d,%d to %d,%d.\n",
 				name,
-				((int)curfile.dip->di_rdev >> 8) & 0xff,
-				(int)curfile.dip->di_rdev & 0xff,
-				((int)sb.st_rdev >> 8) & 0xff,
-				(int)sb.st_rdev & 0xff);
+				major(curfile.dip->di_rdev),
+				minor(curfile.dip->di_rdev),
+				major(sb.st_rdev),
+				minor(sb.st_rdev));
 			do_compare_error;
 		}
 		skipfile();
