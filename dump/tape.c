@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.32 2001/02/22 10:57:40 stelian Exp $";
+	"$Id: tape.c,v 1.33 2001/03/18 15:35:44 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1101,6 +1101,7 @@ doslave(int cmd, int slave_number)
 		comp_buf = malloc(sizeof(struct tapebuf) + TP_BSIZE + writesize);
 		if (comp_buf == NULL)
 			quit("couldn't allocate a compress buffer.\n");
+		comp_buf->flags = 0;
 	}
 #endif /* HAVE_ZLIB */
 
@@ -1140,25 +1141,37 @@ doslave(int cmd, int slave_number)
 
 #ifdef HAVE_ZLIB
 		/* 
-		 * If the data can't be compressed it's written with no
-		 * prefix as writesize bytes. If it's compressible, it's
-		 * written from struct tapebuf with an 8 byte prefix
-		 * followed by the data. This will always be less than
+		 * The first NR_SLAVE blocks are not compressed.
+		 * When writing a compressed dump, each block is
+		 * written from struct tapebuf with an 4 byte prefix
+		 * followed by the data. This can be less than
 		 * writesize. Restore, on a short read, can compare the
 		 * length read to the compressed length in the header
-		 * to verify that the read was good.
+		 * to verify that the read was good. Blocks which don't
+		 * compress well are written uncompressed.
 		 */
 
-		if (do_compress) {	/* don't compress the first block */
-			comp_buf->clen = comp_buf->unclen = bufsize;
+		if (compressed) {
+			comp_buf->length = bufsize;
 			worklen = TP_BSIZE + writesize;
-			compresult = compress2(comp_buf->buf, &worklen,
-				(char *)slp->tblock[0], writesize, complevel);
+			if (do_compress)
+				compresult = compress2(comp_buf->buf, &worklen,
+					(char *)slp->tblock[0], writesize, complevel);
 			if (compresult == Z_OK && worklen <= writesize-32) {
 				/* write the compressed buffer */
-				comp_buf->clen = worklen;
+				comp_buf->length = worklen;
+				comp_buf->compressed = 1;
 				buffer = (char *) comp_buf;
-				returns.clen = bufsize = worklen + 8;
+				returns.clen = bufsize = worklen + sizeof(struct tapebuf);
+			}
+			else {
+				/* write the data uncompressed */
+				comp_buf->length = writesize;
+				comp_buf->compressed = 0;
+				buffer = (char *) comp_buf;
+				returns.clen = bufsize = writesize + sizeof(struct tapebuf);
+				returns.unclen = returns.clen;
+				memcpy(comp_buf->buf, (char *)slp->tblock[0], writesize);
 			}
 		}
 		/* compress the remaining blocks */

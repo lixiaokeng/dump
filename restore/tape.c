@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.25 2001/02/22 10:57:40 stelian Exp $";
+	"$Id: tape.c,v 1.26 2001/03/18 15:35:44 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -88,15 +88,17 @@ static const char rcsid[] =
 static long	fssize = MAXBSIZE;
 static int	mt = -1;
 static int	pipein = 0;
+static int	magtapein = 0;		/* input is from magtape */
 static char	magtape[MAXPATHLEN];
 static char	magtapeprefix[MAXPATHLEN];
 static int	blkcnt;
 static int	numtrec;
-static char	*tapebuf;
+static char	*tapebuf;		/* input buffer for read */
+static int	bufsize;		/* buffer size without prefix */
 static char	*tbufptr = NULL;	/* active tape buffer */
 #ifdef HAVE_ZLIB
 static char	*comprbuf;		/* uncompress work buf */
-static size_t	comprlen;
+static size_t	comprlen;		/* size including prefix */
 #endif
 static union	u_spcl endoftapemark;
 static long	blksread;		/* blocks read since last header */
@@ -139,6 +141,18 @@ static void	 xtrmap __P((char *, size_t));
 static void	 xtrmapskip __P((char *, size_t));
 static void	 xtrskip __P((char *, size_t));
 
+#ifdef HAVE_ZLIB
+static void	newcomprbuf __P((long));
+static void	readtape_set __P((char *));
+static void	readtape_uncompr __P((char *));
+static void	readtape_comprfile __P((char *));
+static void	readtape_comprtape __P((char *));
+static char	*decompress_tapebuf __P((struct tapebuf *, int));
+static void	msg_read_error __P((char *));
+#endif
+static int	read_a_block __P((int, void *, size_t, long *));
+#define PREFIXSIZE	sizeof(struct tapebuf)
+
 #define COMPARE_ONTHEFLY 1
 
 #if COMPARE_ONTHEFLY
@@ -151,7 +165,7 @@ static void	xtrcmpskip __P((char *, size_t));
 static int readmapflag;
 
 /*
- * Set up an input source
+ * Set up an input source. This is called from main.c before setup() is.
  */
 void
 setinput(char *source)
@@ -203,23 +217,31 @@ newtapebuf(long size)
 	static int tapebufsize = -1;
 
 	ntrec = size;
+	bufsize = ntrec * TP_BSIZE;
 	if (size <= tapebufsize)
 		return;
 	if (tapebuf != NULL)
 		free(tapebuf);
-	tapebuf = malloc(size * TP_BSIZE);
+	tapebuf = malloc(size * TP_BSIZE + sizeof(struct tapebuf));
 	if (tapebuf == NULL)
 		errx(1, "Cannot allocate space for tape buffer");
 	tapebufsize = size;
+}
+
 #ifdef HAVE_ZLIB
+static void
+newcomprbuf(long size)
+{
+	if (size <= comprlen)
+		return;
+	comprlen = size + sizeof(struct tapebuf);
 	if (comprbuf != NULL)
 		free(comprbuf);
-	comprlen = size * TP_BSIZE;
 	comprbuf = malloc(comprlen);
 	if (comprbuf == NULL)
-		errx(1, "Cannot allocate space for uncompress buffer");
-#endif /* HAVE_ZLIB */
+		errx(1, "Cannot allocate space for decompress buffer");
 }
+#endif /* HAVE_ZLIB */
 
 /*
  * Verify that the tape drive can be accessed and
@@ -230,6 +252,7 @@ setup(void)
 {
 	int i, j, *ip;
 	struct stat stbuf;
+	struct mtget mt_stat;
 
 	Vprintf(stdout, "Verify tape and initialize maps\n");
 #ifdef RRESTORE
@@ -244,10 +267,20 @@ setup(void)
 	if (mt < 0)
 		err(1, "%s", magtape);
 	volno = 1;
+	if (!pipein) {
+		/* need to know if input is really from a tape */
+#ifdef RRESTORE
+		if (host)
+			magtapein = rmtioctl(MTNOP, 1) != -1;
+		else
+#endif
+			magtapein = ioctl(mt, MTIOCGET, (char *) &mt_stat) == 0;
+	}
+
+	Vprintf(stdout,"Input is from %s\n", magtapein? "tape": "file/pipe");
 	setdumpnum();
 	FLUSHTAPEBUF();
-	if (!pipein && !bflag)
-		findtapeblksize();
+	findtapeblksize();
 	if (gethead(&spcl) == FAIL) {
 		blkcnt--; /* push back this block */
 		blksread--;
@@ -258,10 +291,10 @@ setup(void)
 		fprintf(stderr, "Converting to new file system format.\n");
 	}
 
-	if (spcl.c_flags & DR_COMPRESSED) {
+	if (zflag) {
 		fprintf(stderr, "Dump tape is compressed.\n");
 #ifdef HAVE_ZLIB
-		zflag = 1;
+		newcomprbuf(bufsize);
 #else
 		errx(1,"This restore version doesn't support decompression");
 #endif /* HAVE_ZLIB */
@@ -1238,20 +1271,54 @@ comparefile(char *name)
 	/* NOTREACHED */
 }
 
+#ifdef HAVE_ZLIB
+static void (*readtape_func)(char *) = readtape_set;
+
 /*
  * Read TP_BSIZE blocks from the input.
  * Handle read errors, and end of media.
+ * Decompress compressed blocks.
  */
 static void
 readtape(char *buf)
 {
+	(*readtape_func)(buf);	/* call the actual processing routine */
+}
+
+/*
+ * Set function pointer for readtape() routine. zflag and magtapein must
+ * be correctly set before the first call to readtape().
+ */
+static void
+readtape_set(char *buf)
+{
+	if (!zflag) 
+		readtape_func = readtape_uncompr;
+	else {
+		if (magtapein)
+			readtape_func = readtape_comprtape;
+		else
+			readtape_func = readtape_comprfile;
+	}
+	readtape(buf);
+}
+
+#endif /* HAVE_ZLIB */
+
+/*
+ * This is the original readtape(), it's used for reading uncompressed input.
+ * Read TP_BSIZE blocks from the input.
+ * Handle read errors, and end of media.
+ */
+static void
+#ifdef HAVE_ZLIB
+readtape_uncompr(char *buf)
+#else
+readtape(char *buf)
+#endif
+{
 	ssize_t rd, newvol, i;
 	int cnt, seek_failed;
-#ifdef HAVE_ZLIB
-	int cresult;
-	struct tapebuf* tpb;
-	unsigned long worklen;
-#endif
 
 	if (blkcnt < numtrec) {
 		memmove(buf, &tbufptr[(blkcnt++ * TP_BSIZE)], TP_BSIZE);
@@ -1265,6 +1332,8 @@ readtape(char *buf)
 	if (numtrec == 0)
 		numtrec = ntrec;
 	cnt = ntrec * TP_BSIZE;
+	if (zflag)
+		cnt += PREFIXSIZE;
 	rd = 0;
 getmore:
 #ifdef RRESTORE
@@ -1273,27 +1342,6 @@ getmore:
 	else
 #endif
 		i = read(mt, &tapebuf[rd], cnt);
-
-#ifdef HAVE_ZLIB
-	if (i < 0)
-		goto readerror;
-	if (i == 0 && !pipein)
-		goto endoftape;
-
-	if (zflag  && i != ntrec * TP_BSIZE) {
-		tpb = (struct tapebuf *) tapebuf;
-		if (i != tpb->clen + sizeof(struct tapebuf))
-			errx(1,"tape is not a compressed dump tape");
-		worklen = comprlen;
-		cresult = uncompress(comprbuf, &worklen, tpb->buf, tpb->clen);
-		if (cresult != Z_OK)
-			errx(1,"tape is not a compressed dump tape");
-		if (worklen != tpb->unclen)
-			errx(1,"decompression error, length mismatch");
-		i = worklen;
-		tbufptr = comprbuf;
-	}
-#endif /* HAVE_ZLIB */
 
 	/*
 	 * Check for mid-tape short read error.
@@ -1329,9 +1377,6 @@ getmore:
 	/*
 	 * Handle read error.
 	 */
-#ifdef HAVE_ZLIB
-readerror:
-#endif
 	if (i < 0) {
 		fprintf(stderr, "Tape read error while ");
 		switch (curfile.action) {
@@ -1370,9 +1415,6 @@ readerror:
 	/*
 	 * Handle end of tape.
 	 */
-#ifdef HAVE_ZLIB
-endoftape:
-#endif
 	if (i == 0) {
 		Vprintf(stdout, "End-of-tape encountered\n");
 		if (!pipein) {
@@ -1395,30 +1437,390 @@ endoftape:
 	tpblksread++;
 }
 
+#ifdef HAVE_ZLIB
+
+/*
+ * Read a compressed format block from a file or pipe and uncompress it.
+ * Attempt to handle read errors, and end of file. 
+ */
+static void
+readtape_comprfile(char *buf)
+{
+	long rl, size, i, ret;
+	int newvol; 
+	struct tapebuf *tpb;
+
+	if (blkcnt < numtrec) {
+		memmove(buf, &tbufptr[(blkcnt++ * TP_BSIZE)], TP_BSIZE);
+		blksread++;
+		tpblksread++;
+		return;
+	}
+	/* need to read the next block */
+	tbufptr = tapebuf;
+	for (i = 0; i < ntrec; i++)
+		((struct s_spcl *)&tapebuf[i * TP_BSIZE])->c_magic = 0;
+	numtrec = ntrec;
+	tpb = (struct tapebuf *) tapebuf;
+
+	/* read the block prefix */
+	ret = read_a_block(mt, tapebuf, PREFIXSIZE, &rl);
+	if (ret <= 0)
+		goto readerr;
+
+	/* read the data */
+	size = tpb->length;
+	if (size > bufsize)  {
+		/* something's wrong */
+		Vprintf(stdout, "Prefix size error, max size %d, got %ld\n",
+			bufsize, size);
+		size = bufsize;
+		tpb->length = bufsize;
+	}
+	ret = read_a_block(mt, tpb->buf, size, &rl);
+	if (ret <= 0)
+		goto readerr;
+
+	tbufptr = decompress_tapebuf(tpb, rl + PREFIXSIZE);
+	if (tbufptr == NULL) {
+		msg_read_error("File decompression error while");
+		if (!yflag && !reply("continue"))
+			exit(1);
+		memset(tapebuf, 0, bufsize);
+		tbufptr = tapebuf;
+	}
+
+	blkcnt = 0;
+	memmove(buf, &tbufptr[(blkcnt++ * TP_BSIZE)], TP_BSIZE);
+	blksread++;
+	tpblksread++;
+	return;
+
+readerr:
+	/* Errors while reading from a file or pipe are catastrophic. Since
+	 * there are no block boundaries, it's impossible to bypass the
+	 * block in error and find the start of the next block.
+	 */
+	if (ret == 0) {
+		/* It's possible to have multiple input files using -M
+		 * and -f file1,file2...
+		 */
+		Vprintf(stdout, "End-of-File encountered\n");
+		if (!pipein) {
+			newvol = volno + 1;
+			volno = 0;
+			numtrec = 0;
+			getvol(newvol);
+			readtape(buf);
+			return;
+		}
+	}
+	msg_read_error("Read error while");
+	/* if (!yflag && !reply("continue")) */
+		exit(1);
+}
+
+/*
+ * Read compressed data from a tape and uncompress it.
+ * Handle read errors, and end of media.
+ * Since a tape consists of separate physical blocks, we try
+ * to recover from errors by repositioning the tape to the next
+ * block.
+ */
+static void
+readtape_comprtape(char *buf)
+{
+	long rl, size, i;
+	int ret, newvol;
+	struct tapebuf *tpb;
+	struct mtop tcom;
+
+	if (blkcnt < numtrec) {
+		memmove(buf, &tbufptr[(blkcnt++ * TP_BSIZE)], TP_BSIZE);
+		blksread++;
+		tpblksread++;
+		return;
+	}
+	/* need to read the next block */
+	tbufptr = tapebuf;
+	for (i = 0; i < ntrec; i++)
+		((struct s_spcl *)&tapebuf[i * TP_BSIZE])->c_magic = 0;
+	numtrec = ntrec;
+	tpb = (struct tapebuf *) tapebuf;
+
+	/* read the block */
+	size = bufsize + PREFIXSIZE;
+	ret = read_a_block(mt, tapebuf, size, &rl);
+	if (ret <= 0)
+		goto readerr;
+
+	tbufptr = decompress_tapebuf(tpb, rl);
+	if (tbufptr == NULL) {
+		msg_read_error("Tape decompression error while");
+		if (!yflag && !reply("continue"))
+			exit(1);
+		memset(tapebuf, 0, PREFIXSIZE + bufsize);
+		tbufptr = tapebuf;
+	}
+	goto moverecord;
+
+readerr:
+	/* Handle errors: EOT switches to the next volume, other errors
+	 * attempt to position the tape to the next block.
+	 */
+	if (ret == 0) {
+		Vprintf(stdout, "End-of-tape encountered\n");
+		newvol = volno + 1;
+		volno = 0;
+		numtrec = 0;
+		getvol(newvol);
+		readtape(buf);
+		return;
+	}
+
+	msg_read_error("Tape read error while");
+	if (!yflag && !reply("continue"))
+		exit(1);
+	memset(tapebuf, 0, PREFIXSIZE + bufsize);
+	tbufptr = tapebuf;
+
+#ifdef RRESTORE
+	if (host)
+		rl = rmtioctl(MTFSR, 1);
+	else
+#endif
+	{
+		tcom.mt_op = MTFSR;
+		tcom.mt_count = 1;
+		rl = ioctl(mt, MTIOCTOP, &tcom);
+	}
+
+	if (rl < 0) {
+		warn("continuation failed");
+		if (!yflag && !reply("assume end-of-tape and continue"))
+			exit(1);
+		ret = 0;         /* end of tape */
+		goto readerr;
+	}
+
+moverecord:
+	blkcnt = 0;
+	memmove(buf, &tbufptr[(blkcnt++ * TP_BSIZE)], TP_BSIZE);
+	blksread++;
+	tpblksread++;
+}
+
+/*
+ *  Decompress a struct tapebuf into a buffer. readsize is the size read
+ *  from the tape/file and is used for error messages. Returns a pointer
+ *  to the location of the uncompressed buffer or NULL on errors.
+ *  Adjust numtrec and complain for a short block.
+ */
+static char *
+decompress_tapebuf(struct tapebuf *tpbin, int readsize)
+{
+	/* If zflag is on, all blocks have a struct tapebuf prefix */
+	/* zflag gets set in setup() from the dump header          */
+	int cresult, blocklen;        
+	unsigned long worklen;
+	char *output = NULL,*reason = NULL, *lengtherr = NULL;              
+       
+	/* build a length error message */
+	blocklen = tpbin->length;
+	if (readsize < blocklen + PREFIXSIZE)
+		lengtherr = "short";
+	else
+		if (readsize > blocklen + PREFIXSIZE)
+			lengtherr = "long";
+
+	worklen = comprlen;
+	cresult = Z_OK;
+	if (tpbin->compressed) {
+		/* uncompress whatever we read, if it fails, complain later */
+		cresult = uncompress(comprbuf, &worklen, tpbin->buf, blocklen);
+		output = comprbuf;
+	}
+	else {
+		output = tpbin->buf;
+		worklen = blocklen;
+	}
+	switch (cresult) {
+		case Z_OK:
+			if (worklen != ntrec * TP_BSIZE) {
+				/* short block, shouldn't happen, but... */
+				reason = "length mismatch";
+				if (worklen % TP_BSIZE == 0)
+					numtrec = worklen / TP_BSIZE;
+			}
+			break;
+		case Z_MEM_ERROR:
+			reason = "not enough memory";
+			break;
+		case Z_BUF_ERROR:
+			reason = "buffer too small";
+			break;
+		case Z_DATA_ERROR:
+			reason = "data error";
+			break;
+		default:
+			reason = "unknown";
+	} /*switch */
+	if (reason) {
+		if (lengtherr)
+			fprintf(stderr, "%s compressed block: %d expected: %d\n",
+				lengtherr, readsize, tpbin->length + PREFIXSIZE);
+		fprintf(stderr, "decompression error, block %ld: %s\n",
+			tpblksread+1, reason);
+		if (cresult != Z_OK)   output = NULL;
+	}
+	return output;
+}
+
+/*
+ * Print an error message for a read error.
+ * This was exteracted from the original readtape().
+ */
+static void
+msg_read_error(char *m)
+{
+	switch (curfile.action) {
+		default:
+			fprintf(stderr, "%s trying to set up tape\n", m);
+			break;
+		case UNKNOWN:
+			fprintf(stderr, "%s trying to resynchronize\n", m);
+			break;
+		case USING:
+			fprintf(stderr, "%s restoring %s\n", m, curfile.name);
+			break;
+		case SKIP:
+			fprintf(stderr, "%s skipping over inode %lu\n", m,
+				(unsigned long)curfile.ino);
+			break;
+	}
+}
+#endif /* HAVE_ZLIB */
+
+/*
+ * Read the first block and set the blocksize from its length. Test
+ * if the block looks like a compressed dump tape. setup() will make
+ * the final determination by checking the compressed flag if gethead()
+ * finds a valid header. The test here is necessary to offset the buffer
+ * by the size of the compressed prefix. zflag is set here so that
+ * readtape_set can set the correct function pointer for readtape().
+ * Note that the first block of each tape/file will not be compressed.
+ */ 
 static void
 findtapeblksize(void)
 {
-	register long i;
+	long i;
+	size_t len;
+	struct tapebuf *tpb = (struct tapebuf *) tapebuf;
+	struct s_spcl *spclpt = (struct s_spcl *) tpb->buf;
 
 	for (i = 0; i < ntrec; i++)
 		((struct s_spcl *)&tapebuf[i * TP_BSIZE])->c_magic = 0;
 	blkcnt = 0;
-#ifdef RRESTORE
-	if (host)
-		i = rmtread(tapebuf, (size_t)(ntrec * TP_BSIZE));
-	else
-#endif
-		i = read(mt, tapebuf, (size_t)(ntrec * TP_BSIZE));
+	tbufptr = tapebuf;
+	/*
+	 * For a pipe or file, read in the first record. For a tape, read
+	 * the first block.
+	 */
+	len = magtapein ? bufsize + PREFIXSIZE: TP_BSIZE;
 
-	if (i <= 0)
-		err(1, "tape read error");
-	if (i % TP_BSIZE != 0)
-		errx(1, "Tape block size (%ld) is not a multiple of dump block size (%d)", 
-				(long)i, TP_BSIZE);
+	if (read_a_block(mt, tapebuf, len, &i) <= 0)
+		errx(1, "Tape read error on first record");
+
+	/*
+	 * If the input is from a file or a pipe, we read TP_BSIZE
+	 * bytes looking for a compressed dump header, we then
+	 * need to read in the rest of the record, as determined by
+	 * tpb->length or bufsize. The first block of the dump is
+	 * guaranteed to not be compressed so we look at the header.
+	 */
+	if (!magtapein) {
+		if (tpb->length % TP_BSIZE == 0
+		    && tpb->length <= bufsize
+		    && tpb->compressed == 0
+		    && spclpt->c_type == TS_TAPE 
+		    && spclpt->c_flags & DR_COMPRESSED) {
+			/* Looks like it's a compressed dump block prefix, */
+			/* read in the rest of the block based on tpb->length. */
+			len = tpb->length - TP_BSIZE + PREFIXSIZE;
+			if (read_a_block(mt, tapebuf+TP_BSIZE, len, &i) <= 0
+			    || i != len)
+				errx(1,"Error reading dump file header");
+			tbufptr = tpb->buf;
+			numtrec = ntrec = tpb->length / TP_BSIZE;
+			zflag = 1;   
+		}
+		else {
+			/* read in the rest of the block based on bufsize */
+			len = bufsize - TP_BSIZE;
+			if (read_a_block(mt, tapebuf+TP_BSIZE, len, &i) <= 0
+			    || i != len)
+				errx(1,"Error reading dump file header");
+			tbufptr = tapebuf;
+			numtrec = ntrec;
+		}
+		Vprintf(stdout, "Input block size is %ld\n", ntrec);
+		return;
+	}
+
+	/*
+	 * If the input is a tape, we tried to read PREFIXSIZE +
+	 * ntrec * TP_BSIZE bytes. If it's not a compressed dump tape
+	 * or the value of ntrec is too large, we have read less than
+	 * what we asked for; adjust the value of ntrec and test for
+	 * a compressed dump tape prefix.
+	 */
+
+	if (i % TP_BSIZE != 0) {
+		if (i % TP_BSIZE == PREFIXSIZE
+		    && tpb->compressed == 0
+		    && spclpt->c_type == TS_TAPE
+		    && spclpt->c_flags & DR_COMPRESSED) {
+
+			zflag = 1;
+			tbufptr = tpb->buf;
+			if (tpb->length > bufsize)
+				errx(1, "Tape blocksize is too large, use "
+					"\'-b %d\' ", tpb->length / TP_BSIZE);
+		}
+		else
+			errx(1, "Tape block size (%ld) is not a multiple of dump block size (%d)",
+				i, TP_BSIZE);
+	}
 	ntrec = i / TP_BSIZE;
 	numtrec = ntrec;
-	tbufptr = tapebuf;
 	Vprintf(stdout, "Tape block size is %ld\n", ntrec);
+}
+
+/*
+ * Read a block of data handling all of the messy details.
+ */
+static int read_a_block(int fd, void *buf, size_t len, long *lengthread)
+{
+	long i = 1, size;
+
+	size = len;
+	while (size > 0) {
+#ifdef RRESTORE
+		if (host)
+			i = rmtread(buf, size);
+		else
+#endif
+			i = read(fd, buf, size);                 
+
+		if (i <= 0)
+			break; /* EOD or error */
+		size -= i;
+		if (magtapein)
+			break; /* block at a time for mt */
+		buf += i;
+	}
+	*lengthread = len - size;
+	return i;
 }
 
 void
