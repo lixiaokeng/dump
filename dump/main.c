@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.35 2001/03/19 13:22:48 stelian Exp $";
+	"$Id: main.c,v 1.36 2001/03/20 09:14:58 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -130,12 +130,7 @@ main(int argc, char *argv[])
 	char *diskparam;
 
 	spcl.c_label[0] = '\0';
-	spcl.c_date = 0;
-#ifdef	__linux__
-	(void)time4(&spcl.c_date);
-#else
-	(void)time((time_t *)&spcl.c_date);
-#endif
+	spcl.c_date = time(NULL);
 
 #ifdef __linux__
 	__progname = argv[0];
@@ -489,17 +484,10 @@ main(int argc, char *argv[])
 	if (!sizest) {
 
 		msg("Date of this level %c dump: %s", level,
-#ifdef	__linux__
-			spcl.c_date == 0 ? "the epoch\n" : ctime4(&spcl.c_date));
-#else
-			spcl.c_date == 0 ? "the epoch\n" : ctime(&spcl.c_date));
-#endif
-	 	msg("Date of last level %c dump: %s", lastlevel,
-#ifdef	__linux__
-			spcl.c_ddate == 0 ? "the epoch\n" : ctime4(&spcl.c_ddate));
-#else
-			spcl.c_ddate == 0 ? "the epoch\n" : ctime(&spcl.c_ddate));
-#endif
+		    ctime4(&spcl.c_date));
+		if (spcl.c_ddate)
+	 		msg("Date of last level %c dump: %s", lastlevel,
+			    ctime4(&spcl.c_ddate));
 		msg("Dumping %s (%s) ", disk, spcl.c_filesys);
 		if (host)
 			msgtail("to %s on host %s\n", tape, host);
@@ -661,11 +649,7 @@ main(int argc, char *argv[])
 	"can't allocate tape buffers - try a smaller blocking factor.\n");
 
 	startnewtape(1);
-#ifdef __linux__
-	(void)time4(&(tstart_writing));
-#else
-	(void)time((time_t *)&(tstart_writing));
-#endif
+	tstart_writing = time(NULL);
 	dumpmap(usedinomap, TS_CLRI, maxino - 1);
 
 	msg("dumping (Pass III) [directories]\n");
@@ -718,11 +702,7 @@ main(int argc, char *argv[])
 		(void)dumpino(dp, ino);
 	}
 
-#ifdef __linux__
-	(void)time4(&(tend_writing));
-#else
-	(void)time((time_t *)&(tend_writing));
-#endif
+	tend_writing = time(NULL);
 	spcl.c_type = TS_END;
 	for (i = 0; i < ntrec; i++)
 		writeheader(maxino - 1);
@@ -747,13 +727,8 @@ main(int argc, char *argv[])
 		    spcl.c_tapea / (tend_writing - tstart_writing));
 
 	putdumptime();
-#ifdef __linux__
 	msg("Date of this level %c dump: %s", level,
 		spcl.c_date == 0 ? "the epoch\n" : ctime4(&spcl.c_date));
-#else
-	msg("Date of this level %c dump: %s", level,
-		spcl.c_date == 0 ? "the epoch\n" : ctime(&spcl.c_date));
-#endif
 	msg("Date this dump completed:  %s", ctime(&tnow));
 
 	msg("Average transfer rate: %ld KB/s\n", xferrate / tapeno);
@@ -776,15 +751,18 @@ static void
 usage(void)
 {
 	char white[MAXPATHLEN];
-	int i;
-	
-	strncpy(white, __progname, MAXPATHLEN-1);
-	white[MAXPATHLEN-1] = '\0';
-	for (i=0; i<MAXPATHLEN; ++i)
-		if (white[i] != '\0') white[i] = ' ';
+	const char *ext2ver, *ext2date;
 
-	fprintf(stderr,
-		"%s %s\n", __progname, _DUMP_VERSION);
+	memset(white, ' ', MAXPATHLEN);
+	white[MIN(strlen(__progname), MAXPATHLEN - 1)] = '\0';
+
+#ifdef __linux__
+	ext2fs_get_library_version(&ext2ver, &ext2date);
+	fprintf(stderr, "%s %s (using libext2fs %s of %s)\n",
+		__progname, _DUMP_VERSION, ext2ver, ext2date);
+#else
+	fprintf(stderr, "%s %s\n", __progname, _DUMP_VERSION);
+#endif
 	fprintf(stderr,
 		"usage:\t%s [-0123456789ac"
 #ifdef KERBEROS

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.34 2001/03/19 13:22:48 stelian Exp $";
+	"$Id: tape.c,v 1.35 2001/03/20 09:14:58 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -285,19 +285,10 @@ do_stats(void)
 	time_t tnow, ttaken;
 	int blocks;
 
-#ifdef __linux__
-	(void)time4(&tnow);
-#else
-	(void)time(&tnow);
-#endif
+	tnow = time(NULL);
 	ttaken = tnow - tstart_volume;
 	blocks = spcl.c_tapea - tapea_volume;
-	msg("Volume %d completed at: %s", tapeno, 
-#ifdef __linux__
-					  ctime4(&tnow));
-#else
-					  ctime(&tnow));
-#endif
+	msg("Volume %d completed at: %s", tapeno, ctime(&tnow));
 	if (! compressed)
 		msg("Volume %d %ld tape blocks (%.2fMB)\n", tapeno, 
 			blocks, ((double)blocks * TP_BSIZE / 1048576));
@@ -356,16 +347,10 @@ mktimeest(time_t tnow)
 void
 statussig(int notused)
 {
-	time_t tnow;
 	int save_errno = errno;
 	char *buf;
 
-#ifdef __linux__
-	(void) time4(&tnow);
-#else
-	(void) time((time_t *) &tnow);
-#endif
-	buf = mktimeest(tnow);
+	buf = mktimeest(time(NULL));
 	if (buf)
 		write(STDERR_FILENO, buf, strlen(buf));
 	errno = save_errno;
@@ -405,13 +390,13 @@ flushtape(void)
 			uncomprblks++;
 		slp->sent = 0;
 
-		/* Check for errors */
-		if (got < 0)
-			tperror(-got);
-		
-		/* Check for end of tape */
-		if (got == 0) {
-			msg("End of tape detected\n");
+		/* Check for errors or end of tape */
+		if (got <= 0) {
+			/* Check for errors */
+			if (got < 0)
+				tperror(-got);
+			else
+				msg("End of tape detected\n");
 
 			/*
 			 * Drain the results, don't care what the values were.
@@ -769,11 +754,7 @@ startnewtape(int top)
 	parentpid = getpid();
 	tapea_volume = spcl.c_tapea;
 	tapea_bytes = bytes_written;
-#ifdef __linux__
-	(void)time4(&tstart_volume);
-#else
-	(void)time((&tstart_volume);
-#endif
+	tstart_volume = time(NULL);
 
 restore_check_point:
 #ifdef	__linux__
@@ -905,12 +886,8 @@ restore_check_point:
 			spcl.c_flags |= DR_COMPRESSED;
 		writeheader((ino_t)slp->inode);
 		spcl.c_flags &=~ DR_NEWHEADER;
-		msg("Volume %d started at: %s", tapeno, 
-#ifdef __linux__
-						ctime4(&tstart_volume));
-#else
-						ctime(&tstart_volume));
-#endif
+		msg("Volume %d started with block %ld at: %s", tapeno, 
+		    spcl.c_tapea, ctime(&tstart_volume));
 		if (tapeno > 1)
 			msg("Volume %d begins with blocks from inode %d\n",
 				tapeno, slp->inode);

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.16 2001/02/21 16:13:05 stelian Exp $";
+	"$Id: main.c,v 1.17 2001/03/20 09:14:58 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -401,13 +401,21 @@ main(int argc, char *argv[])
 static void
 usage(void)
 {
+#ifdef __linux__
+	const char *ext2ver, *ext2date;
+
+	ext2fs_get_library_version(&ext2ver, &ext2date);
+	(void)fprintf(stderr, "%s %s (using libext2fs %s of %s)\n", 
+		      __progname, _DUMP_VERSION, ext2ver, ext2date);
+#else
+	(void)fprintf(stderr, "%s %s\n", __progname, _DUMP_VERSION);
+#endif
+
 #ifdef KERBEROS
 #define kerbflag "k"
 #else
 #define kerbflag
 #endif
-	(void)fprintf(stderr, 
-	  "%s %s\n", __progname, _DUMP_VERSION);
 	(void)fprintf(stderr,
 	  "usage:\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n",
 	  __progname, " -i [-ch" kerbflag "mMuvy] [-b blocksize] [-f file] [-s fileno]",

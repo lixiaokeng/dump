@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.27 2001/03/19 13:22:49 stelian Exp $";
+	"$Id: tape.c,v 1.28 2001/03/20 09:14:58 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -488,15 +488,9 @@ gethdr:
 		goto again;
 	}
 	if (tmpbuf.c_date != dumpdate || tmpbuf.c_ddate != dumptime) {
-#ifdef	__linux__
 		fprintf(stderr, "Wrong dump date\n\tgot: %s",
 			ctime4(&tmpbuf.c_date));
-		fprintf(stderr, "\twanted: %s", ctime4(&dumpdate));
-#else
-		fprintf(stderr, "Wrong dump date\n\tgot: %s",
-			ctime(&tmpbuf.c_date));
 		fprintf(stderr, "\twanted: %s", ctime(&dumpdate));
-#endif
 		volno = 0;
 		haderror = 1;
 		goto again;
@@ -596,15 +590,9 @@ setdumpnum(void)
 void
 printdumpinfo(void)
 {
-#ifdef	__linux__
 	fprintf(stdout, "Dump   date: %s", ctime4(&spcl.c_date));
 	fprintf(stdout, "Dumped from: %s",
 	    (spcl.c_ddate == 0) ? "the epoch\n" : ctime4(&spcl.c_ddate));
-#else
-	fprintf(stdout, "Dump   date: %s", ctime(&spcl.c_date));
-	fprintf(stdout, "Dumped from: %s",
-	    (spcl.c_ddate == 0) ? "the epoch\n" : ctime(&spcl.c_ddate));
-#endif
 	if (spcl.c_host[0] == '\0')
 		return;
 	fprintf(stdout, "Level %d dump of %s on %s:%s\n",

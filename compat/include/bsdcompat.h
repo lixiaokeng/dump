@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: bsdcompat.h,v 1.13 2000/12/21 11:14:53 stelian Exp $
+ *	$Id: bsdcompat.h,v 1.14 2001/03/20 09:14:58 stelian Exp $
  */
 
 #include <config.h>
@@ -60,10 +60,9 @@ typedef __u64		u_quad_t;
 /*
  * The BSD dump format reserves 4 bytes for a time_t, but other architectures
  * (notably axp) have larger time_t.  ctime4() is a modified ctime() which
- * always accepts short 4-byte times.  time4() is a similarly modified time().
+ * always accepts short 4-byte times.
  */
 #define ctime4(timep) ({ time_t t = *(timep); ctime(&t); })
-#define time4(timep) ({time_t t; t = time(0); if (timep) *timep=t; t; })
 
 /*
  * This is the ext2_inode structure but the fields have been renamed

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: itime.c,v 1.16 2001/03/19 13:22:48 stelian Exp $";
+	"$Id: itime.c,v 1.17 2001/03/20 09:14:58 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -182,11 +182,7 @@ getdumptime(int createdumpdates)
 			continue;
 		if (ddp->dd_level >= level)
 			continue;
-#ifdef	__linux__
 		if (ddp->dd_ddate <= (time_t)spcl.c_ddate)
-#else
-		if (ddp->dd_ddate <= spcl.c_ddate)
-#endif
 			continue;
 		spcl.c_ddate = ddp->dd_ddate;
 		lastlevel = ddp->dd_level;
@@ -245,11 +241,7 @@ putdumptime(void)
 		quit("ftruncate (%s): %s\n", dumpdates, strerror(errno));
 	(void) fclose(df);
 	msg("level %c dump on %s", level,
-#ifdef	__linux__
 		spcl.c_date == 0 ? "the epoch\n" : ctime4(&spcl.c_date));
-#else
-		spcl.c_date == 0 ? "the epoch\n" : ctime(&spcl.c_date));
-#endif
 }
 
 static void

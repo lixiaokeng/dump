@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.26 2001/03/19 13:22:49 stelian Exp $";
+	"$Id: traverse.c,v 1.27 2001/03/20 09:14:58 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -103,8 +103,12 @@ extern ino_t iexclude_list[IEXCLUDE_MAXNUM];	/* the inode exclude list */
 extern int iexclude_num;			/* number of elements in list */
 
 /* Temporary fix waiting for Andreas fixes... */
-#define ext2_ino_t ino_t 
-#undef EXT3_FEATURE_INCOMPAT_RECOVER
+#ifdef HAS_EXT2FS_EXT2_FS
+#define ext2_journal_ino(sb) (sb->s_journal_inum)
+#else
+#define ext2_ino_t __u32
+#define ext2_journal_ino(sb) (*((__u32 *)sb + 0x38))
+#endif
 
 #ifndef EXT3_FEATURE_COMPAT_HAS_JOURNAL
 #define EXT3_FEATURE_COMPAT_HAS_JOURNAL		0x0004
@@ -114,14 +118,9 @@ extern int iexclude_num;			/* number of elements in list */
 #endif
 #ifndef EXT3_FEATURE_INCOMPAT_RECOVER
 #define EXT3_FEATURE_INCOMPAT_RECOVER		0x0004
-#define FORCE_OPEN	EXT2_FLAG_FORCE
-#define ext2_journal_ino(sb)	(*((__u32 *)sb + 0x38))
-#else
-#define FORCE_OPEN	0
-#define ext2_journal_ino(sb)	(sb->s_journal_inum)
 #endif
 #ifndef EXT3_FEATURE_INCOMPAT_JOURNAL_DEV
-#define EXT3_FEATURE_INCOMPAT_JOURNAL_DEV      0x0008
+#define EXT3_FEATURE_INCOMPAT_JOURNAL_DEV	0x0008
 #endif
 
 #ifndef EXT2_LIB_FEATURE_INCOMPAT_SUPP
@@ -133,10 +132,11 @@ int dump_fs_open(const char *disk, ext2_filsys *fs)
 {
 	int retval;
 
-	retval = ext2fs_open(disk, FORCE_OPEN, 0, 0, unix_io_manager, fs);
+	retval = ext2fs_open(disk, EXT2_FLAG_FORCE, 0, 0, unix_io_manager, fs);
 	if (!retval) {
 		struct ext2_super_block *es = (*fs)->super;
 		ext2_ino_t journal_ino = ext2_journal_ino(es);
+
 		if (es->s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV){
 			fprintf(stderr, "This an journal, not a filesystem!\n");
 			retval = EXT2_ET_UNSUPP_FEATURE;
@@ -152,11 +152,11 @@ int dump_fs_open(const char *disk, ext2_filsys *fs)
 			ext2fs_close(*fs);
 		}
 		else if (es->s_feature_compat &
-				EXT3_FEATURE_COMPAT_HAS_JOURNAL && journal_ino &&
-				!exclude_ino(journal_ino)) {
+				EXT3_FEATURE_COMPAT_HAS_JOURNAL && 
+				journal_ino && !exclude_ino(journal_ino)) {
 			iexclude_list[iexclude_num++] = journal_ino;
 			msg("Added ext3 journal inode %d to exclude list\n",
-					journal_ino);
+			    journal_ino);
 		}
 	}
 	return retval;
@@ -302,7 +302,7 @@ mapfileino(ino_t ino, struct dinode const *dp, long *tapesize, int *dirskipped)
 int
 mapfiles(ino_t maxino, long *tapesize)
 {
-	ino_t ino;
+	ext2_ino_t ino;
 	int anydirskipped = 0;
 	ext2_inode_scan scan;
 	errcode_t err;
@@ -374,7 +374,7 @@ mapfilesindir(struct ext2_dir_entry *dirent, int offset, int blocksize, char *bu
 	register int mode;
 	errcode_t retval;
 	struct mapfile_context *mfc;
-	ino_t ino;
+	ext2_ino_t ino;
 
 	ino = dirent->inode;
 	mfc = (struct mapfile_context *)private;
@@ -408,7 +408,7 @@ mapfilesfromdir(ino_t maxino, long *tapesize, char *directory)
 {
 	errcode_t retval;
 	struct mapfile_context mfc;
-	ino_t dir_ino;
+	ext2_ino_t dir_ino;
 	char dir_name [MAXPATHLEN];
 	int i, anydirskipped = 0;
 

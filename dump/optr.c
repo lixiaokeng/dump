@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: optr.c,v 1.21 2001/03/19 13:22:48 stelian Exp $";
+	"$Id: optr.c,v 1.22 2001/03/20 09:14:58 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -101,11 +101,7 @@ query(const char *question)
 	FILE	*mytty;
 	time_t	firstprompt, when_answered;
 
-#ifdef __linux__
-	(void)time4(&(firstprompt));
-#else
-	(void)time((time_t *)&(firstprompt));
-#endif
+	firstprompt = time(NULL);
 
 	if ((mytty = fopen(_PATH_TTY, "r")) == NULL)
 		quit("fopen on %s fails: %s\n", _PATH_TTY, strerror(errno));
@@ -138,16 +134,12 @@ query(const char *question)
 	if (signal(SIGALRM, sig) == SIG_IGN)
 		signal(SIGALRM, SIG_IGN);
 	(void) fclose(mytty);
-#ifdef __linux__
-	(void)time4(&(when_answered));
-#else
-	(void)time((time_t *)&(when_answered));
-#endif
+	when_answered = time(NULL);
 	/*
 	 * Adjust the base for time estimates to ignore time we spent waiting
 	 * for operator input.
 	 */
-	if ((tstart_writing != 0) && (when_answered != (time_t)-1) && (firstprompt != (time_t)-1))
+	if (tstart_writing != 0)
 		tstart_writing += (when_answered - firstprompt);
 	return(back);
 }
@@ -247,7 +239,7 @@ broadcast(const char *message)
 		return;
 	}
 
-	clock = time((time_t *)0);
+	clock = time(NULL);
 	localclock = localtime(&clock);
 
 	if ((f_utmp = fopen(_PATH_UTMP, "r")) == NULL) {
@@ -324,13 +316,8 @@ time_t	tschedule = 0;
 void
 timeest(void)
 {
-	time_t tnow;
+	time_t tnow = time(NULL);
 
-#ifdef __linux__
-	(void) time4(&tnow);
-#else
-	(void) time((time_t *) &tnow);
-#endif
 	if (tnow >= tschedule) {
 		char *buf = mktimeest(tnow);
 		tschedule = tnow + 300;
@@ -601,7 +588,7 @@ lastdump(char arg) /* w ==> just what to do; W ==> most recent dumps */
 	struct pfstab *pf;
 	time_t tnow;
 
-	(void) time(&tnow);
+	tnow = time(NULL);
 	getfstab();		/* /etc/fstab input */
 	initdumptimes(0);	/* dumpdates input */
 	if (ddatev == NULL && table == NULL) {
