@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.44 2002/04/04 08:20:23 stelian Exp $";
+	"$Id: traverse.c,v 1.45 2002/04/11 09:19:07 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -827,7 +827,6 @@ dumpino(struct dinode *dp, dump_ino_t ino, int metaonly)
 	spcl.c_count = 0;
 
 	if (metaonly && (dp->di_mode & S_IFMT)) {
-		printf("Write header with spcl.c_count=%d\n",spcl.c_count);
 		spcl.c_flags |= DR_METAONLY;
 		spcl.c_count = 0;
 		writeheader(ino);
