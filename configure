@@ -1697,8 +1697,8 @@ if test "$ext2fs_h" = no -o "$ext2fs_lib" = no; then
 	{ echo "configure: error: You need to install the Ext2fs libraries from the E2fsprogs distribution first - hint: make install-libs" 1>&2; exit 1; }
 fi
 
-echo $ac_n "checking for ext2_ino_t type in ext2 headers""... $ac_c" 1>&6
-echo "configure:1702: checking for ext2_ino_t type in ext2 headers" >&5
+echo $ac_n "checking for ext2_ino_t type in libext2fs headers""... $ac_c" 1>&6
+echo "configure:1702: checking for ext2_ino_t type in libext2fs headers" >&5
 cat > conftest.$ac_ext <<EOF
 #line 1704 "configure"
 #include "confdefs.h"
@@ -1714,7 +1714,7 @@ if { (eval echo configure:1713: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; 
   cat >> confdefs.h <<\EOF
 #define HAVE_EXT2_INO_T 1
 EOF
-, echo "$ac_t""yes" 1>&6
+ echo "$ac_t""yes" 1>&6
 else
   echo "configure: failed program was:" >&5
   cat conftest.$ac_ext >&5
@@ -1740,7 +1740,7 @@ if { (eval echo configure:1739: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; 
   cat >> confdefs.h <<\EOF
 #define HAVE_EXT2_JOURNAL_INUM 1
 EOF
-, echo "$ac_t""yes" 1>&6
+ echo "$ac_t""yes" 1>&6
 else
   echo "configure: failed program was:" >&5
   cat conftest.$ac_ext >&5

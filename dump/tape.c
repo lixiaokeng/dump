@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.38 2001/03/20 20:25:27 stelian Exp $";
+	"$Id: tape.c,v 1.39 2001/03/23 14:40:12 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -253,7 +253,8 @@ tperror(int errnum)
 		quit("Cannot recover\n");
 		/* NOTREACHED */
 	}
-	msg("write error %d blocks into volume %d: %s\n", blocksthisvol, tapeno, strerror(errnum));
+	msg("write error %d blocks into volume %d: %s\n", 
+	    blocksthisvol, tapeno, strerror(errnum));
 	broadcast("DUMP WRITE ERROR!\n");
 	if (query("Do you want to rewrite this volume?")) {
 		msg("Closing this volume.  Prepare to restart with new media;\n");
@@ -297,12 +298,12 @@ do_stats(void)
 		long txfrate = volkb / ttaken;
 		msg("Volume %d took %d:%02d:%02d\n", tapeno,
 			ttaken / 3600, (ttaken % 3600) / 60, ttaken % 60);
-		msg("Volume %d transfer rate: %ld KB/s\n", tapeno,
+		msg("Volume %d transfer rate: %ld kB/s\n", tapeno,
 			txfrate);
 		xferrate += txfrate;
 		if (compressed) {
 			double rate = .0005 + (double) blocks / (double) volkb;
-			msg("Volume %d %ldKB uncompressed, %ldKB compressed,"
+			msg("Volume %d %ldKB uncompressed, %ldkB compressed,"
 				" %1.3f:1\n",
 				tapeno, blocks, volkb, rate);
 		}

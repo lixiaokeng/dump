@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.29 2001/03/21 09:37:13 stelian Exp $";
+	"$Id: traverse.c,v 1.30 2001/03/23 14:40:12 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -108,7 +108,7 @@ extern int iexclude_num;			/* number of elements in list */
 #define ext2_journal_ino(sb) (*((__u32 *)sb + 0x38))
 #endif
 #ifndef HAVE_EXT2_INO_T
-#define ext2_ino_t __u32
+typedef ino_t ext2_ino_t;
 #endif
 
 #ifndef EXT3_FEATURE_COMPAT_HAS_JOURNAL
@@ -136,7 +136,7 @@ int dump_fs_open(const char *disk, ext2_filsys *fs)
 	retval = ext2fs_open(disk, EXT2_FLAG_FORCE, 0, 0, unix_io_manager, fs);
 	if (!retval) {
 		struct ext2_super_block *es = (*fs)->super;
-		ext2_ino_t journal_ino = ext2_journal_ino(es);
+		dump_ino_t journal_ino = ext2_journal_ino(es);
 
 		if (es->s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV){
 			fprintf(stderr, "This an journal, not a filesystem!\n");
@@ -154,10 +154,9 @@ int dump_fs_open(const char *disk, ext2_filsys *fs)
 		}
 		else if (es->s_feature_compat &
 				EXT3_FEATURE_COMPAT_HAS_JOURNAL && 
-				journal_ino && 
-				!exclude_ino((dump_ino_t)journal_ino)) {
-			iexclude_list[iexclude_num++] = (dump_ino_t)journal_ino;
-			msg("Added ext3 journal inode %d to exclude list\n",
+				journal_ino && !exclude_ino(journal_ino)) {
+			iexclude_list[iexclude_num++] = journal_ino;
+			msg("Added ext3 journal inode %u to exclude list\n",
 			    journal_ino);
 		}
 	}

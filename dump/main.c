@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.39 2001/03/20 20:46:08 stelian Exp $";
+	"$Id: main.c,v 1.40 2001/03/23 14:40:12 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -185,7 +185,7 @@ main(int argc, char *argv[])
 			ntrec = numarg("number of blocks per write",
 			    1L, 1000L);
 			if (ntrec > maxbsize/1024) {
-				msg("Please choose a blocksize <= %dKB\n",
+				msg("Please choose a blocksize <= %dkB\n",
 					maxbsize/1024);
 				exit(X_STARTUP);
 			}
@@ -727,7 +727,7 @@ main(int argc, char *argv[])
 	if (tend_writing - tstart_writing == 0)
 		msg("finished in less than a second\n");
 	else
-		msg("finished in %d seconds, throughput %d KBytes/sec\n",
+		msg("finished in %d seconds, throughput %d kBytes/sec\n",
 		    tend_writing - tstart_writing,
 		    spcl.c_tapea / (tend_writing - tstart_writing));
 
@@ -736,12 +736,11 @@ main(int argc, char *argv[])
 		spcl.c_date == 0 ? "the epoch\n" : ctime4(&spcl.c_date));
 	msg("Date this dump completed:  %s", ctime(&tnow));
 
-	msg("Average transfer rate: %ld KB/s\n", xferrate / tapeno);
+	msg("Average transfer rate: %ld kB/s\n", xferrate / tapeno);
 	if (compressed) {
 		long tapekb = bytes_written / 1024;
 		double rate = .0005 + (double) spcl.c_tapea / tapekb;
-		msg("Wrote %ldKB uncompressed, %ldKB compressed,"
-			" %1.3f:1\n",
+		msg("Wrote %ldkB uncompressed, %ldKB compressed, %1.3f:1\n",
 			spcl.c_tapea, tapekb, rate);
 	}
 

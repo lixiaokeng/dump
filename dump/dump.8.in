@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.22 2001/03/20 20:15:43 stelian Exp $
+.\"	$Id: dump.8.in,v 1.23 2001/03/23 14:40:12 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -490,7 +490,7 @@ a remote shell program instead.
 .Sh AUTHOR
 The 
 .Nm dump/restore
-backup suit was ported to Linux's Second Extended File System
+backup suite was ported to Linux's Second Extended File System
 by Remy Card <card@Linux.EU.Org>. He maintained the initial versions
 of dump (up and including 0.4b4, released in january 1997).
 .Pp
@@ -500,7 +500,7 @@ Starting with 0.4b5, the new maintainer is Stelian Pop
 .Sh AVAILABILITY
 The
 .Nm dump/restore
-backup suit is available from 
+backup suite is available from 
 .br
 http://dump.sourceforge.net
 .Sh HISTORY

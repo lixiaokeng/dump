@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.18 2001/03/20 10:02:48 stelian Exp $";
+	"$Id: main.c,v 1.19 2001/03/23 14:40:12 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -50,7 +50,11 @@ static const char rcsid[] =
 #include <errno.h>
 
 #ifdef	__linux__
+#ifdef HAVE_EXT2FS_EXT2_FS_H
+#include <ext2fs/ext2_fs.h>
+#else
 #include <linux/ext2_fs.h>
+#endif
 #include <bsdcompat.h>
 #include <signal.h>
 #include <string.h>
@@ -417,12 +421,13 @@ usage(void)
 #define kerbflag
 #endif
 	(void)fprintf(stderr,
-	  "usage:\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n",
+	  "usage:\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n",
+	  __progname, " -C [-c" kerbflag "Mvy] [-b blocksize] [-D filesystem] [-f file] [-s fileno]",
 	  __progname, " -i [-ch" kerbflag "mMuvy] [-b blocksize] [-f file] [-s fileno]",
-	  __progname, " -r [-c" kerbflag "Muvy] [-b blocksize] [-f file] [-s fileno]",
-	  __progname, " -R [-c" kerbflag "Muvy] [-b blocksize] [-f file] [-s fileno]",
-	  __progname, " -x [-ch" kerbflag "mMuvy] [-b blocksize] [-f file] [-s fileno] [-X filelist] [file ...]",
-	  __progname, " -t [-ch" kerbflag "Muvy] [-b blocksize] [-f file] [-s fileno] [-X filelist] [file ...]");
+	  __progname, " -r [-c" kerbflag "Muvy] [-b blocksize] [-f file] [-s fileno] [-T directory]",
+	  __progname, " -R [-c" kerbflag "Muvy] [-b blocksize] [-f file] [-s fileno] [-T directory]",
+	  __progname, " -t [-ch" kerbflag "Muvy] [-b blocksize] [-f file] [-s fileno] [-X filelist] [file ...]",
+	  __progname, " -x [-ch" kerbflag "mMuvy] [-b blocksize] [-f file] [-s fileno] [-X filelist] [file ...]");
 	exit(1);
 }
 
