@@ -1,53 +1,18 @@
-/* config.h.in.  Generated automatically from configure.in by autoheader.  */
+/* config.h.in.  Generated from configure.in by autoheader.  */
 
-/* Define if you have the ANSI C header files.  */
-#undef STDC_HEADERS
+/* Define this if you want to include Quick File Access debugging code. */
+#undef DEBUG_QFA
 
-/* Define to int64_t if <sys/types.h> does not define */
-#undef quad_t
+/* Define this if you have bzlib compression library. */
+#undef HAVE_BZLIB
 
-/* Define to uint64_t if <sys/types.h> does not define */
-#undef u_quad_t
-
-/* Define if you have the err function.  */
+/* Define to 1 if you have the `err' function. */
 #undef HAVE_ERR
 
-/* Define if you have the errx function.  */
+/* Define to 1 if you have the `errx' function. */
 #undef HAVE_ERRX
 
-/* Define if you have the realpath function.  */
-#undef HAVE_REALPATH
-
-/* Define if you have the verr function.  */
-#undef HAVE_VERR
-
-/* Define if you have the verrx function.  */
-#undef HAVE_VERRX
-
-/* Define if you have the vwarn function.  */
-#undef HAVE_VWARN
-
-/* Define if you have the vwarnx function.  */
-#undef HAVE_VWARNX
-
-/* Define if you have the warn function.  */
-#undef HAVE_WARN
-
-/* Define if you have the warnx function.  */
-#undef HAVE_WARNX
-
-/* Define if you have the glob function.  */
-#undef HAVE_GLOB
-
-/* Define if you have the lchown function.  */
-#undef HAVE_LCHOWN
-
-/* Define if you want to include readline support.  */
-#undef HAVE_READLINE
-
-/* Define if you have <ext2fs/ext2_fs.h> installed (from e2fsprogs 1.20+).
- * Otherwise, we will use the (usually older) <linux/ext2_fs.h> header.
- */
+/* Define to 1 if you have the <ext2fs/ext2_fs.h> header file. */
 #undef HAVE_EXT2FS_EXT2_FS_H
 
 /* Define if we have the ext2_ino_t type (from e2fsprogs 1.20+). */
@@ -55,27 +20,104 @@
 
 /* Define if we have the s_journal_inum field in struct ext2_super_block. */
 #undef HAVE_EXT2_JOURNAL_INUM
- 
-/* Define this is you want old style F script (no arguments) */
-#undef OLD_STYLE_FSCRIPT
 
-/* Define this if you want Large File System support */
-#undef USE_LFS
+/* Define if you have the glob function. */
+#undef HAVE_GLOB
 
-/* Define this if you have zlib compression library */
-#undef HAVE_ZLIB
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
 
-/* Define this if you have bzlib compression library */
-#undef HAVE_BZLIB
+/* Define to 1 if you have the `lchown' function. */
+#undef HAVE_LCHOWN
 
-/* Define this if you want Quick File Access support */
-#undef USE_QFA
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
 
-/* Define this if you want to include Quick File Access debugging code */
-#undef DEBUG_QFA
+/* Define if you want to include readline support. */
+#undef HAVE_READLINE
 
-/* Define this if your readline libs have the rl_completion_append_character variable */
+/* Define this if your readline libs have the rl_completion_append_character
+   variable. */
 #undef HAVE_READLINE_CAC
 
-/* Define this if your readline libs have the rl_completion_matches library */
+/* Define this if your readline libs have the rl_completion_matches library.
+   */
 #undef HAVE_READLINE_RLCM
+
+/* Define to 1 if you have the `realpath' function. */
+#undef HAVE_REALPATH
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the `verr' function. */
+#undef HAVE_VERR
+
+/* Define to 1 if you have the `verrx' function. */
+#undef HAVE_VERRX
+
+/* Define to 1 if you have the `vwarn' function. */
+#undef HAVE_VWARN
+
+/* Define to 1 if you have the `vwarnx' function. */
+#undef HAVE_VWARNX
+
+/* Define to 1 if you have the `warn' function. */
+#undef HAVE_WARN
+
+/* Define to 1 if you have the `warnx' function. */
+#undef HAVE_WARNX
+
+/* Define this if you have zlib compression library. */
+#undef HAVE_ZLIB
+
+/* Define this is you want old style F script (no arguments). */
+#undef OLD_STYLE_FSCRIPT
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Define this if you want Large File System support. */
+#undef USE_LFS
+
+/* Define this if you want Quick File Access support. */
+#undef USE_QFA
+
+/* Define to `int64_t' if <sys/types.h> does not define. */
+#undef quad_t
+
+/* Define to `uint64_t' if <sys/types.h> does not define. */
+#undef u_quad_t
