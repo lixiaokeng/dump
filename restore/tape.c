@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.60 2002/04/04 08:20:23 stelian Exp $";
+	"$Id: tape.c,v 1.61 2002/05/06 08:45:41 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -431,6 +431,8 @@ getvol(long nextvol)
 	if (nextvol == 1) {
 		tapesread = 0;
 		gettingfile = 0;
+		tpblksread = 0;
+		blksread = 0;
 	}
 	if (pipein) {
 		if (nextvol != 1)
@@ -587,8 +589,6 @@ gethdr:
 		goto again;
 	}
 	tapesread |= 1 << volno;
-	blksread = saved_blksread;
-	tpblksread = saved_tpblksread;
  	/*
  	 * If continuing from the previous volume, skip over any
  	 * blocks read already at the end of the previous volume.
@@ -603,10 +603,10 @@ gethdr:
 #endif /* !HAVE_ZLIB && !HAVE_BZLIB */
 	}
 	Dprintf(stdout, "read %ld recs, tape starts with %ld\n",
-		tpblksread, (long)tmpbuf.c_firstrec);
+		tpblksread - 1, (long)tmpbuf.c_firstrec);
  	if (tmpbuf.c_type == TS_TAPE && (tmpbuf.c_flags & DR_NEWHEADER)) {
  		if (!wantnext) {
- 			tpblksread = tmpbuf.c_firstrec;
+ 			tpblksread = tmpbuf.c_firstrec + 1;
  			for (i = tmpbuf.c_count; i > 0; i--)
  				readtape(buf);
  		} else if (tmpbuf.c_firstrec > 0 &&

@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.173 2002/04/15 11:57:27 stelian Exp $
+$Id: CHANGES,v 1.174 2002/05/06 08:45:41 stelian Exp $
 
 Changes between versions 0.4b28 and 0.4b29 (released ??????????????)
 ====================================================================
@@ -10,6 +10,11 @@ Changes between versions 0.4b28 and 0.4b29 (released ??????????????)
 	Jörg Schilling <schilling@fokus.gmd.de> for reporting this bug and
 	providing an excellent, cross-platform replacement for rmt in his
 	star package.
+
+2.	Fixed a bug reported by Andy Mentges <amentges@jumpline.com>
+	which caused restore to fail when the inode maps were not entirely
+	contained on the first volume (when using really small volumes or
+	when dumping a huge number of inodes).
 	
 Changes between versions 0.4b27 and 0.4b28 (released April 12, 2002)
 ====================================================================
