@@ -45,7 +45,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.7 1999/11/05 22:02:19 tiniou Exp $";
+	"$Id: tape.c,v 1.8 1999/11/11 16:14:01 tiniou Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -566,9 +566,11 @@ extractfile(char *name)
 		return (genliteraldir(name, curfile.ino));
 
 	case IFLNK:
-	{	uid_t luid = curfile.dip->di_uid;
+	{
+#ifdef HAVE_LCHOWN
+		uid_t luid = curfile.dip->di_uid;
 		gid_t lgid = curfile.dip->di_gid;
-
+#endif
 		lnkbuf[0] = '\0';
 		pathlen = 0;
 		getfile(xtrlnkfile, xtrlnkskip);

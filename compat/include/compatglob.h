@@ -4,7 +4,7 @@
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *	Stelian Pop <pop@cybercable.fr>, 1999 
  *
- *	$Id: compatglob.h,v 1.3 1999/10/13 09:57:18 stelian Exp $
+ *	$Id: compatglob.h,v 1.4 1999/11/11 16:14:01 tiniou Exp $
  */
 
 /*
@@ -43,8 +43,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef _GLOB_H_
-#define	_GLOB_H_
+#ifndef _COMPATGLOB_H_
+#define	_COMPATGLOB_H_
 
 #include <config.h>
 
@@ -98,6 +98,6 @@ int	glob __P((const char *, int, int (*)(const char *, int), glob_t *));
 void	globfree __P((glob_t *));
 __END_DECLS
 
-#endif /* !_GLOB_H_ */
-
 #endif /* HAVE_GLOB */
+
+#endif /* !_COMPATGLOB_H_ */

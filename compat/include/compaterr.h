@@ -4,7 +4,7 @@
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *	Stelian Pop <pop@cybercable.fr>, 1999 
  *
- *	$Id: compaterr.h,v 1.4 1999/10/13 09:57:18 stelian Exp $
+ *	$Id: compaterr.h,v 1.5 1999/11/11 16:14:01 tiniou Exp $
  */
 
 /*-
@@ -40,8 +40,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef _ERR_H_
-#define	_ERR_H_
+#ifndef _COMPATERR_H_
+#define	_COMPATERR_H_
 
 #include <config.h>
 
@@ -88,4 +88,4 @@ void		vwarnx __P((const char *, _BSD_VA_LIST_));
 #endif
 __END_DECLS
 
-#endif /* !_ERR_H_ */
+#endif /* !_COMPATERR_H_ */

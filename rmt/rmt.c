@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: rmt.c,v 1.6 1999/10/13 09:57:22 stelian Exp $";
+	"$Id: rmt.c,v 1.7 1999/11/11 16:14:01 tiniou Exp $";
 #endif /* not linux */
 
 /*
@@ -51,7 +51,9 @@ static const char rcsid[] =
 #include <sys/mtio.h>
 #include <errno.h>
 #include <fcntl.h>
+#ifndef __linux__
 #include <sgtty.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

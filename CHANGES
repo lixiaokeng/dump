@@ -1,11 +1,14 @@
-$Id: CHANGES,v 1.14 1999/11/07 18:53:33 tiniou Exp $
+$Id: CHANGES,v 1.15 1999/11/11 16:13:57 tiniou Exp $
 
 Changes between versions 0.4b9 and 0.4b10 (released ???????????????)
 ====================================================================
 
 1.	Make configure test if the system glob routines support 
 	extended syntax (ALTDIRFUNC). If not, use the internal glob
-	routines instead of system ones.
+	routines instead of system ones. Thanks to Bernhard Sadlowski 
+	<sadlowsk@Mathematik.Uni-Bielefeld.DE> for reporting the bug
+	and helping me resolve this and other minor libc5 compiling
+	glitches.
 
 Changes between versions 0.4b8 and 0.4b9 (released November 5, 1999)
 ====================================================================
