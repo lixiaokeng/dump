@@ -1,7 +1,7 @@
-$Id: CHANGES,v 1.138 2001/09/12 10:21:48 stelian Exp $
+$Id: CHANGES,v 1.139 2001/09/12 12:40:07 stelian Exp $
 
-Changes between versions 0.4b23 and 0.4b24 (released ?????????????)
-===================================================================
+Changes between versions 0.4b23 and 0.4b24 (released September 12, 2001)
+========================================================================
 
 1.	Fixed the permissions of a newly created QFA file by dump.
 
