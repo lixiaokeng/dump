@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: utilities.c,v 1.7 2000/01/21 10:17:41 stelian Exp $";
+	"$Id: utilities.c,v 1.8 2000/02/08 12:22:43 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -243,6 +243,18 @@ linkit(char *existing, char *new, int type)
 			    chflags(existing, 0) == 0) {
 				ret = link(existing, new);
 				chflags(existing, s.st_flags);
+			}
+#else
+			unsigned long s;
+
+			/*
+			 * Most likely, the immutable or append-only attribute
+			 * is set. Clear the attributes and try again.
+			 */
+			if (fgetflags (existing, &s) != -1 &&
+			    fsetflags (existing, 0) != -1) {
+			    	ret = link(existing, new);
+				fsetflags(existing, s);
 			}
 #endif
 			if (ret < 0) {

@@ -4,7 +4,7 @@
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *	Stelian Pop <pop@cybercable.fr>, 1999-2000
  *
- *	$Id: extern.h,v 1.7 2000/01/21 10:17:41 stelian Exp $
+ *	$Id: extern.h,v 1.8 2000/02/08 12:22:43 stelian Exp $
  */
 
 /*-
@@ -120,4 +120,5 @@ int		rmtseek __P((int, int));
 
 /* From e2fsprogs */
 int fsetflags __P((const char *, unsigned long));
+int fgetflags __P((const char *, unsigned long *));
 int setflags __P((int, unsigned long));
