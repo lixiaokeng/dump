@@ -340,7 +340,7 @@ dnl
 AC_CHECK_LIB(termcap, tgetent, [termcap_lib=yes], [termcap_lib=no])
 if test "$termcap_lib" = no; then
 	if test "$READLINE" = "-lreadline -ltermcap"; then
-		AC_MSG_ERROR(You need to install the GNU termcap libraries first)
+		AC_MSG_ERROR(You need to install the GNU termcap library or configure without --enable-readline)
 	fi
 fi
 
@@ -351,7 +351,7 @@ AC_CHECK_HEADER(readline/readline.h, [readline_h=yes], [readline_h=no])
 AC_CHECK_LIB(readline, readline, [readline_lib=yes], [readline_lib=no], "-ltermcap")
 if test "$readline_h" = no -o "$readline_lib" = no; then
 	if test "$READLINE" = "-lreadline -ltermcap"; then
-		AC_MSG_ERROR(You need to install the GNU readline libraries first)
+		AC_MSG_ERROR(You need to install the GNU readline library or configure without --enable-readline)
 	fi
 fi
 

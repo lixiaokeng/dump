@@ -1879,7 +1879,7 @@ fi
 
 if test "$termcap_lib" = no; then
 	if test "$READLINE" = "-lreadline -ltermcap"; then
-		{ echo "configure: error: You need to install the GNU termcap libraries first" 1>&2; exit 1; }
+		{ echo "configure: error: You need to install the GNU termcap library or configure without --enable-readline" 1>&2; exit 1; }
 	fi
 fi
 
@@ -1960,7 +1960,7 @@ fi
 
 if test "$readline_h" = no -o "$readline_lib" = no; then
 	if test "$READLINE" = "-lreadline -ltermcap"; then
-		{ echo "configure: error: You need to install the GNU readline libraries first" 1>&2; exit 1; }
+		{ echo "configure: error: You need to install the GNU readline library or configure without --enable-readline" 1>&2; exit 1; }
 	fi
 fi
 
