@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.85 2003/03/31 09:42:58 stelian Exp $";
+	"$Id: main.c,v 1.86 2003/05/12 14:16:39 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -186,8 +186,8 @@ static void do_exclude_from_file __P((char *));
 static void do_exclude_ino_str __P((char *));
 static void incompat_flags __P((int, char, char));
 
-static dump_ino_t iexclude_list[IEXCLUDE_MAXNUM];/* the inode exclude list */
-static int iexclude_num = 0;			/* number of elements in the list */
+static char* iexclude_bitmap = NULL;	/* the inode exclude bitmap */
+static int iexclude_bitmap_bytes = 0;	/* size of bitmap in bytes */
 
 int
 main(int argc, char *argv[])
@@ -1224,40 +1224,66 @@ obsolete(int *argcp, char **argvp[])
 }
 
 /*
- * This tests whether an inode is in the exclude list
+ * This tests whether an inode is in the exclude bitmap
  */
 int
 exclude_ino(dump_ino_t ino)
 {
-	/* 04-Feb-00 ILC */
-	if (iexclude_num) {	/* if there are inodes in the exclude list */
-		int idx;	/* then check this inode against it */
-		for (idx = 0; idx < iexclude_num; idx++)
-			if (ino == iexclude_list[idx])
-				return 1;
+	/* if the inode exclude bitmap exists and covers given inode */
+	if (iexclude_bitmap && iexclude_bitmap_bytes > ino / 8) {
+		/* then check this inode against it */
+		int idx = iexclude_bitmap[ino / 8];
+		if (idx & (1 << (ino % 8)))
+			return 1;
 	}
 	return 0;
 }
 
 /*
- * This tests adds an inode to the exclusion list if it isn't already there
+ * This adds an inode to the exclusion bitmap if it isn't already there
  */
 void
 do_exclude_ino(dump_ino_t ino, const char *reason)
 {
-	if (!exclude_ino(ino)) {
-		if (iexclude_num == IEXCLUDE_MAXNUM) {
-			msg("Too many exclude options\n");
-			msg("The ENTIRE dump is aborted.\n");
-			exit(X_STARTUP);
-		}
+	if (exclude_ino(ino))
+		return;
+
+	if (vflag) {
 		if (reason)
-			msg("Excluding inode %u (%s) from dump\n", 
-			    ino, reason);
+			msg("Excluding inode %u (%s) from dump\n", ino, reason);
 		else
 			msg("Excluding inode %u from dump\n", ino);
-		iexclude_list[iexclude_num++] = ino;
 	}
+
+	/* check for enough mem; initialize */
+	if ((ino/8 + 1) > iexclude_bitmap_bytes) {
+		if (iexclude_bitmap_bytes == 0) {
+			iexclude_bitmap_bytes = 2 * (ino/8 + 1);
+			iexclude_bitmap = (char*) malloc(iexclude_bitmap_bytes);
+			if (iexclude_bitmap == NULL) {
+				msg("allocating memory failed\n");
+				exit(X_STARTUP);
+			}
+			int j;
+			for (j = 0; j < iexclude_bitmap_bytes; j++)
+				iexclude_bitmap[j] = 0;
+		}
+		else {
+			int oldsize = iexclude_bitmap_bytes;
+			iexclude_bitmap_bytes *= 
+				(ino / 8 + 1) / iexclude_bitmap_bytes + 1;
+			iexclude_bitmap = (char*) realloc(iexclude_bitmap, 
+				iexclude_bitmap_bytes);
+			if (iexclude_bitmap == NULL) {
+				msg("allocating memory failed\n");
+				exit(X_STARTUP);
+			}
+			for( ; oldsize < iexclude_bitmap_bytes; oldsize++)
+				iexclude_bitmap[oldsize] = 0;
+		}
+	}
+		
+	iexclude_bitmap[ino / 8] |= 1 << (ino % 8);
 }
 
 static void

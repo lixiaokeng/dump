@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: dump.h,v 1.45 2003/03/31 09:42:58 stelian Exp $
+ *	$Id: dump.h,v 1.46 2003/05/12 14:16:39 stelian Exp $
  */
 
 /*-
@@ -276,7 +276,4 @@ extern void exit();
 extern off_t lseek();
 extern const char *strerror();
 #endif
-
-				/* 04-Feb-00 ILC */
-#define IEXCLUDE_MAXNUM 256	/* max size of inode exclude list */
 
