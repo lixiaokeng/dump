@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: optr.c,v 1.34 2003/01/21 10:42:27 stelian Exp $";
+	"$Id: optr.c,v 1.35 2003/02/04 12:24:40 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -487,7 +487,7 @@ getfstab(void)
 	struct pfstab *pf;
 	struct pfstab *pfold = NULL;
 	FILE *mntfp;
-	char *mnttables[] = { _PATH_MNTTAB, _PATH_MOUNTED, 0 };
+	char *mnttables[] = { _PATH_MOUNTED, _PATH_MNTTAB, 0 };
 	int i;
 
 	for (i = 0; mnttables[i]; i++) {

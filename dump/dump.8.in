@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.48 2003/01/21 10:42:27 stelian Exp $
+.\"	$Id: dump.8.in,v 1.49 2003/02/04 12:24:40 stelian Exp $
 .\"
 .TH DUMP 8 "version __VERSION__ of __DATE__" BSD "System management commands"
 .SH NAME
@@ -409,6 +409,8 @@ option causes
 to print out, for all file systems in
 .I __DUMPDATES__ ,
 and regognized file systems in
+.I /etc/mtab
+and
 .IR /etc/fstab .
 the most recent dump date and level, and highlights those that should be 
 dumped. If the
@@ -421,6 +423,8 @@ exits immediately.
 Is like
 .BR \-W ,
 but prints only recognized filesystems in
+.I /etc/mtab
+and
 .I /etc/fstab
 which need to be dumped.
 .TP
@@ -534,6 +538,9 @@ dump date records
 .TP
 .I /etc/fstab
 dump table: file systems and frequency
+.TP
+.I /etc/mtab
+dump table: mounted file systems
 .TP
 .I /etc/group
 to find group
