@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.26 1999/12/17 10:14:27 tiniou Exp $
+$Id: CHANGES,v 1.27 1999/12/17 10:21:30 tiniou Exp $
 
 Changes between versions 0.4b11 and 0.4b12 (released ????????????????)
 ======================================================================
@@ -16,7 +16,7 @@ Changes between versions 0.4b10 and 0.4b11 (released December 5, 1999)
 1.	Added a '--enable-kerberos' to configure.
 
 2.	Added a 'S' option to dump which determines the amount of space
-	that is needed to perform the dump without actually doint it, similar
+	that is needed to perform the dump without actually doing it, similar
 	to the Sun's ufsdump 'S' option. Patch contributed by Rob Cermak
 	<cermak@ahab.rutgers.edu>.
 
