@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.29 2001/03/20 10:02:48 stelian Exp $";
+	"$Id: tape.c,v 1.30 2001/03/20 20:39:36 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1237,7 +1237,7 @@ comparefile(char *name)
 			panic("cannot delete tmp file %s: %s\n",
 			      tmpfile, strerror(errno));
 		}
-		if ((ofile = creat(tmpfile, 0600)) < 0) {
+		if ((ofile = open(tmpfile, O_WRONLY | O_CREAT | O_TRUNC, 0600)) < 0) {
 			panic("cannot create file temp file %s: %s\n",
 			      name, strerror(errno));
 		}
