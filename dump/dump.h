@@ -4,7 +4,7 @@
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *	Stelian Pop <pop@cybercable.fr>, 1999-2000
  *
- *	$Id: dump.h,v 1.11 2000/02/26 01:35:48 stelian Exp $
+ *	$Id: dump.h,v 1.12 2000/03/01 10:16:05 stelian Exp $
  */
 
 /*-
@@ -43,10 +43,6 @@
 #define MAXINOPB	(MAXBSIZE / sizeof(struct dinode))
 #define MAXNINDIR	(MAXBSIZE / sizeof(daddr_t))
 
-#ifndef NAME_MAX
-#define NAME_MAX 255
-#endif
-
 /*
  * Dump maps used to describe what is to be dumped.
  */
@@ -68,7 +64,7 @@ char	*dumpinomap;	/* map of files to be dumped */
  *	All calculations done in 0.1" units!
  */
 char	*disk;		/* name of the disk file */
-char	tape[NAME_MAX];	/* name of the tape file */
+char	tape[MAXPATHLEN];	/* name of the tape file */
 char	*tapeprefix;	/* prefix of the tape file */
 char	*dumpdates;	/* name of the file containing dump date information*/
 char	lastlevel;	/* dump level of previous dump */
@@ -196,7 +192,7 @@ struct	fstab *fstabsearchdir __P((const char *key, char *dir));	/* search fs_fil
  *	a linked list, and then (eventually) arrayified.
  */
 struct dumpdates {
-	char	dd_name[NAME_MAX+3];
+	char	dd_name[MAXPATHLEN+3];
 	char	dd_level;
 	time_t	dd_ddate;
 };

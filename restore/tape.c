@@ -45,7 +45,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.11 2000/01/21 10:17:41 stelian Exp $";
+	"$Id: tape.c,v 1.12 2000/03/01 10:16:05 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -81,8 +81,8 @@ static const char rcsid[] =
 static long	fssize = MAXBSIZE;
 static int	mt = -1;
 static int	pipein = 0;
-static char	magtape[NAME_MAX];
-static char	magtapeprefix[NAME_MAX];
+static char	magtape[MAXPATHLEN];
+static char	magtapeprefix[MAXPATHLEN];
 static int	blkcnt;
 static int	numtrec;
 static char	*tapebuf;
@@ -165,13 +165,13 @@ setinput(char *source)
 	}
 	setuid(getuid());	/* no longer need or want root privileges */
 	if (Mflag) {
-		strncpy(magtapeprefix, source, NAME_MAX);
-		magtapeprefix[NAME_MAX-1] = '\0';
-		snprintf(magtape, NAME_MAX, "%s%03d", source, 1);
+		strncpy(magtapeprefix, source, MAXPATHLEN);
+		magtapeprefix[MAXPATHLEN-1] = '\0';
+		snprintf(magtape, MAXPATHLEN, "%s%03d", source, 1);
 	}
 	else
-		strncpy(magtape, source, NAME_MAX);
-	magtape[NAME_MAX - 1] = '\0';
+		strncpy(magtape, source, MAXPATHLEN);
+	magtape[MAXPATHLEN - 1] = '\0';
 }
 
 void
@@ -361,8 +361,8 @@ again:
 	}
 	closemt();
 	if (Mflag) {
-		snprintf(magtape, NAME_MAX, "%s%03ld", magtapeprefix, newvol);
-		magtape[NAME_MAX - 1] = '\0';
+		snprintf(magtape, MAXPATHLEN, "%s%03ld", magtapeprefix, newvol);
+		magtape[MAXPATHLEN - 1] = '\0';
 	}
 	if (!Mflag || haderror) {
 		haderror = 0;

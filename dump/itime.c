@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: itime.c,v 1.9 2000/01/21 10:17:41 stelian Exp $";
+	"$Id: itime.c,v 1.10 2000/03/01 10:16:05 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -299,7 +299,7 @@ makedumpdate(struct dumpdates *ddp, char *tbuf)
 	/* device name */
 	if ( NULL == (tok = strsep( &tbuf, " ")) )
 		return(-1);
-	if ( strlen(tok) >  NAME_MAX )
+	if ( strlen(tok) >  MAXPATHLEN )
 		return(-1);
 	strcpy(ddp->dd_name, tok);
 

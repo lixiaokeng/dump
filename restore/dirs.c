@@ -45,7 +45,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dirs.c,v 1.8 2000/02/10 09:42:32 stelian Exp $";
+	"$Id: dirs.c,v 1.9 2000/03/01 10:16:05 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -396,7 +396,7 @@ putdir(char *buf, size_t size)
 			if ((dp->d_reclen & 0x3) != 0 ||
 			    dp->d_reclen > i ||
 			    dp->d_reclen < DIRSIZ(0, dp) ||
-			    dp->d_namlen > NAME_MAX) {
+			    dp->d_namlen > MAXNAMLEN) {
 				Vprintf(stdout, "Mangled directory: ");
 				if ((dp->d_reclen & 0x3) != 0)
 					Vprintf(stdout,
@@ -405,10 +405,10 @@ putdir(char *buf, size_t size)
 					Vprintf(stdout,
 					   "reclen less than DIRSIZ (%d < %d) ",
 					   dp->d_reclen, DIRSIZ(0, dp));
-				if (dp->d_namlen > NAME_MAX)
+				if (dp->d_namlen > MAXNAMLEN)
 					Vprintf(stdout,
 					   "reclen name too big (%d > %d) ",
-					   dp->d_namlen, NAME_MAX);
+					   dp->d_namlen, MAXNAMLEN);
 				Vprintf(stdout, "\n");
 				loc += i;
 				continue;

@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.13 2000/02/26 01:35:48 stelian Exp $";
+	"$Id: tape.c,v 1.14 2000/03/01 10:16:05 stelian Exp $";
 #endif /* not lint */
 
 #ifdef __linux__
@@ -715,8 +715,8 @@ restore_check_point:
 		 */
 		tapeno++;               /* current tape sequence */
 		if (Mflag) {
-			snprintf(tape, NAME_MAX, "%s%03d", tapeprefix, tapeno);
-			tape[NAME_MAX - 1] = '\0';
+			snprintf(tape, MAXPATHLEN, "%s%03d", tapeprefix, tapeno);
+			tape[MAXPATHLEN - 1] = '\0';
 			msg("Dumping volume %d on %s\n", tapeno, tape);
 		}
 		else if (nexttape || strchr(tapeprefix, ',')) {
@@ -727,8 +727,8 @@ restore_check_point:
 				nexttape = p + 1;
 			} else
 				nexttape = NULL;
-			strncpy(tape, tapeprefix, NAME_MAX);
-			tape[NAME_MAX - 1] = '\0';
+			strncpy(tape, tapeprefix, MAXPATHLEN);
+			tape[MAXPATHLEN - 1] = '\0';
 			msg("Dumping volume %d on %s\n", tapeno, tape);
 		}
 #ifdef RDUMP

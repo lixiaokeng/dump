@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.16 2000/02/26 01:35:48 stelian Exp $";
+	"$Id: main.c,v 1.17 2000/03/01 10:16:05 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -121,8 +121,8 @@ main(int argc, char *argv[])
 	ino_t maxino;
 #ifdef	__linux__
 	errcode_t retval;
-	char directory[NAME_MAX];
-	char pathname[NAME_MAX];
+	char directory[MAXPATHLEN];
+	char pathname[MAXPATHLEN];
 #endif
 	time_t tnow;
 	char labelstr[LBLSIZE];
@@ -283,6 +283,10 @@ main(int argc, char *argv[])
 		exit(X_STARTUP);
 	}
 	disk = *argv++;
+	if (strlen(disk) > MAXPATHLEN) {
+		(void)fprintf(stderr, "Disk or filesystem name too long: %s\n", disk);
+		exit(X_STARTUP);
+	}
 	argc--;
 	if (argc >= 1) {
 		(void)fprintf(stderr, "Unknown arguments to dump:");
@@ -418,10 +422,10 @@ main(int argc, char *argv[])
 	}
 
 	if (Mflag)
-		snprintf(tape, NAME_MAX, "%s%03d", tapeprefix, tapeno + 1);
+		snprintf(tape, MAXPATHLEN, "%s%03d", tapeprefix, tapeno + 1);
 	else
-		strncpy(tape, tapeprefix, NAME_MAX);
-	tape[NAME_MAX - 1] = '\0';
+		strncpy(tape, tapeprefix, MAXPATHLEN);
+	tape[MAXPATHLEN - 1] = '\0';
 
 	if (!sizest) {
 

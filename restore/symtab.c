@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: symtab.c,v 1.7 2000/01/21 10:17:41 stelian Exp $";
+	"$Id: symtab.c,v 1.8 2000/03/01 10:16:05 stelian Exp $";
 #endif /* not lint */
 
 /*
@@ -391,7 +391,7 @@ struct strhdr {
 #define STRTBLINCR	(sizeof(struct strhdr))
 #define allocsize(size)	(((size) + 1 + STRTBLINCR - 1) & ~(STRTBLINCR - 1))
 
-static struct strhdr strtblhdr[allocsize(NAME_MAX) / STRTBLINCR];
+static struct strhdr strtblhdr[allocsize(MAXNAMLEN) / STRTBLINCR];
 
 /*
  * Allocate space for a name. It first looks to see if it already
