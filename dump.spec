@@ -4,7 +4,7 @@
 
 Summary: Programs for backing up and restoring ext2/ext3 filesystems.
 Name: dump
-Version: 0.4b28
+Version: 0.4b29
 Release: 1
 License: BSD
 URL: http://dump.sourceforge.net
@@ -136,10 +136,13 @@ rm -rf %{buildroot}
 %{_sbindir}/rrestore.static
 
 %changelog
-* Fri Apr 12 2002 Stelian Pop <stelian@popies.net
+* Sat Jun  8 2002 Stelian Pop <stelian@popies.net>
+- dump 0.4b29 released, first packaging.
+
+* Fri Apr 12 2002 Stelian Pop <stelian@popies.net>
 - dump 0.4b28 released, first packaging.
 
-* Fri Feb 15 2002 Stelian Pop <stelian@popies.net
+* Fri Feb 15 2002 Stelian Pop <stelian@popies.net>
 - dump 0.4b27 released, first packaging.
 
 * Mon Jan  7 2002 Stelian Pop <stelian@popies.net>

@@ -1,7 +1,7 @@
-$Id: CHANGES,v 1.179 2002/06/08 07:10:36 stelian Exp $
+$Id: CHANGES,v 1.180 2002/06/08 07:19:28 stelian Exp $
 
-Changes between versions 0.4b28 and 0.4b29 (released ??????????????)
-====================================================================
+Changes between versions 0.4b28 and 0.4b29 (released June 8, 2002)
+==================================================================
 
 1.	Fixed a problem in the rmt ioctl command, where ioctl's issued from
 	non Linux clients were misinterpreted. The description of the problem
