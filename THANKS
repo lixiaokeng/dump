@@ -1,4 +1,4 @@
-$Id: THANKS,v 1.74 2003/01/10 10:52:48 stelian Exp $
+$Id: THANKS,v 1.75 2003/02/11 08:57:41 stelian Exp $
 
 Dump and restore were written by the people of the CSRG at the University
 of California, Berkeley.
@@ -83,6 +83,7 @@ Dave Platt		dplatt@snulbug.mtview.ca.us
 Kenneth Porter		shiva@well.com
 Eric S. Raymond		esr@minx.thyrsus.com
 Graham Reed		greed@users.sourceforge.net
+David Ronis		ronis@ronispc.chem.mcgill.ca
 Bernhard Sadlowski	sadlowsk@Mathematik.Uni-Bielefeld.DE
 Peter Samuel		peters@e-smith.com
 Jan Sanislo		oystr@cs.washington.edu

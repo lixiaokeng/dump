@@ -1,4 +1,11 @@
-$Id: CHANGES,v 1.211 2003/02/10 12:48:36 stelian Exp $
+$Id: CHANGES,v 1.212 2003/02/11 08:57:41 stelian Exp $
+
+Changes between versions 0.4b33 and 0.4b34 (released ?????????????????)
+=======================================================================
+
+1.	Fixed the INSTALL file to reflect the actual install paths.
+	Thanks to David Ronis <ronis@ronispc.chem.mcgill.ca> for
+	reporting the bug.
 
 Changes between versions 0.4b32 and 0.4b33 (released February 10, 2003)
 =======================================================================
