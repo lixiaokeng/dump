@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.18 2000/03/02 11:34:51 stelian Exp $";
+	"$Id: main.c,v 1.19 2000/03/02 13:33:00 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -664,9 +664,9 @@ main(int argc, char *argv[])
 	tnow = trewind();
 
 	if (pipeout)
-		msg("DUMP: %ld tape blocks\n", spcl.c_tapea);
+		msg("%ld tape blocks\n", spcl.c_tapea);
 	else
-		msg("DUMP: %ld tape blocks on %d volumes(s)\n",
+		msg("%ld tape blocks on %d volumes(s)\n",
 		    spcl.c_tapea, spcl.c_volume);
 
 	/* report dump performance, avoid division through zero */
@@ -679,15 +679,15 @@ main(int argc, char *argv[])
 
 	putdumptime();
 #ifdef __linux__
-	msg("DUMP: Date of this level %c dump: %s", level,
+	msg("Date of this level %c dump: %s", level,
 		spcl.c_date == 0 ? "the epoch\n" : ctime4(&spcl.c_date));
 #else
-	msg("DUMP: Date of this level %c dump: %s", level,
+	msg("Date of this level %c dump: %s", level,
 		spcl.c_date == 0 ? "the epoch\n" : ctime(&spcl.c_date));
 #endif
-	msg("DUMP: Date this dump completed:  %s", ctime(&tnow));
+	msg("Date this dump completed:  %s", ctime(&tnow));
 
-	msg("DUMP: Average transfer rate: %ld KB/s\n", xferrate / tapeno);
+	msg("Average transfer rate: %ld KB/s\n", xferrate / tapeno);
 
 	broadcast("DUMP IS DONE!\7\7\n");
 	msg("DUMP IS DONE\n");
