@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.62 2001/11/11 00:12:48 stelian Exp $";
+	"$Id: main.c,v 1.63 2002/01/05 23:23:02 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -675,7 +675,7 @@ main(int argc, char *argv[])
 	tp_bshift = ffs(TP_BSIZE) - 1;
 	if (TP_BSIZE != (1 << tp_bshift))
 		quit("TP_BSIZE (%d) is not a power of 2", TP_BSIZE);
-	maxino = fs->super->s_inodes_count;
+	maxino = fs->super->s_inodes_count + 1;
 #if	0
 	spcl.c_flags |= DR_NEWINODEFMT;
 #endif

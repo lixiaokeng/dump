@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.151 2002/01/02 10:13:15 stelian Exp $
+$Id: CHANGES,v 1.152 2002/01/05 23:23:01 stelian Exp $
 
 Changes between versions 0.4b25 and 0.4b26 (released ?????????????????)
 =======================================================================
@@ -20,6 +20,11 @@ Changes between versions 0.4b25 and 0.4b26 (released ?????????????????)
 	a separate object directory, makefile cleanups contributed
 	by <splite@purdue.edu>.
 
+5.	Fix a bug which could caused, in some conditions, the highest
+	number inode of a filesystem, to not be dumped. Many thanks
+	to Chris Siebenmann <cks@utcc.utoronto.ca> for helping me
+	chase this bug.
+	
 Changes between versions 0.4b24 and 0.4b25 (released November 17, 2001)
 =======================================================================
 
