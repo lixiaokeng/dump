@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.25 2000/09/01 14:40:27 stelian Exp $";
+	"$Id: main.c,v 1.26 2000/09/26 12:34:52 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -208,7 +208,7 @@ main(int argc, char *argv[])
 			}
 		        iexclude_list[iexclude_num++] = numarg("inode to exclude",0L,0L);
 			if (iexclude_list[iexclude_num-1] <= ROOTINO) {
-				(void)fprintf(stderr, "Cannot exclude inode %d\n", iexclude_list[iexclude_num-1]);
+				(void)fprintf(stderr, "Cannot exclude inode %ld\n", iexclude_list[iexclude_num-1]);
 				exit(X_STARTUP);
 			}
 			msg("Added %d to exclude list\n",
@@ -398,26 +398,36 @@ main(int argc, char *argv[])
 		(void)strncpy(spcl.c_filesys, dt->fs_file, NAMELEN);
 #ifdef	__linux__
 	} else {
-		/*
-		 * The argument was not found in the fstab
-		 * assume that this is a subtree and search for it
-		 */
 #ifdef	HAVE_REALPATH
 		if (realpath(disk, pathname) == NULL)
 #endif
 			strcpy(pathname, disk);
-		dt = fstabsearchdir(pathname, directory);
-		if (dt != NULL) {
-			char name[MAXPATHLEN];
-			(void)strncpy(spcl.c_dev, dt->fs_spec, NAMELEN);
-			(void)snprintf(name, sizeof(name), "%s (dir %s)",
-				      dt->fs_file, directory);
-			(void)strncpy(spcl.c_filesys, name, NAMELEN);
+		/*
+		 * The argument could be now a mountpoint of
+		 * a filesystem specified in fstab. Search for it.
+		 */
+		if ((dt = fstabsearch(pathname)) != NULL) {
 			disk = rawname(dt->fs_spec);
+			(void)strncpy(spcl.c_dev, dt->fs_spec, NAMELEN);
+			(void)strncpy(spcl.c_filesys, dt->fs_file, NAMELEN);
 		} else {
-			(void)strncpy(spcl.c_dev, disk, NAMELEN);
-			(void)strncpy(spcl.c_filesys, "an unlisted file system",
-			    NAMELEN);
+			/*
+			 * The argument was not found in the fstab
+			 * assume that this is a subtree and search for it
+			 */
+			dt = fstabsearchdir(pathname, directory);
+			if (dt != NULL) {
+				char name[MAXPATHLEN];
+				(void)strncpy(spcl.c_dev, dt->fs_spec, NAMELEN);
+				(void)snprintf(name, sizeof(name), "%s (dir %s)",
+					      dt->fs_file, directory);
+				(void)strncpy(spcl.c_filesys, name, NAMELEN);
+				disk = rawname(dt->fs_spec);
+			} else {
+				(void)strncpy(spcl.c_dev, disk, NAMELEN);
+				(void)strncpy(spcl.c_filesys, "an unlisted file system",
+				    NAMELEN);
+			}
 		}
 	}
 #else
