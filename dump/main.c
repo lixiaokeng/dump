@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.29 2000/11/10 14:42:25 stelian Exp $";
+	"$Id: main.c,v 1.30 2000/11/30 09:53:14 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -513,8 +513,9 @@ main(int argc, char *argv[])
 	}
 	/* if no user label specified, use ext2 filesystem label if available */
 	if (spcl.c_label[0] == '\0') {
-		if (fs->super->s_volume_name[0] != '\0') {
-			strncpy(spcl.c_label, fs->super->s_volume_name,LBLSIZE);
+		const char *lbl;
+		if ( (lbl = get_device_label(disk)) != NULL) {
+			strncpy(spcl.c_label, lbl, LBLSIZE);
 			spcl.c_label[LBLSIZE-1] = '\0';
 		}
 		else

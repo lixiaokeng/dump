@@ -229,3 +229,18 @@ get_device_name(const char * item) {
 
 	return rc;
 }
+
+const char *
+get_device_label(const char * spec) {
+	struct uuidCache_s *uc;
+
+	uuidcache_init();
+	uc = uuidCache;
+
+	while(uc) {
+		if (!strcmp(spec, uc->device))
+			return uc->label[0] == '\0' ? NULL : strdup(uc->label);
+		uc = uc->next;
+	}
+	return NULL;
+}
