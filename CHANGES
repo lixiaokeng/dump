@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.103 2001/02/21 16:16:00 stelian Exp $
+$Id: CHANGES,v 1.104 2001/02/22 10:57:39 stelian Exp $
 
 Changes between versions 0.4b21 and 0.4b22 (released ????????????????)
 ======================================================================
@@ -12,7 +12,7 @@ Changes between versions 0.4b21 and 0.4b22 (released ????????????????)
 	bug and providing a patch.
 
 3.	Added a compression option to dump, contributed by Jerry
-	<gapeters@worldnet.att.net>.
+	Peters <gapeters@worldnet.att.net>.
 
 	WARNING: the compression works only on drives supporting
 	variable block size.
@@ -20,6 +20,11 @@ Changes between versions 0.4b21 and 0.4b22 (released ????????????????)
 	WARNING2: tapes created using the compression feature are
 	incompatible with the standard dump tape format, and a
 	version of restore >= 0.4b22 will be needed for extraction.
+
+4.	Fixed some compilation problems for glibc 2.2.2 and 64 bit 
+	architectures. Thanks to Paul Slootman <paul@debian.org> for
+	the patch and to Bdale Garbee <bdale@gag.com> for forwarding
+	it upstream.
 
 Changes between versions 0.4b20 and 0.4b21 (released January 13, 2001)
 ======================================================================

@@ -41,12 +41,13 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.31 2001/02/21 16:13:05 stelian Exp $";
+	"$Id: tape.c,v 1.32 2001/02/22 10:57:40 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
 #ifdef __linux__
 #include <sys/types.h>
+#include <time.h>
 #include <linux/types.h>
 #endif
 #include <sys/param.h>

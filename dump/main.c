@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.33 2001/02/21 16:13:05 stelian Exp $";
+	"$Id: main.c,v 1.34 2001/02/22 10:57:40 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -49,6 +49,7 @@ static const char rcsid[] =
 #include <sys/time.h>
 #ifdef __linux__
 #include <linux/ext2_fs.h>
+#include <time.h>
 #include <sys/stat.h>
 #include <bsdcompat.h>
 #else
@@ -224,7 +225,7 @@ main(int argc, char *argv[])
 			}
 		        iexclude_list[iexclude_num++] = numarg("inode to exclude",0L,0L);
 			if (iexclude_list[iexclude_num-1] <= ROOTINO) {
-				(void)fprintf(stderr, "Cannot exclude inode %ld\n", iexclude_list[iexclude_num-1]);
+				(void)fprintf(stderr, "Cannot exclude inode %ld\n", (long)iexclude_list[iexclude_num-1]);
 				exit(X_STARTUP);
 			}
 			msg("Added %d to exclude list\n",

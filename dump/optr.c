@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: optr.c,v 1.19 2001/02/21 16:13:05 stelian Exp $";
+	"$Id: optr.c,v 1.20 2001/02/22 10:57:40 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -65,6 +65,7 @@ static const char rcsid[] =
 #include <ext2fs/ext2fs.h>
 #include <bsdcompat.h>
 #include <signal.h>
+#include <time.h>
 #endif
 
 #include "dump.h"
