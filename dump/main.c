@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.59 2001/08/16 15:24:21 stelian Exp $";
+	"$Id: main.c,v 1.60 2001/09/06 09:00:32 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -60,6 +60,7 @@ static const char rcsid[] =
 #include <sys/time.h>
 #include <time.h>
 #ifdef __linux__
+#include <linux/fs.h>
 #ifdef HAVE_EXT2FS_EXT2_FS_H
 #include <ext2fs/ext2_fs.h>
 #else
@@ -628,6 +629,14 @@ main(int argc, char *argv[])
 	} /* end of size estimate */
 
 #ifdef	__linux__
+	if ((diskfd = OPEN(disk, O_RDONLY)) < 0) {
+		msg("Cannot open %s\n", disk);
+		msg("The ENTIRE dump is aborted.\n");
+		exit(X_STARTUP);
+	}
+#ifdef BLKFLSBUF
+	(void)ioctl(diskfd, BLKFLSBUF);
+#endif
 	retval = dump_fs_open(disk, &fs);
 	if (retval) {
 		com_err(disk, retval, "while opening filesystem");
@@ -639,11 +648,6 @@ main(int argc, char *argv[])
 	if (fs->super->s_rev_level > DUMP_CURRENT_REV) {
 		com_err(disk, retval, "while opening filesystem");
 		msg("Get a newer version of dump!\n");
-		msg("The ENTIRE dump is aborted.\n");
-		exit(X_STARTUP);
-	}
-	if ((diskfd = OPEN(disk, O_RDONLY)) < 0) {
-		msg("Cannot open %s\n", disk);
 		msg("The ENTIRE dump is aborted.\n");
 		exit(X_STARTUP);
 	}

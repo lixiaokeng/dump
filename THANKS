@@ -1,4 +1,4 @@
-$Id: THANKS,v 1.46 2001/07/18 09:50:48 stelian Exp $
+$Id: THANKS,v 1.47 2001/09/06 09:00:31 stelian Exp $
 
 Dump and restore were written by the people of the CSRG at the University
 of California, Berkeley.
@@ -81,4 +81,5 @@ Daniel Veillard		Daniel.Veillard@imag.fr
 Jason Venner		jason@idiom.com
 Christian Weisgerber	naddy@mips.rhein-neckar.de
 Kim Yong-jun		loveyou@hackerslab.org
+John Yu			jky@it.bu.edu
 Ian Zimmerman		itz@speakeasy.org>

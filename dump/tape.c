@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.54 2001/08/16 15:24:21 stelian Exp $";
+	"$Id: tape.c,v 1.55 2001/09/06 09:00:32 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -72,6 +72,9 @@ int    write(), read();
 #include <sys/wait.h>
 #include <sys/mtio.h>
 #ifdef __linux__
+#include <linux/fs.h>
+#undef atomic_read	/* this get wrongly defined in kernel */
+			/* headers and we don't want it */
 #ifdef HAVE_EXT2FS_EXT2_FS_H
 #include <ext2fs/ext2_fs.h>
 #else
@@ -562,7 +565,7 @@ close_rewind(void)
 void
 rollforward(void)
 {
-	register struct req *p, *q, *prev;
+	register struct req *p, *q = NULL, *prev;
 	register struct slave *tslp;
 	int i, size, savedtapea, got;
 	union u_spcl *ntb, *otb;
@@ -1046,6 +1049,9 @@ doslave(int cmd, int slave_number, int first)
 	if ((diskfd = OPEN(disk, O_RDONLY)) < 0)
 		quit("slave couldn't reopen disk: %s\n", strerror(errno));
 #ifdef	__linux__
+#ifdef BLKFLSBUF
+	(void)ioctl(diskfd, BLKFLSBUF);
+#endif
 	ext2fs_close(fs);
 	retval = dump_fs_open(disk, &fs);
 	if (retval)
