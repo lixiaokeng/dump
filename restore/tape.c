@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.80 2004/04/21 09:15:22 stelian Exp $";
+	"$Id: tape.c,v 1.81 2004/05/25 10:39:31 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -2175,7 +2175,7 @@ decompress_tapebuf(struct tapebuf *tpbin, int readsize)
 	}
 	if (reason) {
 		if (lengtherr)
-			fprintf(stderr, "%s compressed block: %d expected: %d\n",
+			fprintf(stderr, "%s compressed block: %d expected: %u\n",
 				lengtherr, readsize, tpbin->length + PREFIXSIZE);
 		fprintf(stderr, "decompression error, block %ld: %s\n",
 			tpblksread+1, reason);

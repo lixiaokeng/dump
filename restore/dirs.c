@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dirs.c,v 1.27 2004/04/21 09:15:22 stelian Exp $";
+	"$Id: dirs.c,v 1.28 2004/05/25 10:39:30 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -518,7 +518,7 @@ rst_seekdir(RST_DIR *dirp, OFF_T loc, OFF_T base)
 		return;
 	loc -= base;
 	if (loc < 0)
-		fprintf(stderr, "bad seek pointer to rst_seekdir %lld\n", loc);
+		fprintf(stderr, "bad seek pointer to rst_seekdir %lld\n", (long long int)loc);
 	(void) LSEEK(dirp->dd_fd, base + (loc & ~(DIRBLKSIZ - 1)), SEEK_SET);
 	dirp->dd_loc = loc & (DIRBLKSIZ - 1);
 	if (dirp->dd_loc != 0)

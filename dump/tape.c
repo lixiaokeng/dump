@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.83 2004/04/21 09:15:08 stelian Exp $";
+	"$Id: tape.c,v 1.84 2004/05/25 10:39:29 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -116,8 +116,8 @@ int 	eot_code = 1;
 long long tapea_bytes = 0;	/* bytes_written at start of current volume */
 static int magtapeout;		/* output is really a tape */
 
-static	ssize_t dump_atomic_read __P((int, void *, size_t));
-static	ssize_t dump_atomic_write __P((int, const void *, size_t));
+static	ssize_t dump_atomic_read __P((int, char *, size_t));
+static	ssize_t dump_atomic_write __P((int, const char *, size_t));
 #ifdef WRITEDEBUG
 static	void doslave __P((int, int, int));
 #else
@@ -1381,13 +1381,13 @@ doslave(int cmd,
  * loop until the count is satisfied (or error).
  */
 static ssize_t
-dump_atomic_read(int fd, void *buf, size_t count)
+dump_atomic_read(int fd, char *buf, size_t count)
 {
 	int got, need = count;
 
 	do {
 		while ((got = read(fd, buf, need)) > 0 && (need -= got) > 0)
-			(char *)buf += got;
+			buf += got;
 	} while (got == -1 && errno == EINTR);
 	return (got < 0 ? got : (ssize_t)count - need);
 }
@@ -1398,13 +1398,13 @@ dump_atomic_read(int fd, void *buf, size_t count)
  * loop until the count is satisfied (or error).
  */
 static ssize_t
-dump_atomic_write(int fd, const void *buf, size_t count)
+dump_atomic_write(int fd, const char *buf, size_t count)
 {
 	int got, need = count;
 
 	do {
 		while ((got = write(fd, buf, need)) > 0 && (need -= got) > 0)
-			(char *)buf += got;
+			buf += got;
 	} while (got == -1 && errno == EINTR);
 	return (got < 0 ? got : (ssize_t)count - need);
 }
