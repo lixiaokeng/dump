@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: bsdcompat.h,v 1.12 2000/12/04 15:43:16 stelian Exp $
+ *	$Id: bsdcompat.h,v 1.13 2000/12/21 11:14:53 stelian Exp $
  */
 
 #include <config.h>
@@ -102,6 +102,7 @@ struct dinode {
 #define di_rdev		di_db[0]
 /* #define di_ouid		di_uid */
 /* #define di_ogid		di_gid */
+#define di_size_high	di_dir_acl
 
 /*
  * This is the ext2_dir_entry structure but the fields have been renamed

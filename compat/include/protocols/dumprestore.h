@@ -5,7 +5,7 @@
  *      Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: dumprestore.h,v 1.8 2000/12/04 15:43:16 stelian Exp $
+ *	$Id: dumprestore.h,v 1.9 2000/12/21 11:14:53 stelian Exp $
  */
 
 /*
@@ -48,6 +48,8 @@
 
 #ifndef _PROTOCOLS_DUMPRESTORE_H_
 #define _PROTOCOLS_DUMPRESTORE_H_
+
+#include <config.h>
 
 /*
  * TP_BSIZE is the size of file blocks on the dump tapes.

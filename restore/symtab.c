@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: symtab.c,v 1.11 2000/12/04 15:43:17 stelian Exp $";
+	"$Id: symtab.c,v 1.12 2000/12/21 11:14:54 stelian Exp $";
 #endif /* not lint */
 
 /*
@@ -53,6 +53,7 @@ static const char rcsid[] =
  * are needed, by calling "myname".
  */
 
+#include <config.h>
 #include <sys/param.h>
 #include <sys/stat.h>
 

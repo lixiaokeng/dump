@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.97 2000/12/05 16:57:37 stelian Exp $
+$Id: CHANGES,v 1.98 2000/12/21 11:14:52 stelian Exp $
 
 Changes between versions 0.4b20 and 0.4b21 (released ?????????????????)
 =======================================================================
@@ -33,6 +33,15 @@ Changes between versions 0.4b20 and 0.4b21 (released ?????????????????)
 	the issues, finding a workaround, writing the patch and
 	fully testing it... (of course, if this patch will break
 	anything, he is to blame for :-)).
+
+7.	Make dump and restore LFS aware. Dump can dump a filesystem
+	containing large files, generate a large file on output and
+	restore can restore them. This feature is not enabled by
+	default, use --enable-largefile option of configure to enable
+	it (you need to have a LFS aware glibc though). Thanks to
+	Andrea Arcangeli <andrea@suse.de> for submitting the patch,
+	and to Theodore T'so <tytso@valinux.com> for his always
+	useful thoughts.
 
 Changes between versions 0.4b19 and 0.4b20 (released November 10, 2000)
 =======================================================================

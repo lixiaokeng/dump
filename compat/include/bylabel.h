@@ -11,11 +11,13 @@
  *	- Ported to dump/restore
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: bylabel.h,v 1.3 2000/12/04 15:43:16 stelian Exp $
+ *	$Id: bylabel.h,v 1.4 2000/12/21 11:14:53 stelian Exp $
  */
 
 #ifndef _BYLABEL_H_
 #define	_BYLABEL_H_
+
+#include <config.h>
 
 const char * get_device_name(const char * item);
 const char * get_device_label(const char * spec);

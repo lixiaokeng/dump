@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: extern.h,v 1.10 2000/12/04 15:43:17 stelian Exp $
+ *	$Id: extern.h,v 1.11 2000/12/21 11:14:54 stelian Exp $
  */
 
 /*-
@@ -40,6 +40,8 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+
+#include <config.h>
 
 struct entry	*addentry __P((char *, ino_t, int));
 long		 addfile __P((char *, ino_t, int));

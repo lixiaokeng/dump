@@ -11,6 +11,7 @@
  * - Ported to dump/restore
  */
 
+#include <config.h>
 #include <stdio.h>
 #include <sys/param.h>
 #include <string.h>

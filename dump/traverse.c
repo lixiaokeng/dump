@@ -41,9 +41,10 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.24 2000/12/05 16:57:38 stelian Exp $";
+	"$Id: traverse.c,v 1.25 2000/12/21 11:14:54 stelian Exp $";
 #endif /* not lint */
 
+#include <config.h>
 #include <sys/param.h>
 #include <sys/stat.h>
 #ifdef	__linux__
@@ -149,6 +150,7 @@ long
 blockest(struct dinode const *dp)
 {
 	long blkest, sizeest;
+	u_quad_t i_size;
 
 	/*
 	 * dp->di_size is the size of the file in bytes.
@@ -164,19 +166,20 @@ blockest(struct dinode const *dp)
 	 *	dump blocks (sizeest vs. blkest in the indirect block
 	 *	calculation).
 	 */
-	blkest = howmany(dbtob(dp->di_blocks), TP_BSIZE);
-	sizeest = howmany(dp->di_size, TP_BSIZE);
+	blkest = howmany((u_quad_t)dp->di_blocks*fs->blocksize, TP_BSIZE);
+	i_size = dp->di_size + ((u_quad_t) dp->di_size_high << 32);
+	sizeest = howmany(i_size, TP_BSIZE);
 	if (blkest > sizeest)
 		blkest = sizeest;
 #ifdef	__linux__
-	if (dp->di_size > fs->blocksize * NDADDR) {
+	if (i_size > fs->blocksize * NDADDR) {
 		/* calculate the number of indirect blocks on the dump tape */
 		blkest +=
 			howmany(sizeest - NDADDR * fs->blocksize / TP_BSIZE,
 			NINDIR(sblock) * EXT2_FRAGS_PER_BLOCK(fs->super));
 	}
 #else
-	if (dp->di_size > sblock->fs_bsize * NDADDR) {
+	if (i_size > sblock->fs_bsize * NDADDR) {
 		/* calculate the number of indirect blocks on the dump tape */
 		blkest +=
 			howmany(sizeest - NDADDR * sblock->fs_bsize / TP_BSIZE,
@@ -682,7 +685,8 @@ struct block_context {
  * Dump a block to the tape
  */
 static int
-dumponeblock(ext2_filsys fs, blk_t *blocknr, int blockcnt, void *private)
+dumponeblock(ext2_filsys fs, blk_t *blocknr, e2_blkcnt_t blockcnt,
+	     blk_t ref_block, int ref_offset, void * private)
 {
 	struct block_context *p;
 	int i;
@@ -715,7 +719,7 @@ dumponeblock(ext2_filsys fs, blk_t *blocknr, int blockcnt, void *private)
 void
 dumpino(struct dinode *dp, ino_t ino)
 {
-	int cnt;
+	unsigned long cnt;
 	fsizeT size;
 	char buf[TP_BSIZE];
 	struct old_bsd_inode obi;
@@ -724,6 +728,7 @@ dumpino(struct dinode *dp, ino_t ino)
 #else
 	int ind_level;
 #endif
+	u_quad_t i_size	= dp->di_size + ((u_quad_t) dp->di_size_high << 32);
 
 	if (newtape) {
 		newtape = 0;
@@ -735,7 +740,7 @@ dumpino(struct dinode *dp, ino_t ino)
 	obi.di_mode = dp->di_mode;
 	obi.di_uid = dp->di_uid;
 	obi.di_gid = dp->di_gid;
-	obi.di_qsize.v = (u_quad_t)dp->di_size;
+	obi.di_qsize.v = i_size;
 	obi.di_atime = dp->di_atime;
 	obi.di_mtime = dp->di_mtime;
 	obi.di_ctime = dp->di_ctime;
@@ -744,7 +749,7 @@ dumpino(struct dinode *dp, ino_t ino)
 	obi.di_flags = dp->di_flags;
 	obi.di_gen = dp->di_gen;
 	memmove(&obi.di_db, &dp->di_db, (NDADDR + NIADDR) * sizeof(daddr_t));
-	if (dp->di_file_acl || dp->di_dir_acl)
+	if (dp->di_file_acl)
 		warn("ACLs in inode #%ld won't be dumped", (long)ino);
 	memmove(&spcl.c_dinode, &obi, sizeof(obi));
 #else	/* __linux__ */
@@ -771,8 +776,8 @@ dumpino(struct dinode *dp, ino_t ino)
 		 * Check for short symbolic link.
 		 */
 #ifdef	__linux__
-		if (dp->di_size > 0 &&
-		    dp->di_size < EXT2_N_BLOCKS * sizeof (daddr_t)) {
+		if (i_size > 0 &&
+		    i_size < EXT2_N_BLOCKS * sizeof (daddr_t)) {
 			spcl.c_addr[0] = 1;
 			spcl.c_count = 1;
 			writeheader(ino);
@@ -800,7 +805,7 @@ dumpino(struct dinode *dp, ino_t ino)
 	case S_IFDIR:
 #endif
 	case S_IFREG:
-		if (dp->di_size > 0)
+		if (i_size)
 			break;
 		/* fall through */
 
@@ -815,16 +820,16 @@ dumpino(struct dinode *dp, ino_t ino)
 		msg("Warning: undefined file type 0%o\n", dp->di_mode & IFMT);
 		return;
 	}
-	if (dp->di_size > NDADDR * sblock->fs_bsize)
+	if (i_size > NDADDR * sblock->fs_bsize)
 #ifdef	__linux__
 		cnt = NDADDR * EXT2_FRAGS_PER_BLOCK(fs->super);
 #else
 		cnt = NDADDR * sblock->fs_frag;
 #endif
 	else
-		cnt = howmany(dp->di_size, sblock->fs_fsize);
+		cnt = howmany(i_size, sblock->fs_fsize);
 	blksout(&dp->di_db[0], cnt, ino);
-	if ((size = dp->di_size - NDADDR * sblock->fs_bsize) <= 0)
+	if ((quad_t) (size = i_size - NDADDR * sblock->fs_bsize) <= 0)
 		return;
 #ifdef	__linux__
 	bc.max = NINDIR(sblock) * EXT2_FRAGS_PER_BLOCK(fs->super);
@@ -833,7 +838,7 @@ dumpino(struct dinode *dp, ino_t ino)
 	bc.ino = ino;
 	bc.next_block = NDADDR;
 
-	ext2fs_block_iterate (fs, ino, 0, NULL, dumponeblock, (void *)&bc);
+	ext2fs_block_iterate2(fs, ino, 0, NULL, dumponeblock, (void *)&bc);
 	if (bc.cnt > 0) {
 		blksout (bc.buf, bc.cnt, bc.ino);
 	}
@@ -953,7 +958,7 @@ dumpdirino(struct dinode *dp, ino_t ino)
 	obi.di_flags = dp->di_flags;
 	obi.di_gen = dp->di_gen;
 	memmove(&obi.di_db, &dp->di_db, (NDADDR + NIADDR) * sizeof(daddr_t));
-	if (dp->di_file_acl || dp->di_dir_acl)
+	if (dp->di_file_acl)
 		warn("ACLs in inode #%ld won't be dumped", (long)ino);
 	memmove(&spcl.c_dinode, &obi, sizeof(obi));
 #else	/* __linux__ */

@@ -1,4 +1,4 @@
-$Id: THANKS,v 1.41 2000/12/05 15:43:48 stelian Exp $
+$Id: THANKS,v 1.42 2000/12/21 11:14:52 stelian Exp $
 
 Dump and restore were written by the people of the CSRG at the University
 of California, Berkeley.
@@ -21,6 +21,7 @@ Thanks to people who reported problems with the port, sent patches, and
 suggested various improvements.
 Here is a partial list of them (if I have forgotten someone, please complain):
 John Adams		johna@onevista.com
+Andrea Arcangeli	andrea@suse.de
 Stephen Atwell		satwell@urbana.css.mot.com
 Stan Bubrouski		satan@fastdial.net
 Stephen Carr		sgcarr@civeng.adelaide.edu.au
@@ -68,7 +69,7 @@ Matti Taskinen		mkt@rni.helsinki.fi
 Jason L Tibbitts III	tibbs@math.uh.edu
 Mike Tibor		tibor@lib.uaa.alaska.edu
 Erik Troan		ewt@redhat.com
-Theodore Y. Ts'o 	tytso@mit.edu
+Theodore Y. Ts'o 	tytso@valinux.com
 Stephen Tweedie		sct@dcs.ed.ac.uk
 Daniel Veillard		Daniel.Veillard@imag.fr
 Jason Venner		jason@idiom.com

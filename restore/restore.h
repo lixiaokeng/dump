@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: restore.h,v 1.11 2000/12/04 15:43:17 stelian Exp $
+ *	$Id: restore.h,v 1.12 2000/12/21 11:14:54 stelian Exp $
  */
 
 /*
@@ -46,6 +46,7 @@
  * SUCH DAMAGE.
  */
 
+#include <config.h>
 #include <protocols/dumprestore.h>
 /*
  * Flags

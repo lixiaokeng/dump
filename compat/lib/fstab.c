@@ -41,9 +41,10 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: fstab.c,v 1.9 2000/12/04 15:43:16 stelian Exp $";
+	"$Id: fstab.c,v 1.10 2000/12/21 11:14:53 stelian Exp $";
 #endif /* not lint */
 
+#include <config.h>
 #include <errno.h>
 #include <fstab.h>
 #include <mntent.h>

@@ -41,18 +41,16 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: compaterr.c,v 1.7 2000/12/04 15:43:16 stelian Exp $";
+	"$Id: compaterr.c,v 1.8 2000/12/21 11:14:53 stelian Exp $";
 #endif /* not lint */
 
+#include <config.h>
 #include <compaterr.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <stdarg.h>
-
-#include <config.h>
 
 extern char *__progname;		/* Program name, from crt0. */
 
