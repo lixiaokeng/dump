@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.20 2000/03/02 13:52:52 stelian Exp $";
+	"$Id: main.c,v 1.21 2000/03/03 11:43:35 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -511,7 +511,7 @@ main(int argc, char *argv[])
 	usedinomap = (char *)calloc((unsigned) mapsize, sizeof(char));
 	dumpdirmap = (char *)calloc((unsigned) mapsize, sizeof(char));
 	dumpinomap = (char *)calloc((unsigned) mapsize, sizeof(char));
-	tapesize = 3 * (howmany(mapsize * sizeof(char), TP_BSIZE) + 1);
+	tapesize = 2 * (howmany(mapsize * sizeof(char), TP_BSIZE) + 1);
 
 	nonodump = spcl.c_level < honorlevel;
 
@@ -537,12 +537,12 @@ main(int argc, char *argv[])
 	}
 
 	if (sizest) {
-		printf("%.0f\n", ((double)tapesize + 10) * TP_BSIZE);
+		printf("%.0f\n", ((double)tapesize + 11) * TP_BSIZE);
 		exit(X_FINOK);
 	} /* stop here for size estimate */
 
 	if (pipeout || unlimited) {
-		tapesize += 10;	/* 10 trailer blocks */
+		tapesize += 11;	/* 10 trailer blocks + 1 map header */
 		msg("estimated %ld tape blocks.\n", tapesize);
 	} else {
 		double fetapes;

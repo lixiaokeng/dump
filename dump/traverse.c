@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.16 2000/02/10 09:42:32 stelian Exp $";
+	"$Id: traverse.c,v 1.17 2000/03/03 11:43:35 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -164,7 +164,7 @@ blockest(struct dinode *dp)
 		/* calculate the number of indirect blocks on the dump tape */
 		blkest +=
 			howmany(sizeest - NDADDR * fs->blocksize / TP_BSIZE,
-			TP_NINDIR);
+			NINDIR(sblock) * EXT2_FRAGS_PER_BLOCK(fs->super));
 	}
 #else
 	if (dp->di_size > sblock->fs_bsize * NDADDR) {
