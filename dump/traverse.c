@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.49 2002/07/19 14:57:39 stelian Exp $";
+	"$Id: traverse.c,v 1.50 2002/08/18 20:52:05 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -983,6 +983,32 @@ convert_dir(struct ext2_dir_entry *dirent, UNUSED(int offset),
 	dp->d_ino = dirent->inode;
 	dp->d_reclen = reclen;
 	dp->d_namlen = dirent->name_len & 0xFF;
+	switch ((dirent->name_len & 0xFF00) >> 8) {
+	default:
+		dp->d_type = DT_UNKNOWN;
+		break;
+	case EXT2_FT_REG_FILE:
+		dp->d_type = DT_REG;
+		break;
+	case EXT2_FT_DIR:
+		dp->d_type = DT_DIR;
+		break;
+	case EXT2_FT_CHRDEV:
+		dp->d_type = DT_CHR;
+		break;
+	case EXT2_FT_BLKDEV:
+		dp->d_type = DT_BLK;
+		break;
+	case EXT2_FT_FIFO:
+		dp->d_type = DT_FIFO;
+		break;
+	case EXT2_FT_SOCK:
+		dp->d_type = DT_SOCK;
+		break;
+	case EXT2_FT_SYMLINK:
+		dp->d_type = DT_LNK;
+		break;
+	}
 	strncpy(dp->d_name, dirent->name, dp->d_namlen);
 	dp->d_name[dp->d_namlen] = '\0';
 	p->prev_offset = p->offset;
