@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: restore.c,v 1.13 2000/12/21 11:14:54 stelian Exp $";
+	"$Id: restore.c,v 1.14 2001/03/20 10:02:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -73,7 +73,7 @@ static char *keyval __P((int));
  * List entries on the tape.
  */
 long
-listfile(char *name, ino_t ino, int type)
+listfile(char *name, dump_ino_t ino, int type)
 {
 	long descend = hflag ? GOOD : FAIL;
 
@@ -89,7 +89,7 @@ listfile(char *name, ino_t ino, int type)
  * Request that new entries be extracted.
  */
 long
-addfile(char *name, ino_t ino, int type)
+addfile(char *name, dump_ino_t ino, int type)
 {
 	register struct entry *ep, *np;
 	long descend = hflag ? GOOD : FAIL;
@@ -135,7 +135,7 @@ addfile(char *name, ino_t ino, int type)
  */
 /* ARGSUSED */
 long
-deletefile(char *name, ino_t ino, int type)
+deletefile(char *name, dump_ino_t ino, int type)
 {
 	long descend = hflag ? GOOD : FAIL;
 	struct entry *ep;
@@ -176,7 +176,7 @@ void
 removeoldleaves(void)
 {
 	register struct entry *ep, *nextep;
-	register ino_t i, mydirino;
+	register dump_ino_t i, mydirino;
 
 	Vprintf(stdout, "Mark entries to be removed.\n");
 	if ((ep = lookupino(WINO))) {
@@ -230,7 +230,7 @@ removeoldleaves(void)
  *	Renames are done at the same time.
  */
 long
-nodeupdates(char *name, ino_t ino, int type)
+nodeupdates(char *name, dump_ino_t ino, int type)
 {
 	register struct entry *ep, *np, *ip;
 	long descend = GOOD;
@@ -542,7 +542,7 @@ void
 findunreflinks(void)
 {
 	register struct entry *ep, *np;
-	register ino_t i;
+	register dump_ino_t i;
 
 	Vprintf(stdout, "Find unreferenced names.\n");
 	for (i = ROOTINO; i < maxino; i++) {
@@ -633,7 +633,7 @@ void
 compareleaves(void)
 {
 	register struct entry *ep;
-	ino_t first;
+	dump_ino_t first;
 	long curvol;
 
 	first = lowerbnd(ROOTINO);
@@ -701,7 +701,7 @@ void
 createleaves(char *symtabfile)
 {
 	register struct entry *ep;
-	ino_t first;
+	dump_ino_t first;
 	long curvol;
 
 	if (command == 'R') {
@@ -779,7 +779,7 @@ createleaves(char *symtabfile)
 void
 createfiles(void)
 {
-	register ino_t first, next, last;
+	register dump_ino_t first, next, last;
 	register struct entry *ep;
 	long curvol;
 
@@ -868,7 +868,7 @@ void
 createlinks(void)
 {
 	register struct entry *np, *ep;
-	register ino_t i;
+	register dump_ino_t i;
 	char name[BUFSIZ];
 
 	if ((ep = lookupino(WINO))) {
@@ -912,7 +912,7 @@ void
 checkrestore(void)
 {
 	register struct entry *ep;
-	register ino_t i;
+	register dump_ino_t i;
 
 	Vprintf(stdout, "Check the symbol table.\n");
 	for (i = WINO; i < maxino; i++) {
@@ -931,7 +931,7 @@ checkrestore(void)
  * A paranoid check that things are as they should be.
  */
 long
-verifyfile(char *name, ino_t ino, int type)
+verifyfile(char *name, dump_ino_t ino, int type)
 {
 	struct entry *np, *ep;
 	long descend = GOOD;

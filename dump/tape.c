@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.35 2001/03/20 09:14:58 stelian Exp $";
+	"$Id: tape.c,v 1.36 2001/03/20 10:02:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -884,7 +884,7 @@ restore_check_point:
 		spcl.c_flags |= DR_NEWHEADER;
 		if (compressed)
 			spcl.c_flags |= DR_COMPRESSED;
-		writeheader((ino_t)slp->inode);
+		writeheader((dump_ino_t)slp->inode);
 		spcl.c_flags &=~ DR_NEWHEADER;
 		msg("Volume %d started with block %ld at: %s", tapeno, 
 		    spcl.c_tapea, ctime(&tstart_volume));

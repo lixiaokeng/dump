@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: bsdcompat.h,v 1.14 2001/03/20 09:14:58 stelian Exp $
+ *	$Id: bsdcompat.h,v 1.15 2001/03/20 10:02:48 stelian Exp $
  */
 
 #include <config.h>
@@ -22,7 +22,7 @@
 #define MIN(a,b)	((a < b) ? a : b)
 #endif
 
-#define	WINO		((ino_t)1)
+#define	WINO		1
 #define	DEV_BSIZE	512
 #define	DEV_BSHIFT	9
 #define	MAXBSIZE	EXT2_MAX_BLOCK_SIZE

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.17 2001/03/20 09:14:58 stelian Exp $";
+	"$Id: main.c,v 1.18 2001/03/20 10:02:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -83,7 +83,7 @@ long	volno = 0;
 long	ntrec;
 char	*dumpmap;
 char	*usedinomap;
-ino_t	maxino;
+dump_ino_t maxino;
 time_t	dumptime;
 time_t	dumpdate;
 FILE 	*terminal;
@@ -105,7 +105,7 @@ int
 main(int argc, char *argv[])
 {
 	int ch;
-	ino_t ino;
+	dump_ino_t ino;
 	char *inputdev = _PATH_DEFTAPE;
 	char *symtbl = "./restoresymtable";
 	char *p, name[MAXPATHLEN];

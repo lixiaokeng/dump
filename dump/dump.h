@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: dump.h,v 1.21 2001/03/19 13:22:48 stelian Exp $
+ *	$Id: dump.h,v 1.22 2001/03/20 10:02:48 stelian Exp $
  */
 
 /*-
@@ -42,6 +42,7 @@
  */
 
 #include <config.h>
+#include <protocols/dumprestore.h>
 
 #define MAXINOPB	(MAXBSIZE / sizeof(struct dinode))
 #define MAXNINDIR	(MAXBSIZE / sizeof(daddr_t))
@@ -78,7 +79,7 @@ char	*eot_script;	/* end of volume script fiag */
 int	diskfd;		/* disk file descriptor */
 int	tapefd;		/* tape file descriptor */
 int	pipeout;	/* true => output to standard output */
-ino_t	curino;		/* current inumber; used globally */
+dump_ino_t curino;	/* current inumber; used globally */
 int	newtape;	/* new tape flag */
 int	density;	/* density in 0.1" units */
 long	tapesize;	/* estimated tape size, blocks */
@@ -128,21 +129,21 @@ time_t	unctime __P((const char *str));
 /* mapping rouintes */
 struct	dinode;
 long	blockest __P((struct dinode const *dp));
-int	mapfiles __P((ino_t maxino, long *tapesize));
+int	mapfiles __P((dump_ino_t maxino, long *tapesize));
 #ifdef	__linux__
-int	mapfilesfromdir __P((ino_t maxino, long *tapesize, char *directory));
+int	mapfilesfromdir __P((dump_ino_t maxino, long *tapesize, char *directory));
 #endif
-int	mapdirs __P((ino_t maxino, long *tapesize));
+int	mapdirs __P((dump_ino_t maxino, long *tapesize));
 
 /* file dumping routines */
-void	blksout __P((daddr_t *blkp, int frags, ino_t ino));
+void	blksout __P((daddr_t *blkp, int frags, dump_ino_t ino));
 void	bread __P((daddr_t blkno, char *buf, int size));
-void	dumpino __P((struct dinode *dp, ino_t ino));
+void	dumpino __P((struct dinode *dp, dump_ino_t ino));
 #ifdef	__linux__
-void	dumpdirino __P((struct dinode *dp, ino_t ino));
+void	dumpdirino __P((struct dinode *dp, dump_ino_t ino));
 #endif
-void	dumpmap __P((char *map, int type, ino_t ino));
-void	writeheader __P((ino_t ino));
+void	dumpmap __P((char *map, int type, dump_ino_t ino));
+void	writeheader __P((dump_ino_t ino));
 
 /* tape writing routines */
 int	alloctape __P((void));
@@ -158,7 +159,7 @@ void	dumpabort __P((int signo));
 void	getfstab __P((void));
 
 const char *rawname __P((const char *cp));
-struct	dinode *getino __P((ino_t inum));
+struct	dinode *getino __P((dump_ino_t inum));
 
 /* rdump routines */
 #ifdef RDUMP

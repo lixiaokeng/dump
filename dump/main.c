@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.36 2001/03/20 09:14:58 stelian Exp $";
+	"$Id: main.c,v 1.37 2001/03/20 10:02:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -107,20 +107,20 @@ static long numarg __P((const char *, long, long));
 static void obsolete __P((int *, char **[]));
 static void usage __P((void));
 
-ino_t iexclude_list[IEXCLUDE_MAXNUM];	/* the inode exclude list */
+dump_ino_t iexclude_list[IEXCLUDE_MAXNUM];/* the inode exclude list */
 int iexclude_num = 0;			/* number of elements in the list */
 
 int
 main(int argc, char *argv[])
 {
-	register ino_t ino;
+	register dump_ino_t ino;
 	register int dirty;
 	register struct dinode *dp;
 	register struct	fstab *dt;
 	register char *map;
 	register int ch;
 	int i, anydirskipped, bflag = 0, Tflag = 0, honorlevel = 1;
-	ino_t maxino;
+	dump_ino_t maxino;
 #ifdef	__linux__
 	errcode_t retval;
 	char directory[MAXPATHLEN];

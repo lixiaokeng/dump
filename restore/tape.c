@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.28 2001/03/20 09:14:58 stelian Exp $";
+	"$Id: tape.c,v 1.29 2001/03/20 10:02:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1981,7 +1981,7 @@ good:
 static void
 accthdr(struct s_spcl *header)
 {
-	static ino_t previno = 0x7fffffff;
+	static dump_ino_t previno = 0x7fffffff;
 	static int prevtype;
 	static long predict;
 	long blks, i;

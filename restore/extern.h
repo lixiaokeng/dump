@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: extern.h,v 1.11 2000/12/21 11:14:54 stelian Exp $
+ *	$Id: extern.h,v 1.12 2001/03/20 10:02:48 stelian Exp $
  */
 
 /*-
@@ -43,8 +43,8 @@
 
 #include <config.h>
 
-struct entry	*addentry __P((char *, ino_t, int));
-long		 addfile __P((char *, ino_t, int));
+struct entry	*addentry __P((char *, dump_ino_t, int));
+long		 addfile __P((char *, dump_ino_t, int));
 int		 addwhiteout __P((char *));
 void		 badentry __P((struct entry *, const char *));
 void	 	 canon __P((char *, char *, int));
@@ -56,10 +56,10 @@ void		 compareleaves __P((void));
 void		 createfiles __P((void));
 void		 createleaves __P((char *));
 void		 createlinks __P((void));
-long		 deletefile __P((char *, ino_t, int));
-void		 deleteino __P((ino_t));
+long		 deletefile __P((char *, dump_ino_t, int));
+void		 deleteino __P((dump_ino_t));
 void		 delwhiteout __P((struct entry *));
-ino_t		 dirlookup __P((const char *));
+dump_ino_t	 dirlookup __P((const char *));
 void		 dumpsymtable __P((char *, long));
 void	 	 extractdirs __P((int));
 int		 extractfile __P((char *));
@@ -67,24 +67,24 @@ void		 findunreflinks __P((void));
 char		*flagvalues __P((struct entry *));
 void		 freeentry __P((struct entry *));
 void		 freename __P((char *));
-int	 	 genliteraldir __P((char *, ino_t));
+int	 	 genliteraldir __P((char *, dump_ino_t));
 char		*gentempname __P((struct entry *));
 void		 getfile __P((void (*)(char *, size_t), void (*)(char *, size_t)));
 void		 getvol __P((long));
 void		 initsymtable __P((char *));
-int	 	 inodetype __P((ino_t));
+int	 	 inodetype __P((dump_ino_t));
 int		 linkit __P((char *, char *, int));
-struct entry	*lookupino __P((ino_t));
+struct entry	*lookupino __P((dump_ino_t));
 struct entry	*lookupname __P((char *));
-long		 listfile __P((char *, ino_t, int));
-ino_t		 lowerbnd __P((ino_t));
+long		 listfile __P((char *, dump_ino_t, int));
+dump_ino_t	 lowerbnd __P((dump_ino_t));
 void		 mktempname __P((struct entry *));
 void		 moveentry __P((struct entry *, char *));
 void		 msg __P((const char *, ...));
 char		*myname __P((struct entry *));
 void		 newnode __P((struct entry *));
 void		 newtapebuf __P((long));
-long		 nodeupdates __P((char *, ino_t, int));
+long		 nodeupdates __P((char *, dump_ino_t, int));
 void	 	 onintr __P((int));
 void		 panic __P((const char *, ...));
 void		 pathcheck __P((char *));
@@ -108,9 +108,9 @@ void	 	 skipdirs __P((void));
 void		 skipfile __P((void));
 void		 skipmaps __P((void));
 void		 swabst __P((u_char *, u_char *));
-void	 	 treescan __P((char *, ino_t, long (*)(char *, ino_t, int)));
-ino_t		 upperbnd __P((ino_t));
-long		 verifyfile __P((char *, ino_t, int));
+void	 	 treescan __P((char *, dump_ino_t, long (*)(char *, dump_ino_t, int)));
+dump_ino_t	 upperbnd __P((dump_ino_t));
+long		 verifyfile __P((char *, dump_ino_t, int));
 void		 xtrnull __P((char *, size_t));
 
 /* From ../dump/dumprmt.c */

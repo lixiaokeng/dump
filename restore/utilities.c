@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: utilities.c,v 1.12 2001/03/19 13:22:49 stelian Exp $";
+	"$Id: utilities.c,v 1.13 2001/03/20 10:02:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -311,8 +311,8 @@ delwhiteout(struct entry *ep)
 /*
  * find lowest number file (above "start") that needs to be extracted
  */
-ino_t
-lowerbnd(ino_t start)
+dump_ino_t
+lowerbnd(dump_ino_t start)
 {
 	register struct entry *ep;
 
@@ -329,8 +329,8 @@ lowerbnd(ino_t start)
 /*
  * find highest number file (below "start") that needs to be extracted
  */
-ino_t
-upperbnd(ino_t start)
+dump_ino_t
+upperbnd(dump_ino_t start)
 {
 	register struct entry *ep;
 
@@ -397,11 +397,11 @@ flagvalues(struct entry *ep)
 /*
  * Check to see if a name is on a dump tape.
  */
-ino_t
+dump_ino_t
 dirlookup(const char *name)
 {
 	struct direct *dp;
-	ino_t ino;
+	dump_ino_t ino;
 
 	ino = ((dp = pathsearch(name)) == NULL) ? 0 : dp->d_ino;
 

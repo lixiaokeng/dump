@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.27 2001/03/20 09:14:58 stelian Exp $";
+	"$Id: traverse.c,v 1.28 2001/03/20 10:02:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -93,13 +93,13 @@ typedef	long fsizeT;
 static	int searchdir __P((struct ext2_dir_entry *dp, int offset,
 			   int blocksize, char *buf, void *private));
 #else
-static	int dirindir __P((ino_t ino, daddr_t blkno, int level, long *size));
-static	void dmpindir __P((ino_t ino, daddr_t blk, int level, fsizeT *size));
-static	int searchdir __P((ino_t ino, daddr_t blkno, long size, long filesize));
+static	int dirindir __P((dump_ino_t ino, daddr_t blkno, int level, long *size));
+static	void dmpindir __P((dump_ino_t ino, daddr_t blk, int level, fsizeT *size));
+static	int searchdir __P((dump_ino_t ino, daddr_t blkno, long size, long filesize));
 #endif
-static	void mapfileino __P((ino_t ino, struct dinode const *dp, long *tapesize, int *dirskipped));
-static	int exclude_ino __P((ino_t ino));
-extern ino_t iexclude_list[IEXCLUDE_MAXNUM];	/* the inode exclude list */
+static	void mapfileino __P((dump_ino_t ino, struct dinode const *dp, long *tapesize, int *dirskipped));
+static	int exclude_ino __P((dump_ino_t ino));
+extern dump_ino_t iexclude_list[IEXCLUDE_MAXNUM];	/* the inode exclude list */
 extern int iexclude_num;			/* number of elements in list */
 
 /* Temporary fix waiting for Andreas fixes... */
@@ -153,8 +153,9 @@ int dump_fs_open(const char *disk, ext2_filsys *fs)
 		}
 		else if (es->s_feature_compat &
 				EXT3_FEATURE_COMPAT_HAS_JOURNAL && 
-				journal_ino && !exclude_ino(journal_ino)) {
-			iexclude_list[iexclude_num++] = journal_ino;
+				journal_ino && 
+				!exclude_ino((dump_ino_t)journal_ino)) {
+			iexclude_list[iexclude_num++] = (dump_ino_t)journal_ino;
 			msg("Added ext3 journal inode %d to exclude list\n",
 			    journal_ino);
 		}
@@ -216,7 +217,7 @@ blockest(struct dinode const *dp)
  * This tests whether an inode is in the exclude list 
  */
 int
-exclude_ino(ino_t ino)
+exclude_ino(dump_ino_t ino)
 {
 	/* 04-Feb-00 ILC */
 	if (iexclude_num) {	/* if there are inodes in the exclude list */
@@ -250,7 +251,7 @@ exclude_ino(ino_t ino)
  * copy of the given inode, or be NULL (in which case it is fetched.)
  */
 static void
-mapfileino(ino_t ino, struct dinode const *dp, long *tapesize, int *dirskipped)
+mapfileino(dump_ino_t ino, struct dinode const *dp, long *tapesize, int *dirskipped)
 {
 	register int mode;
 
@@ -300,7 +301,7 @@ mapfileino(ino_t ino, struct dinode const *dp, long *tapesize, int *dirskipped)
  */
 #ifdef __linux__
 int
-mapfiles(ino_t maxino, long *tapesize)
+mapfiles(dump_ino_t maxino, long *tapesize)
 {
 	ext2_ino_t ino;
 	int anydirskipped = 0;
@@ -344,9 +345,9 @@ mapfiles(ino_t maxino, long *tapesize)
 }
 #else
 int
-mapfiles(ino_t maxino, long *tapesize)
+mapfiles(dump_ino_t maxino, long *tapesize)
 {
-	register ino_t ino;
+	register dump_ino_t ino;
 	int anydirskipped = 0;
 
 	for (ino = ROOTINO; ino < maxino; ino++)
@@ -404,7 +405,7 @@ mapfilesindir(struct ext2_dir_entry *dirent, int offset, int blocksize, char *bu
  * the directories in the filesystem.
  */
 int
-mapfilesfromdir(ino_t maxino, long *tapesize, char *directory)
+mapfilesfromdir(dump_ino_t maxino, long *tapesize, char *directory)
 {
 	errcode_t retval;
 	struct mapfile_context mfc;
@@ -483,12 +484,12 @@ struct mapdirs_context {
  * pass using this algorithm.
  */
 int
-mapdirs(ino_t maxino, long *tapesize)
+mapdirs(dump_ino_t maxino, long *tapesize)
 {
 	register struct	dinode *dp;
 	register int isdir;
 	register char *map;
-	register ino_t ino;
+	register dump_ino_t ino;
 #ifndef __linux__
 	register int i;
 	long filesize;
@@ -566,7 +567,7 @@ mapdirs(ino_t maxino, long *tapesize)
  * require the directory to be dumped.
  */
 static int
-dirindir(ino_t ino, daddr_t blkno, int ind_level, long *filesize)
+dirindir(dump_ino_t ino, daddr_t blkno, int ind_level, long *filesize)
 {
 	int ret = 0;
 	register int i;
@@ -652,7 +653,7 @@ searchdir(struct ext2_dir_entry *dp, int offset, int blocksize, char *buf, void 
 #else	/* __linux__ */
 
 static int
-searchdir(ino_t ino, daddr_t blkno, long size, long filesize)
+searchdir(dump_ino_t ino, daddr_t blkno, long size, long filesize)
 {
 	register struct direct *dp;
 	register long loc, ret = 0;
@@ -694,7 +695,7 @@ searchdir(ino_t ino, daddr_t blkno, long size, long filesize)
 #ifdef	__linux__
 
 struct block_context {
-	ino_t	ino;
+	ext2_ino_t ino;
 	int	*buf;
 	int	cnt;
 	int	max;
@@ -737,7 +738,7 @@ dumponeblock(ext2_filsys fs, blk_t *blocknr, e2_blkcnt_t blockcnt,
  * Dump the contents of an inode to tape.
  */
 void
-dumpino(struct dinode *dp, ino_t ino)
+dumpino(struct dinode *dp, dump_ino_t ino)
 {
 	unsigned long cnt;
 	fsizeT size;
@@ -858,7 +859,7 @@ dumpino(struct dinode *dp, ino_t ino)
 	bc.ino = ino;
 	bc.next_block = NDADDR;
 
-	ext2fs_block_iterate2(fs, ino, 0, NULL, dumponeblock, (void *)&bc);
+	ext2fs_block_iterate2(fs, (ext2_ino_t)ino, 0, NULL, dumponeblock, (void *)&bc);
 	if (bc.cnt > 0) {
 		blksout (bc.buf, bc.cnt, bc.ino);
 	}
@@ -921,7 +922,7 @@ convert_dir(struct ext2_dir_entry *dirent, int offset, int blocksize, char *buf,
  * Dumps a directory to tape after converting it to the BSD format
  */
 void
-dumpdirino(struct dinode *dp, ino_t ino)
+dumpdirino(struct dinode *dp, dump_ino_t ino)
 {
 	fsizeT size;
 	char buf[TP_BSIZE];
@@ -950,7 +951,7 @@ dumpdirino(struct dinode *dp, ino_t ino)
 	cdc.prev_offset = 0;
 	cdc.bs = MIN(DIRBLKSIZ, TP_BSIZE);
 	/* Do the conversion */
-	retval = ext2fs_dir_iterate(fs, ino, 0, NULL, convert_dir, (void *)&cdc);
+	retval = ext2fs_dir_iterate(fs, (ext2_ino_t)ino, 0, NULL, convert_dir, (void *)&cdc);
 	if (retval) {
 		com_err(disk, retval, "while converting directory #%ld\n", (long)ino);
 		exit(X_ABORT);
@@ -1024,7 +1025,7 @@ dumpdirino(struct dinode *dp, ino_t ino)
  * Read indirect blocks, and pass the data blocks to be dumped.
  */
 static void
-dmpindir(ino_t ino, daddr_t blk, int ind_level, fsizeT *size)
+dmpindir(dump_ino_t ino, daddr_t blk, int ind_level, fsizeT *size)
 {
 	int i, cnt;
 #ifdef __linux__
@@ -1079,7 +1080,7 @@ dmpindir(ino_t ino, daddr_t blk, int ind_level, fsizeT *size)
  * Collect up the data into tape record sized buffers and output them.
  */
 void
-blksout(daddr_t *blkp, int frags, ino_t ino)
+blksout(daddr_t *blkp, int frags, dump_ino_t ino)
 {
 	register daddr_t *bp;
 	int i, j, count, blks, tbperdb;
@@ -1115,7 +1116,7 @@ blksout(daddr_t *blkp, int frags, ino_t ino)
  * Dump a map to the tape.
  */
 void
-dumpmap(char *map, int type, ino_t ino)
+dumpmap(char *map, int type, dump_ino_t ino)
 {
 	register int i;
 	char *cp;
@@ -1134,7 +1135,7 @@ dumpmap(char *map, int type, ino_t ino)
 #define int32_t __s32
 #endif
 void
-writeheader(ino_t ino)
+writeheader(dump_ino_t ino)
 {
 	register int32_t sum, cnt, *lp;
 
@@ -1156,13 +1157,13 @@ writeheader(ino_t ino)
 
 #ifdef	__linux__
 struct dinode *
-getino(ino_t inum)
+getino(dump_ino_t inum)
 {
 	static struct dinode dinode;
 	errcode_t err;
 
 	curino = inum;
-	err = ext2fs_read_inode(fs, inum, (struct ext2_inode *) &dinode);
+	err = ext2fs_read_inode(fs, (ext2_ino_t)inum, (struct ext2_inode *) &dinode);
 	if (err) {
 		com_err(disk, err, "while reading inode #%ld\n", (long)inum);
 		exit(X_ABORT);
@@ -1171,7 +1172,7 @@ getino(ino_t inum)
 }
 #else	/* __linux__ */
 struct dinode *
-getino(ino_t inum)
+getino(dump_ino_t inum)
 {
 	static daddr_t minino, maxino;
 	static struct dinode inoblock[MAXINOPB];

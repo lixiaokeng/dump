@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: interactive.c,v 1.15 2000/12/21 11:14:54 stelian Exp $";
+	"$Id: interactive.c,v 1.16 2001/03/20 10:02:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -97,7 +97,7 @@ static int pflag = 0;		/* prompt mode */
  * Structure and routines associated with listing directories.
  */
 struct afile {
-	ino_t	fnum;		/* inode number of file */
+	dump_ino_t fnum;	/* inode number of file */
 	char	*fname;		/* file name */
 	short	len;		/* name length */
 	char	prefix;		/* prefix character */
@@ -126,7 +126,7 @@ void
 runcmdshell(void)
 {
 	register struct entry *np;
-	ino_t ino;
+	dump_ino_t ino;
 	struct arglist arglist;
 	char curdir[MAXPATHLEN];
 	char name[MAXPATHLEN];

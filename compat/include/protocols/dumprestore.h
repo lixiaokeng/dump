@@ -5,7 +5,7 @@
  *      Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: dumprestore.h,v 1.11 2001/03/18 15:35:44 stelian Exp $
+ *	$Id: dumprestore.h,v 1.12 2001/03/20 10:02:48 stelian Exp $
  */
 
 /*
@@ -74,6 +74,8 @@
 #define NFS_MAGIC   	(int)60012
 #define CHECKSUM	(int)84446
 
+typedef u_int32_t	dump_ino_t;
+
 union u_spcl {
 	char dummy[TP_BSIZE];
 	struct	s_spcl {
@@ -82,7 +84,7 @@ union u_spcl {
 		int32_t	c_ddate;	    /* date of previous dump */
 		int32_t	c_volume;	    /* dump volume number */
 		daddr_t	c_tapea;	    /* logical block of this record */
-		ino_t	c_inumber;	    /* number of inode */
+		dump_ino_t c_inumber;	    /* number of inode */
 		int32_t	c_magic;	    /* magic number (see above) */
 		int32_t	c_checksum;	    /* record checksum */
 #ifdef	__linux__

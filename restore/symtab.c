@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: symtab.c,v 1.12 2000/12/21 11:14:54 stelian Exp $";
+	"$Id: symtab.c,v 1.13 2001/03/20 10:02:48 stelian Exp $";
 #endif /* not lint */
 
 /*
@@ -91,7 +91,7 @@ static const char rcsid[] =
 static struct entry **entry;
 static long entrytblsize;
 
-static void		 addino __P((ino_t, struct entry *));
+static void		 addino __P((dump_ino_t, struct entry *));
 static struct entry	*lookupparent __P((char *));
 static void		 removeentry __P((struct entry *));
 
@@ -99,7 +99,7 @@ static void		 removeentry __P((struct entry *));
  * Look up an entry by inode number
  */
 struct entry *
-lookupino(ino_t inum)
+lookupino(dump_ino_t inum)
 {
 	register struct entry *ep;
 
@@ -115,7 +115,7 @@ lookupino(ino_t inum)
  * Add an entry into the entry table
  */
 static void
-addino(ino_t inum, struct entry *np)
+addino(dump_ino_t inum, struct entry *np)
 {
 	struct entry **epp;
 
@@ -135,7 +135,7 @@ addino(ino_t inum, struct entry *np)
  * Delete an entry from the entry table
  */
 void
-deleteino(ino_t inum)
+deleteino(dump_ino_t inum)
 {
 	register struct entry *next;
 	struct entry **prev;
@@ -236,7 +236,7 @@ static struct entry *freelist = NULL;
  * add an entry to the symbol table
  */
 struct entry *
-addentry(char *name, ino_t inum, int type)
+addentry(char *name, dump_ino_t inum, int type)
 {
 	register struct entry *np, *ep;
 
@@ -287,7 +287,7 @@ void
 freeentry(struct entry *ep)
 {
 	register struct entry *np;
-	ino_t inum;
+	dump_ino_t inum;
 
 	if (ep->e_flags != REMOVED)
 		badentry(ep, "not marked REMOVED");
@@ -446,7 +446,7 @@ struct symtableheader {
 	int32_t	entrytblsize;
 	time_t	dumptime;
 	time_t	dumpdate;
-	ino_t	maxino;
+	dump_ino_t maxino;
 	int32_t	ntrec;
 };
 
@@ -457,7 +457,7 @@ void
 dumpsymtable(char *filename, long checkpt)
 {
 	register struct entry *ep, *tep;
-	register ino_t i;
+	register dump_ino_t i;
 	struct entry temp, *tentry;
 	long mynum = 1, stroff = 0;
 	FILE *fd;
