@@ -2,8 +2,8 @@
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
- *	Stelian Pop <pop@noos.fr>, 1999-2000
- *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
+ *	Stelian Pop <stelian@popies.net>, 1999-2000
+ *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  */
 
 /*-
@@ -38,7 +38,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $Id: system.h,v 1.1 2001/07/18 12:54:06 stelian Exp $
+ * $Id: system.h,v 1.2 2002/01/16 09:32:14 stelian Exp $
  */
 
 #ifndef _SYSTEM_H_

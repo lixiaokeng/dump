@@ -1,4 +1,4 @@
-$Id: THANKS,v 1.51 2001/11/30 10:14:36 stelian Exp $
+$Id: THANKS,v 1.52 2002/01/16 09:32:14 stelian Exp $
 
 Dump and restore were written by the people of the CSRG at the University
 of California, Berkeley.
@@ -15,7 +15,7 @@ David Frey <david@eos.lugs.ch> (the old Debian dump maintainer),
 Bdale Garbee <bdale@gag.com> (the new Debian dump maintainer) and the people
 from Red Hat Software provided lots of patches.
 
-Stelian Pop <pop@noos.fr> is now the current maintainer (since dump-0.4b5).
+Stelian Pop <stelian@popies.net> is now the current maintainer (since dump-0.4b5).
 
 Thanks to people who reported problems with the port, sent patches, and
 suggested various improvements.

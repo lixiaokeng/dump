@@ -1,9 +1,9 @@
 /*
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
- *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
+ *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: compatlfs.h,v 1.1 2001/04/27 15:22:47 stelian Exp $
+ *	$Id: compatlfs.h,v 1.2 2002/01/16 09:32:14 stelian Exp $
  */
 
 /*-

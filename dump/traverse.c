@@ -2,8 +2,8 @@
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
- *	Stelian Pop <pop@noos.fr>, 1999-2000
- *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
+ *	Stelian Pop <stelian@popies.net>, 1999-2000
+ *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  */
 
 /*-
@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.39 2001/11/11 00:06:39 stelian Exp $";
+	"$Id: traverse.c,v 1.40 2002/01/16 09:32:14 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>

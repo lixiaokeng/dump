@@ -2,10 +2,10 @@
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
- *	Stelian Pop <pop@noos.fr>, 1999-2000
- *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
+ *	Stelian Pop <stelian@popies.net>, 1999-2000
+ *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: fstab.h,v 1.11 2001/03/19 13:22:48 stelian Exp $
+ *	$Id: fstab.h,v 1.12 2002/01/16 09:32:14 stelian Exp $
  */
 
 /*

@@ -9,9 +9,9 @@
  *	- Added cache for UUID and disk labels
  *	Wed Aug 16 2000 Erik Troan <ewt@redhat.com>
  *	- Ported to dump/restore
- *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
+ *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: bylabel.h,v 1.4 2000/12/21 11:14:53 stelian Exp $
+ *	$Id: bylabel.h,v 1.5 2002/01/16 09:32:14 stelian Exp $
  */
 
 #ifndef _BYLABEL_H_
