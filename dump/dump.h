@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: dump.h,v 1.17 2000/12/05 16:31:36 stelian Exp $
+ *	$Id: dump.h,v 1.18 2000/12/05 16:57:38 stelian Exp $
  */
 
 /*-
@@ -123,7 +123,7 @@ time_t	unctime __P((const char *str));
 
 /* mapping rouintes */
 struct	dinode;
-long	blockest __P((struct dinode *dp));
+long	blockest __P((struct dinode const *dp));
 int	mapfiles __P((ino_t maxino, long *tapesize));
 #ifdef	__linux__
 int	mapfilesfromdir __P((ino_t maxino, long *tapesize, char *directory));

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.23 2000/12/04 15:43:16 stelian Exp $";
+	"$Id: traverse.c,v 1.24 2000/12/05 16:57:38 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -103,7 +103,7 @@ static	int dirindir __P((ino_t ino, daddr_t blkno, int level, long *size));
 static	void dmpindir __P((ino_t ino, daddr_t blk, int level, fsizeT *size));
 static	int searchdir __P((ino_t ino, daddr_t blkno, long size, long filesize));
 #endif
-static	void mapfileino __P((ino_t ino, long *tapesize, int *dirskipped));
+static	void mapfileino __P((ino_t ino, struct dinode const *dp, long *tapesize, int *dirskipped));
 static	int exclude_ino __P((ino_t ino));
 
 /* #define EXT3_FEATURE_INCOMPAT_RECOVER 	0x0004 */
@@ -146,7 +146,7 @@ int dump_fs_open(const char *disk, ext2_filsys *fs)
  * hence the estimate may be high.
  */
 long
-blockest(struct dinode *dp)
+blockest(struct dinode const *dp)
 {
 	long blkest, sizeest;
 
@@ -223,20 +223,21 @@ exclude_ino(ino_t ino)
 	 (!exclude_ino(ino)))
 
 /*
- * Determine if given inode should be dumped
+ * Determine if given inode should be dumped. "dp" must either point to a
+ * copy of the given inode, or be NULL (in which case it is fetched.)
  */
-void
-mapfileino(ino_t ino, long *tapesize, int *dirskipped)
+static void
+mapfileino(ino_t ino, struct dinode const *dp, long *tapesize, int *dirskipped)
 {
 	register int mode;
-	register struct dinode *dp;
 
 	/*
 	 * Skip inode if we've already marked it for dumping
 	 */
 	if (TSTINO(ino, usedinomap))
 		return;
-	dp = getino(ino);
+	if (!dp)
+		dp = getino(ino);
 	if ((mode = (dp->di_mode & IFMT)) == 0)
 		return;
 #ifdef	__linux__
@@ -274,6 +275,51 @@ mapfileino(ino_t ino, long *tapesize, int *dirskipped)
  * that have been modified since the previous dump time. Also, find all
  * the directories in the filesystem.
  */
+#ifdef __linux__
+int
+mapfiles(ino_t maxino, long *tapesize)
+{
+	ino_t ino;
+	int anydirskipped = 0;
+	ext2_inode_scan scan;
+	errcode_t err;
+	struct ext2_inode inode;
+
+	/*
+	 * We use libext2fs's inode scanning routines, which are particularly
+	 * robust.  (Note that getino cannot return an error.)
+	 */
+	err = ext2fs_open_inode_scan(fs, 0, &scan);
+	if (err) {
+		com_err(disk, err, "while opening inodes\n");
+		exit(X_ABORT);
+	}
+	for (;;) {
+		err = ext2fs_get_next_inode(scan, &ino, &inode);
+		if (err == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE)
+			continue;
+		if (err) {
+			com_err(disk, err, "while scanning inode #%ld\n",
+				(long)ino);
+			exit(X_ABORT);
+		}
+		if (ino == 0)
+			break;
+
+		curino = ino;
+		mapfileino(ino, (struct dinode const *)&inode, tapesize,
+			   &anydirskipped);
+	}
+	ext2fs_close_inode_scan(scan);
+
+	/*
+	 * Restore gets very upset if the root is not dumped,
+	 * so ensure that it always is dumped.
+	 */
+	SETINO(ROOTINO, dumpinomap);
+	return (anydirskipped);
+}
+#else
 int
 mapfiles(ino_t maxino, long *tapesize)
 {
@@ -290,6 +336,7 @@ mapfiles(ino_t maxino, long *tapesize)
 	SETINO(ROOTINO, dumpinomap);
 	return (anydirskipped);
 }
+#endif /* __linux__ */
 
 #ifdef	__linux__
 struct mapfile_context {
@@ -300,7 +347,7 @@ struct mapfile_context {
 static int
 mapfilesindir(struct ext2_dir_entry *dirent, int offset, int blocksize, char *buf, void *private)
 {
-	register struct dinode *dp;
+	register struct dinode const *dp;
 	register int mode;
 	errcode_t retval;
 	struct mapfile_context *mfc;
@@ -308,10 +355,10 @@ mapfilesindir(struct ext2_dir_entry *dirent, int offset, int blocksize, char *bu
 
 	ino = dirent->inode;
 	mfc = (struct mapfile_context *)private;
-
-	mapfileino(dirent->inode, mfc->tapesize, mfc->anydirskipped);
-
 	dp = getino(dirent->inode);
+
+	mapfileino(dirent->inode, dp, mfc->tapesize, mfc->anydirskipped);
+
 	mode = dp->di_mode & IFMT;
 	if (mode == IFDIR && dp->di_nlink != 0 && dp->di_dtime == 0) {
 		if ((dirent->name[0] != '.' || ( dirent->name_len & 0xFF ) != 1) &&
@@ -356,7 +403,7 @@ mapfilesfromdir(ino_t maxino, long *tapesize, char *directory)
 					dir_name);
 				exit(X_ABORT);
 			}
-			mapfileino(dir_ino, tapesize, &anydirskipped);
+			mapfileino(dir_ino, 0, tapesize, &anydirskipped);
 		}
 	}
 	/*
@@ -367,7 +414,7 @@ mapfilesfromdir(ino_t maxino, long *tapesize, char *directory)
 		com_err(disk, retval, "while translating %s", directory);
 		exit(X_ABORT);
 	}
-	mapfileino(dir_ino, tapesize, &anydirskipped);
+	mapfileino(dir_ino, 0, tapesize, &anydirskipped);
 
 	mfc.tapesize = tapesize;
 	mfc.anydirskipped = &anydirskipped;
@@ -382,7 +429,7 @@ mapfilesfromdir(ino_t maxino, long *tapesize, char *directory)
 	 * Ensure that the root inode actually appears in the file list
 	 * for a subdir
 	 */
-	mapfileino(ROOTINO, tapesize, &anydirskipped);
+	mapfileino(ROOTINO, 0, tapesize, &anydirskipped);
 	/*
 	 * Restore gets very upset if the root is not dumped,
 	 * so ensure that it always is dumped.
@@ -1097,9 +1144,14 @@ struct dinode *
 getino(ino_t inum)
 {
 	static struct dinode dinode;
+	errcode_t err;
 
 	curino = inum;
-	ext2fs_read_inode(fs, inum, (struct ext2_inode *) &dinode);
+	err = ext2fs_read_inode(fs, inum, (struct ext2_inode *) &dinode);
+	if (err) {
+		com_err(disk, err, "while reading inode #%ld\n", (long)inum);
+		exit(X_ABORT);
+	}
 	return &dinode;
 }
 #else	/* __linux__ */
