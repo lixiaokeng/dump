@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: optr.c,v 1.6 1999/10/13 09:57:20 stelian Exp $";
+	"$Id: optr.c,v 1.7 1999/10/18 09:48:00 tiniou Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -358,8 +358,14 @@ msg(fmt, va_alist)
 	va_start(ap);
 #endif
 	(void) vfprintf(stderr, fmt, ap);
+	va_end(ap);
 	(void) fflush(stdout);
 	(void) fflush(stderr);
+#ifdef __STDC__
+	va_start(ap, fmt);
+#else
+	va_start(ap);
+#endif
 	(void) vsnprintf(lastmsg, sizeof(lastmsg), fmt, ap);
 	va_end(ap);
 }
