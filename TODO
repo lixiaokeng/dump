@@ -1,4 +1,4 @@
-$Id: TODO,v 1.18 2001/04/10 13:42:21 stelian Exp $
+$Id: TODO,v 1.19 2001/05/10 20:55:09 stelian Exp $
 
 Need to verify:
 ---------------
@@ -49,3 +49,13 @@ All others:
 	<mjt@tls.msk.ru>.
 
 10.	Better readline completition in restore (escape spaces etc).
+
+11.	Implement a -F option for restore.
+
+12.	Dump compiled with RedHat's 7.0 gcc seems to hang for some
+	people. When compiled with kgcc all the problems disappear.
+	Will the RedHat's 7.1 gcc resolve this ?
+
+13.	Dump uses /dev/tty for reporting some messages. When invoked
+	from a script, /dev/tty may not exist. Why not using just
+	stderr ?
