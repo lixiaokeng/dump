@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.29 2001/02/16 10:40:48 stelian Exp $";
+	"$Id: tape.c,v 1.30 2001/02/16 13:38:47 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -315,11 +315,17 @@ mktimeest(time_t tnow)
 		tapesize = blockswritten;
 	deltat = tstart_writing - tnow + (1.0 * (tnow - tstart_writing))
 		/ blockswritten * tapesize;
-	(void)snprintf(msgbuf, sizeof(msgbuf),
-		"%3.2f%% done at %ld KB/s, finished in %d:%02d\n",
-		(blockswritten * 100.0) / tapesize,
-		(spcl.c_tapea - tapea_volume) / (tnow - tstart_volume),
-		(int)(deltat / 3600), (int)((deltat % 3600) / 60));
+	if (tnow > tstart_volume)
+		(void)snprintf(msgbuf, sizeof(msgbuf),
+			"%3.2f%% done at %ld KB/s, finished in %d:%02d\n",
+			(blockswritten * 100.0) / tapesize,
+			(spcl.c_tapea - tapea_volume) / (tnow - tstart_volume),
+			(int)(deltat / 3600), (int)((deltat % 3600) / 60));
+	else
+		(void)snprintf(msgbuf, sizeof(msgbuf),
+			"%3.2f%% done, finished in %d:%02d\n",
+			(blockswritten * 100.0) / tapesize,
+			(int)(deltat / 3600), (int)((deltat % 3600) / 60));
 
 	return msgbuf;
 }
