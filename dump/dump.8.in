@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.45 2002/09/02 12:43:12 stelian Exp $
+.\"	$Id: dump.8.in,v 1.46 2002/11/12 13:05:31 stelian Exp $
 .\"
 .TH DUMP 8 "version __VERSION__ of __DATE__" BSD "System management commands"
 .SH NAME
@@ -191,8 +191,9 @@ this can be overridden by the environment variable
 .BR RMT .
 .TP
 .BI \-F " script"
-Run script at the end of each tape. The device name and the current volume
-number are passed on the command line. The script must return 0 if 
+Run script at the end of each tape (except for the last one). 
+The device name and the current volume number are passed on the
+command line. The script must return 0 if 
 .B dump
 should continue without asking the user to change the tape, 1 if 
 .B dump
