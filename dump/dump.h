@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: dump.h,v 1.36 2002/01/25 14:59:53 stelian Exp $
+ *	$Id: dump.h,v 1.37 2002/04/04 08:20:23 stelian Exp $
  */
 
 /*-
@@ -54,6 +54,8 @@ extern int	mapsize;	/* size of the state maps */
 extern char	*usedinomap;	/* map of allocated inodes */
 extern char	*dumpdirmap;	/* map of directories to be dumped */
 extern char	*dumpinomap;	/* map of files to be dumped */
+extern char	*metainomap;	/* which of the inodes in dumpinomap
+				   will get only their metadata dumped */
 /*
  * Map manipulation macros.
  */
@@ -77,6 +79,7 @@ extern char	level;		/* dump level of this dump */
 extern int	Afile;		/* archive file descriptor */
 extern int	bzipflag;	/* compression is done using bzlib */
 extern int	uflag;		/* update flag */
+extern int	mflag;		/* dump metadata only if possible flag */
 extern int	Mflag;		/* multi-volume flag */
 extern int	qflag;		/* quit on errors flag */
 extern int      breademax;      /* maximum number of bread errors before we quit */
@@ -155,7 +158,7 @@ int	mapdirs __P((dump_ino_t maxino, long *tapesize));
 /* file dumping routines */
 void	blksout __P((daddr_t *blkp, int frags, dump_ino_t ino));
 void	bread __P((daddr_t blkno, char *buf, int size));
-void	dumpino __P((struct dinode *dp, dump_ino_t ino));
+void	dumpino __P((struct dinode *dp, dump_ino_t ino, int metaonly));
 #ifdef	__linux__
 void	dumpdirino __P((struct dinode *dp, dump_ino_t ino));
 #endif

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: restore.c,v 1.28 2002/02/04 11:21:20 stelian Exp $";
+	"$Id: restore.c,v 1.29 2002/04/04 08:20:23 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -746,6 +746,7 @@ createleaves(char *symtabfile)
 	struct entry *ep;
 	dump_ino_t first;
 	long curvol;
+	int doremove;
 
 	if (command == 'R') {
 		Vprintf(stdout, "Continue extraction of new leaves\n");
@@ -796,11 +797,11 @@ createleaves(char *symtabfile)
 		 * be removed since its type may change from one leaf type
 		 * to another (e.g. "file" to "character special").
 		 */
-		if ((ep->e_flags & EXTRACT) != 0) {
-			removeleaf(ep);
-			ep->e_flags &= ~REMOVED;
-		}
-		(void) extractfile(myname(ep));
+		if ((ep->e_flags & EXTRACT) != 0)
+			doremove = 1;
+		else
+			doremove = 0;
+		(void) extractfile(ep, doremove);
 		ep->e_flags &= ~(NEW|EXTRACT);
 		/*
 		 * We checkpoint the restore after every tape reel, so
@@ -1029,7 +1030,7 @@ createfiles(void)
 			else {
 				msg("restoring %s\n", myname(ep));
 #endif /* USE_QFA */
-				(void) extractfile(myname(ep));
+				(void) extractfile(ep, 0);
 #ifdef USE_QFA
 			}
 #endif /* USE_QFA */

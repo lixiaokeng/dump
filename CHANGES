@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.169 2002/03/28 14:53:01 stelian Exp $
+$Id: CHANGES,v 1.170 2002/04/04 08:20:19 stelian Exp $
 
 Changes between versions 0.4b27 and 0.4b28 (released ?????????????????)
 =======================================================================
@@ -38,6 +38,16 @@ Changes between versions 0.4b27 and 0.4b28 (released ?????????????????)
 	those inodes, which was uncorrectly handled by Linux restore.
 	Thanks to Uwe Gohlke <uwe@ugsoft.de> for reporting the bug and
 	providing a test case.
+
+8.	Added the -m parameter to dump which optimises the output for
+	inodes having been changed but not modified since the last dump
+	('changed' and 'modified' have the meaning defined in stat(2)).
+	For those inodes, dump will save only the metadata, instead of
+	saving the entire inode contents. Inodes which are either 
+	directories or have been modified since the last dump are saved
+	in a regular way.  Uses of this flag must be consistent, meaning
+	that either every dump in an incremental dump set have the flag,
+	or no one has it.
 
 Changes between versions 0.4b26 and 0.4b27 (released February 15, 2002)
 =======================================================================

@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: dumprestore.h,v 1.16 2002/01/25 14:59:53 stelian Exp $
+ *	$Id: dumprestore.h,v 1.17 2002/04/04 08:20:23 stelian Exp $
  */
 
 /*
@@ -131,6 +131,8 @@ union u_spcl {
 #define DR_NEWHEADER	0x0001	/* new format tape header */
 #define DR_NEWINODEFMT	0x0002	/* new format inodes on tape */
 #define DR_COMPRESSED	0x0080	/* dump tape is compressed */
+#define DR_METAONLY	0x0100	/* only the metadata of the inode has
+				   been dumped */
 #define DR_INODEINFO	0x0002	/* TS_END header contains c_inos information */
 
 

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.70 2002/03/11 10:17:43 stelian Exp $";
+	"$Id: main.c,v 1.71 2002/04/04 08:20:23 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -96,6 +96,8 @@ int	mapsize;	/* size of the state maps */
 char	*usedinomap;	/* map of allocated inodes */
 char	*dumpdirmap;	/* map of directories to be dumped */
 char	*dumpinomap;	/* map of files to be dumped */
+char	*metainomap;	/* which of the inodes in dumpinomap will get
+			   only their metadata dumped */
 
 const char *disk;	/* name of the disk file */
 char	tape[MAXPATHLEN];/* name of the tape file */
@@ -106,6 +108,7 @@ char	level;		/* dump level of this dump */
 int	bzipflag;	/* compression is done using bzlib */
 int	Afile = 0;	/* archive file descriptor */
 int	uflag;		/* update flag */
+int	mflag;		/* dump metadata only if possible */
 int	Mflag;		/* multi-volume flag */
 int	qflag;		/* quit on errors flag */
 int     breademax = 32; /* maximum number of bread errors before we quit */
@@ -248,7 +251,7 @@ main(int argc, char *argv[])
 #ifdef KERBEROS
 			    "k"
 #endif
-			    "Mnq"
+			    "mMnq"
 #ifdef USE_QFA
 			    "Q:"
 #endif
@@ -375,6 +378,10 @@ main(int argc, char *argv[])
 				msg("WARNING: Using truncated label `%s'.\n",
 				    spcl.c_label);
 			}
+			break;
+
+		case 'm':		/* metadata only flag */
+			mflag = 1;
 			break;
 
 		case 'M':		/* multi-volume flag */
@@ -730,7 +737,9 @@ main(int argc, char *argv[])
 	usedinomap = (char *)calloc((unsigned) mapsize, sizeof(char));
 	dumpdirmap = (char *)calloc((unsigned) mapsize, sizeof(char));
 	dumpinomap = (char *)calloc((unsigned) mapsize, sizeof(char));
-	if (usedinomap == NULL || dumpdirmap == NULL || dumpinomap == NULL)
+	metainomap = (char *)calloc((unsigned) mapsize, sizeof(char));
+	if (usedinomap == NULL || dumpdirmap == NULL || 
+	    dumpinomap == NULL || metainomap == NULL)
 		quit("out of memory allocating inode maps\n");
 	tapesize = 2 * (howmany(mapsize * sizeof(char), TP_BSIZE) + 1);
 
@@ -933,7 +942,7 @@ main(int argc, char *argv[])
 		 * inodes since this is done in dumpino().
 		 */
 #endif
-		(void)dumpino(dp, ino);
+		(void)dumpino(dp, ino, mflag && TSTINO(ino, metainomap));
 	}
 
 	tend_writing = time(NULL);
@@ -1016,7 +1025,7 @@ usage(void)
 #ifdef KERBEROS
 		"k"
 #endif
-		"MnqSu"
+		"mMnqSu"
 		"] [-A file] [-B records] [-b blocksize]\n"
 		"\t%s [-d density] [-e inode#,inode#,...] [-E file] [-f file]\n"
 		"\t%s [-h level] [-I nr errors] "

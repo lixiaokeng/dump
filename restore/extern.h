@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: extern.h,v 1.16 2002/02/04 11:18:46 stelian Exp $
+ *	$Id: extern.h,v 1.17 2002/04/04 08:20:23 stelian Exp $
  */
 
 /*-
@@ -62,7 +62,7 @@ void		 delwhiteout __P((struct entry *));
 dump_ino_t	 dirlookup __P((const char *));
 void		 dumpsymtable __P((char *, long));
 void	 	 extractdirs __P((int));
-int		 extractfile __P((char *));
+int		 extractfile __P((struct entry *, int));
 void		 findunreflinks __P((void));
 char		*flagvalues __P((struct entry *));
 void		 freeentry __P((struct entry *));

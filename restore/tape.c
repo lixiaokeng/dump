@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.59 2002/03/28 14:53:01 stelian Exp $";
+	"$Id: tape.c,v 1.60 2002/04/04 08:20:23 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -718,12 +718,24 @@ struct timeval
 #endif
 
 int
-extractfile(char *name)
+extractfile(struct entry *ep, int doremove)
 {
 	unsigned int flags;
 	mode_t mode;
 	struct timeval timep[2];
-	struct entry *ep;
+	char *name = myname(ep);
+
+	/* If removal is requested (-r mode) do remove it unless
+	 * we are extracting a metadata only inode */
+	if (spcl.c_flags & DR_METAONLY) {
+		Vprintf(stdout, "file %s is metadata only\n", name);
+	}
+	else {
+		if (doremove) {
+			removeleaf(ep);
+			ep->e_flags &= ~REMOVED;
+		}
+	}
 
 	curfile.name = name;
 	curfile.action = USING;
@@ -754,7 +766,6 @@ extractfile(char *name)
 
 	case IFDIR:
 		if (mflag) {
-			ep = lookupname(name);
 			if (ep == NULL || ep->e_flags & EXTRACT)
 				panic("unextracted directory %s\n", name);
 			skipfile();
@@ -769,16 +780,21 @@ extractfile(char *name)
 		uid_t luid = curfile.dip->di_uid;
 		gid_t lgid = curfile.dip->di_gid;
 #endif
-		lnkbuf[0] = '\0';
-		pathlen = 0;
-		getfile(xtrlnkfile, xtrlnkskip);
-		if (pathlen == 0) {
-			Vprintf(stdout,
-			    "%s: zero length symbolic link (ignored)\n", name);
-			return (GOOD);
+		if (! (spcl.c_flags & DR_METAONLY)) {
+			lnkbuf[0] = '\0';
+			pathlen = 0;
+			getfile(xtrlnkfile, xtrlnkskip);
+			if (pathlen == 0) {
+				Vprintf(stdout,
+				    "%s: zero length symbolic link (ignored)\n", name);
+				return (GOOD);
+			}
+			if (linkit(lnkbuf, name, SYMLINK) == FAIL)
+				return (FAIL);
 		}
-		if (linkit(lnkbuf, name, SYMLINK) == FAIL)
-			return (FAIL);
+		else
+			skipfile();
+
 #ifdef HAVE_LCHOWN
 		(void) lchown(name, luid, lgid);
 #endif
@@ -791,12 +807,14 @@ extractfile(char *name)
 			skipfile();
 			return (GOOD);
 		}
-		if (uflag && !Nflag)
-			(void)unlink(name);
-		if (mkfifo(name, mode) < 0) {
-			warn("%s: cannot create fifo", name);
-			skipfile();
-			return (FAIL);
+		if (! (spcl.c_flags & DR_METAONLY)) {
+			if (uflag && !Nflag)
+				(void)unlink(name);
+			if (mkfifo(name, mode) < 0) {
+				warn("%s: cannot create fifo", name);
+				skipfile();
+				return (FAIL);
+			}
 		}
 		(void) chown(name, curfile.dip->di_uid, curfile.dip->di_gid);
 		(void) chmod(name, mode);
@@ -817,12 +835,14 @@ extractfile(char *name)
 			skipfile();
 			return (GOOD);
 		}
-		if (uflag)
-			(void)unlink(name);
-		if (mknod(name, mode, (int)curfile.dip->di_rdev) < 0) {
-			warn("%s: cannot create special file", name);
-			skipfile();
-			return (FAIL);
+		if (! (spcl.c_flags & DR_METAONLY)) {
+			if (uflag)
+				(void)unlink(name);
+			if (mknod(name, mode, (int)curfile.dip->di_rdev) < 0) {
+				warn("%s: cannot create special file", name);
+				skipfile();
+				return (FAIL);
+			}
 		}
 		(void) chown(name, curfile.dip->di_uid, curfile.dip->di_gid);
 		(void) chmod(name, mode);
@@ -840,31 +860,40 @@ extractfile(char *name)
 		return (GOOD);
 
 	case IFREG:
+	{
+		uid_t luid = curfile.dip->di_uid;
+		gid_t lgid = curfile.dip->di_gid;
+
 		Vprintf(stdout, "extract file %s\n", name);
 		if (Nflag) {
 			skipfile();
 			return (GOOD);
 		}
-		if (uflag)
-			(void)unlink(name);
-		if ((ofile = OPEN(name, O_WRONLY | O_CREAT | O_TRUNC,
-		    0666)) < 0) {
-			warn("%s: cannot create file", name);
-			skipfile();
-			return (FAIL);
+		if (! (spcl.c_flags & DR_METAONLY)) {
+			if (uflag)
+				(void)unlink(name);
+			if ((ofile = OPEN(name, O_WRONLY | O_CREAT | O_TRUNC,
+			    0666)) < 0) {
+				warn("%s: cannot create file", name);
+				skipfile();
+				return (FAIL);
+			}
+			getfile(xtrfile, xtrskip);
+			(void) close(ofile);
 		}
-		(void) fchown(ofile, curfile.dip->di_uid, curfile.dip->di_gid);
-		(void) fchmod(ofile, mode);
+		else
+			skipfile();
+		(void) chown(name, luid, lgid);
+		(void) chmod(name, mode);
 		if (flags)
 #ifdef	__linux__
-			(void) setflags(ofile, flags);
+			(void) fsetflags(name, flags);
 #else
-			(void) fchflags(ofile, flags);
+			(void) chflags(name, flags);
 #endif
-		getfile(xtrfile, xtrskip);
-		(void) close(ofile);
 		utimes(name, timep);
 		return (GOOD);
+	}
 	}
 	/* NOTREACHED */
 }
@@ -1259,6 +1288,10 @@ comparefile(char *name)
 		fprintf(stderr, "%s: mode changed from 0%o to 0%o.\n",
 			name, mode & 07777, sb.st_mode & 07777);
 		do_compare_error;
+	}
+	if (spcl.c_flags & DR_METAONLY) {
+		skipfile();
+		return;
 	}
 	switch (mode & IFMT) {
 	default:

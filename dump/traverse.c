@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.43 2002/02/04 11:18:46 stelian Exp $";
+	"$Id: traverse.c,v 1.44 2002/04/04 08:20:23 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -217,8 +217,12 @@ blockest(struct dinode const *dp)
 }
 
 /* Auxiliary macro to pick up files changed since previous dump. */
+#define CSINCE(dp, t) \
+	((dp)->di_ctime >= (t))
+#define MSINCE(dp, t) \
+	((dp)->di_mtime >= (t))
 #define	CHANGEDSINCE(dp, t) \
-	((dp)->di_mtime >= (t) || (dp)->di_ctime >= (t))
+	(CSINCE(dp, t) || MSINCE(dp, t))
 
 /* The NODUMP_FLAG macro tests if a file has the nodump flag. */
 #ifdef UF_NODUMP
@@ -266,6 +270,8 @@ mapfileino(dump_ino_t ino, struct dinode const *dp, long *tapesize, int *dirskip
 		SETINO(ino, dumpdirmap);
 	if (WANTTODUMP(dp, ino)) {
 		SETINO(ino, dumpinomap);
+		if (!MSINCE(dp, spcl.c_ddate))
+			SETINO(ino, metainomap);
 		if (mode != IFREG && mode != IFDIR && mode != IFLNK)
 			*tapesize += 1;
 		else
@@ -773,7 +779,7 @@ dumponeblock(ext2_filsys fs, blk_t *blocknr, e2_blkcnt_t blockcnt,
  * Dump the contents of an inode to tape.
  */
 void
-dumpino(struct dinode *dp, dump_ino_t ino)
+dumpino(struct dinode *dp, dump_ino_t ino, int metaonly)
 {
 	unsigned long cnt;
 	fsizeT size, remaining;
@@ -785,7 +791,12 @@ dumpino(struct dinode *dp, dump_ino_t ino)
 #else
 	int ind_level;
 #endif
-	u_quad_t i_size	= dp->di_size + ((u_quad_t) dp->di_size_high << 32);
+	u_quad_t i_size;
+	
+	if (metaonly)
+		i_size = 0;
+	else 
+		i_size = dp->di_size + ((u_quad_t) dp->di_size_high << 32);
 
 	if (newtape) {
 		newtape = 0;
@@ -814,6 +825,16 @@ dumpino(struct dinode *dp, dump_ino_t ino)
 #endif	/* __linux__ */
 	spcl.c_type = TS_INODE;
 	spcl.c_count = 0;
+
+	if (metaonly && (dp->di_mode & S_IFMT)) {
+		printf("Write header with spcl.c_count=%d\n",spcl.c_count);
+		spcl.c_flags |= DR_METAONLY;
+		spcl.c_count = 0;
+		writeheader(ino);
+		spcl.c_flags &= ~DR_METAONLY;
+		return;
+	}
+
 	switch (dp->di_mode & S_IFMT) {
 
 	case 0:

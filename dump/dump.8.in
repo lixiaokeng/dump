@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.39 2002/02/25 10:00:44 stelian Exp $
+.\"	$Id: dump.8.in,v 1.40 2002/04/04 08:20:23 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -270,6 +270,22 @@ Note that this label is limited
 to be at most LBLSIZE (currently 16) characters, which must include
 the terminating
 .Ql \e0 .
+.It Fl m
+If this flag is specified,
+.Nm
+will optimise the output for inodes having been changed but not
+modified since the last dump ('changed' and 'modified' have the
+meaning defined in stat(2)). For those inodes,
+.Nm
+will save only the metadata, instead of saving the entire inode 
+contents. Inodes which are either directories or have been modified
+since the last dump are saved in a regular way.
+Uses of this flag must be consistent, meaning that either every dump 
+in an incremental dump set have the flag, or no one has it.
+.Pp
+Tapes written using such 'metadata only' inodes will not be compatible
+with the BSD tape format or older versions of
+.Nm restore.
 .It Fl M
 Enable the multi-volume feature. The name specified with 
 .Fl f 
