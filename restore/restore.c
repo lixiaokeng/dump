@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: restore.c,v 1.9 2000/06/01 18:30:08 stelian Exp $";
+	"$Id: restore.c,v 1.10 2000/08/20 15:17:36 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -89,7 +89,7 @@ listfile(char *name, ino_t ino, int type)
 long
 addfile(char *name, ino_t ino, int type)
 {
-	register struct entry *ep;
+	register struct entry *ep, *np;
 	long descend = hflag ? GOOD : FAIL;
 	char buf[100];
 
@@ -114,6 +114,11 @@ addfile(char *name, ino_t ino, int type)
 			return (descend);
 		}
 		type |= LINK;
+		for (np = ep->e_links; np; np = np->e_links)
+			if (strcmp(name, myname(np)) == 0) {
+				np->e_flags |= NEW;
+				return (descend);
+			}
 	}
 	ep = addentry(name, ino, type);
 	if (type == NODE)
