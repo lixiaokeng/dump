@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.38 2002/02/21 14:07:15 stelian Exp $
+.\"	$Id: dump.8.in,v 1.39 2002/02/25 10:00:44 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -144,10 +144,14 @@ Therefore
 will constrain writes to MAXBSIZE.
 The default blocksize is 10.
 .It Fl B Ar records
-The number of 1 kB blocks per volume.
-This option overrides the end-of-media detection, and calculation 
-of tape size based on length and density. If compression is on this
-limits the size of the compressed output per volume.
+The number of 1 kB blocks per volume. Not normally required, as
+.Nm
+can detect end-of-media. When the specified size is reached,
+.Nm
+waits for you to change the volume.  This option overrides
+the calculation of tape size based on length and density.
+If compression is on this limits the size of the compressed
+output per volume.
 .It Fl c
 Change the defaults for use with a cartridge tape drive, with a density
 of 8000 bpi, and a length of 1700 feet. Specifying a cartridge drive
