@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.16 2000/03/02 12:07:36 stelian Exp $";
+	"$Id: tape.c,v 1.17 2000/03/10 10:03:09 stelian Exp $";
 #endif /* not lint */
 
 #ifdef __linux__
@@ -107,7 +107,7 @@ static	void enslave __P((void));
 static	void flushtape __P((void));
 static	void killall __P((void));
 static	void rollforward __P((void));
-static	int system_command __P((const char *command));
+static	int system_command __P((const char *, const char *, int));
 
 /*
  * Concurrent dump mods (Caltech) - disk block reading and tape writing
@@ -410,8 +410,9 @@ flushtape(void)
  * Returns -1 if an error occured, the exit status of
  * the command on success.
  */
-int system_command(const char *command) {
+int system_command(const char *command, const char *device, int volnum) {
 	int pid, status;
+	char commandstr[4096];
 
 	pid = fork();
 	if (pid == -1) {
@@ -421,7 +422,9 @@ int system_command(const char *command) {
 	if (pid == 0) {
 		setuid(getuid());
 		setgid(getgid());
-		execl("/bin/sh", "sh", "-c", command, NULL);
+		snprintf(commandstr, sizeof(commandstr), "%s %s %d", command, device, volnum);
+		commandstr[sizeof(commandstr) - 1] = '\0';
+		execl("/bin/sh", "sh", "-c", commandstr, NULL);
 		perror("  DUMP: unable to execute shell");
 		exit(-1);
 	}
@@ -496,7 +499,7 @@ trewind(void)
 		eot_code = 1;
 		if (eot_script) {
 			msg("Launching %s\n", eot_script);
-			eot_code = system_command(eot_script);
+			eot_code = system_command(eot_script, tape, tapeno);
 		}
 		if (eot_code != 0 && eot_code != 1) {
 			msg("Dump aborted by the end of tape script\n");

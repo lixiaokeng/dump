@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.13 2000/03/02 12:07:36 stelian Exp $
+.\"	$Id: dump.8.in,v 1.14 2000/03/10 10:03:09 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -195,7 +195,9 @@ program is
 this can be overridden by the environment variable
 .Ev RMT .
 .It Fl F Ar script
-Run script at the end of each tape. The script must return 0 if 
+Run script at the end of each tape. The device name and the
+current volume number are passed on the command line.
+The script must return 0 if 
 .Nm
 should continue without asking the user to change the tape, 1 if 
 .Nm
