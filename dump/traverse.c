@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.57 2004/03/01 15:38:13 stelian Exp $";
+	"$Id: traverse.c,v 1.58 2004/03/08 14:04:04 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -208,6 +208,14 @@ blockest(struct dinode const *dp)
 	if (blkest > sizeest)
 		blkest = sizeest;
 #ifdef	__linux__
+	if ((dp->di_mode & IFMT) == IFDIR) {
+		/*
+		 * for directories, assume only half of space is filled
+		 * with entries.  
+		 */
+		 blkest = blkest / 2;
+		 sizeest = sizeest / 2;
+	}
 	if (i_size > (u_quad_t)fs->blocksize * NDADDR) {
 		/* calculate the number of indirect blocks on the dump tape */
 		blkest +=

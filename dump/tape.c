@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.81 2004/03/01 10:52:53 stelian Exp $";
+	"$Id: tape.c,v 1.82 2004/03/08 14:04:04 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -573,8 +573,6 @@ close_rewind(void)
 {
 	int eot_code = 1;
 	(void)trewind();
-	if (nexttape || Mflag)
-		return;
 	if (eot_script) {
 		msg("Launching %s\n", eot_script);
 		eot_code = system_command(eot_script, tape, tapeno);
@@ -584,6 +582,8 @@ close_rewind(void)
 		dumpabort(0);
 	}
 	if (eot_code == 0)
+		return;
+	if (nexttape || Mflag)
 		return;
 	if (!nogripe) {
 		msg("Change Volumes: Mount volume #%d\n", tapeno+1);
