@@ -1615,7 +1615,7 @@ if test "$ext2fs_h" = no -o "$ext2fs_lib" = no; then
 	{ echo "configure: error: You need to install the Ext2fs libraries from the E2fsprogs distribution first" 1>&2; exit 1; }
 fi
 
-for ac_func in err errx verr verrx vwarn vwarnx warn warnx realpath glob
+for ac_func in err errx verr verrx vwarn vwarnx warn warnx realpath glob lchown
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:1622: checking for $ac_func" >&5

@@ -1,6 +1,6 @@
 Summary: Programs for backing up and restoring filesystems.
 Name: dump
-Version: 0.4b8
+Version: 0.4b9
 Release: 1
 Copyright: UCB
 Group: Applications/Archiving
@@ -78,6 +78,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_prefix}/man/man8/rmt.8 
 
 %changelog
+* Wed Nov 5 1999 Stelian Pop <pop@cybercable.fr>
+- dump 0.4b9 released, first packaging.
+
 * Wed Nov 3 1999 Stelian Pop <pop@cybercable.fr>
 - dump 0.4b8 released, first packaging.
 

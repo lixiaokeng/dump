@@ -38,3 +38,6 @@
 
 /* Define if you have the glob function.  */
 #undef HAVE_GLOB
+
+/* Define if you have the lchown function.  */
+#undef HAVE_LCHOWN

@@ -45,7 +45,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.6 1999/10/13 09:57:21 stelian Exp $";
+	"$Id: tape.c,v 1.7 1999/11/05 22:02:19 tiniou Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -579,7 +579,9 @@ extractfile(char *name)
 		}
 		if (linkit(lnkbuf, name, SYMLINK) == FAIL)
 			return (FAIL);
-		(void) chown(name, luid, lgid);
+#ifdef HAVE_LCHOWN
+		(void) lchown(name, luid, lgid);
+#endif
 		return (GOOD);
 	}
 
