@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.19 2000/03/02 13:33:00 stelian Exp $";
+	"$Id: main.c,v 1.20 2000/03/02 13:52:52 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -288,7 +288,7 @@ main(int argc, char *argv[])
 		exit(X_STARTUP);
 	}
 	disk = *argv++;
-	if (strlen(disk) > MAXPATHLEN) {
+	if (strlen(disk) >= MAXPATHLEN) {
 		(void)fprintf(stderr, "Disk or filesystem name too long: %s\n", disk);
 		exit(X_STARTUP);
 	}
@@ -393,7 +393,7 @@ main(int argc, char *argv[])
 		if (dt != NULL) {
 			char name[MAXPATHLEN];
 			(void)strncpy(spcl.c_dev, dt->fs_spec, NAMELEN);
-			(void)sprintf(name, "%s (dir %s)",
+			(void)snprintf(name, sizeof(name), "%s (dir %s)",
 				      dt->fs_file, directory);
 			(void)strncpy(spcl.c_filesys, name, NAMELEN);
 			disk = rawname(dt->fs_spec);
