@@ -1,26 +1,11 @@
-Stelian,
-
-    I just got dump running on my system backing up a handful of unix
-servers and at the end of it I wrote a quick and dirty document that lays
-out the answers to some of the questions that I had.  I don't want to
-maintain it or get a flood of e-mail from people asking for help on it, so I
-signed it, but intentionally didn't put an e-mail address.
-
-    You are welcome to make this prettier, totally discard it, or put it up
-on the web page.  I hope it is accurate and relieves some of the common
-questions from the list.
-
-..Patrick
-
-
-
-
 Dump/Restore Ultra-Mini-FAQ
 
-Disclaimer: I am not an expert in dump/restore.  In fact,
-I'm a newbie.  But I've been picking things up as I
-implement it here and I wanted to pass some of those
-things along in the form of a very basic HOWTO.
+Document v1.1
+
+Disclaimer: I am not an expert in dump/restore.  In 
+fact, I'm a newbie.  But I've been picking things up as
+I implement it here and I wanted to pass some of those
+things along in the form of a very basic FAQ.
 
 -Patrick Walsh
 
@@ -30,16 +15,18 @@ things along in the form of a very basic HOWTO.
 4) Compressing dumps on the fly
 5) The "nodump" file and directory attribute.
 6) Restoring your dumps (including compressed).
-7) How to confirm a backup
-8) Example backup script
+7) How to confirm a backup (highly recommended)
+8) What are the best buffer size options?
+9) Experiencing bread, lseek, lseek2 errors.
+10) Example backup script
 
  1) Introduction/ Non-rewinding device
 
 You use dump to backup to a file or a tape device.  If
-you're backing up to a tape device, then the first thing
-you need to understand is that there are two devices
-that refer to your tape drive.  There is the "rewinding"
-device and the "non-rewinding" device.
+you're backing up to a tape device, then the first 
+thing you need to understand is that there are two 
+devices that refer to your tape drive.  There is the 
+"rewinding" device and the "non-rewinding" device.
 
 I wish I could tell you an easy way to figure out what
 your device names are, but I don't know one.  On my
@@ -54,9 +41,9 @@ mine, then your non-rewinding tape device is probably
 
 Anyway, through the rest of this I will refer to $TAPE
 and $RWTAPE.  $TAPE is the non-rewinding device (in my
-case /dev/nst0) and $RWTAPE is the rewinding tape (in my
-case /dev/st0 and /dev/tape).  $FS is the filesystem you
-are backing up, such as /dev/hda1.
+case /dev/nst0) and $RWTAPE is the rewinding tape (in 
+my case /dev/st0 and /dev/tape).  $FS is the filesystem
+you are backing up, such as /dev/hda1.
 
  2) What options should I use?
 
@@ -64,33 +51,33 @@ Use the man page to figure out what options to send
 to dump.  I use "dump 0uanf $TAPE $FS".
 
   u=update /etc/dumpdates after a successful dump
-  a=auto-size -- bypass all tape length calculations and
-    write until eof
+  a=auto-size -- bypass all tape length calculations 
+    and write until eof
   n=notify 'operators' group when dump needs attention
   f=backup to file or device specified, or - for stdout
 
- 3) You want to send two or more filesystems to the tape.
+ 3) You want to send two or more filesystems to tape.
 
-OK, rewind using the mt command, then dump multiple times
-to the non-rewinding device, and you're done:
+OK, rewind using the mt command, then dump multiple
+times to the non-rewinding device, and you're done:
 
 mt -f $TAPE rewind
 dump 0uanf $TAPE $FS1
 dump 0uanf $TAPE $FS2
 etc.
 
-Check the man page of mt if you want to know how to eject
-the tape or retension it or anything.
+Check the man page of mt if you want to know how to
+eject the tape or retension it or anything.
 
  4) You want to compress your dumps on the fly.  No
 problem.  Send your backup to STDOUT and manipulate it
-from there.  It's easier if you're sending your output to
-the hard drive:
+from there.  It's easier if you're sending your output
+to the hard drive:
 
 dump 0uanf - $FS | gzip -c > /backup/outfile.dump.gz
 
-You want that to be written to the tape on the fly?  Try
-this:
+You want that to be written to the tape on the fly?  
+Try this:
 
 mt -f $TAPE rewind
 dump 0uanf - $FS |gzip -c |dd if=- of=$TAPE
@@ -111,39 +98,120 @@ Want more details?  Try 'man chattr' and 'man lsattr'.
 
  6) You want to know how to restore your backup.
 
-Read the restore man page.  But barring that, the easy way
-is to use restore in interactive mode.  If you have three
-filesystems on one tape and you want to restore files from
-the second one, you need to do this:
+Read the restore man page.  But barring that, the easy 
+way is to use restore in interactive mode.  If you have
+three filesystems on one tape and you want to restore 
+files from the second one, you need to do this:
 
 mt -f $TAPE rewind
 mt -f $TAPE fsf 1     # skip forward one file
 restore -if $TAPE
 
-OK, suppose now that you used the commands in section 4 to
-compress the dump file before it was written to disk.  Use
-this command:
+OK, suppose now that you used the commands in section 4
+to compress the dump file before it was written to 
+disk.  Use this command:
 
 mt -f $TAPE rewind
 mt -f $TAPE fsf 1
 dd if=$TAPE of=- |gzip -dc |restore -rf -
 
-Obviously if you dumped to a file instead of a tape it is
-much easier:
+Obviously if you dumped to a file instead of a tape it 
+is much easier:
 
 gzip -dc $filename |restore -rf -
 
  7) How to confirm your backup
 
- Check out the restore man page and read up on the -C option.
+ Check out the restore man page and read up on the -C 
+option.
 
- 8) That about sums up my knowledge on the matter, but
-I feel better having written something for other people to
-look at so it doesn't take them quite so long to learn the
-things I did.  I've included my backup script below.
-There are much better ones floating around, so go find
-someone else's and use theirs if mine won't work for you
-or you don't understand it.
+ 8) What are the best buffer size options?
+ 
+  Bernhard R. Erdmann answered this question on the 
+dump-users mailing list.  His excellent response 
+follows:
+
+>> While I was doing google searches, there seems to be
+>> an issue regarding the default buffer size writing 
+>> to tape. According to some, the default buffer size 
+>> of 512 can harm modern drives.  I have a Seagate 
+>> DDS3 unit and am wondering what the best mt/dump 
+>> options are.  I am using datacompression in 
+>> hardware.  Should I go with a large buffer (mt 
+>> setblk 10240) or variable (mt setblk 0).  If I 
+>> change these sizes, does dump need to know about it?
+>
+>Dump/restore uses a default blocksize of 10 KB. You 
+>can change it with the "-b" option or use dd for 
+>(re-)blocking.
+>
+>dump 0ab 32 /
+>dump 0af - / | dd obs=32k of=$TAPE
+>ssh host "/sbin/dump 0af - /" | dd obs=32k of=$TAPE
+>restore rb 32
+>dd ibs=32k if=$TAPE | restore rf -
+>ssh host "dd if=/dev/nst0 ibs=32k" | restore rf -
+>
+>Personally, I'd stick with variable blocksize on the 
+>drive and use 32 KB as the application's blocksize as 
+>Amanda uses that size, too.
+>
+>Rumours told using 64 KB or 128 KB blocksize yields to
+>increase performance (maybe on the mtx list from an 
+>Arkeia developer) didn't had any effects in my own 
+>tests with blocksizes ranging from 10 to 64 KB some 
+>months ago on a DDS-2 drive.
+>
+>Regarding tape drive performance at different block 
+>sizes you may want to read 
+>http://www.rs6000.ibm.com/support/micro/tapewhdr.html#Header_133
+>
+>- Block size, can effect the time for backup/restore. 
+>Using large blocksizes may improve performance. Using 
+>small block sizes can increase system overhead but 
+>before changing to a large blocksize it is necessary 
+>to be sure the user application supports the larger 
+>blocksize chosen. 
+>- Very long restore times due to blocksize. If a 
+>backup is done with a fixed block length then the 
+>restore should be done with the same fixed block 
+>length. If a backup is done with a fixed block length 
+>and the restore is done with variable block length, 
+>the restore may work successfully but it may take many
+>more hours to restore than it took to back up the 
+>data. The reason for this is that when AIX reads fixed
+>block length data in variable block mode, a check 
+>condition is issued by the tape drive on every read. 
+>AIX must interpret every check condition and determine
+>the proper action to take. This often will put the 
+>tape drive into a mode of reading that will require 
+>the tape drive to stop tape motion, rewind the tape 
+>some distance, then start reading again. This will 
+>reduce the life expectancy of the tape and increase 
+>the time it takes to backup data.
+
+ 9) Experiencing bread, lseek, and lseek2 errors.
+ 
+  These errors are caused by inodes being changed
+during the backup.  This is normal because dump and
+the Linux kernel are both acessing the filesystem
+and there is no consistence checking. By "calming"
+the system (killing unnecessary processes), you 
+decrease the likelihood of having these
+errors.  Read up on the bug on Sourcefourge:
+
+http://sourceforge.net/tracker/index.php?func=detail&aid=204909&group_id=1306&atid=101306
+
+Note that the only "real" solution to this problem
+is to dump a unmounted filesystem or use a filesystem
+snapshot feature (like in LVM).
+
+ 10) That about sums up my knowledge on the matter, but
+I feel better having written something for other peopleto look at so it doesn't take them quite so long to 
+learn the things I did.  I've included my backup script
+below.  There are much better ones floating around, so 
+go find someone else's and use theirs if mine won't 
+work for you or you don't understand it.
 
 
 #!/bin/csh
@@ -241,4 +309,6 @@ unsetenv TAPE
 #
 # Otherwise:
 #    gzip -dc $filename | restore -rf -
+
+
 
