@@ -83,6 +83,33 @@ echo "Compiling rmt by default"
 AC_SUBST(RMTDIR)
 
 dnl
+dnl Handle --enable-ermt
+dnl
+AC_ARG_ENABLE([ermt],
+[  --enable-ermt              compile ermt, an encrypting version of rmt (default is NO)],
+if test "$enableval" = "no"
+then
+	ERMT=""
+	CRYPTO=""
+	echo "Not compiling ermt"
+else
+	if test "$RMTDIR" = ""
+	then
+		AC_MSG_ERROR(ermt requires --enable-rmt)
+	fi
+	ERMT="ermt"
+	CRYPTO="-lcrypto"
+	echo "Compiling ermt"
+fi
+,
+ERMT=""
+CRYPTO=""
+echo "Not compiling ermt by default"
+)
+AC_SUBST(ERMT)
+AC_SUBST(CRYPTO)
+
+dnl
 dnl Handle --enable-kerberos
 dnl
 AC_ARG_ENABLE([kerberos],

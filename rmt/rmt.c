@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: rmt.c,v 1.25 2003/03/31 10:09:41 stelian Exp $";
+	"$Id: rmt.c,v 1.26 2003/04/08 19:52:37 stelian Exp $";
 #endif /* not linux */
 
 /*
@@ -114,6 +114,10 @@ static int	rmt_version = 0;
 char	*checkbuf __P((char *, int));
 void	 error __P((int));
 void	 getstring __P((char *));
+#ifdef ERMT
+char	*cipher __P((char *, int, int));
+void	decrypt __P((void));
+#endif
 
 int
 main(int argc, char *argv[])
@@ -122,7 +126,15 @@ main(int argc, char *argv[])
 	char c;
 	int n, i, cc, oflags;
 	unsigned long block = 0;
+	char *cp;
 
+#ifdef ERMT
+	if (argc > 1 && strcmp(argv[1], "-d") == 0)
+		decrypt(); /* decrypt stdin to stdout, and exit() */
+#endif
+	/* Skip "-c /etc/rmt", which appears when rmt is used as a shell */
+	if (argc > 2 && strcmp(argv[1], "-c") == 0)
+		argc -= 2, argv += 2;
 	argc--, argv++;
 	if (argc > 0) {
 		debug = fopen(*argv, "w");
@@ -198,7 +210,13 @@ top:
 				exit(2);
 			}
 		}
-		rval = write(tape, record, n);
+#ifdef ERMT
+		if ((cp = cipher(record, n, 1)) == NULL)
+			goto ioerror;
+#else
+		cp = record;
+#endif
+		rval = write(tape, cp, n);
 		if (rval < 0)
 			goto ioerror;
 		block += n >> 10;
@@ -212,9 +230,15 @@ top:
 		rval = read(tape, record, n);
 		if (rval < 0)
 			goto ioerror;
+#ifdef ERMT
+		if ((cp = cipher(record, rval, 0)) == NULL)
+			goto ioerror;
+#else
+		cp = record;
+#endif
 		(void)sprintf(resp, "A%lld\n", (long long)rval);
 		(void)write(1, resp, strlen(resp));
-		(void)write(1, record, rval);
+		(void)write(1, cp, rval);
 		block += n >> 10;
 		goto top;
 

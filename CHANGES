@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.224 2003/03/31 10:09:37 stelian Exp $
+$Id: CHANGES,v 1.225 2003/04/08 19:52:30 stelian Exp $
 
 Changes between versions 0.4b33 and 0.4b34 (released ?????????????????)
 =======================================================================
@@ -78,6 +78,11 @@ Changes between versions 0.4b33 and 0.4b34 (released ?????????????????)
 
 17.	Some small buffer overruns fixes in rmt. Thanks to Antonomasia
 	<ant@notatla.demon.co.uk> for reporting the bugs.
+
+18.	Added a special rmt version which can do encryption when writing
+	to tape. Read examples/encrypted_rmt/README for details on
+	how to enable and configure it. Thanks to Ken Lalonde
+	<ken@globalremit.com> for the patch.
 
 Changes between versions 0.4b32 and 0.4b33 (released February 10, 2003)
 =======================================================================
