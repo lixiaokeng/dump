@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.64 2004/12/15 09:31:49 stelian Exp $";
+	"$Id: traverse.c,v 1.65 2005/01/25 13:33:44 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -283,6 +283,9 @@ mapfileino(dump_ino_t ino, struct dinode const *dp, long *tapesize, int *dirskip
 	 */
 	SETINO(ino, usedinomap);
 
+	if (NODUMP_FLAG(dp))
+		do_exclude_ino(ino, "nodump attribute");
+
 	if (mode == IFDIR)
 		SETINO(ino, dumpdirmap);
 	if (WANTTODUMP(dp, ino)) {
@@ -296,7 +299,7 @@ mapfileino(dump_ino_t ino, struct dinode const *dp, long *tapesize, int *dirskip
 		return;
 	}
 	if (mode == IFDIR) {
-		if ( NODUMP_FLAG(dp) || exclude_ino(ino) )
+		if (exclude_ino(ino))
 			CLRINO(ino, usedinomap);
 		*dirskipped = 1;
 	}
@@ -986,9 +989,7 @@ convert_dir(struct ext2_dir_entry *dirent, UNUSED(int offset),
 	int reclen;
 
 	/* do not save entries to excluded inodes */
-	if (TSTINO(dirent->inode, dumpinomap) == 0 &&
-	    TSTINO(dirent->inode, dumpdirmap) == 0 &&
-	    TSTINO(dirent->inode, usedinomap) == 0)
+	if (exclude_ino(dirent->inode))
 		return 0;
 
 	p = (struct convert_dir_context *)private;

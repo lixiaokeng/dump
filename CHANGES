@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.270 2005/01/24 10:32:01 stelian Exp $
+$Id: CHANGES,v 1.271 2005/01/25 13:33:41 stelian Exp $
 
 Changes between versions 0.4b39 and 0.4b40 (released ????????????????)
 ======================================================================
@@ -8,6 +8,12 @@ Changes between versions 0.4b39 and 0.4b40 (released ????????????????)
 	comparision (if the user doesn't have the necessary permissions
 	to access it for example). Thanks to Kenneth Porter
 	<shiva@sewingwitch.com> for the bug report.
+
+2.	Re-done the 'do not save directory entries to non-dumped inodes
+	(excluded from dump)' feature. The previous implementation
+	worked well for excluded directories but not for regular files.
+	Thanks to Kenneth Porter <shiva@sewingwitch.com> for the bug
+	report.
 
 Changes between versions 0.4b38 and 0.4b39 (released January 21, 2005)
 ======================================================================
