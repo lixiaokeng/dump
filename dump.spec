@@ -1,6 +1,6 @@
 %define	_sbindir /sbin
 # XXX --enable-kerberos		needs krcmd
-%define	myoptions --with-binmode=6755 --with-manowner=root --with-mangrp=root --with-manmode=0644 --with-dumpdates="%{_sysconfdir}/dumpdates" --enable-readline --enable-largefile --enable-qfa
+%define	myoptions --with-binmode=6755 --with-manowner=root --with-mangrp=root --with-manmode=0644 --with-dumpdates="%{_sysconfdir}/dumpdates"
 
 Summary: Programs for backing up and restoring ext2/ext3 filesystems.
 Name: dump
@@ -59,7 +59,7 @@ This package contains statically linked versions of dump and restore.
 %setup -q
 
 %build
-%configure %{myoptions} --enable-static
+%configure %{myoptions} --enable-static -disable-rmt
 
 %ifarch alpha
 RPM_OPT_FLAGS=""
@@ -72,7 +72,7 @@ mv restore/restore restore/restore.static
 
 make distclean
 
-%configure %{myoptions} --enable-rmt
+%configure %{myoptions}
 
 make OPT="$RPM_OPT_FLAGS -Wall -Wpointer-arith -Wstrict-prototypes \
                          -Wmissing-prototypes -Wno-char-subscripts"

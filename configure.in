@@ -23,17 +23,20 @@ dnl
 dnl Handle --enable-debug
 dnl
 AC_ARG_ENABLE([debug],
-[  --enable-debug             include debugging code],
+[  --enable-debug             include debugging code (default is NO)],
 if test "$enableval" = "no"
 then
 	DUMPDEBUG=""
 	RESTOREDEBUG=""
+	echo "Not including debugging code"
 else
 	DUMPDEBUG="-DFDEBUG -DTDEBUG -DWRITEDEBUG -DDIRDEBUG"
 	RESTOREDEBUG="-DDIRDEBUG"
+	echo "Including debugging code"
 fi,
 DUMPDEBUG=""
 RESTOREDEBUG=""
+echo "Not including debugging code by default"
 )
 AC_SUBST(DUMPDEBUG)
 AC_SUBST(RESTOREDEBUG)
@@ -42,12 +45,14 @@ dnl
 dnl Handle --enable-static
 dnl
 AC_ARG_ENABLE([static],
-[  --enable-static            link dump and restore statically],
+[  --enable-static            link dump and restore statically (default is NO)],
 if test "$enableval" = "no"
 then
 	STATIC=""
+	echo "Linking dump and restore dynamically"
 else
 	STATIC="-static"
+	echo "Linking dump and restore statically"
 fi
 ,
 STATIC=""
@@ -59,18 +64,21 @@ dnl
 dnl Handle --enable-rmt
 dnl
 AC_ARG_ENABLE([rmt],
-[  --enable-rmt               compile and install rmt],
+[  --enable-rmt               compile and install rmt (default is YES)],
 if test "$enableval" = "no"
 then
 	RMTDIR=""
 	RMTMAKEFILE=""
+	echo "Not compiling rmt"
 else
 	RMTDIR="rmt"
 	RMTMAKEFILE="rmt/Makefile"
+	echo "Compiling rmt"
 fi
 ,
-RMTDIR=""
-echo "Not compiling rmt by default"
+RMTDIR="rmt"
+RMTMAKEFILE="rmt/Makefile"
+echo "Compiling rmt by default"
 )
 AC_SUBST(RMTDIR)
 
@@ -78,12 +86,14 @@ dnl
 dnl Handle --enable-kerberos
 dnl
 AC_ARG_ENABLE([kerberos],
-[  --enable-kerberos          compile kerberos extensions],
+[  --enable-kerberos          compile kerberos extensions (default is NO)],
 if test "$enableval" = "yes"
 then
 	OPTDEFS="-DKERBEROS"
+	echo "Compiling kerberos extensions"
 else
 	OPTDEFS=""
+	echo "Not compiling kerberos extensions"
 fi
 ,
 OPTDEFS=""
@@ -95,17 +105,20 @@ dnl
 dnl Handle --enable-readline
 dnl
 AC_ARG_ENABLE([readline],
-[  --enable-readline          enable readline support in restore],
+[  --enable-readline          enable readline support in restore (default is YES)],
 if test "$enableval" = "no"
 then
 	READLINE=""
+	echo "Not including readline support"
 else
 	READLINE="-lreadline -ltermcap"
 	AC_DEFINE(HAVE_READLINE)
+	echo "Including readline support"
 fi
 ,
-READLINE=""
-echo "Not including readline support by default"
+READLINE="-lreadline -ltermcap"
+AC_DEFINE(HAVE_READLINE)
+echo "Including readline support by default"
 )
 AC_SUBST(READLINE)
 
@@ -113,52 +126,66 @@ dnl
 dnl Handle --enable-oldsylefscript
 dnl
 AC_ARG_ENABLE([oldstylefscript],
-[  --enable-oldstylefscript   enable old style F script (no arguments)],
+[  --enable-oldstylefscript   enable old style F script (no arguments) (default is NO)],
 if test "$enableval" = "yes"
 then
 	AC_DEFINE(OLD_STYLE_FSCRIPT)
+	echo "Using old style F script"
+else
+	echo "Using new style F script"
 fi
 ,
-echo "Using new style F script"
+echo "Using new style F script by default"
 )
 
 dnl
 dnl Handle --enable-largefile
 dnl
 AC_ARG_ENABLE([largefile],
-[  --enable-largefile         enable Large File System support (your glibc needs to support it)],
+[  --enable-largefile         enable Large File System support (default is YES)],
 if test "$enableval" = "yes"
 then
 	AC_DEFINE(USE_LFS)
+	echo "Enabling Large File System support"
+else
+	echo "Not enabling Large File System support"
 fi
 ,
-echo "Not enabling Large File System support"
+AC_DEFINE(USE_LFS)
+echo "Enabling Large File System support by default"
 )
 
 dnl
 dnl Handle --enable-qfa
 dnl
 AC_ARG_ENABLE([qfa],
-[  --enable-qfa               enable Quick File Access support],
+[  --enable-qfa               enable Quick File Access support (default is YES)],
 if test "$enableval" = "yes"
 then
 	AC_DEFINE(USE_QFA)
+	echo "Enabling Quick File Access support"
+else
+	echo "Not enabling Quick File Access support"
 fi
 ,
-echo "Not enabling Quick File Access support"
+AC_DEFINE(USE_QFA)
+echo "Enabling Quick File Access support by default"
 )
 
 dnl
 dnl Handle --enable-qfadebug
 dnl
 AC_ARG_ENABLE([qfadebug],
-[  --enable-qfadebug          include Quick File Access debugging code],
+[  --enable-qfadebug          include Quick File Access debugging code (default is NO)],
 if test "$enableval" = "yes"
 then
 	AC_DEFINE(DEBUG_QFA)
+	echo "Including Quick File Access debugging code"
+else
+	echo "Not including Quick File Access debugging code"
 fi
 ,
-echo "Not including Quick File Access debugging code"
+echo "Not including Quick File Access debugging code by default"
 )
 
 dnl

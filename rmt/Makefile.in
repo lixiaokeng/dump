@@ -1,7 +1,8 @@
-# $Id: Makefile.in,v 1.7 2002/07/29 12:00:34 stelian Exp $
+# $Id: Makefile.in,v 1.8 2003/01/24 11:01:50 stelian Exp $
 
 top_srcdir=	@top_srcdir@
 srcdir=		@srcdir@
+top_builddir=	..
 
 @MCONFIG@
 
