@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.53 2003/01/10 10:31:10 stelian Exp $";
+	"$Id: traverse.c,v 1.54 2003/01/10 14:46:55 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -133,6 +133,17 @@ typedef ino_t ext2_ino_t;
 #endif
 #ifndef EXT2_RESIZE_INO
 #define EXT2_RESIZE_INO			7
+#endif
+#ifndef EXT2_FT_UNKNOWN
+#define EXT2_FT_UNKNOWN		0
+#define EXT2_FT_REG_FILE 	1
+#define EXT2_FT_DIR		2
+#define EXT2_FT_CHRDEV		3
+#define EXT2_FT_BLKDEV		4
+#define EXT2_FT_FIFO		5
+#define EXT2_FT_SOCK		6
+#define EXT2_FT_SYMLINK		7
+#define EXT2_FT_MAX		8
 #endif
 
 int dump_fs_open(const char *disk, ext2_filsys *fs)
