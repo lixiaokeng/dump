@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: restore.c,v 1.27 2002/02/04 11:18:46 stelian Exp $";
+	"$Id: restore.c,v 1.28 2002/02/04 11:21:20 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -931,15 +931,10 @@ createfiles(void)
 							if (GetTapePos(&curtpos) == 0)
 								msg("before resync at tape position %lld (%ld, %ld, %s)\n", curtpos, next, curfile.ino, curfile.name);
 #endif
-msg("bobo1\n");
 							ReReadInodeFromTape(next);
 #ifdef DEBUG_QFA
-msg("bobo2\n");
-							if (GetTapePos(&curtpos) == 0) {
-msg("bobo3\n");
+							if (GetTapePos(&curtpos) == 0)
 								msg("after resync at tape position %lld (%ld, %ld, %s)\n", curtpos, next, curfile.ino, curfile.name);
-msg("bobo4\n");
-							}
 #endif
 						}
 					}
