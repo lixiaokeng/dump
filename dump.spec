@@ -136,6 +136,9 @@ rm -rf %{buildroot}
 %{_sbindir}/rrestore.static
 
 %changelog
+* Tue Jul 30 2002 Stelian Pop <stelian@popies.net>
+- dump 0.4b31 released, first packaging.
+
 * Thu Jul 25 2002 Stelian Pop <stelian@popies.net>
 - dump 0.4b30 released, first packaging.
 
