@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.58 2002/02/04 11:18:46 stelian Exp $";
+	"$Id: tape.c,v 1.59 2002/03/28 14:53:01 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -175,6 +175,7 @@ static void	xtrcmpskip __P((char *, size_t));
 #endif
 
 static int readmapflag;
+static int readingmaps;		/* set to 1 while reading the maps */
 
 /*
  * Set up an input source. This is called from main.c before setup() is.
@@ -360,18 +361,33 @@ setup(void)
 		Dprintf(stdout, "header read failed at %ld blocks\n", (long)blksread);
 		panic("no header after volume mark!\n");
 	}
+	readingmaps = 1;
 	findinode(&spcl);
 	if (spcl.c_type != TS_CLRI)
 		errx(1, "Cannot find file removal list");
 	maxino = (spcl.c_count * TP_BSIZE * NBBY) + 1;
-	Dprintf(stdout, "maxino = %ld\n", (long)maxino);
 	map = calloc((unsigned)1, (unsigned)howmany(maxino, NBBY));
 	if (map == NULL)
 		errx(1, "no memory for active inode map");
 	usedinomap = map;
 	curfile.action = USING;
 	getfile(xtrmap, xtrmapskip);
-	findinode(&spcl);
+	while (spcl.c_type == TS_ADDR) {
+		/* Recompute maxino and the map */
+		char *oldmap = usedinomap;
+		dump_ino_t oldmaxino = maxino;
+		maxino += (spcl.c_count * TP_BSIZE * NBBY) + 1;
+		map = calloc((unsigned)1, (unsigned)howmany(maxino, NBBY));
+		if (map == NULL)
+			errx(1, "no memory for active inode map");
+		usedinomap = map;
+		memcpy(usedinomap, oldmap, howmany(oldmaxino, NBBY));
+		free(oldmap);
+
+		spcl.c_dinode.di_size = spcl.c_count * TP_BSIZE;
+		getfile(xtrmap, xtrmapskip);
+	}
+	Dprintf(stdout, "maxino = %lu\n", (unsigned long)maxino);
 	if (spcl.c_type != TS_BITS)
 		errx(1, "Cannot find file dump list");
 	map = calloc((unsigned)1, (unsigned)howmany(maxino, NBBY));
@@ -380,6 +396,10 @@ setup(void)
 	dumpmap = map;
 	curfile.action = USING;
 	getfile(xtrmap, xtrmapskip);
+	while (spcl.c_type == TS_ADDR) {
+		spcl.c_dinode.di_size = spcl.c_count * TP_BSIZE;
+		getfile(xtrmap, xtrmapskip);
+	}
 	/*
 	 * If there may be whiteout entries on the tape, pretend that the
 	 * whiteout inode exists, so that the whiteout entries can be
@@ -387,6 +407,7 @@ setup(void)
 	 */
 	if (oldinofmt == 0)
 		SETINO(WINO, dumpmap);
+	readingmaps = 0;
 	findinode(&spcl);
 }
 
@@ -946,7 +967,8 @@ loop:
 	if (last_write_was_hole) {
 		FTRUNCATE(ofile, origsize);
 	}
-	findinode(&spcl);
+	if (!readingmaps) 
+		findinode(&spcl);
 	gettingfile = 0;
 }
 
