@@ -4,7 +4,7 @@
 
 Summary: Programs for backing up and restoring filesystems.
 Name: dump
-Version: 0.4b20
+Version: 0.4b21
 Release: 1
 Copyright: UCB
 Group: Applications/Archiving
@@ -121,6 +121,9 @@ rm -rf %{buildroot}
 %{_sbindir}/rrestore.static
 
 %changelog
+* Sat Jan 30 2001 Stelian Pop <pop@noos.fr>
+- dump 0.4b21 released, first packaging.
+
 * Fri Nov 10 2000 Stelian Pop <pop@noos.fr>
 - dump 0.4b20 released, first packaging.
 
