@@ -357,6 +357,22 @@ if test "$readline_h" = no -o "$readline_lib" = no; then
 fi
 
 dnl
+dnl Check for rl_completion_matches
+dnl
+AC_CHECK_LIB(readline, rl_completion_matches, [rlcm=yes], [rlcm=no], "-ltermcap")
+if test "$rlcm" = yes; then
+	AC_DEFINE(HAVE_READLINE_RLCM)
+fi
+
+dnl
+dnl Check for rl_completion_append_character
+dnl
+AC_CHECK_LIB(readline, rl_completion_append_character, [rcac=yes], [rcac=no], "-ltermcap")
+if test "$rcac" = yes; then
+	AC_DEFINE(HAVE_READLINE_CAC)
+fi
+
+dnl
 dnl Check for zlib headers and libraries
 dnl
 AC_CHECK_HEADER(zlib.h, [zlib_h=yes], [zlib_h=no])

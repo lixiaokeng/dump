@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: interactive.c,v 1.22 2002/02/04 12:07:38 stelian Exp $";
+	"$Id: interactive.c,v 1.23 2002/02/25 13:54:53 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -836,6 +836,10 @@ onintr(int signo)
 
 #if HAVE_READLINE
 
+#if !HAVE_READLINE_RLCM
+#define rl_completion_matches completion_matches
+#endif
+
 /* A static variable for holding the line. */
 static char *line_read = NULL;
 
@@ -1024,7 +1028,9 @@ initialize_readline(void)
 	rl_readline_name = "dump";
 	rl_attempted_completion_function = restore_completion;
 	rl_completion_entry_function = NULL;
+#if HAVE_READLINE_CAC	/* compile with readline 2.0 */
 	rl_completion_append_character = '\0';
+#endif
 	rl_instream = terminal;
 }
 

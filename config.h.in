@@ -73,3 +73,9 @@
 
 /* Define this if you want to include Quick File Access debugging code */
 #undef DEBUG_QFA
+
+/* Define this if your readline libs have the rl_completion_append_character variable */
+#undef HAVE_READLINE_CAC
+
+/* Define this if your readline libs have the rl_completion_matches library */
+#undef HAVE_READLINE_RLCM

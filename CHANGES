@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.164 2002/02/21 14:07:14 stelian Exp $
+$Id: CHANGES,v 1.165 2002/02/25 13:54:52 stelian Exp $
 
 Changes between versions 0.4b27 and 0.4b28 (released ?????????????????)
 =======================================================================
@@ -10,6 +10,13 @@ Changes between versions 0.4b27 and 0.4b28 (released ?????????????????)
 2.	Added a small note in the dump man page specifying that
 	there should be no white space between the option letter and
 	the -j or -z parameter, thanks to Kenneth Porter <shiva@well.com>
+
+3.	Made restore work with older versions of the readline library,
+	by checking in configure for several extended symbols. Restore
+	can now be compiled with a readline as old as the 2.0 release
+	(though it may be a good idea to upgrade it to a more recent
+	version...). Thanks to Andrew Donkin <ard@waikato.ac.nz> for
+	reporting the build failures.
 
 Changes between versions 0.4b26 and 0.4b27 (released February 15, 2002)
 =======================================================================

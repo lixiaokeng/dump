@@ -1,4 +1,4 @@
-$Id: THANKS,v 1.53 2002/01/25 14:59:53 stelian Exp $
+$Id: THANKS,v 1.54 2002/02/25 13:54:52 stelian Exp $
 
 Dump and restore were written by the people of the CSRG at the University
 of California, Berkeley.
@@ -35,6 +35,7 @@ Abhijit Dasgupta	abhijit@ans.net
 John R. Dennison	gerdesas@users.sourceforge.net
 Eugenio Diaz		getnito@yahoo.com
 Andreas Dilger		adilger@turbolinux.com
+Andrew Donkin		ard@waikato.ac.nz
 Bernhard Erdmann	bernhard.erdmann@gmx.de
 Jason Fearon		jasonf@netrider.org.au
 Jeremy Fitzhardinge	jeremy@goop.org
@@ -89,4 +90,4 @@ Jason Venner		jason@idiom.com
 Christian Weisgerber	naddy@mips.rhein-neckar.de
 Kim Yong-jun		loveyou@hackerslab.org
 John Yu			jky@it.bu.edu
-Ian Zimmerman		itz@speakeasy.org>
+Ian Zimmerman		itz@speakeasy.org
