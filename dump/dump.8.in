@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.12 2000/03/02 11:34:51 stelian Exp $
+.\"	$Id: dump.8.in,v 1.13 2000/03/02 12:07:36 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -195,11 +195,18 @@ program is
 this can be overridden by the environment variable
 .Ev RMT .
 .It Fl F Ar script
-Run script at the end of each tape. The script must return 0
-if the dump should continue without asking the user to change
-the tape, 1 if the dump should continue but ask the user
-to change the tape. Any other exit code will cause dump to
-abort.
+Run script at the end of each tape. The script must return 0 if 
+.Nm
+should continue without asking the user to change the tape, 1 if 
+.Nm
+dump should continue but ask the user to change the tape. 
+Any other exit code will cause
+.Nm
+to abort.
+For security reasons,
+.Nm
+reverts back to the real user ID and the real group ID before 
+running the script.
 .It Fl k
 Use Kerberos authentication to talk to remote tape servers.  (Only
 available if this option was enabled when

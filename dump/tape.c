@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.15 2000/03/02 11:34:51 stelian Exp $";
+	"$Id: tape.c,v 1.16 2000/03/02 12:07:36 stelian Exp $";
 #endif /* not lint */
 
 #ifdef __linux__
@@ -107,6 +107,7 @@ static	void enslave __P((void));
 static	void flushtape __P((void));
 static	void killall __P((void));
 static	void rollforward __P((void));
+static	int system_command __P((const char *command));
 
 /*
  * Concurrent dump mods (Caltech) - disk block reading and tape writing
