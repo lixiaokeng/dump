@@ -304,22 +304,6 @@ if test "$ac_cv_func_glob" = "yes"; then
 fi
 
 dnl
-dnl Check if sigaction structure has a sa_sigaction field
-dnl
-AC_MSG_CHECKING(whether struct sigaction has a sa_sigaction field)
-AC_CACHE_VAL(dump_cv_struct_sa_sigaction,
-AC_TRY_COMPILE(
-[#include <stdio.h>
-#include <signal.h>],
-[struct sigaction action; action.sa_sigaction = NULL;],
-[dump_cv_struct_sa_sigaction=yes],
-[dump_cv_struct_sa_sigaction=no]))
-AC_MSG_RESULT($dump_cv_struct_sa_sigaction)
-if test "$dump_cv_struct_sa_sigaction" = yes; then
-  AC_DEFINE(HAVE_SIGACTION_SA_SIGACTION)
-fi
-
-dnl
 dnl Check for types
 dnl
 AC_CHECK_TYPE(quad_t, __s64)

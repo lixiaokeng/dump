@@ -47,6 +47,3 @@
 
 /* Define this is you want old style F script (no arguments) */
 #undef OLD_STYLE_FSCRIPT
-
-/* Define if you have the sa_sigaction field in struct sigaction */
-#undef HAVE_SIGACTION_SA_SIGACTION
