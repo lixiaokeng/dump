@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.21 2001/04/24 10:59:13 stelian Exp $";
+	"$Id: main.c,v 1.22 2001/04/24 15:04:59 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -248,6 +248,11 @@ main(int argc, char *argv[])
 
 	if (command == '\0')
 		errx(1, "none of C, i, R, r, t or x options specified");
+
+#ifdef USE_QFA
+	if (!mflag && tapeposflag)
+		errx(1, "m and Q options are mutually exclusive"):
+#endif
 
 	if (signal(SIGINT, onintr) == SIG_IGN)
 		(void) signal(SIGINT, SIG_IGN);
@@ -496,11 +501,11 @@ usage(void)
 	(void)fprintf(stderr,
 	  "usage:\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n",
 	  __progname, " -C [-c" kerbflag "Mvy] [-b blocksize] [-D filesystem] [-f file] [-s fileno]",
-	  __progname, " -i [-ch" kerbflag "mMuvy] [-b blocksize] [-f file] [-s fileno]",
-	  __progname, " -r [-c" kerbflag "Muvy] [-b blocksize] [-f file] " qfaflag "[-s fileno] [-T directory]",
+	  __progname, " -i [-ch" kerbflag "mMuvy] [-b blocksize] [-f file] " qfaflag "[-s fileno]",
+	  __progname, " -r [-c" kerbflag "Muvy] [-b blocksize] [-f file] [-s fileno] [-T directory]",
 	  __progname, " -R [-c" kerbflag "Muvy] [-b blocksize] [-f file] [-s fileno] [-T directory]",
-	  __progname, " -t [-ch" kerbflag "Muvy] [-b blocksize] [-f file] [-s fileno] [-X filelist] [file ...]",
-	  __progname, " -x [-ch" kerbflag "mMuvy] [-b blocksize] [-f file] [-s fileno] [-X filelist] [file ...]");
+	  __progname, " -t [-ch" kerbflag "Muvy] [-b blocksize] [-f file] " qfaflag "[-s fileno] [-X filelist] [file ...]",
+	  __progname, " -x [-ch" kerbflag "mMuvy] [-b blocksize] [-f file] " qfaflag "[-s fileno] [-X filelist] [file ...]");
 	exit(1);
 }
 

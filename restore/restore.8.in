@@ -29,7 +29,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: restore.8.in,v 1.13 2001/04/10 12:46:53 stelian Exp $
+.\"	$Id: restore.8.in,v 1.14 2001/04/24 15:04:59 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt RESTORE 8
@@ -44,7 +44,6 @@
 .Op Fl b Ar blocksize
 .Op Fl D Ar filesystem
 .Op Fl f Ar file
-.Op Fl Q Ar file
 .Op Fl s Ar fileno
 .Op Fl T Ar directory
 .Nm restore
@@ -60,7 +59,6 @@
 .Op Fl ckMNuvy
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
-.Op Fl Q Ar file
 .Op Fl s Ar fileno
 .Op Fl T Ar directory
 .Nm restore
@@ -68,7 +66,6 @@
 .Op Fl ckMNuvy
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
-.Op Fl Q Ar file
 .Op Fl s Ar fileno
 .Op Fl T Ar directory
 .Nm restore
