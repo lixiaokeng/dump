@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.231 2003/05/12 14:16:35 stelian Exp $
+$Id: CHANGES,v 1.232 2003/09/03 15:00:21 stelian Exp $
 
 Changes between versions 0.4b34 and 0.4b35 (released ??????????????)
 ====================================================================
@@ -12,9 +12,15 @@ Changes between versions 0.4b34 and 0.4b35 (released ??????????????)
 	LDFLAGS environment variables. Thanks to Arcady Genkin
 	<antipode@users.sourceforge.net> for reporting the bug.
 
-3.	Make -e/-E options of dump accept an unlimited number of inodes
+3.	Made -e/-E options of dump accept an unlimited number of inodes
 	to be excluded, rather than a hardcoded maximum. Thanks to 
 	Dietrich Rothe <d-rothe@users.sourceforge.net> for the patch.
+
+4.	Updated the autoconf system to 2.50. Forced the -D_BSD_SOURCE
+	and -D_USE_BSD_SIGNAL defines in configure in order to solve
+	64bit build problems because quad_t is redifined with a 
+	different signature. Thanks to Mike Harris <mharris@redhat.com>
+	for reporting this bug.
 
 Changes between versions 0.4b33 and 0.4b34 (released April 18, 2003)
 ====================================================================
