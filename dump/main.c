@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.45 2001/04/12 16:03:29 stelian Exp $";
+	"$Id: main.c,v 1.46 2001/04/24 10:59:12 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -91,7 +91,7 @@ int	ntrec = NTREC;	/* # tape blocks in each tape record */
 int	cartridge = 0;	/* Assume non-cartridge tape */
 #ifdef USE_QFA
 int	tapepos = 0; 	/* assume no QFA tapeposition needed by user */
-#endif /* USA_QFA */
+#endif /* USE_QFA */
 int	dokerberos = 0;	/* Use Kerberos authentication */
 long	dev_bsize = 1;	/* recalculated below */
 long	blocksperfile;	/* output blocks per file */
@@ -160,7 +160,7 @@ main(int argc, char *argv[])
 
 #ifdef USE_QFA
 	gTapeposfd = -1;
-#endif /* USA_QFA */
+#endif /* USE_QFA */
 
 	while ((ch = getopt(argc, argv,
 			    "0123456789aB:b:cd:e:f:F:h:L:"
@@ -282,7 +282,7 @@ main(int argc, char *argv[])
 			gTapeposfile = optarg;
 			tapepos = 1;
 			break;
-#endif /* USA_QFA */
+#endif /* USE_QFA */
 			
 		case 's':		/* tape size, feet */
 			unlimited = 0;

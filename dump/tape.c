@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.43 2001/04/12 16:03:29 stelian Exp $";
+	"$Id: tape.c,v 1.44 2001/04/24 10:59:12 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1056,7 +1056,7 @@ doslave(int cmd, int slave_number)
 	long curtapepos;
 	union u_spcl *uspclptr;
 	struct s_spcl *spclptr;
-#endif /* USA_QFA */
+#endif /* USE_QFA */
 
 	/*
 	 * Need our own seek pointer.
@@ -1108,29 +1108,6 @@ doslave(int cmd, int slave_number)
 			}
 		}
 
-#ifdef USE_QFA
-		if (gTapeposfd >= 0) {
-			uspclptr = (union u_spcl *)&slp->tblock[0];
-			spclptr = &uspclptr->s_spcl;
-			if ((spclptr->c_magic == NFS_MAGIC) && 
-			    (spclptr->c_type == TS_INODE)) {
-				/* if an error occured previously don't
-				 * try again */
-				if (gtperr == 0) {
-					if ((gtperr = GetTapePos(&curtapepos)) == 0) {
-#ifdef DEBUG_QFA
-						msg("inode %ld at tapepos %ld\n", spclptr->c_inumber, curtapepos);
-#endif
-						sprintf(gTps, "%ld\t%d\t%ld\n", (unsigned long)spclptr->c_inumber, tapeno, curtapepos);
-						if (write(gTapeposfd, gTps, strlen(gTps)) != strlen(gTps)) {
-				       			quit("error writing tapepos file.\n");
-						}
-					}
-				}
-			}
-		}
-#endif /* USE_QFA */
-						
 		/* Try to write the data... */
 		wrote = 0;
 		eot_count = 0;
@@ -1187,6 +1164,29 @@ doslave(int cmd, int slave_number)
 		ready = 0;
 		caught = 0;
 
+#ifdef USE_QFA
+		if (gTapeposfd >= 0) {
+			uspclptr = (union u_spcl *)&slp->tblock[0];
+			spclptr = &uspclptr->s_spcl;
+			if ((spclptr->c_magic == NFS_MAGIC) && 
+			    (spclptr->c_type == TS_INODE)) {
+				/* if an error occured previously don't
+				 * try again */
+				if (gtperr == 0) {
+					if ((gtperr = GetTapePos(&curtapepos)) == 0) {
+#ifdef DEBUG_QFA
+						msg("inode %ld at tapepos %ld\n", spclptr->c_inumber, curtapepos);
+#endif
+						sprintf(gTps, "%ld\t%d\t%ld\n", (unsigned long)spclptr->c_inumber, tapeno, curtapepos);
+						if (write(gTapeposfd, gTps, strlen(gTps)) != strlen(gTps)) {
+				       			warn("error writing tapepos file.\n");
+						}
+					}
+				}
+			}
+		}
+#endif /* USE_QFA */
+						
 		while (eot_count < 10 && size < bufsize) {
 #ifdef RDUMP
 			if (host)
