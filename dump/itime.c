@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: itime.c,v 1.10 2000/03/01 10:16:05 stelian Exp $";
+	"$Id: itime.c,v 1.11 2000/11/10 11:48:31 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -78,10 +78,10 @@ static const char rcsid[] =
 
 #include "dump.h"
 
-struct	dumpdates **ddatev = 0;
-int	nddates = 0;
-int	ddates_in = 0;
-struct	dumptime *dthead = 0;
+struct	dumpdates **ddatev;
+int	nddates;
+int	ddates_in;
+struct	dumptime *dthead;
 
 static	void dumprecout __P((FILE *, struct dumpdates *));
 static	int getrecord __P((FILE *, struct dumpdates *));
@@ -317,5 +317,7 @@ makedumpdate(struct dumpdates *ddp, char *tbuf)
 	ddp->dd_ddate = unctime(tbuf);
 	if (ddp->dd_ddate < 0)
 		return(-1);
+	/* fstab entry */
+	ddp->dd_fstab = fstabsearch(ddp->dd_name);
 	return(0);
 }

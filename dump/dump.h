@@ -4,7 +4,7 @@
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *	Stelian Pop <pop@cybercable.fr>, 1999-2000
  *
- *	$Id: dump.h,v 1.13 2000/03/02 11:34:51 stelian Exp $
+ *	$Id: dump.h,v 1.14 2000/11/10 11:48:31 stelian Exp $
  */
 
 /*-
@@ -194,6 +194,7 @@ struct	fstab *fstabsearchdir __P((const char *key, char *dir));	/* search fs_fil
  */
 struct dumpdates {
 	char	dd_name[MAXPATHLEN+3];
+	struct fstab *dd_fstab;
 	char	dd_level;
 	time_t	dd_ddate;
 };

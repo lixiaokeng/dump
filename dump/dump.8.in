@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.16 2000/08/19 23:48:10 stelian Exp $
+.\"	$Id: dump.8.in,v 1.17 2000/11/10 11:48:31 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -300,10 +300,12 @@ The
 .Fl W
 option causes
 .Nm
-to print out, for each file system in
+to print out, for all file systems in
 .Pa __DUMPDATES__ ,
+and regognized file systems in
+.Pa /etc/fstab .
 the most recent dump date and level,
-and highlights those file systems that should be dumped.
+and highlights those that should be dumped.
 If the
 .Fl W
 option is set, all other options are ignored, and
@@ -312,7 +314,9 @@ exits immediately.
 .It Fl w
 Is like
 .Fl W ,
-but prints only those filesystems which need to be dumped.
+but prints only recognized filesystems in
+.Pa /etc/fstab
+which need to be dumped.
 .El
 .Pp
 .Nm Dump
@@ -459,17 +463,6 @@ that contain the text 'read error'.
 Each reel requires a new process, so parent processes for
 reels already written just hang around until the entire tape
 is written.
-.Pp
-.Nm Dump
-with the
-.Fl W
-or
-.Fl w
-option does not report filesystems that have never been recorded
-in
-.Pa __DUMPDATES__ ,
-even if listed in
-.Pa /etc/fstab .
 .Pp
 It would be nice if
 .Nm

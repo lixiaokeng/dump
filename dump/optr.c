@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: optr.c,v 1.11 2000/08/19 23:15:38 stelian Exp $";
+	"$Id: optr.c,v 1.12 2000/11/10 11:48:31 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -67,10 +67,14 @@ static const char rcsid[] =
 
 #include "dump.h"
 #include "pathnames.h"
+#include "bylabel.h"
 
 static	void alarmcatch __P((int));
 int	datesort __P((const void *, const void *));
 static	void sendmes __P((const char *, const char *));
+
+/* List of filesystem types that we can dump (same ext2 on-disk format) */
+static char *fstypes[] = { "ext2", "ext3", "InterMezzo", NULL };
 
 /*
  *	Query the operator; This previously-fascist piece of code
@@ -435,6 +439,7 @@ allocfsent(struct fstab *fs)
 		fs->fs_file[strlen(fs->fs_file) - 1] = '\0';
 	if ((new->fs_file = strdup(fs->fs_file)) == NULL ||
 	    (new->fs_type = strdup(fs->fs_type)) == NULL ||
+	    (new->fs_vfstype = strdup(fs->fs_vfstype)) == NULL ||
 	    (new->fs_spec = strdup(fs->fs_spec)) == NULL)
 		quit("%s\n", strerror(errno));
 	new->fs_passno = fs->fs_passno;
@@ -444,6 +449,7 @@ allocfsent(struct fstab *fs)
 
 struct	pfstab {
 	struct	pfstab *pf_next;
+	struct  dumpdates *pf_dd;
 	struct	fstab *pf_fstab;
 };
 
@@ -452,8 +458,9 @@ static	struct pfstab *table;
 void
 getfstab(void)
 {
-	register struct fstab *fs;
-	register struct pfstab *pf;
+	struct fstab *fs;
+	struct pfstab *pf;
+	struct pfstab *pfold = NULL;
 
 	if (setfsent() == 0) {
 		msg("Can't open %s for dump table information: %s\n",
@@ -466,11 +473,19 @@ getfstab(void)
 		    strcmp(fs->fs_type, FSTAB_RQ))
 			continue;
 		fs = allocfsent(fs);
+		fs->fs_passno = 0;
 		if ((pf = (struct pfstab *)malloc(sizeof (*pf))) == NULL)
 			quit("%s\n", strerror(errno));
 		pf->pf_fstab = fs;
-		pf->pf_next = table;
-		table = pf;
+		pf->pf_next = NULL;
+
+		/* keep table in /etc/fstab order for use with -w and -W */
+		if (pfold) {
+			pfold->pf_next = pf;
+			pfold = pf;
+		} else
+			pfold = table = pf;
+
 	}
 	(void) endfsent();
 }
@@ -550,49 +565,120 @@ fstabsearchdir(const char *key, char *directory)
 }
 #endif
 
+static void
+print_wmsg(char arg, int dumpme, const char *dev, int level,
+	   const char *mtpt, time_t ddate)
+{
+	char *date;
+	
+	if (ddate)
+		date = (char *)ctime(&ddate);
+	//date[16] = '\0';	/* blast away seconds and year */
+
+	if (!dumpme && arg == 'w')
+		return;
+
+	(void) printf("%c %8s\t(%6s) Last dump: ",
+		      dumpme && (arg != 'w') ? '>' : ' ',
+		      dev,
+		      mtpt ? mtpt : "");
+
+	if (ddate)
+		printf(" Level %c, Date %s\n",
+		      level, date);
+	else
+		printf(" never\n");
+}
+
 /*
  *	Tell the operator what to do
  */
 void
 lastdump(char arg) /* w ==> just what to do; W ==> most recent dumps */
 {
-	register int i;
-	register struct fstab *dt;
-	register struct dumpdates *dtwalk=NULL;
-	char *lastname, *date;
-	int dumpme;
+	struct pfstab *pf;
 	time_t tnow;
 
 	(void) time(&tnow);
 	getfstab();		/* /etc/fstab input */
 	initdumptimes(0);	/* dumpdates input */
+	if (ddatev == NULL && table == NULL) {
+		(void) printf("No %s or %s file found\n",
+			      _PATH_FSTAB, _PATH_DUMPDATES);
+		return;
+	}
+
+	if (arg == 'w')
+		(void) printf("Dump these file systems:\n");
+	else
+		(void) printf("Last dump(s) done (Dump '>' file systems):\n");
+
 	if (ddatev != NULL) {
+		struct dumpdates *dtwalk = NULL;
+		int i;
+		char *lastname;
+
 		qsort((char *) ddatev, nddates, sizeof(struct dumpdates *), datesort);
 
-		if (arg == 'w')
-			(void) printf("Dump these file systems:\n");
-		else
-			(void) printf("Last dump(s) done (Dump '>' file systems):\n");
+		lastname = "??";
+		ITITERATE(i, dtwalk) {
+			struct fstab *dt;
+			if (strncmp(lastname, dtwalk->dd_name,
+				sizeof(dtwalk->dd_name)) == 0)
+				continue;
+			lastname = dtwalk->dd_name;
+			if ((dt = dtwalk->dd_fstab) != NULL &&
+			    dt->fs_freq != 0) {
+				/* Overload fs_freq as dump level and
+				 * fs_passno as date, because we can't
+				 * change struct fstab format.
+				 * A negative fs_freq means this
+				 * filesystem needs to be dumped.
+				 */
+				dt->fs_passno = dtwalk->dd_ddate;
+				if (dtwalk->dd_ddate <
+				    tnow - (dt->fs_freq * 86400))
+					dt->fs_freq = -dtwalk->dd_level;
+				else
+					dt->fs_freq = dtwalk->dd_level;
+
+			}
+		}
+	}
+
+	/* print in /etc/fstab order only those filesystem types we can dump */
+	for (pf = table; pf != NULL; pf = pf->pf_next) {
+		struct fstab *dt = pf->pf_fstab;
+		char **type;
+
+		for (type = fstypes; *type != NULL; type++) {
+			if (strncmp(dt->fs_vfstype, *type,
+				    sizeof(dt->fs_vfstype)) == 0) {
+				const char *disk = get_device_name(dt->fs_spec);
+				print_wmsg(arg, dt->fs_freq < 0 || !dt->fs_passno,
+					   disk ? disk : dt->fs_spec,
+					   dt->fs_freq < 0 ? -dt->fs_freq : dt->fs_freq, 
+					   dt->fs_file,
+					   dt->fs_passno);
+			}
+		}
+	}
+
+	/* print in /etc/dumpdates order if not in /etc/fstab */
+	if (ddatev != NULL) {
+		struct dumpdates *dtwalk = NULL;
+		char *lastname;
+		int i;
+
 		lastname = "??";
 		ITITERATE(i, dtwalk) {
 			if (strncmp(lastname, dtwalk->dd_name,
-		    		sizeof(dtwalk->dd_name)) == 0)
+				sizeof(dtwalk->dd_name)) == 0 ||
+			    dtwalk->dd_fstab != NULL)
 				continue;
-			date = (char *)ctime(&dtwalk->dd_ddate);
-			date[16] = '\0';	/* blast away seconds and year */
 			lastname = dtwalk->dd_name;
-			dt = fstabsearch(dtwalk->dd_name);
-			dumpme = (dt != NULL &&
-		    		dt->fs_freq != 0 &&
-		    		dtwalk->dd_ddate < tnow - (dt->fs_freq * 86400));
-			if (arg != 'w' || dumpme)
-				(void) printf(
-			    		"%c %8s\t(%6s) Last dump: Level %c, Date %s\n",
-			    		dumpme && (arg != 'w') ? '>' : ' ',
-			    		dtwalk->dd_name,
-			    		dt ? dt->fs_file : "",
-			    		dtwalk->dd_level,
-			   		date);
+			print_wmsg(arg, 0, dtwalk->dd_name,
+				   dtwalk->dd_level, NULL, dtwalk->dd_ddate);
 		}
 	}
 }

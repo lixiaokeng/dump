@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.86 2000/11/10 09:35:07 stelian Exp $
+$Id: CHANGES,v 1.87 2000/11/10 11:48:31 stelian Exp $
 
 Changes between versions 0.4b19 and 0.4b20 (released ???????????????)
 =====================================================================
@@ -40,6 +40,11 @@ Changes between versions 0.4b19 and 0.4b20 (released ???????????????)
 8.	Get the values for the default tape device and the location
 	of fstab file from the system headers. Thanks to
 	Andreas Dilger <adilger@turbolinux.com> for the patch.
+
+9.	Made dump -w|-W report all recognized filesystems 
+	present in either /etc/fstab or /etc/dumpdates, and present
+	the list in the same order as in fstab file. Thanks
+	to Andreas Dilger <adilger@turbolinux.com> for the patch.
 
 Changes between versions 0.4b18 and 0.4b19 (released August 20, 2000)
 =====================================================================
