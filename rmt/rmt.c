@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: rmt.c,v 1.19 2002/04/16 21:00:59 stelian Exp $";
+	"$Id: rmt.c,v 1.20 2002/05/21 15:48:46 stelian Exp $";
 #endif /* not linux */
 
 /*
@@ -117,13 +117,14 @@ static int	rmt_version = 0;
 char	*checkbuf __P((char *, int));
 void	 error __P((int));
 void	 getstring __P((char *));
+int	 getopenflags __P((char *));
 
 int
 main(int argc, char *argv[])
 {
 	int rval = 0;
 	char c;
-	int n, i, cc;
+	int n, i, cc, oflags;
 	unsigned long block = 0;
 
 	argc--, argv++;
@@ -147,11 +148,23 @@ top:
 		getstring(filemode);
 		DEBUG2("rmtd: O %s %s\n", device, filemode);
 		/*
+		 * Translate extended GNU syntax into its numeric platform equivalent
+		 */
+		oflags = getopenflags(filemode);
+#ifdef  O_TEXT
+		/*
+		 * Default to O_BINARY the client may not know that we need it.
+		 */
+		if ((oflags & O_TEXT) == 0)
+			oflags |= O_BINARY;
+#endif
+		DEBUG2("rmtd: O %s %d\n", device, oflags);
+		/*
 		 * XXX the rmt protocol does not provide a means to
 		 * specify the permission bits; allow rw for everyone,
 		 * as modified by the users umask
 		 */
-		tape = OPEN(device, atoi(filemode), 0666);
+		tape = OPEN(device, oflags, 0666);
 		if (tape < 0)
 			goto ioerror;
 		block = 0;
@@ -444,4 +457,97 @@ error(int num)
 	DEBUG2("rmtd: E %d (%s)\n", num, strerror(num));
 	(void)snprintf(resp, sizeof(resp), "E%d\n%s\n", num, strerror(num));
 	(void)write(1, resp, strlen(resp));
+}
+
+struct openflags {
+	char 	*name;
+	int	value;
+} openflags[] = {
+	{ "O_RDONLY",	O_RDONLY },
+	{ "O_WRONLY",	O_WRONLY },
+	{ "O_RDWR",	O_RDWR },
+#ifdef O_CREAT
+	{ "O_CREAT",	O_CREAT },
+#endif
+#ifdef O_EXCL
+	{ "O_EXCL",	O_EXCL },
+#endif
+#ifdef O_NOCTTY
+	{ "O_NOCTTY",	O_NOCTTY },
+#endif
+#ifdef O_TRUNC
+	{ "O_TRUNC",	O_TRUNC },
+#endif
+#ifdef O_APPEND
+	{ "O_APPEND",	O_APPEND },
+#endif
+#ifdef O_NONBLOCK
+	{ "O_NONBLOCK",	O_NONBLOCK },
+#endif
+#ifdef O_NDELAY
+	{ "O_NDELAY",	O_NDELAY },
+#endif
+#ifdef O_SYNC
+	{ "O_SYNC",	O_SYNC },
+#endif
+#ifdef O_FSYNC
+	{ "O_FSYNC",	O_FSYNC },
+#endif
+#ifdef O_ASYNC
+	{ "O_ASYNC",	O_ASYNC },
+#endif
+#ifdef O_TEXT
+	{ "O_TEXT",	O_TEXT },
+#endif
+#ifdef O_DSYNC
+	{ "O_DSYNC",	O_DSYNC },
+#endif
+#ifdef O_RSYNC
+	{ "O_RSYNC",	O_RSYNC },
+#endif
+#ifdef O_PRIV
+	{ "O_PRIV",	O_PRIV },
+#endif
+#ifdef O_LARGEFILE
+	{ "O_LARGEFILE",O_LARGEFILE },
+#endif
+	{ NULL,		0 }
+};
+
+/* Parts of this stolen again from Jörg Schilling's star package... */
+int
+getopenflags(char *filemode)
+{
+	char	*p = filemode;
+	struct openflags *op;
+	int	result = 0;
+
+	do {
+		/* skip space */
+		while (*p != '\0' && *p == ' ')
+			p++;
+		/* get O_XXXX constant */
+		if (p[0] != 'O' || p[1] != '_') {
+			/* numeric syntax detected */
+			result = atoi(filemode);
+			result &= O_RDONLY | O_WRONLY | O_RDWR;
+			return result;
+		}
+
+		/* translate O_XXXX constant */
+		for (op = openflags; op->name; op++) {
+			int slen = strlen(op->name);
+			if ((strncmp(op->name, p, slen) == 0) &&
+			    (p[slen] == '|' || p[slen] == ' ' ||
+			     p[slen] == '\0')) {
+				result |= op->value;
+				break;
+			}
+		}
+
+		/* goto next constant */
+		p = strchr(p, '|');
+	} while (p && *p++ == '|');
+
+	return result;
 }

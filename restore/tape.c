@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.61 2002/05/06 08:45:41 stelian Exp $";
+	"$Id: tape.c,v 1.62 2002/05/21 15:48:46 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -285,7 +285,7 @@ setup(void)
 
 #ifdef RRESTORE
 	if (host)
-		mt = rmtopen(temptape, 0);
+		mt = rmtopen(temptape, "O_RDONLY");
 	else
 #endif
 	if (pipein)
@@ -541,7 +541,7 @@ again:
 	}
 #ifdef RRESTORE
 	if (host)
-		mt = rmtopen(magtape, 0);
+		mt = rmtopen(magtape, "O_RDONLY");
 	else
 #endif
 		mt = OPEN(magtape, O_RDONLY, 0);

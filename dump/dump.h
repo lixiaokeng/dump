@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: dump.h,v 1.37 2002/04/04 08:20:23 stelian Exp $
+ *	$Id: dump.h,v 1.38 2002/05/21 15:48:46 stelian Exp $
  */
 
 /*-
@@ -185,7 +185,7 @@ struct	dinode *getino __P((dump_ino_t inum));
 /* rdump routines */
 #ifdef RDUMP
 int	rmthost __P((const char *host));
-int	rmtopen __P((const char *tape, int mode));
+int	rmtopen __P((const char *tape, const char *mode));
 void	rmtclose __P((void));
 int	rmtread __P((char *buf, size_t count));
 int	rmtwrite __P((const char *buf, size_t count));

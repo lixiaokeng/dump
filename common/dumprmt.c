@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dumprmt.c,v 1.20 2002/01/25 15:08:59 stelian Exp $";
+	"$Id: dumprmt.c,v 1.21 2002/05/21 15:48:46 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -273,11 +273,11 @@ okname(const char *cp0)
 }
 
 int
-rmtopen(const char *tape, int mode)
+rmtopen(const char *tape, const char *mode)
 {
 	char buf[MAXPATHLEN];
 
-	(void)snprintf(buf, sizeof (buf), "O%s\n%d\n", tape, mode);
+	(void)snprintf(buf, sizeof (buf), "O%s\n%s\n", tape, mode);
 	rmtstate = TS_OPEN;
 	return (rmtcall(tape, buf));
 }
