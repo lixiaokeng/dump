@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.45 2003/10/26 16:05:48 stelian Exp $";
+	"$Id: main.c,v 1.46 2004/04/13 13:04:33 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -92,6 +92,7 @@ int abortifconnerr = 1;		/* set to 1 if lib dumprmt.o should exit on connection 
 int	aflag = 0, bflag = 0, cvtflag = 0, dflag = 0, vflag = 0, yflag = 0;
 int	hflag = 1, mflag = 1, Mflag = 0, Nflag = 0, Vflag = 0, zflag = 0;
 int	uflag = 0, lflag = 0, Lflag = 0, oflag = 0;
+int	ufs2flag = 0;
 char	*Afile = NULL;
 int	dokerberos = 0;
 char	command = '\0';

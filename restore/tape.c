@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.78 2004/01/28 10:02:35 stelian Exp $";
+	"$Id: tape.c,v 1.79 2004/04/13 13:04:33 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -2457,34 +2457,47 @@ converthead(struct s_spcl *buf)
 		goto good;
 	}
 	memcpy(&u_ospcl.s_ospcl, buf, TP_BSIZE);
-	memset((char *)buf, 0, (long)TP_BSIZE);
-	buf->c_type = u_ospcl.s_ospcl.c_type;
-	buf->c_date = u_ospcl.s_ospcl.c_date;
-	buf->c_ddate = u_ospcl.s_ospcl.c_ddate;
-	buf->c_volume = u_ospcl.s_ospcl.c_volume;
-	buf->c_tapea = u_ospcl.s_ospcl.c_tapea;
-	buf->c_inumber = u_ospcl.s_ospcl.c_inumber;
-	buf->c_checksum = u_ospcl.s_ospcl.c_checksum;
-	buf->c_magic = u_ospcl.s_ospcl.c_magic;
-	buf->c_dinode.di_mode = u_ospcl.s_ospcl.c_dinode.odi_mode;
-	buf->c_dinode.di_nlink = u_ospcl.s_ospcl.c_dinode.odi_nlink;
-	buf->c_dinode.di_uid = u_ospcl.s_ospcl.c_dinode.odi_uid;
-	buf->c_dinode.di_gid = u_ospcl.s_ospcl.c_dinode.odi_gid;
-	buf->c_dinode.di_size = u_ospcl.s_ospcl.c_dinode.odi_size;
-	buf->c_dinode.di_rdev = u_ospcl.s_ospcl.c_dinode.odi_rdev;
+	if (checksum((int *)(&u_ospcl.s_ospcl)) == FAIL)
+		return(FAIL);
+	if (u_ospcl.s_ospcl.c_magic == OFS_MAGIC) {
+		memset((char *)buf, 0, (long)TP_BSIZE);
+		buf->c_type = u_ospcl.s_ospcl.c_type;
+		buf->c_date = u_ospcl.s_ospcl.c_date;
+		buf->c_ddate = u_ospcl.s_ospcl.c_ddate;
+		buf->c_volume = u_ospcl.s_ospcl.c_volume;
+		buf->c_tapea = u_ospcl.s_ospcl.c_tapea;
+		buf->c_inumber = u_ospcl.s_ospcl.c_inumber;
+		buf->c_checksum = u_ospcl.s_ospcl.c_checksum;
+		buf->c_magic = u_ospcl.s_ospcl.c_magic;
+		buf->c_dinode.di_mode = u_ospcl.s_ospcl.c_dinode.odi_mode;
+		buf->c_dinode.di_nlink = u_ospcl.s_ospcl.c_dinode.odi_nlink;
+		buf->c_dinode.di_uid = u_ospcl.s_ospcl.c_dinode.odi_uid;
+		buf->c_dinode.di_gid = u_ospcl.s_ospcl.c_dinode.odi_gid;
+		buf->c_dinode.di_size = u_ospcl.s_ospcl.c_dinode.odi_size;
+		buf->c_dinode.di_rdev = u_ospcl.s_ospcl.c_dinode.odi_rdev;
 #if defined(__linux__) || defined(sunos)
-	buf->c_dinode.di_atime.tv_sec = u_ospcl.s_ospcl.c_dinode.odi_atime;
-	buf->c_dinode.di_mtime.tv_sec = u_ospcl.s_ospcl.c_dinode.odi_mtime;
-	buf->c_dinode.di_ctime.tv_sec = u_ospcl.s_ospcl.c_dinode.odi_ctime;
+		buf->c_dinode.di_atime.tv_sec = u_ospcl.s_ospcl.c_dinode.odi_atime;
+		buf->c_dinode.di_mtime.tv_sec = u_ospcl.s_ospcl.c_dinode.odi_mtime;
+		buf->c_dinode.di_ctime.tv_sec = u_ospcl.s_ospcl.c_dinode.odi_ctime;
 #else	/* __linux__ || sunos */
-	buf->c_dinode.di_atime = u_ospcl.s_ospcl.c_dinode.odi_atime;
-	buf->c_dinode.di_mtime = u_ospcl.s_ospcl.c_dinode.odi_mtime;
-	buf->c_dinode.di_ctime = u_ospcl.s_ospcl.c_dinode.odi_ctime;
+		buf->c_dinode.di_atime = u_ospcl.s_ospcl.c_dinode.odi_atime;
+		buf->c_dinode.di_mtime = u_ospcl.s_ospcl.c_dinode.odi_mtime;
+		buf->c_dinode.di_ctime = u_ospcl.s_ospcl.c_dinode.odi_ctime;
 #endif	/* __linux__ || sunos */
-	buf->c_count = u_ospcl.s_ospcl.c_count;
-	memmove(buf->c_addr, u_ospcl.s_ospcl.c_fill, (long)256);
-	if (u_ospcl.s_ospcl.c_magic != OFS_MAGIC ||
-	    checksum((int *)(&u_ospcl.s_ospcl)) == FAIL)
+		buf->c_count = u_ospcl.s_ospcl.c_count;
+		memmove(buf->c_addr, u_ospcl.s_ospcl.c_fill, (long)256);
+	}
+	else if (u_ospcl.s_ospcl.c_magic == FS_UFS2_MAGIC) {
+		buf->c_date = (int32_t)(*(int64_t *)&u_ospcl.dummy[896]);
+		buf->c_ddate = (int32_t)(*(int64_t *)&u_ospcl.dummy[904]);
+		buf->c_tapea = (int32_t)(*(int64_t *)&u_ospcl.dummy[912]);
+		buf->c_firstrec = (int32_t)(*(int64_t *)&u_ospcl.dummy[920]);
+		buf->c_ntrec = 0;
+		buf->c_extattributes = 0;
+		buf->c_flags |= DR_NEWINODEFMT;
+		ufs2flag = 1;
+	}
+	else
 		return(FAIL);
 	buf->c_magic = NFS_MAGIC;
 

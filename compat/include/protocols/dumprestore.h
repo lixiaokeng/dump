@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: dumprestore.h,v 1.20 2003/10/26 16:05:46 stelian Exp $
+ *	$Id: dumprestore.h,v 1.21 2004/04/13 13:03:55 stelian Exp $
  */
 
 /*
@@ -69,6 +69,7 @@
 
 #define OFS_MAGIC   	(int)60011
 #define NFS_MAGIC   	(int)60012
+#define FS_UFS2_MAGIC   (int)0x19540119
 #define CHECKSUM	(int)84446
 
 #ifdef __linux__

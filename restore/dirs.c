@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dirs.c,v 1.25 2004/03/29 13:57:29 stelian Exp $";
+	"$Id: dirs.c,v 1.26 2004/04/13 13:04:33 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -384,7 +384,7 @@ putdir(char *buf, size_t size)
 	struct direct *dp;
 	long loc, i;
 
-	if (cvtflag) {
+	if (cvtflag && !ufs2flag) {
 		eodp = (struct odirect *)&buf[size];
 		for (odp = (struct odirect *)buf; odp < eodp; odp++)
 			if (odp->d_ino != 0) {

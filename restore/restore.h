@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: restore.h,v 1.28 2003/10/26 16:05:48 stelian Exp $
+ *	$Id: restore.h,v 1.29 2004/04/13 13:04:33 stelian Exp $
  */
 
 /*
@@ -64,6 +64,7 @@ extern int	uflag;		/* unlink symlink targets */
 extern int	vflag;		/* print out actions taken */
 extern int	yflag;		/* always try to recover from tape errors */
 extern int	zflag;		/* tape is in compressed format */
+extern int	ufs2flag;	/* tape is a FreeBSD UFS2 dump */
 extern char*	bot_script;	/* beginning of tape script */
 /*
  * Global variables
