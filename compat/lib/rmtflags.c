@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: rmtflags.c,v 1.1 2002/07/29 12:00:33 stelian Exp $";
+	"$Id: rmtflags.c,v 1.2 2002/11/15 10:03:12 stelian Exp $";
 #endif /* not linux */
 
 /*
@@ -53,6 +53,7 @@ static const char rcsid[] =
 #include <stdio.h>
 #include <stdlib.h>
 #include <malloc.h>
+#include <rmtflags.h>
 
 struct openflags {
 	char 	*name;
