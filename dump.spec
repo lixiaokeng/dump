@@ -52,7 +52,7 @@ This packages contains statically linked versions of dump and restore.
 
 %build
 
-./configure --prefix=/usr --with-binmode=0755 --with-manowner=root --with-mangrp=root --with-manmode=0644 --enable-static
+./configure --prefix=/usr --with-binmode=0755 --with-manowner=root --with-mangrp=root --with-manmode=0644 --enable-static --enable-readline
 
 make OPT="$RPM_OPT_FLAGS -Wall -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wno-char-subscripts"
 
