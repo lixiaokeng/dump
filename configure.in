@@ -226,7 +226,7 @@ dnl
 AC_CHECK_HEADER(ext2fs/ext2fs.h, [ext2fs_h=yes], [ext2fs_h=no])
 AC_CHECK_LIB(ext2fs, ext2fs_open, [ext2fs_lib=yes], [ext2fs_lib=no], [-lcom_err])
 if test "$ext2fs_h" = no -o "$ext2fs_lib" = no; then
-	AC_MSG_ERROR(You need to install the Ext2fs libraries from the E2fsprogs distribution first)
+	AC_MSG_ERROR(You need to install the Ext2fs libraries from the E2fsprogs distribution first - hint: make install-libs)
 fi
 
 dnl

@@ -1632,7 +1632,7 @@ ext2fs_lib=no
 fi
 
 if test "$ext2fs_h" = no -o "$ext2fs_lib" = no; then
-	{ echo "configure: error: You need to install the Ext2fs libraries from the E2fsprogs distribution first" 1>&2; exit 1; }
+	{ echo "configure: error: You need to install the Ext2fs libraries from the E2fsprogs distribution first - hint: make install-libs" 1>&2; exit 1; }
 fi
 
 for ac_func in err errx verr verrx vwarn vwarnx warn warnx realpath lchown

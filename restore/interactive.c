@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: interactive.c,v 1.8 2000/01/21 10:17:41 stelian Exp $";
+	"$Id: interactive.c,v 1.9 2000/02/26 01:35:48 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -79,7 +79,7 @@ extern char * __progname;
 static int runshell;
 static jmp_buf reset;
 static char *nextarg = NULL;
-
+static int pflag = 0;		/* prompt mode */
 /*
  * Structure and routines associated with listing directories.
  */
@@ -203,7 +203,7 @@ loop:
 		if (strncmp(cmd, "help", strlen(cmd)) != 0)
 			goto bad;
 	case '?':
-		fprintf(stderr, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
+		fprintf(stderr, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
 			"Available commands are:\n",
 			"\tls [arg] - list directory\n",
 			"\tcd arg - change directory\n",
@@ -218,6 +218,7 @@ loop:
 			"\twhat - list dump header information\n",
 			"\tverbose - toggle verbose flag",
 			" (useful with ``ls'')\n",
+			"\tprompt - toggle the prompt display\n",
 			"\thelp or `?' - print this list\n",
 			"If no `arg' is supplied, the current",
 			" directory is used\n");
@@ -234,12 +235,26 @@ loop:
 	 * Print current directory.
 	 */
 	case 'p':
-		if (strncmp(cmd, "pwd", strlen(cmd)) != 0)
-			goto bad;
-		if (curdir[1] == '\0')
-			fprintf(stderr, "/\n");
-		else
-			fprintf(stderr, "%s\n", &curdir[1]);
+		if (strncmp(cmd, "pwd", strlen(cmd)) == 0) {
+			if (curdir[1] == '\0')
+				fprintf(stderr, "/\n");
+			else
+				fprintf(stderr, "%s\n", &curdir[1]);
+		}
+	/*
+	 * Toggle prompt mode.
+	 */
+		else if (strncmp(cmd, "prompt", strlen(cmd)) == 0) {
+			if (pflag) {
+				fprintf(stderr, "prompt mode off\n");
+				pflag = 0;
+				break;
+			}
+			fprintf(stderr, "prompt mode on\n");
+			pflag++;
+			break;
+		}
+		else goto bad;
 		break;
 	/*
 	 * Quit.
@@ -337,7 +352,13 @@ getcmd(char *curdir, char *cmd, char *name, int size, struct arglist *ap)
 	 * Read a command line and trim off trailing white space.
 	 */
 	do	{
-		fprintf(stderr, "%s > ", __progname);
+		if (pflag)
+			fprintf(stderr, "%s:%s:%s > ", 
+				__progname,
+				spcl.c_filesys, 
+				curdir[1] ? &curdir[1] : "/");
+		else
+			fprintf(stderr, "%s > ", __progname);
 		(void) fflush(stderr);
 		(void) fgets(input, BUFSIZ, terminal);
 	} while (!feof(terminal) && input[0] == '\n');

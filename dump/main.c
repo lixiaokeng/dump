@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.15 2000/02/04 20:22:21 stelian Exp $";
+	"$Id: main.c,v 1.16 2000/02/26 01:35:48 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -144,7 +144,6 @@ main(int argc, char *argv[])
 	if ((tapeprefix = getenv("TAPE")) == NULL)
 		tapeprefix = _PATH_DEFTAPE;
 	dumpdates = _PATH_DUMPDATES;
-	temp = _PATH_DTMP;
 	strcpy(labelstr, "none");	/* XXX safe strcpy. */
 	if (TP_BSIZE / DEV_BSIZE == 0 || TP_BSIZE % DEV_BSIZE != 0)
 		quit("TP_BSIZE must be a multiple of DEV_BSIZE\n");

@@ -4,7 +4,7 @@
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *	Stelian Pop <pop@cybercable.fr>, 1999-2000
  *
- *	$Id: pathnames.h,v 1.6 2000/01/21 10:17:41 stelian Exp $
+ *	$Id: pathnames.h,v 1.7 2000/02/26 01:35:48 stelian Exp $
  */
 
 /*
@@ -43,6 +43,4 @@
 #include <paths.h>
 
 #define	_PATH_DEFTAPE	"/dev/st0"
-#define	_PATH_DTMP	"/etc/dtmp"
-#define	_PATH_LOCK	"/tmp/dumplockXXXXXX"
 #define	_PATH_RMT	"/etc/rmt"		/* path on remote host */

@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.12 2000/02/10 09:42:32 stelian Exp $";
+	"$Id: tape.c,v 1.13 2000/02/26 01:35:48 stelian Exp $";
 #endif /* not lint */
 
 #ifdef __linux__
@@ -732,10 +732,11 @@ restore_check_point:
 			msg("Dumping volume %d on %s\n", tapeno, tape);
 		}
 #ifdef RDUMP
-		while ((tapefd = (host ? rmtopen(tape, 2) :
-			pipeout ? 1 : open(tape, O_WRONLY|O_CREAT, 0666))) < 0)
+		while ((tapefd = (host ? rmtopen(tape, 2) : pipeout ? 
+			fileno(stdout) : 
+			open(tape, O_WRONLY|O_CREAT, 0666))) < 0)
 #else
-		while ((tapefd = (pipeout ? 1 :
+		while ((tapefd = (pipeout ? fileno(stdout) :
 				  open(tape, O_WRONLY|O_CREAT, 0666))) < 0)
 #endif
 		    {

@@ -4,7 +4,7 @@
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *	Stelian Pop <pop@cybercable.fr>, 1999-2000
  *
- *	$Id: dump.h,v 1.10 2000/02/04 20:22:21 stelian Exp $
+ *	$Id: dump.h,v 1.11 2000/02/26 01:35:48 stelian Exp $
  */
 
 /*-
@@ -71,7 +71,6 @@ char	*disk;		/* name of the disk file */
 char	tape[NAME_MAX];	/* name of the tape file */
 char	*tapeprefix;	/* prefix of the tape file */
 char	*dumpdates;	/* name of the file containing dump date information*/
-char	*temp;		/* name of the file for doing rewrite of dumpdates */
 char	lastlevel;	/* dump level of previous dump */
 char	level;		/* dump level of this dump */
 int	uflag;		/* update flag */

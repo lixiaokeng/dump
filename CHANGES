@@ -1,4 +1,10 @@
-$Id: CHANGES,v 1.43 2000/02/10 10:22:04 stelian Exp $
+$Id: CHANGES,v 1.44 2000/02/26 01:35:48 stelian Exp $
+
+Changes between versions 0.4b14 and 0.4b15 (released ?????????????????)
+=======================================================================
+
+1.	Added a prompt command in interactive restore mode. Thanks
+	to Andreas Dilger <adilger@home.com> for the patch.
 
 Changes between versions 0.4b13 and 0.4b14 (released February 10, 2000)
 =======================================================================
