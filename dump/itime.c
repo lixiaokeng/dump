@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: itime.c,v 1.6 1999/10/13 09:57:19 stelian Exp $";
+	"$Id: itime.c,v 1.7 1999/10/31 19:48:28 tiniou Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -168,10 +168,10 @@ getdumptime(int createdumpdates)
 	spcl.c_ddate = 0;
 	lastlevel = '0';
 
-	/* if we're not going to update dumpdates, there's no point in reading
-	   it, particularly since /var might not be mounted... wait until here
-	   to benefit from the initialization of variables needed by parent */
-	if (!uflag && level == lastlevel)
+	/* If this is a level 0 dump, there's no point in trying to read
+	   dumpdates.  It may not exist yet, or may not be mounted.  For
+	   incrementals, we *must* read dumpdates (fail if it's not there!) */
+	if (level == lastlevel)
 		return;
 	initdumptimes(createdumpdates);
 	if (ddatev == NULL)
