@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.87 2005/01/24 10:37:58 stelian Exp $";
+	"$Id: tape.c,v 1.88 2005/02/25 13:44:32 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1054,7 +1054,6 @@ extractfinderinfoufs(char *name)
 	u_int32_t	uid;
 	u_int32_t	gid;
 	char	path[MAXPATHLEN], fname[MAXPATHLEN];
-	int toto;
 
 	curfile.name = name;
 	curfile.action = USING;
@@ -1346,8 +1345,6 @@ xtrfile(char *buf, size_t size)
 static void
 xtrfilefinderinfo(char *buf, size_t size)
 {
-	if (Nflag)
-		return;
 	bcopy(buf, &gFndrInfo, size);
 }
 #endif /* DUMP_MACOSX */
