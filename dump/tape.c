@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.75 2003/03/31 09:42:58 stelian Exp $";
+	"$Id: tape.c,v 1.76 2003/04/09 10:42:57 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1309,11 +1309,12 @@ doslave(int cmd,
 #ifdef WRITEDEBUG
 			printf("slave %d wrote %d\n", slave_number, wrote);
 #endif
-			if (wrote < 0)
+			if (wrote < 0 && errno != ENOSPC)
 				break;
-			if (wrote == 0)
+			if (wrote == 0 || (wrote < 0 && errno == ENOSPC))
 				eot_count++;
-			size += wrote;
+			else
+				size += wrote;
 		}
 
 #ifdef WRITEDEBUG

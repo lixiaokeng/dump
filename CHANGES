@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.225 2003/04/08 19:52:30 stelian Exp $
+$Id: CHANGES,v 1.226 2003/04/09 10:42:56 stelian Exp $
 
 Changes between versions 0.4b33 and 0.4b34 (released ?????????????????)
 =======================================================================
@@ -83,6 +83,9 @@ Changes between versions 0.4b33 and 0.4b34 (released ?????????????????)
 	to tape. Read examples/encrypted_rmt/README for details on
 	how to enable and configure it. Thanks to Ken Lalonde
 	<ken@globalremit.com> for the patch.
+
+19.	Made dump work with 2.5 kernel end of tape early warning semantics.
+	Thanks to Kai Makisara <Kai.Makisara@kolumbus.fi> for the patch.
 
 Changes between versions 0.4b32 and 0.4b33 (released February 10, 2003)
 =======================================================================
