@@ -1,4 +1,4 @@
-$Id: TODO,v 1.23 2001/08/16 15:24:21 stelian Exp $
+$Id: TODO,v 1.24 2002/01/25 14:59:53 stelian Exp $
 
 Need to verify:
 ---------------
@@ -31,18 +31,7 @@ All others:
 
 5.	Make a bootable dump tape? I don't know if it is possible...
 
-6.	From Kjetil Torgrim Homme <kjetilho@ifi.uio.no>:
-	  a archive_file
-	     Archive file. Archive a dump table-of-contents  in
-	     the   specified   archive_file   to   be  used  by
-	     ufsrestore(1M) to determine whether a file  is  in
-	     the dump file that is being restored.
-
-7.	EA/ACL support in dump (requested by Michael Ju. Tokarev 
+6.	EA/ACL support in dump (requested by Michael Ju. Tokarev 
 	<mjt@tls.msk.ru>.
 
-8.	Better readline completition in restore (escape spaces etc).
-
-9.	Dump compiled with RedHat's 7.0 gcc seems to hang for some
-	people. When compiled with kgcc all the problems disappear.
-	Will the RedHat's 7.1 gcc resolve this ?
+7.	Better readline completition in restore (escape spaces etc).

@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: dumprestore.h,v 1.15 2002/01/16 09:32:14 stelian Exp $
+ *	$Id: dumprestore.h,v 1.16 2002/01/25 14:59:53 stelian Exp $
  */
 
 /*
@@ -67,6 +67,7 @@
 #define NTREC   	10
 #define HIGHDENSITYTREC	32
 #define TP_NINDIR	(TP_BSIZE/2)
+#define TP_NINOS	(TP_NINDIR / sizeof (int32_t))
 #define LBLSIZE		16
 #define NAMELEN		64
 
@@ -75,6 +76,11 @@
 #define CHECKSUM	(int)84446
 
 typedef u_int32_t	dump_ino_t;
+
+union u_data {
+	char	s_addrs[TP_NINDIR];	/* 1 => data; 0 => hole in inode */
+	int32_t	s_inos[TP_NINOS];	/* table of first inode on each volume */
+} u_data;
 
 union u_spcl {
 	char dummy[TP_BSIZE];
@@ -93,7 +99,7 @@ union u_spcl {
 		struct	dinode	c_dinode;   /* ownership and mode of inode */
 #endif
 		int32_t	c_count;	    /* number of valid c_addr entries */
-		char	c_addr[TP_NINDIR];  /* 1 => data; 0 => hole in inode */
+		union u_data c_data;	    /* see above */
 		char	c_label[LBLSIZE];   /* dump label */
 		int32_t	c_level;	    /* level of this dump */
 		char	c_filesys[NAMELEN]; /* name of dumpped file system */
@@ -106,6 +112,9 @@ union u_spcl {
 	} s_spcl;
 } u_spcl;
 #define spcl u_spcl.s_spcl
+#define c_addr c_data.s_addrs
+#define c_inos c_data.s_inos
+
 /*
  * special record types
  */
@@ -122,6 +131,8 @@ union u_spcl {
 #define DR_NEWHEADER	0x0001	/* new format tape header */
 #define DR_NEWINODEFMT	0x0002	/* new format inodes on tape */
 #define DR_COMPRESSED	0x0080	/* dump tape is compressed */
+#define DR_INODEINFO	0x0002	/* TS_END header contains c_inos information */
+
 
 /*
  * compression flags for the tapebuf header.

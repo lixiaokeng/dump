@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.60 2002/01/22 11:12:28 stelian Exp $";
+	"$Id: tape.c,v 1.61 2002/01/25 14:59:53 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -80,6 +80,7 @@ int    write(), read();
 #include <linux/ext2_fs.h>
 #endif
 #include <ext2fs/ext2fs.h>
+#include <sys/stat.h>
 #include <bsdcompat.h>
 #elif defined sunos
 #include <sys/vnode.h>
@@ -110,7 +111,6 @@ extern	long blocksperfile;	/* number of blocks per output file */
 long	blocksthisvol;		/* number of blocks on current output file */
 extern	int ntrec;		/* blocking factor on tape */
 extern	int cartridge;
-extern	char *host;
 char	*nexttape;
 extern  pid_t rshpid;
 int 	eot_code = 1;
@@ -125,8 +125,8 @@ static	void flushtape __P((void));
 static	void killall __P((void));
 static	void rollforward __P((void));
 #ifdef USE_QFA
-static int GetTapePos __P((long *));
-static void MkTapeString __P((struct s_spcl *, long));
+static int GetTapePos __P((long long *));
+static void MkTapeString __P((struct s_spcl *, long long));
 #endif
 
 /*
@@ -234,6 +234,30 @@ writerec(const void *dp, int isspcl)
 	slp->req[trecno].count = 1;
 	/* XXX post increment triggers an egcs-1.1.2-12 bug on alpha/sparc */
 	*(union u_spcl *)(*(nextblock)) = *(union u_spcl *)dp;
+
+	/* Need to write it to the archive file */
+	if (Afile < 0 && isspcl && (spcl.c_type == TS_END))
+		Afile = -Afile;
+	if (Afile > 0) {
+		/* When we dump an inode which is not a directory,
+		 * it means we ended the archive contents */
+		if (isspcl && (spcl.c_type == TS_INODE) &&
+		    ((spcl.c_dinode.di_mode & S_IFMT) != IFDIR))
+			Afile = -Afile;
+		else {
+			union u_spcl tmp;
+			tmp = *(union u_spcl *)dp;
+			/* Write the record, _uncompressed_ */
+			if (isspcl) {
+				tmp.s_spcl.c_flags &= ~DR_COMPRESSED;
+				mkchecksum(&tmp);
+			}
+			if (write(Afile, &tmp, TP_BSIZE) != TP_BSIZE)
+				msg("error writing archive file: %s\n", 
+			    	strerror(errno));
+		}
+	}
+
 	nextblock++;
 	if (isspcl)
 		lastspclrec = spcl.c_tapea;
@@ -892,6 +916,8 @@ restore_check_point:
 		if (tapeno > 1)
 			msg("Volume %d begins with blocks from inode %d\n",
 				tapeno, slp->inode);
+		if (tapeno < TP_NINOS)
+			volinfo[tapeno] = slp->inode;
 	}
 }
 
@@ -1052,7 +1078,7 @@ doslave(int cmd, int slave_number, int first)
 	errcode_t retval;
 #endif
 #ifdef USE_QFA
-	long curtapepos;
+	long long curtapepos;
 	union u_spcl *uspclptr;
 	struct s_spcl *spclptr;
 #endif /* USE_QFA */
@@ -1320,21 +1346,32 @@ atomic_write(int fd, const void *buf, size_t count)
  * read the current tape position
  */
 static int
-GetTapePos(long *pos)
+GetTapePos(long long *pos)
 {
 	int err = 0;
 
+#ifdef RDUMP
+	if (host) {
+		*pos = (long long) rmtseek(0, SEEK_CUR);
+		err = *pos < 0;
+	}
+	else 
+#endif
+	{
 	if (magtapeout) {
+		long mtpos;
 		*pos = 0;
-		err = (ioctl(tapefd, MTIOCPOS, pos) < 0);
+		err = (ioctl(tapefd, MTIOCPOS, &mtpos) < 0);
+		*pos = (long long)mtpos;
 	}
 	else {
-		*pos = lseek(tapefd, 0, SEEK_CUR);
+		*pos = LSEEK(tapefd, 0, SEEK_CUR);
 		err = (*pos < 0);
+	}
 	}
 	if (err) {
 		err = errno;
-		msg("[%ld] error: %d (getting tapepos: %ld)\n", getpid(), 
+		msg("[%ld] error: %d (getting tapepos: %lld)\n", getpid(), 
 			err, *pos);
 		return err;
 	}
@@ -1342,13 +1379,13 @@ GetTapePos(long *pos)
 }
 
 static void 
-MkTapeString(struct s_spcl *spclptr, long curtapepos) {
+MkTapeString(struct s_spcl *spclptr, long long curtapepos) {
 
 #ifdef DEBUG_QFA
-	msg("inode %ld at tapepos %ld\n", spclptr->c_inumber, curtapepos);
+	msg("inode %ld at tapepos %lld\n", spclptr->c_inumber, curtapepos);
 #endif
 
-	snprintf(gTps, sizeof(gTps), "%ld\t%d\t%ld\n", 
+	snprintf(gTps, sizeof(gTps), "%ld\t%d\t%lld\n", 
 		 (unsigned long)spclptr->c_inumber, 
 		 tapeno, 
 		 curtapepos);

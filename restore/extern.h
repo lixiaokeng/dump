@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: extern.h,v 1.14 2002/01/16 09:32:14 stelian Exp $
+ *	$Id: extern.h,v 1.15 2002/01/25 14:59:53 stelian Exp $
  */
 
 /*-
@@ -90,6 +90,7 @@ void		 panic __P((const char *, ...));
 void		 pathcheck __P((char *));
 struct direct	*pathsearch __P((const char *));
 void		 printdumpinfo __P((void));
+void		 printvolinfo __P((void));
 void		 removeleaf __P((struct entry *));
 void		 removenode __P((struct entry *));
 void		 removeoldleaves __P((void));
@@ -127,9 +128,9 @@ int fgetflags __P((const char *, unsigned long *));
 int setflags __P((int, unsigned long));
 
 #ifdef USE_QFA
-int	Inode2Tapepos __P((dump_ino_t, long *, long *, int));
-int	GetTapePos __P((long *));
-int	GotoTapePos __P((long));
+int	Inode2Tapepos __P((dump_ino_t, long *, long long *, int));
+int	GetTapePos __P((long long *));
+int	GotoTapePos __P((long long));
 void	ReReadFromTape __P((void));
-void	RequestVol __P((long));
 #endif
+void	RequestVol __P((long));

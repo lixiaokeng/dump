@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.36 2002/01/22 11:12:28 stelian Exp $
+.\"	$Id: dump.8.in,v 1.37 2002/01/25 14:59:53 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -41,6 +41,7 @@
 .Sh SYNOPSIS
 .Nm dump
 .Op Fl 0123456789ackMnqSu
+.Op Fl A Ar file
 .Op Fl B Ar records
 .Op Fl b Ar blocksize
 .Op Fl d Ar density
@@ -117,11 +118,6 @@ to
 copy all files new or modified since the
 last dump of a lower level.
 The default level is 9.
-.It Fl B Ar records
-The number of 1 kB blocks per volume.
-This option overrides the end-of-media detection, and calculation 
-of tape size based on length and density. If compression is on this
-limits the size of the compressed output per volume.
 .It Fl a
 .Dq auto-size .
 Bypass all tape length calculations, and write
@@ -130,6 +126,13 @@ for most modern tape drives, and is the default.
 Use of this option is particularly recommended when appending to an 
 existing tape, or using a tape drive with hardware compression 
 (where you can never be sure about the compression ratio).
+.It Fl A Ar archive_file
+Archive a dump table-of-contents in the
+specified
+.Ar archive_file
+to be used by 
+.Xr restore 8
+to determine whether a file is in the dump file that is being restored.
 .It Fl b Ar blocksize
 The number of kilobytes per dump record.
 Since the IO system slices all requests into chunks of MAXBSIZE
@@ -140,10 +143,20 @@ Therefore
 .Nm dump
 will constrain writes to MAXBSIZE.
 The default blocksize is 10.
+.It Fl B Ar records
+The number of 1 kB blocks per volume.
+This option overrides the end-of-media detection, and calculation 
+of tape size based on length and density. If compression is on this
+limits the size of the compressed output per volume.
 .It Fl c
 Change the defaults for use with a cartridge tape drive, with a density
 of 8000 bpi, and a length of 1700 feet. Specifying a cartridge drive
 overrides the end-of-media detection.
+.It Fl d Ar density
+Set tape density to
+.Ar density .
+The default is 1600BPI. Specifying a tape density overrides the 
+end-of-media detection.
 .It Fl e Ar inodes
 Exclude 
 .Ar inodes
@@ -159,21 +172,6 @@ The file
 .Ar file
 should be an ordinary file containing inode numbers separated by
 newlines.
-.It Fl h Ar level
-Honor the user
-.Dq nodump
-flag
-.Dp Dv UF_NODUMP
-only for dumps at or above the given
-.Ar level .
-The default honor level is 1,
-so that incremental backups omit such files
-but full backups retain them.
-.It Fl d Ar density
-Set tape density to
-.Ar density .
-The default is 1600BPI. Specifying a tape density overrides the 
-end-of-media detection.
 .It Fl f Ar file
 Write the backup to
 .Ar file ;
@@ -222,6 +220,16 @@ For security reasons,
 .Nm
 reverts back to the real user ID and the real group ID before 
 running the script.
+.It Fl h Ar level
+Honor the user
+.Dq nodump
+flag
+.Dp Dv UF_NODUMP
+only for dumps at or above the given
+.Ar level .
+The default honor level is 1,
+so that incremental backups omit such files
+but full backups retain them.
 .It Fl I Ar nr errors
 By default,
 .Nm

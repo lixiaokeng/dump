@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.40 2002/01/16 09:32:14 stelian Exp $";
+	"$Id: traverse.c,v 1.41 2002/01/25 14:59:53 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1176,21 +1176,20 @@ dumpmap(char *map, int type, dump_ino_t ino)
 		writerec(cp, 0);
 }
 
-/*
- * Write a header record to the dump tape.
- */
 #if defined __linux__ && !defined(int32_t)
 #define int32_t __s32
 #endif
-void
-writeheader(dump_ino_t ino)
-{
-	register int32_t sum, cnt, *lp;
 
-	spcl.c_inumber = ino;
-	spcl.c_magic = NFS_MAGIC;
-	spcl.c_checksum = 0;
-	lp = (int32_t *)&spcl;
+/* 
+ * Compute and fill in checksum information.
+ */
+void
+mkchecksum(union u_spcl *tmpspcl) 
+{
+	int32_t sum, cnt, *lp;
+
+	tmpspcl->s_spcl.c_checksum = 0;
+	lp = (int32_t *)&tmpspcl->s_spcl;
 	sum = 0;
 	cnt = sizeof(union u_spcl) / (4 * sizeof(int32_t));
 	while (--cnt >= 0) {
@@ -1199,7 +1198,18 @@ writeheader(dump_ino_t ino)
 		sum += *lp++;
 		sum += *lp++;
 	}
-	spcl.c_checksum = CHECKSUM - sum;
+	tmpspcl->s_spcl.c_checksum = CHECKSUM - sum;
+}
+
+/*
+ * Write a header record to the dump tape.
+ */
+void
+writeheader(dump_ino_t ino)
+{
+	spcl.c_inumber = ino;
+	spcl.c_magic = NFS_MAGIC;
+	mkchecksum((union u_spcl *)&spcl);
 	writerec((char *)&spcl, 1);
 }
 

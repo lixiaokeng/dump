@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: dump.h,v 1.35 2002/01/22 11:12:28 stelian Exp $
+ *	$Id: dump.h,v 1.36 2002/01/25 14:59:53 stelian Exp $
  */
 
 /*-
@@ -67,12 +67,14 @@ extern char	*dumpinomap;	/* map of files to be dumped */
 /*
  *	All calculations done in 0.1" units!
  */
+extern char	*host;		/* name of the remote host */
 extern const char *disk;	/* name of the disk file */
 extern char	tape[MAXPATHLEN];/* name of the tape file */
 extern char	*tapeprefix;	/* prefix of the tape file */
 extern char	*dumpdates;	/* name of the file containing dump date information*/
 extern char	lastlevel;	/* dump level of previous dump */
 extern char	level;		/* dump level of this dump */
+extern int	Afile;		/* archive file descriptor */
 extern int	bzipflag;	/* compression is done using bzlib */
 extern int	uflag;		/* update flag */
 extern int	Mflag;		/* multi-volume flag */
@@ -110,6 +112,7 @@ extern long	xferrate;       /* averaged transfer rate of all volumes */
 extern long	dev_bsize;	/* block size of underlying disk device */
 extern int	dev_bshift;	/* log2(dev_bsize) */
 extern int	tp_bshift;	/* log2(TP_BSIZE) */
+extern dump_ino_t volinfo[];	/* which inode on which volume archive info */
 
 #ifdef USE_QFA
 #define	QFA_MAGIC	"495115637697"
@@ -158,6 +161,7 @@ void	dumpdirino __P((struct dinode *dp, dump_ino_t ino));
 #endif
 void	dumpmap __P((char *map, int type, dump_ino_t ino));
 void	writeheader __P((dump_ino_t ino));
+void	mkchecksum __P((union u_spcl *tmpspcl));
 
 /* tape writing routines */
 int	alloctape __P((void));

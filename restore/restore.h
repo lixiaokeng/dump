@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: restore.h,v 1.23 2002/01/16 10:29:26 stelian Exp $
+ *	$Id: restore.h,v 1.24 2002/01/25 14:59:53 stelian Exp $
  */
 
 /*
@@ -52,6 +52,7 @@
  * Flags
  */
 extern int	aflag;		/* automatic volume increment */
+extern char	*Afile;		/* archive file */
 extern int	cvtflag;	/* convert from old to new tape format */
 extern int	bflag;		/* set input block size */
 extern int	dflag;		/* print out debugging info */
@@ -70,6 +71,7 @@ extern char*	bot_script;	/* beginning of tape script */
 /*
  * Global variables
  */
+extern char	*host;		/* name of the remote host */
 extern char	*dumpmap; 	/* map of inodes on this dump tape */
 extern char	*usedinomap; 	/* map of inodes that are in use on this fs */
 extern dump_ino_t maxino;	/* highest numbered inode in this file system */
@@ -90,6 +92,7 @@ extern int	compare_ignore_not_found;
 				/* isn't seen. */
 extern int	compare_errors;	/* did we encounter any compare errors? */
 extern char	filesys[NAMELEN];/* name of dumped filesystem */
+extern dump_ino_t volinfo[];	/* which inode on which volume archive info */
 
 /*
  * Each file in the file system is described by one of these entries

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: interactive.c,v 1.19 2002/01/16 10:53:28 stelian Exp $";
+	"$Id: interactive.c,v 1.20 2002/01/25 14:59:53 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -316,6 +316,7 @@ loop:
 		if (strncmp(cmd, "what", strlen(cmd)) != 0)
 			goto bad;
 		printdumpinfo();
+		printvolinfo();
 		break;
 	/*
 	 * Turn on debugging.

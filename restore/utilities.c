@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: utilities.c,v 1.17 2002/01/16 09:32:14 stelian Exp $";
+	"$Id: utilities.c,v 1.18 2002/01/25 14:59:53 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -485,13 +485,13 @@ panic(fmt, va_alist)
  * if no smaller inode found return tnum=0 and tpos=0
  */
 int
-Inode2Tapepos(dump_ino_t ino, long *tnum, long *tpos, int exactmatch)
+Inode2Tapepos(dump_ino_t ino, long *tnum, long long *tpos, int exactmatch)
 {
 	char *p, *pp;
 	char numbuff[32];
 	unsigned long tmpino;
 	long tmptnum;
-	long tmptpos;
+	long long tmptpos;
 
 	*tpos = 0;
 	*tnum = 0;
@@ -523,7 +523,7 @@ Inode2Tapepos(dump_ino_t ino, long *tnum, long *tpos, int exactmatch)
 		/* read tapepos */
 		while ((*p != 0) && (*p != '\t'))
 			*pp++ = *p++;
-		tmptpos = atol(numbuff);
+		tmptpos = atoll(numbuff);
 
 		if (exactmatch) {
 			if (tmpino == ino)  {

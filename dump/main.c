@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.66 2002/01/22 11:12:28 stelian Exp $";
+	"$Id: main.c,v 1.67 2002/01/25 14:59:53 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -55,6 +55,7 @@ static const char rcsid[] =
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 
 #include <sys/param.h>
 #include <sys/time.h>
@@ -104,6 +105,7 @@ char	*dumpdates;	/* name of the file containing dump date information*/
 char	lastlevel;	/* dump level of previous dump */
 char	level;		/* dump level of this dump */
 int	bzipflag;	/* compression is done using bzlib */
+int	Afile = 0;	/* archive file descriptor */
 int	uflag;		/* update flag */
 int	Mflag;		/* multi-volume flag */
 int	qflag;		/* quit on errors flag */
@@ -140,6 +142,7 @@ long	xferrate;       /* averaged transfer rate of all volumes */
 long	dev_bsize;	/* block size of underlying disk device */
 int	dev_bshift;	/* log2(dev_bsize) */
 int	tp_bshift;	/* log2(TP_BSIZE) */
+dump_ino_t volinfo[TP_NINOS];/* which inode on which volume archive info */
 
 #ifdef USE_QFA
 int	gTapeposfd;
@@ -207,6 +210,7 @@ main(int argc, char *argv[])
 #endif
 	time_t tnow;
 	char *diskparam;
+	char *Apath;
 
 	spcl.c_label[0] = '\0';
 	spcl.c_date = time(NULL);
@@ -237,7 +241,7 @@ main(int argc, char *argv[])
 #endif /* USE_QFA */
 
 	while ((ch = getopt(argc, argv,
-			    "0123456789aB:b:cd:e:E:f:F:h:I:"
+			    "0123456789A:aB:b:cd:e:E:f:F:h:I:"
 #ifdef HAVE_BZLIB
 			    "j::"
 #endif
@@ -259,6 +263,18 @@ main(int argc, char *argv[])
 		case '0': case '1': case '2': case '3': case '4':
 		case '5': case '6': case '7': case '8': case '9':
 			level = ch;
+			break;
+
+		case 'A':		/* archive file */
+			Apath = optarg;
+			if ((Afile = open(Apath, O_RDWR|O_CREAT|O_TRUNC,
+					  S_IRUSR | S_IWUSR)) < 0) {
+				msg("Cannot open %s for writing: %s\n",
+				    optarg, strerror(errno));
+				msg("The ENTIRE dump is aborted.\n");
+				exit(X_STARTUP);
+			}
+			memset(volinfo, 0, TP_NINOS * sizeof(dump_ino_t));
 			break;
 
 		case 'a':		/* `auto-size', Write to EOM. */
@@ -470,13 +486,6 @@ main(int argc, char *argv[])
 		tapeprefix = strchr(host, ':');
 		*tapeprefix++ = '\0';
 #ifdef RDUMP
-#ifdef USE_QFA
-		if (tapepos) {
-			msg("Cannot use -Q option on remote media\n");
-			msg("The ENTIRE dump is aborted.\n");
-			exit(X_STARTUP);
-		}
-#endif
 		if (index(tapeprefix, '\n')) {
 			msg("invalid characters in tape\n");
 			msg("The ENTIRE dump is aborted.\n");
@@ -929,6 +938,13 @@ main(int argc, char *argv[])
 
 	tend_writing = time(NULL);
 	spcl.c_type = TS_END;
+
+	if (Afile) {
+		volinfo[1] = ROOTINO;
+		memcpy(spcl.c_inos, volinfo, TP_NINOS * sizeof(dump_ino_t));
+		spcl.c_flags |= DR_INODEINFO;
+	}
+
 	/*
 	 * Finish off the current tape record with trailer blocks, to ensure
 	 * at least the data in the last partial record makes it to tape.
@@ -969,6 +985,9 @@ main(int argc, char *argv[])
 			spcl.c_tapea, tapekb, rate);
 	}
 
+	if (Afile)
+		msg("Archiving dump to %s\n", Apath);
+
 	broadcast("DUMP IS DONE!\7\7\n");
 	msg("DUMP IS DONE\n");
 	Exit(X_FINOK);
@@ -998,22 +1017,23 @@ usage(void)
 		"k"
 #endif
 		"MnqSu"
-		"] [-B records] [-b blocksize] [-d density]\n"
-		"\t%s [-e inode#,inode#,...] [-E file] [-f file] [-h level]\n"
-		"\t%s [-I nr errors] "
+		"] [-A file] [-B records] [-b blocksize]\n"
+		"\t%s [-d density] [-e inode#,inode#,...] [-E file] [-f file]\n"
+		"\t%s [-h level] [-I nr errors] "
 #ifdef HAVE_BZLIB
 		"[-j zlevel] "
 #endif
 #ifdef USE_QFA
 		"[-Q file] "
 #endif
-		"[-s feet] [-T date] "
+		"[-s feet]\n"
+		"\t%s [-T date] "
 #ifdef HAVE_ZLIB
 		"[-z zlevel] "
 #endif
 		"filesystem\n"
 		"\t%s [-W | -w]\n", 
-		__progname, white, white, __progname);
+		__progname, white, white, white, __progname);
 	exit(X_STARTUP);
 }
 
@@ -1110,6 +1130,7 @@ obsolete(int *argcp, char **argvp[])
 
 	for (flags = 0; *ap; ++ap) {
 		switch (*ap) {
+		case 'A':
 		case 'B':
 		case 'b':
 		case 'd':

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: restore.c,v 1.24 2002/01/22 11:12:28 stelian Exp $";
+	"$Id: restore.c,v 1.25 2002/01/25 14:59:53 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -83,7 +83,7 @@ listfile(char *name, dump_ino_t ino, int type)
 	long descend = hflag ? GOOD : FAIL;
 #ifdef USE_QFA
 	long tnum;
-	long tpos;
+	long long tpos;
 #endif
 
 	if (TSTINO(ino, dumpmap) == 0)
@@ -92,7 +92,7 @@ listfile(char *name, dump_ino_t ino, int type)
 #ifdef USE_QFA
 	if (tapeposflag) {	/* add QFA positions to output */
 		(void)Inode2Tapepos(ino, &tnum, &tpos, 1);
-		fprintf(stdout, "%10lu\t%ld\t%ld\t%s\n", (unsigned long)ino, 
+		fprintf(stdout, "%10lu\t%ld\t%lld\t%s\n", (unsigned long)ino, 
 			tnum, tpos, name);
 	}
 	else
@@ -839,16 +839,22 @@ createfiles(void)
 	register struct entry *ep;
 	long curvol;
 #ifdef USE_QFA
-	long tnum, tpos, curtpos, tmpcnt;
+	long tnum, tmpcnt;
+	long long tpos, curtpos;
 	time_t tistart, tiend, titaken;
 #endif
 
 	Vprintf(stdout, "Extract requested files\n");
 	curfile.action = SKIP;
 #ifdef USE_QFA
-	if (!tapeposflag)
+	if (tapeposflag)
+		curfile.ino = 0;
+	else
 #endif
-		getvol((long)1);
+		if (volinfo[1] == ROOTINO)
+			curfile.ino = 0;
+		else
+			getvol((long)1);
 	skipmaps();
 	skipdirs();
 	first = lowerbnd(ROOTINO);
@@ -911,7 +917,7 @@ createfiles(void)
 					 *  might be too slow */
 					if (tpos > curtpos) {
 #ifdef DEBUG_QFA
-						msg("positioning tape %ld from %ld to %ld for inode %10lu ...\n", volno, curtpos, tpos, (unsigned long)next);
+						msg("positioning tape %ld from %lld to %lld for inode %10lu ...\n", volno, curtpos, tpos, (unsigned long)next);
 #endif
 						if (GotoTapePos(tpos) == 0) {
 #ifdef DEBUG_QFA
@@ -928,7 +934,18 @@ createfiles(void)
 				}
 			}
 		}
+		else
 #endif /* USA_QFA */
+			if (volinfo[1] == ROOTINO) {
+				int i, goodvol = 1;
+
+				for (i = 1; i < TP_NINOS && volinfo[i] != 0; ++i)
+					if (volinfo[i] < next)
+						goodvol = i;
+
+				if (goodvol != volno)
+					RequestVol(goodvol);
+			}
 
 		do	{
 			curvol = volno;

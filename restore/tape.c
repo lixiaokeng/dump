@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.54 2002/01/22 11:12:28 stelian Exp $";
+	"$Id: tape.c,v 1.55 2002/01/25 14:59:53 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -116,7 +116,7 @@ static long	tpblksread = 0;		/* TP_BSIZE blocks read */
 static long	tapesread;
 static sigjmp_buf	restart;
 static int	gettingfile = 0;	/* restart has a valid frame */
-static char	*host = NULL;
+char		*host = NULL;
 
 static int	ofile;
 static char	*map;
@@ -154,6 +154,7 @@ static void	 setmagtapein __P((void));
 
 #if defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
 static void	newcomprbuf __P((int));
+static void	(*readtape_func) __P((char *));
 static void	readtape_set __P((char *));
 static void	readtape_uncompr __P((char *));
 static void	readtape_comprfile __P((char *));
@@ -190,10 +191,6 @@ setinput(char *source)
 
 #ifdef RRESTORE
 	if (strchr(source, ':')) {
-#ifdef USE_QFA
-		if (tapeposflag)
-			errx(1, "cannot use -Q option on remote media");
-#endif
 		host = source;
 		source = strchr(host, ':');
 		*source++ = '\0';
@@ -268,9 +265,10 @@ setup(void)
 {
 	int i, j, *ip, bot_code;
 	struct STAT stbuf;
+	char *temptape;
 
 	Vprintf(stdout, "Verify tape and initialize maps\n");
-	if (bot_script) {
+	if (Afile == NULL && bot_script) {
 		msg("Launching %s\n", bot_script);
 		bot_code = system_command(bot_script, magtape, 1);
 		if (bot_code != 0 && bot_code != 1) {
@@ -278,20 +276,31 @@ setup(void)
 			exit(1);
 		}
 	}
+
+	if (Afile)
+		temptape = Afile;
+	else
+		temptape = magtape;
+
 #ifdef RRESTORE
 	if (host)
-		mt = rmtopen(magtape, 0);
+		mt = rmtopen(temptape, 0);
 	else
 #endif
 	if (pipein)
 		mt = 0;
 	else
-		mt = OPEN(magtape, O_RDONLY, 0);
+		mt = OPEN(temptape, O_RDONLY, 0);
 	if (mt < 0)
 		err(1, "%s", magtape);
-	volno = 1;
-	setmagtapein();
-	setdumpnum();
+	if (!Afile) {
+		volno = 1;
+		setmagtapein();
+		setdumpnum();
+	}
+#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
+	readtape_func = readtape_set;
+#endif
 	FLUSHTAPEBUF();
 	findtapeblksize();
 	if (gethead(&spcl) == FAIL) {
@@ -306,11 +315,9 @@ setup(void)
 
 	if (zflag) {
 		fprintf(stderr, "Dump tape is compressed.\n");
-#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
-		newcomprbuf(ntrec);
-#else
+#if !defined(HAVE_ZLIB) && !defined(HAVE_BZLIB)
 		errx(1,"This restore version doesn't support decompression");
-#endif /* HAVE_ZLIB */
+#endif /* !HAVE_ZLIB && !HAVE_BZLIB */
 	}
 	if (pipein) {
 		endoftapemark.s_spcl.c_magic = cvtflag ? OFS_MAGIC : NFS_MAGIC;
@@ -505,6 +512,9 @@ again:
 	}
 gethdr:
 	setmagtapein();
+#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
+	readtape_func = readtape_set;
+#endif
 	volno = newvol;
 	setdumpnum();
 	FLUSHTAPEBUF();
@@ -546,6 +556,12 @@ gethdr:
  	 * If coming to this volume at random, skip to the beginning
  	 * of the next record.
  	 */
+	if (zflag) {
+		fprintf(stderr, "Dump tape is compressed.\n");
+#if !defined(HAVE_ZLIB) && !defined(HAVE_BZLIB)
+		errx(1,"This restore version doesn't support decompression");
+#endif /* !HAVE_ZLIB && !HAVE_BZLIB */
+	}
 	Dprintf(stdout, "read %ld recs, tape starts with %ld\n",
 		tpblksread, (long)tmpbuf.c_firstrec);
  	if (tmpbuf.c_type == TS_TAPE && (tmpbuf.c_flags & DR_NEWHEADER)) {
@@ -640,6 +656,18 @@ printdumpinfo(void)
 	fprintf(stdout, "Level %d dump of %s on %s:%s\n",
 		spcl.c_level, spcl.c_filesys, spcl.c_host, spcl.c_dev);
 	fprintf(stdout, "Label: %s\n", spcl.c_label);
+}
+
+void 
+printvolinfo(void)
+{
+	int i;
+
+	if (volinfo[1] == ROOTINO) {
+		printf("Starting inode numbers by volume:\n");
+		for (i = 1; i < TP_NINOS && volinfo[i] != 0; ++i)
+			printf("\tVolume %d: %lu\n", i, (unsigned long)volinfo[i]);
+	}
 }
 
 int
@@ -1986,7 +2014,7 @@ gethead(struct s_spcl *buf)
 				int32_t	odi_ctime;
 			} c_dinode;
 			int32_t	c_count;
-			char	c_addr[256];
+			char	c_fill[256];
 		} s_ospcl;
 	} u_ospcl;
 
@@ -2032,7 +2060,7 @@ gethead(struct s_spcl *buf)
 	buf->c_dinode.di_ctime = u_ospcl.s_ospcl.c_dinode.odi_ctime;
 #endif	/* __linux__ */
 	buf->c_count = u_ospcl.s_ospcl.c_count;
-	memmove(buf->c_addr, u_ospcl.s_ospcl.c_addr, (long)256);
+	memmove(buf->c_addr, u_ospcl.s_ospcl.c_fill, (long)256);
 	if (u_ospcl.s_ospcl.c_magic != OFS_MAGIC ||
 	    checksum((int *)(&u_ospcl.s_ospcl)) == FAIL)
 		return(FAIL);
@@ -2078,6 +2106,11 @@ good:
 		/* fall through */
 	case TS_END:
 		buf->c_inumber = 0;
+		if (buf->c_flags & DR_INODEINFO) {
+			memcpy(volinfo, buf->c_inos, TP_NINOS * sizeof(dump_ino_t));
+			if (Bcvt)
+				swabst((u_char *)"128i", (u_char *)volinfo);
+		}
 		break;
 
 	case TS_INODE:
@@ -2385,21 +2418,32 @@ swabl(u_long x)
  * get the current position of the tape
  */
 int
-GetTapePos(long *pos)
+GetTapePos(long long *pos)
 {
 	int err = 0;
 
+#ifdef RDUMP
+	if (host) {
+		*pos = (long long) rmtseek(0, SEEK_CUR);
+		err = *pos < 0;
+	}
+	else
+#endif
+	{
 	if (magtapein) {
+		long mtpos;
 		*pos = 0;
-		err = (ioctl(mt, MTIOCPOS, pos) < 0);
+		err = (ioctl(mt, MTIOCPOS, &mtpos) < 0);
+		*pos = (long long)mtpos;
 	}
 	else {
-		*pos = lseek(mt, 0, SEEK_CUR);
+		*pos = LSEEK(mt, 0, SEEK_CUR);
 		err = (*pos < 0);
+	}
 	}
 	if (err) {
 		err = errno;
-		fprintf(stdout, "[%ld] error: %d (getting tapepos: %ld)\n", 
+		fprintf(stdout, "[%ld] error: %d (getting tapepos: %lld)\n", 
 			(unsigned long)getpid(), err, *pos);
 		return err;
 	}
@@ -2415,23 +2459,30 @@ typedef struct mt_pos {
  * go to specified position on tape
  */
 int
-GotoTapePos(long pos)
+GotoTapePos(long long pos)
 {
 	int err = 0;
 
+#ifdef RDUMP
+	if (host)
+		err = (rmtseek((long)pos, SEEK_SET) < 0);
+	else
+#endif
+	{
 	if (magtapein) {
 		struct mt_pos buf;
 		buf.mt_op = MTSEEK;
-		buf.mt_count = pos;
+		buf.mt_count = (int) pos;
 		err = (ioctl(mt, MTIOCTOP, &buf) < 0);
 	}
 	else {
-		pos = lseek(mt, pos, SEEK_SET);
+		pos = LSEEK(mt, pos, SEEK_SET);
 		err = (pos < 0);
+	}
 	}
 	if (err) {
 		err = errno;
-		fprintf(stdout, "[%ld] error: %d (setting tapepos: %ld)\n", 
+		fprintf(stdout, "[%ld] error: %d (setting tapepos: %lld)\n", 
 			(unsigned long)getpid(), err, pos);
 		return err;
 	}
@@ -2454,6 +2505,7 @@ ReReadFromTape(void)
 	findinode(&spcl);
 	noresyncmesg = 0;
 }
+#endif /* USE_QFA */
 
 void
 RequestVol(long tnum)
@@ -2461,4 +2513,3 @@ RequestVol(long tnum)
 	FLUSHTAPEBUF();
 	getvol(tnum);
 }
-#endif /* USE_QFA */

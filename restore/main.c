@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.36 2002/01/22 11:12:28 stelian Exp $";
+	"$Id: main.c,v 1.37 2002/01/25 14:59:53 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -83,6 +83,7 @@ static const char rcsid[] =
 int	aflag = 0, bflag = 0, cvtflag = 0, dflag = 0, vflag = 0, yflag = 0;
 int	hflag = 1, mflag = 1, Mflag = 0, Nflag = 0, Vflag = 0, zflag = 0;
 int	uflag = 0, lflag = 0, Lflag = 0;
+char	*Afile = NULL;
 int	dokerberos = 0;
 char	command = '\0';
 long	dumpnum = 1;
@@ -100,6 +101,7 @@ int	compare_errors;
 char	filesys[NAMELEN];
 static const char *stdin_opt = NULL;
 char	*bot_script = NULL;
+dump_ino_t volinfo[TP_NINOS];
 
 #ifdef USE_QFA
 FILE	*gTapeposfp;
@@ -154,7 +156,7 @@ main(int argc, char *argv[])
 		;                                                               
 	obsolete(&argc, &argv);
 	while ((ch = getopt(argc, argv, 
-		"ab:CcdD:f:F:hi"
+		"aA:b:CcdD:f:F:hi"
 #ifdef KERBEROS
 		"k"
 #endif
@@ -165,6 +167,10 @@ main(int argc, char *argv[])
 		"Rrs:tT:uvVxX:y")) != -1)
 		switch(ch) {
 		case 'a':
+			aflag = 1;
+			break;
+		case 'A':
+			Afile = optarg;
 			aflag = 1;
 			break;
 		case 'b':
@@ -284,7 +290,13 @@ main(int argc, char *argv[])
 #ifdef USE_QFA
 	if (!mflag && tapeposflag)
 		errx(1, "m and Q options are mutually exclusive");
+
+	if (tapeposflag && command != 'i' && command != 'x' && command != 't')
+		errx(1, "Q option is not valid for %c command", command);
 #endif
+	
+	if (Afile && command != 'i' && command != 'x' && command != 't')
+		errx(1, "A option is not valid for %c command", command);
 
 	if (signal(SIGINT, onintr) == SIG_IGN)
 		(void) signal(SIGINT, SIG_IGN);
@@ -469,6 +481,7 @@ main(int argc, char *argv[])
 		setup();
 		extractdirs(0);
 		initsymtable((char *)0);
+		printvolinfo();
 		for (;;) {
 			NEXTFILE(p);
 			if (!p)
@@ -523,9 +536,13 @@ main(int argc, char *argv[])
 static void
 usage(void)
 {
-#ifdef __linux__
+	char white[MAXPATHLEN];
 	const char *ext2ver, *ext2date;
 
+	memset(white, ' ', MAXPATHLEN);
+	white[MIN(strlen(__progname), MAXPATHLEN - 1)] = '\0';
+
+#ifdef __linux__
 	ext2fs_get_library_version(&ext2ver, &ext2date);
 	(void)fprintf(stderr, "%s %s (using libext2fs %s of %s)\n", 
 		      __progname, _DUMP_VERSION, ext2ver, ext2date);
@@ -545,14 +562,26 @@ usage(void)
 #define qfaflag
 #endif
 
-	(void)fprintf(stderr,
-	  "usage:\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n",
-	  __progname, " -C [-c" kerbflag "lMvVy] [-b blocksize] [-D filesystem] [-f file] [-F script] [-L limit] [-s fileno]",
-	  __progname, " -i [-ach" kerbflag "lmMuvVy] [-b blocksize] [-f file] [-F script] " qfaflag "[-s fileno]",
-	  __progname, " -r [-c" kerbflag "lMuvVy] [-b blocksize] [-f file] [-F script] [-s fileno] [-T directory]",
-	  __progname, " -R [-c" kerbflag "lMuvVy] [-b blocksize] [-f file] [-F script] [-s fileno] [-T directory]",
-	  __progname, " -t [-ch" kerbflag "lMuvVy] [-b blocksize] [-f file] [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]",
-	  __progname, " -x [-ach" kerbflag "lmMuvVy] [-b blocksize] [-f file] [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]");
+	fprintf(stderr,
+		"usage:"
+		"\t%s -C [-c" kerbflag "lMvVy] [-b blocksize] [-D filesystem] [-f file]\n"
+		"\t%s    [-F script] [-L limit] [-s fileno]\n"
+		"\t%s -i [-ach" kerbflag "lmMuvVy] [-A file] [-b blocksize] [-f file]\n"
+		"\t%s    [-F script] " qfaflag "[-s fileno]\n"
+		"\t%s -r [-c" kerbflag "lMuvVy] [-b blocksize] [-f file] [-F script]\n"
+		"\t%s    [-s fileno] [-T directory]\n"
+		"\t%s -R [-c" kerbflag "lMuvVy] [-b blocksize] [-f file] [-F script]\n"
+		"\t%s    [-s fileno] [-T directory]\n"
+		"\t%s -t [-ch" kerbflag "lMuvVy] [-A file] [-b blocksize] [-f file]\n"
+		"\t%s    [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]\n"
+		"\t%s -x [-ach" kerbflag "lmMuvVy] [-A file] [-b blocksize] [-f file]\n"
+		"\t%s    [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]\n",
+		__progname, white, 
+		__progname, white, 
+		__progname, white,
+		__progname, white, 
+		__progname, white, 
+		__progname, white);
 	exit(1);
 }
 
@@ -586,6 +615,7 @@ obsolete(int *argcp, char **argvp[])
 
 	for (flags = 0; *ap; ++ap) {
 		switch (*ap) {
+		case 'A':
 		case 'b':
 		case 'D':
 		case 'f':
