@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.43 2001/07/18 13:46:17 stelian Exp $";
+	"$Id: tape.c,v 1.44 2001/07/18 14:57:46 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -379,7 +379,8 @@ setup(void)
 void
 getvol(long nextvol)
 {
-	long newvol = 0, savecnt = 0, wantnext = 0, i;
+	long newvol = 0, wantnext = 0, i;
+	long saved_blksread = 0, saved_tpblksread = 0;
 	union u_spcl tmpspcl;
 #	define tmpbuf tmpspcl.s_spcl
 	char buf[TP_BSIZE];
@@ -396,7 +397,8 @@ getvol(long nextvol)
 			return;
 		goto gethdr;
 	}
-	savecnt = blksread;
+	saved_blksread = blksread;
+	saved_tpblksread = tpblksread;
 again:
 	if (pipein)
 		exit(1); /* pipes do not get a second chance */
@@ -499,12 +501,16 @@ gethdr:
 		fprintf(stderr, "tape is not dump tape\n");
 		volno = 0;
 		haderror = 1;
+		blksread = saved_blksread;
+		tpblksread = saved_tpblksread;
 		goto again;
 	}
 	if (tmpbuf.c_volume != volno) {
 		fprintf(stderr, "Wrong volume (%d)\n", tmpbuf.c_volume);
 		volno = 0;
 		haderror = 1;
+		blksread = saved_blksread;
+		tpblksread = saved_tpblksread;
 		goto again;
 	}
 	if (tmpbuf.c_date != dumpdate || tmpbuf.c_ddate != dumptime) {
@@ -513,10 +519,13 @@ gethdr:
 		fprintf(stderr, "\twanted: %s", ctime(&dumpdate));
 		volno = 0;
 		haderror = 1;
+		blksread = saved_blksread;
+		tpblksread = saved_tpblksread;
 		goto again;
 	}
 	tapesread |= 1 << volno;
-	blksread = savecnt;
+	blksread = saved_blksread;
+	tpblksread = saved_tpblksread;
  	/*
  	 * If continuing from the previous volume, skip over any
  	 * blocks read already at the end of the previous volume.
