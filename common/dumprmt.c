@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dumprmt.c,v 1.9 2000/01/11 12:33:44 tiniou Exp $";
+	"$Id: dumprmt.c,v 1.10 2000/01/17 16:32:44 stelian Exp $";
 #endif /* not lint */
 
 #ifdef __linux__
@@ -169,6 +169,7 @@ rmtgetconn(void)
 	int size;
 	int throughput;
 	int on;
+	char *rmtpeercopy;
 
 	rsh = getenv("RSH");
 
@@ -210,13 +211,17 @@ rmtgetconn(void)
 		}
 	}
 	else {
+		/* Copy rmtpeer to rmtpeercopy to ignore the
+		   return value from rcmd. I cannot figure if
+		   this is this a bug in rcmd or in my code... */
+		rmtpeercopy = (char *)rmtpeer;
 #ifdef KERBEROS
 		if (dokerberos)
-			tormtape = krcmd((char **)&rmtpeer, sp->s_port, tuser, rmt, &errfd,
+			tormtape = krcmd(&rmtpeercopy, sp->s_port, tuser, rmt, &errfd,
 				       (char *)0);
 		else
 #endif
-			tormtape = rcmd((char **)&rmtpeer, (u_short)sp->s_port, pwd->pw_name,
+			tormtape = rcmd(&rmtpeercopy, (u_short)sp->s_port, pwd->pw_name,
 				      tuser, rmt, &errfd);
 		if (tormtape < 0) {
 			msg("login to %s as %s failed.\n", rmtpeer, tuser);
