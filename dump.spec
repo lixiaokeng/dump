@@ -121,52 +121,52 @@ rm -rf %{buildroot}
 %{_sbindir}/rrestore.static
 
 %changelog
-* Fri Nov 10 2000 Stelian Pop <pop@cybercable.fr>
+* Fri Nov 10 2000 Stelian Pop <pop@noos.fr>
 - dump 0.4b20 released, first packaging.
 
-* Sun Aug 20 2000 Stelian Pop <pop@cybercable.fr>
+* Sun Aug 20 2000 Stelian Pop <pop@noos.fr>
 - dump 0.4b19 released, first packaging.
 
-* Thu Jun 30 2000 Stelian Pop <pop@cybercable.fr>
+* Thu Jun 30 2000 Stelian Pop <pop@noos.fr>
 - dump 0.4b18 released, first packaging.
 
-* Thu Jun  1 2000 Stelian Pop <pop@cybercable.fr>
+* Thu Jun  1 2000 Stelian Pop <pop@noos.fr>
 - dump 0.4b17 released, first packaging.
 
-* Sat Mar 11 2000 Stelian Pop <pop@cybercable.fr>
+* Sat Mar 11 2000 Stelian Pop <pop@noos.fr>
 - dump 0.4b16 released, first packaging.
 
-* Thu Mar  2 2000 Stelian Pop <pop@cybercable.fr>
+* Thu Mar  2 2000 Stelian Pop <pop@noos.fr>
 - dump 0.4b15 released, first packaging.
 
-* Thu Feb 10 2000 Stelian Pop <pop@cybercable.fr>
+* Thu Feb 10 2000 Stelian Pop <pop@noos.fr>
 - dump 0.4b14 released, first packaging.
 
-* Fri Jan 21 2000 Stelian Pop <pop@cybercable.fr>
+* Fri Jan 21 2000 Stelian Pop <pop@noos.fr>
 - dump 0.4b13 released, first packaging.
 
-* Fri Jan 8 2000 Stelian Pop <pop@cybercable.fr>
+* Fri Jan 8 2000 Stelian Pop <pop@noos.fr>
 - dump 0.4b12 released, first packaging.
 
-* Sun Dec 5 1999 Stelian Pop <pop@cybercable.fr>
+* Sun Dec 5 1999 Stelian Pop <pop@noos.fr>
 - dump 0.4b11 released, first packaging.
 
-* Sun Nov 21 1999 Stelian Pop <pop@cybercable.fr>
+* Sun Nov 21 1999 Stelian Pop <pop@noos.fr>
 - dump 0.4b10 released, first packaging.
 
-* Thu Nov 11 1999 Stelian Pop <pop@cybercable.fr>
+* Thu Nov 11 1999 Stelian Pop <pop@noos.fr>
 - make static versions also for rescue purposes.
 
-* Wed Nov 5 1999 Stelian Pop <pop@cybercable.fr>
+* Wed Nov 5 1999 Stelian Pop <pop@noos.fr>
 - dump 0.4b9 released, first packaging.
 
-* Wed Nov 3 1999 Stelian Pop <pop@cybercable.fr>
+* Wed Nov 3 1999 Stelian Pop <pop@noos.fr>
 - dump 0.4b8 released, first packaging.
 
-* Thu Oct 8 1999 Stelian Pop <pop@cybercable.fr>
+* Thu Oct 8 1999 Stelian Pop <pop@noos.fr>
 - dump 0.4b7 released, first packaging.
 
-* Thu Sep 30 1999 Stelian Pop <pop@cybercable.fr>
+* Thu Sep 30 1999 Stelian Pop <pop@noos.fr>
 - dump 0.4b6 released, first packaging.
 
 * Fri Sep 10 1999 Jeff Johnson <jbj@redhat.com>

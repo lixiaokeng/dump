@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.18 2000/11/10 13:22:10 stelian Exp $
+.\"	$Id: dump.8.in,v 1.19 2000/12/04 15:43:16 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -486,7 +486,7 @@ of dump (up and including 0.4b4, released in january 1997).
 .Pp
 Starting with 0.4b5, the new maintainer is Stelian Pop 
 .br
-<pop@cybercable.fr>.
+<pop@noos.fr>.
 .Sh AVAILABILITY
 The
 .Nm dump/restore
