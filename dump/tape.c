@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.63 2002/02/21 09:25:31 stelian Exp $";
+	"$Id: tape.c,v 1.64 2002/02/27 09:47:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1234,6 +1234,7 @@ doslave(int cmd, int slave_number, int first)
 #ifdef USE_QFA
 		if (gTapeposfd >= 0) {
 			int i;
+			int firstpass = 1;
 			for (i = 0; i < ntrec; ++i) {
 				uspclptr = (union u_spcl *)&slp->tblock[i];
 				spclptr = &uspclptr->s_spcl;
@@ -1243,10 +1244,13 @@ doslave(int cmd, int slave_number, int first)
 				    (spclptr->c_date == gThisDumpDate)) {
 					/* if an error occured previously don't
 					 * try again */
-					if (gtperr == 0) {
-						if ((gtperr = GetTapePos(&curtapepos)) == 0)
-							MkTapeString(spclptr, curtapepos);
+					if (firstpass) {
+						firstpass = 0;
+						if (gtperr == 0) 
+							gtperr = GetTapePos(&curtapepos);
 					}
+					if (gtperr == 0)
+							MkTapeString(spclptr, curtapepos);
 				}
 			}
 		}
