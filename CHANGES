@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.118 2001/06/18 11:07:45 stelian Exp $
+$Id: CHANGES,v 1.119 2001/07/18 08:50:58 stelian Exp $
 
 Changes between versions 0.4b22 and 0.4b23 (released ????????????)
 ==================================================================
@@ -17,6 +17,9 @@ Changes between versions 0.4b22 and 0.4b23 (released ????????????)
 4.	Report any filesystem present in either /etc/fstab with a 
 	positive passno or /etc/dumpdates in dump -w output.
 	Patch submitted by Andreas Dilger <adilger@turbolinux.com>.
+
+5.	Fixed the looping problem in dump introduced in the 
+	previous version.
 
 Changes between versions 0.4b21 and 0.4b22 (released May 12, 2001)
 ==================================================================
