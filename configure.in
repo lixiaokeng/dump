@@ -261,12 +261,22 @@ if test "$ext2fs_h" = no -o "$ext2fs_lib" = no; then
 fi
 
 dnl
+dnl Check for termcap libraries
+dnl
+AC_CHECK_LIB(termcap, tgetent, [termcap_lib=yes], [termcap_lib=no])
+if test "$termcap_lib" = no; then
+	if test "$READLINE" = "-lreadline -ltermcap"; then
+		AC_MSG_ERROR(You need to install the GNU termcap libraries first)
+	fi
+fi
+
+dnl
 dnl Check for readline headers and libraries
 dnl
 AC_CHECK_HEADER(readline/readline.h, [readline_h=yes], [readline_h=no])
-AC_CHECK_LIB(readline, readline, [readline_lib=yes], [readline_lib=no])
+AC_CHECK_LIB(readline, readline, [readline_lib=yes], [readline_lib=no], "-ltermcap")
 if test "$readline_h" = no -o "$readline_lib" = no; then
-	if test "$READLINE" = "-lreadline"; then
+	if test "$READLINE" = "-lreadline -ltermcap"; then
 		AC_MSG_ERROR(You need to install the GNU readline libraries first)
 	fi
 fi
