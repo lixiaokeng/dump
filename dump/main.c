@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.68 2002/01/25 15:08:59 stelian Exp $";
+	"$Id: main.c,v 1.69 2002/01/31 10:49:17 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -531,7 +531,8 @@ main(int argc, char *argv[])
 	 */
 	i = strlen(diskparam) - 1;
 	if (i > 1 && diskparam[i] == '/')
-		diskparam[i] = '\0';
+		if (!(i == 6 && !strcmp(diskparam, "LABEL=/")))
+			diskparam[i] = '\0';
 
 	disk = get_device_name(diskparam);
 	if (!disk) {		/* null means the disk is some form
