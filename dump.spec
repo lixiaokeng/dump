@@ -4,7 +4,7 @@
 
 Summary: Programs for backing up and restoring filesystems.
 Name: dump
-Version: 0.4b21
+Version: 0.4b22
 Release: 1
 License: BSD
 Group: Applications/Archiving
@@ -122,6 +122,9 @@ rm -rf %{buildroot}
 %{_sbindir}/rrestore.static
 
 %changelog
+* Sat May 12 2001 Stelian Pop <pop@noos.fr>
+- dump 0.4b22 released, first packaging.
+
 * Sat Jan 30 2001 Stelian Pop <pop@noos.fr>
 - dump 0.4b21 released, first packaging.
 
