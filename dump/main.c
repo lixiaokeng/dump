@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.57 2001/08/16 09:37:59 stelian Exp $";
+	"$Id: main.c,v 1.58 2001/08/16 13:12:30 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -178,6 +178,7 @@ static void obsolete __P((int *, char **[]));
 static void usage __P((void));
 static void do_exclude_from_file __P((char *));
 static void do_exclude_ino_str __P((char *));
+static void incompat_flags __P((int, char, char));
 
 static dump_ino_t iexclude_list[IEXCLUDE_MAXNUM];/* the inode exclude list */
 static int iexclude_num = 0;			/* number of elements in the list */
@@ -191,7 +192,8 @@ main(int argc, char *argv[])
 	register struct	fstab *dt;
 	register char *map;
 	register int ch;
-	int i, anydirskipped, bflag = 0, Tflag = 0, honorlevel = 1;
+	int i, anydirskipped;
+	int aflag = 0, bflag = 0, Tflag = 0, honorlevel = 1;
 	dump_ino_t maxino;
 	struct STAT statbuf;
 	dev_t filedev = 0;
@@ -254,6 +256,7 @@ main(int argc, char *argv[])
 
 		case 'a':		/* `auto-size', Write to EOM. */
 			unlimited = 1;
+			aflag = 1;
 			break;
 
 		case 'B':		/* blocks per output file */
@@ -411,11 +414,12 @@ main(int argc, char *argv[])
 		exit(X_STARTUP);
 	}
 	argc--;
-	if (Tflag && uflag) {
-	        msg("You cannot use the T and u flags together.\n");
-		msg("The ENTIRE dump is aborted.\n");
-		exit(X_STARTUP);
-	}
+	incompat_flags(Tflag && uflag, 'T', 'u');
+	incompat_flags(aflag && blocksperfile, 'a', 'B');
+	incompat_flags(aflag && cartridge, 'a', 'c');
+	incompat_flags(aflag && density, 'a', 'd');
+	incompat_flags(aflag && tsize, 'a', 's');
+
 	if (strcmp(tapeprefix, "-") == 0) {
 		pipeout++;
 		tapeprefix = "standard output";
@@ -1183,4 +1187,13 @@ do_exclude_from_file(char *file) {
 		do_exclude_ino_str(p);
 	}
 	fclose(f);
+}
+
+static void incompat_flags(int cond, char flag1, char flag2) {
+	if (cond) {
+	        msg("You cannot use the %c and %c flags together.\n", 
+		    flag1, flag2);
+		msg("The ENTIRE dump is aborted.\n");
+		exit(X_STARTUP);
+	}
 }
