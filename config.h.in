@@ -54,8 +54,8 @@
 /* Define this is you want old style F script (no arguments) */
 #undef OLD_STYLE_FSCRIPT
 
-/* Define this to 64 if you want Large File System support */
-#undef _FILE_OFFSET_BITS
+/* Define this if you want Large File System support */
+#undef USE_LFS
 
 /* Define this if you have zlib compression library */
 #undef HAVE_ZLIB

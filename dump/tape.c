@@ -41,10 +41,11 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.44 2001/04/24 10:59:12 stelian Exp $";
+	"$Id: tape.c,v 1.45 2001/04/27 15:22:47 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
+#include <compatlfs.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <setjmp.h>
@@ -547,7 +548,7 @@ trewind(void)
 #endif
 		{
 			(void) close(tapefd);
-			while ((f = open(tape, 0)) < 0)
+			while ((f = OPEN(tape, 0)) < 0)
 				sleep (10);
 			(void) close(f);
 		}
@@ -861,10 +862,10 @@ restore_check_point:
 #ifdef RDUMP
 		while ((tapefd = (host ? rmtopen(tape, 2) : pipeout ? 
 			fileno(stdout) : 
-			open(tape, O_WRONLY|O_CREAT, 0666))) < 0)
+			OPEN(tape, O_WRONLY|O_CREAT, 0666))) < 0)
 #else
 		while ((tapefd = (pipeout ? fileno(stdout) :
-				  open(tape, O_RDWR|O_CREAT, 0666))) < 0)
+				  OPEN(tape, O_RDWR|O_CREAT, 0666))) < 0)
 #endif
 		    {
 			msg("Cannot open output \"%s\".\n", tape);
@@ -1062,7 +1063,7 @@ doslave(int cmd, int slave_number)
 	 * Need our own seek pointer.
 	 */
 	(void) close(diskfd);
-	if ((diskfd = open(disk, O_RDONLY)) < 0)
+	if ((diskfd = OPEN(disk, O_RDONLY)) < 0)
 		quit("slave couldn't reopen disk: %s\n", strerror(errno));
 #ifdef	__linux__
 	ext2fs_close(fs);

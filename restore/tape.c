@@ -46,10 +46,11 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.36 2001/04/27 12:23:23 stelian Exp $";
+	"$Id: tape.c,v 1.37 2001/04/27 15:22:47 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
+#include <compatlfs.h>
 #include <errno.h>
 #include <compaterr.h>
 #include <setjmp.h>
@@ -251,7 +252,7 @@ void
 setup(void)
 {
 	int i, j, *ip;
-	struct stat stbuf;
+	struct STAT stbuf;
 	struct mtget mt_stat;
 
 	Vprintf(stdout, "Verify tape and initialize maps\n");
@@ -263,7 +264,7 @@ setup(void)
 	if (pipein)
 		mt = 0;
 	else
-		mt = open(magtape, O_RDONLY, 0);
+		mt = OPEN(magtape, O_RDONLY, 0);
 	if (mt < 0)
 		err(1, "%s", magtape);
 	volno = 1;
@@ -327,7 +328,7 @@ setup(void)
 	}
 	dumptime = spcl.c_ddate;
 	dumpdate = spcl.c_date;
-	if (stat(".", &stbuf) < 0)
+	if (STAT(".", &stbuf) < 0)
 		err(1, "cannot stat .");
 	if (stbuf.st_blksize > 0 && stbuf.st_blksize < TP_BSIZE )
 		fssize = TP_BSIZE;
@@ -470,7 +471,7 @@ again:
 		mt = rmtopen(magtape, 0);
 	else
 #endif
-		mt = open(magtape, O_RDONLY, 0);
+		mt = OPEN(magtape, O_RDONLY, 0);
 
 	if (mt == -1) {
 		fprintf(stderr, "Cannot open %s\n", magtape);
@@ -738,7 +739,7 @@ extractfile(char *name)
 		}
 		if (uflag)
 			(void)unlink(name);
-		if ((ofile = open(name, O_WRONLY | O_CREAT | O_TRUNC,
+		if ((ofile = OPEN(name, O_WRONLY | O_CREAT | O_TRUNC,
 		    0666)) < 0) {
 			warn("%s: cannot create file", name);
 			skipfile();
@@ -848,11 +849,15 @@ loop:
 	}
 	if (size > 0) {
 		fprintf(stderr, "Missing blocks at the end of %s, assuming hole\n", curfile.name);
-		(*skip)(clearedbuf, size);
+		while (size > 0) {
+			size_t skp = size > TP_BSIZE ? TP_BSIZE : size;
+			(*skip)(clearedbuf, skp);
+			size -= skp;
+		}
 		last_write_was_hole = 1;
 	}
 	if (last_write_was_hole) {
-		ftruncate(ofile, origsize);
+		FTRUNCATE(ofile, origsize);
 	}
 	findinode(&spcl);
 	gettingfile = 0;
@@ -880,7 +885,7 @@ static void
 xtrskip(char *buf, size_t size)
 {
 
-	if (lseek(ofile, (off_t)size, SEEK_CUR) == -1)
+	if (LSEEK(ofile, (off_t)size, SEEK_CUR) == -1)
 		err(1, "seek error extracting inode %lu, name %s\nlseek",
 			(unsigned long)curfile.ino, curfile.name);
 }
@@ -1038,12 +1043,12 @@ int
 #else
 void
 #endif
-cmpfiles(char *tapefile, char *diskfile, struct stat *sbuf_disk)
+cmpfiles(char *tapefile, char *diskfile, struct STAT *sbuf_disk)
 {
-	struct stat sbuf_tape;
+	struct STAT sbuf_tape;
 	int fd_tape, fd_disk;
 
-	if (stat(tapefile, &sbuf_tape) != 0) {
+	if (STAT(tapefile, &sbuf_tape) != 0) {
 		panic("Can't lstat tmp file %s: %s\n", tapefile,
 		      strerror(errno));
 		compare_errors = 1;
@@ -1061,11 +1066,11 @@ cmpfiles(char *tapefile, char *diskfile, struct stat *sbuf_disk)
 #endif
 	}
 
-	if ((fd_tape = open(tapefile, O_RDONLY)) < 0) {
+	if ((fd_tape = OPEN(tapefile, O_RDONLY)) < 0) {
 		panic("Can't open %s: %s\n", tapefile, strerror(errno));
 		compare_errors = 1;
 	}
-	if ((fd_disk = open(diskfile, O_RDONLY)) < 0) {
+	if ((fd_disk = OPEN(diskfile, O_RDONLY)) < 0) {
 		close(fd_tape);
 		panic("Can't open %s: %s\n", diskfile, strerror(errno));
 		compare_errors = 1;
@@ -1120,14 +1125,14 @@ void
 comparefile(char *name)
 {
 	int mode;
-	struct stat sb;
+	struct STAT sb;
 	int r;
 #if !COMPARE_ONTHEFLY
 	static char *tmpfile = NULL;
-	struct stat stemp;
+	struct STAT stemp;
 #endif
 
-	if ((r = lstat(name, &sb)) != 0) {
+	if ((r = LSTAT(name, &sb)) != 0) {
 		warn("%s: does not exist (%d)", name, r);
 		compare_errors = 1;
 		skipfile();
@@ -1220,7 +1225,7 @@ comparefile(char *name)
 
 	case IFREG:
 #if COMPARE_ONTHEFLY
-		if ((ifile = open(name, O_RDONLY)) < 0) {
+		if ((ifile = OPEN(name, O_RDONLY)) < 0) {
 			panic("Can't open %s: %s\n", name, strerror(errno));
 			skipfile();
 			compare_errors = 1;
@@ -1246,11 +1251,11 @@ comparefile(char *name)
 			snprintf(tmpfilename, sizeof(tmpfilename), "%s/restoreCXXXXXX", tmpdir);
 			tmpfile = mktemp(&tmpfilename[0]);
 		}
-		if ((stat(tmpfile, &stemp) == 0) && (unlink(tmpfile) != 0)) {
+		if ((STAT(tmpfile, &stemp) == 0) && (unlink(tmpfile) != 0)) {
 			panic("cannot delete tmp file %s: %s\n",
 			      tmpfile, strerror(errno));
 		}
-		if ((ofile = open(tmpfile, O_WRONLY | O_CREAT | O_TRUNC, 0600)) < 0) {
+		if ((ofile = OPEN(tmpfile, O_WRONLY | O_CREAT | O_TRUNC, 0600)) < 0) {
 			panic("cannot create file temp file %s: %s\n",
 			      name, strerror(errno));
 		}
@@ -1399,7 +1404,7 @@ getmore:
 			seek_failed = (rmtseek(i, 1) < 0);
 		else
 #endif
-			seek_failed = (lseek(mt, i, SEEK_CUR) == (off_t)-1);
+			seek_failed = (LSEEK(mt, i, SEEK_CUR) == (off_t)-1);
 
 		if (seek_failed) {
 			warn("continuation failed");

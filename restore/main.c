@@ -41,10 +41,11 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.23 2001/04/26 08:59:32 stelian Exp $";
+	"$Id: main.c,v 1.24 2001/04/27 15:22:47 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
+#include <compatlfs.h>
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <errno.h>
@@ -315,14 +316,14 @@ main(int argc, char *argv[])
 	 * Compare contents of tape.
 	 */
 	case 'C': {
-		struct stat stbuf;
+		struct STAT stbuf;
 
 		Vprintf(stdout, "Begin compare restore\n");
 		compare_ignore_not_found = 0;
 		compare_errors = 0;
 		setup();
 		printf("filesys = %s\n", filesys);
-		if (stat(filesys, &stbuf) < 0)
+		if (STAT(filesys, &stbuf) < 0)
 			err(1, "cannot stat directory %s", filesys);
 		if (chdir(filesys) < 0)
 			err(1, "cannot cd to %s", filesys);

@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.112 2001/04/12 13:14:14 stelian Exp $
+$Id: CHANGES,v 1.113 2001/04/27 15:22:47 stelian Exp $
 
 Changes between versions 0.4b21 and 0.4b22 (released ????????????????)
 ======================================================================
@@ -53,6 +53,11 @@ Changes between versions 0.4b21 and 0.4b22 (released ????????????????)
 10.	Fixed a socket descriptor leak in dump, which leaved opened
 	3 file descriptors per dump process (and there is one dump
 	process per tape).
+
+11.	Fixed dump large file system support, by explicit use of
+	open64/lseek64/etc functions (explicit use needed because 
+	e2fsprogs libraries don't behave well when compiled with 
+	FILE_OFFSET_BITS=64).
 
 Changes between versions 0.4b20 and 0.4b21 (released January 13, 2001)
 ======================================================================

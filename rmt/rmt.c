@@ -41,13 +41,14 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: rmt.c,v 1.13 2001/03/28 12:59:49 stelian Exp $";
+	"$Id: rmt.c,v 1.14 2001/04/27 15:22:47 stelian Exp $";
 #endif /* not linux */
 
 /*
  * rmt
  */
 #include <config.h>
+#include <compatlfs.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/mtio.h>
@@ -114,7 +115,7 @@ top:
 		 * specify the permission bits; allow rw for everyone,
 		 * as modified by the users umask
 		 */
-		tape = open(device, atoi(filemode), 0666);
+		tape = OPEN(device, atoi(filemode), 0666);
 		if (tape < 0)
 			goto ioerror;
 		block = 0;
@@ -133,7 +134,7 @@ top:
 		getstring(count);
 		getstring(pos);
 		DEBUG2("rmtd: L %s %s\n", count, pos);
-		rval = lseek(tape, (off_t)atol(count), atoi(pos));
+		rval = LSEEK(tape, (off_t)atol(count), atoi(pos));
 		if (rval < 0)
 			goto ioerror;
 		goto respond;

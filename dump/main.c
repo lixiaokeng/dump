@@ -41,10 +41,11 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.47 2001/04/27 12:23:23 stelian Exp $";
+	"$Id: main.c,v 1.48 2001/04/27 15:22:47 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
+#include <compatlfs.h>
 #include <ctype.h>
 #include <compaterr.h>
 #include <fcntl.h>
@@ -124,7 +125,7 @@ main(int argc, char *argv[])
 	register int ch;
 	int i, anydirskipped, bflag = 0, Tflag = 0, honorlevel = 1;
 	dump_ino_t maxino;
-	struct stat statbuf;
+	struct STAT statbuf;
 	dev_t filedev = 0;
 #ifdef	__linux__
 	errcode_t retval;
@@ -543,7 +544,7 @@ main(int argc, char *argv[])
 		msg("The ENTIRE dump is aborted.\n");
 		exit(X_STARTUP);
 	}
-	if ((diskfd = open(disk, O_RDONLY)) < 0) {
+	if ((diskfd = OPEN(disk, O_RDONLY)) < 0) {
 		msg("Cannot open %s\n", disk);
 		msg("The ENTIRE dump is aborted.\n");
 		exit(X_STARTUP);
@@ -604,7 +605,7 @@ main(int argc, char *argv[])
 
 	nonodump = spcl.c_level < honorlevel;
 
-	if (!sizeest) {
+	if (!sizest) {
 		msg("Label: %s\n", spcl.c_label);
 
 		if (compressed)
@@ -622,7 +623,7 @@ main(int argc, char *argv[])
 	if (directory[0] == 0)
 		anydirskipped = mapfiles(maxino, &tapesize);
 	else {
-		if (stat(pathname, &statbuf) == -1) {
+		if (STAT(pathname, &statbuf) == -1) {
 			msg("File cannot be accessed (%s).\n", pathname);
 			msg("The ENTIRE dump is aborted.\n");
 			exit(X_STARTUP);
@@ -639,7 +640,7 @@ main(int argc, char *argv[])
 		int anydirskipped2;
 		char *p = *argv;
 		/* check if file is available */
-		if (stat(p, &statbuf) == -1) {
+		if (STAT(p, &statbuf) == -1) {
 			msg("File cannot be accessed (%s).\n", p);
 			msg("The ENTIRE dump is aborted.\n");
 			exit(X_STARTUP);

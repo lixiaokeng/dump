@@ -1402,7 +1402,7 @@ if test "${enable_largefile+set}" = set; then
   if test "$enableval" = "yes"
 then
 	cat >> confdefs.h <<\EOF
-#define _FILE_OFFSET_BITS 64
+#define USE_LFS 1
 EOF
 
 fi
