@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dumprmt.c,v 1.11 2000/01/21 10:17:41 stelian Exp $";
+	"$Id: dumprmt.c,v 1.12 2000/11/03 18:28:58 stelian Exp $";
 #endif /* not lint */
 
 #ifdef __linux__
@@ -204,6 +204,12 @@ rmtgetconn(void)
 		rshcmd[3] = tuser;
 		rshcmd[4] = rmt;
 		rshcmd[5] = NULL;
+
+		/* Restore the uid and gid. We really don't want
+		 * to execute whatever is put into RSH variable with
+		 * more priviledges than needed... */
+		setuid(getuid());
+		setgid(getgid());
 
 		if ((rshpid = piped_child(rshcmd)) < 0) {
 			msg("cannot open connection\n");

@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.84 2000/09/26 13:17:42 stelian Exp $
+$Id: CHANGES,v 1.85 2000/11/03 18:28:58 stelian Exp $
 
 Changes between versions 0.4b19 and 0.4b20 (released ???????????????)
 =====================================================================
@@ -33,6 +33,9 @@ Changes between versions 0.4b19 and 0.4b20 (released ???????????????)
 
 6.	Made dump able to backup files larger than 2 GB. Note that
 	dump still doesn't cope with files larger than 4 GB.
+
+7.	Restore the real uid and gid before invoking an external
+	RSH program (big hole when dump or restore is suid root!).
 
 Changes between versions 0.4b18 and 0.4b19 (released August 20, 2000)
 =====================================================================
