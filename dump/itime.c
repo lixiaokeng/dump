@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: itime.c,v 1.27 2004/04/21 08:55:51 stelian Exp $";
+	"$Id: itime.c,v 1.28 2004/06/17 09:01:15 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -283,9 +283,11 @@ getrecord(FILE *df, struct dumpdates *ddatep)
 	if (fgets(tbuf, sizeof (tbuf), df) == NULL)
 		return(-1);
 	recno++;
-	if (makedumpdate(ddatep, tbuf) < 0)
-		msg("Unknown intermediate format in %s, line %d\n",
+	if (makedumpdate(ddatep, tbuf) < 0) {
+		msg("Unknown format in %s, line %d\n",
 			dumpdates, recno);
+		return(-1);
+	}
 
 #ifdef FDEBUG
 	msg("getrecord: %s %d %s", ddatep->dd_name, ddatep->dd_level,
@@ -301,7 +303,7 @@ makedumpdate(struct dumpdates *ddp, char *tbuf)
 	/* device name */
 	if ( NULL == (tok = strsep( &tbuf, " ")) )
 		return(-1);
-	if ( strlen(tok) >  MAXPATHLEN )
+	if ( !tbuf || strlen(tok) >  MAXPATHLEN )
 		return(-1);
 	strcpy(ddp->dd_name, tok);
 

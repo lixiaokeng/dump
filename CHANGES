@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.249 2004/06/02 09:22:48 stelian Exp $
+$Id: CHANGES,v 1.250 2004/06/17 09:01:13 stelian Exp $
 
 Changes between versions 0.4b36 and 0.4b37 (released ??????????????)
 ====================================================================
@@ -16,6 +16,10 @@ Changes between versions 0.4b36 and 0.4b37 (released ??????????????)
 	(<ext2fs/ext2_types.h> defines some types (__s64 and __u64)
 	that are also defined by <linux/types.h> (<asm/types.h>) and 
 	they conflict).
+
+3.	Make dump's reading of the dumpdates file a bit more robust,
+	preventing dump from crashing when the dumpdates file has
+	been modified by hand.
 
 Changes between versions 0.4b35 and 0.4b36 (released April 21, 2004)
 ====================================================================
