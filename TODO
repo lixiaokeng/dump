@@ -1,22 +1,14 @@
-$Id: TODO,v 1.6 1999/11/17 22:51:27 tiniou Exp $
+$Id: TODO,v 1.7 1999/11/21 00:17:12 tiniou Exp $
 
 Need to verify:
 ---------------
 
-1.	Verify that dump works correctly on rev 1 ext2fses (need success
-	reports)
-
-2.	Verify that dump works with kerberos authentification (this
+1.	Verify that dump works with kerberos authentification (this
 	was ported from *BSD and was not tested - in fact, this
 	wasn't even compiled in!). Need success reports for this.
 
 Urgent items (for the next stable version):
 -------------------------------------------
-
-1.	Make dump honor the no-dump attribute on directories.  Currently, it
-	honours it only on files.  This means that a directory flagged with
-	the no-dump attribute will be dumped if it contains a file without
-	the no-dump flag.
 
 All others:
 -----------
@@ -26,20 +18,16 @@ All others:
 
 2.	More documentation? Examples, crontab?
 
-3.	Explore and correct dump problems on a 4GB+ active 
-	filesystem (lseek/read negative count).
+3.	Explore and correct dump problems on active filesystems 
+	(lseek/read negative count).
 
-4.	Clean-up the code by removing all those #ifdef _BSD, 
-	since nobody would ever re-compile this on a BSD system. 
-	Since the tape format is the same, the native BSD
-	restore can be used to restore tapes...
-
-5.	Reimplement the ext2 specific code in a "backend" and
+4.	Reimplement the ext2 specific code in a "backend" and
 	make the dump code more generic. This would allow creation
 	of other backends for other filesystems. Implementing a 
 	(v)fat backend should be quite easy, as for BSD ffs (we
-	already have the code for this).
+	already have the code for this). The BSD code in traverse.c
+	(all those #ifdef _BSD) should go into the ffs backend.
 
-6.	Implement a DEBUG option which doesn't fork on each tape, making
+5.	Implement a DEBUG option which doesn't fork on each tape, making
 	it able to debug dump with gdb.
 

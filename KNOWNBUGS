@@ -1,4 +1,4 @@
-$Id: KNOWNBUGS,v 1.4 1999/11/02 09:35:55 tiniou Exp $
+$Id: KNOWNBUGS,v 1.5 1999/11/21 00:17:12 tiniou Exp $
 
 Known bugs and limitations of the dump/restore port
 ===================================================
@@ -10,7 +10,7 @@ Known bugs and limitations of the dump/restore port
 
 2.	Kerberos mode is _NOT_ tested.
 
-3.	Some users related possible problems when dumping large,
+3.	Some users related possible problems when dumping
 	active (mounted) filesystems. The problems are reported as
 	lseek and read error messages (with a negative count). If
 	you encounter this kind of problems, please report them

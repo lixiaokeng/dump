@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.8 1999/11/17 22:46:43 tiniou Exp $";
+	"$Id: traverse.c,v 1.9 1999/11/21 00:17:16 tiniou Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -98,6 +98,7 @@ static	int dirindir __P((ino_t ino, daddr_t blkno, int level, long *size));
 static	void dmpindir __P((ino_t ino, daddr_t blk, int level, fsizeT *size));
 static	int searchdir __P((ino_t ino, daddr_t blkno, long size, long filesize));
 #endif
+static	void mapfileino __P((ino_t ino, long *tapesize, int *dirskipped));
 
 /*
  * This is an estimation of the number of TP_BSIZE blocks in the file.
@@ -161,6 +162,52 @@ blockest(struct dinode *dp)
 #endif
 
 /*
+ * Determine if given inode should be dumped
+ */
+void
+mapfileino(ino_t ino, long *tapesize, int *dirskipped)
+{
+	register int mode;
+	register struct dinode *dp;
+
+	/*
+	 * Skip inode if we've already marked it for dumping
+	 */
+	if (TSTINO(ino, usedinomap))
+		return;
+	dp = getino(ino);
+	if ((mode = (dp->di_mode & IFMT)) == 0)
+		return;
+#ifdef	__linux__
+	if (dp->di_nlink == 0 || dp->di_dtime != 0)
+		return;
+#endif
+	/*
+	 * Put all dirs in dumpdirmap, inodes that are to be dumped in the
+	 * used map. All inode but dirs who have the nodump attribute go
+	 * to the usedinomap.
+	 */
+	SETINO(ino, usedinomap);
+	if (mode == IFDIR)
+		SETINO(ino, dumpdirmap);
+	if (WANTTODUMP(dp)) {
+		SETINO(ino, dumpinomap);
+		if (mode != IFREG && mode != IFDIR && mode != IFLNK)
+			*tapesize += 1;
+		else
+			*tapesize += blockest(dp);
+		return;
+	}
+	if (mode == IFDIR) {
+#ifdef UF_NODUMP
+		if (!nonodump && (dp->di_flags & UF_NODUMP))
+			CLRINO(ino, usedinomap);
+#endif
+		*dirskipped = 1;
+	}
+}
+
+/*
  * Dump pass 1.
  *
  * Walk the inode list for a filesystem to find all allocated inodes
@@ -170,33 +217,12 @@ blockest(struct dinode *dp)
 int
 mapfiles(ino_t maxino, long *tapesize)
 {
-	register int mode;
 	register ino_t ino;
-	register struct dinode *dp;
 	int anydirskipped = 0;
 
-	for (ino = ROOTINO; ino < maxino; ino++) {
-		dp = getino(ino);
-		if ((mode = (dp->di_mode & IFMT)) == 0)
-			continue;
-#ifdef	__linux__
-		if (dp->di_nlink == 0 || dp->di_dtime != 0)
-			continue;
-#endif
-		SETINO(ino, usedinomap);
-		if (mode == IFDIR)
-			SETINO(ino, dumpdirmap);
-		if (WANTTODUMP(dp)) {
-			SETINO(ino, dumpinomap);
-			if (mode != IFREG && mode != IFDIR && mode != IFLNK)
-				*tapesize += 1;
-			else
-				*tapesize += blockest(dp);
-			continue;
-		}
-		if (mode == IFDIR)
-			anydirskipped = 1;
-	}
+	for (ino = ROOTINO; ino < maxino; ino++)
+		mapfileino(ino, tapesize, &anydirskipped);
+
 	/*
 	 * Restore gets very upset if the root is not dumped,
 	 * so ensure that it always is dumped.
@@ -208,7 +234,7 @@ mapfiles(ino_t maxino, long *tapesize)
 #ifdef	__linux__
 struct mapfile_context {
 	long *tapesize;
-	int anydirskipped;
+	int *anydirskipped;
 };
 
 static int
@@ -216,35 +242,25 @@ mapfilesindir(struct ext2_dir_entry *dirent, int offset, int blocksize, char *bu
 {
 	register struct dinode *dp;
 	register int mode;
-	ino_t ino;
 	errcode_t retval;
 	struct mapfile_context *mfc;
+	ino_t ino;
 
 	ino = dirent->inode;
 	mfc = (struct mapfile_context *)private;
-	dp = getino(ino);
-	if ((mode = (dp->di_mode & IFMT)) != 0 &&
-	    dp->di_nlink != 0 && dp->di_dtime == 0) {
-		SETINO(ino, usedinomap);
-		if (mode == IFDIR)
-			SETINO(ino, dumpdirmap);
-		if (WANTTODUMP(dp)) {
-			SETINO(ino, dumpinomap);
-			if (mode != IFREG && mode != IFDIR && mode != IFLNK)
-				*mfc->tapesize += 1;
-			else
-				*mfc->tapesize += blockest(dp);
-		}
-		if (mode == IFDIR) {
-			mfc->anydirskipped = 1;
-			if ((dirent->name[0] != '.' || dirent->name_len != 1) &&
-			    (dirent->name[0] != '.' || dirent->name[1] != '.' ||
-			     dirent->name_len != 2)) {
-			retval = ext2fs_dir_iterate(fs, ino, 0, NULL,
-						    mapfilesindir, private);
-			if (retval)
-				return retval;
-			}
+
+	mapfileino(dirent->inode, mfc->tapesize, mfc->anydirskipped);
+
+	dp = getino(dirent->inode);
+	mode = dp->di_mode & IFMT;
+	if (mode == IFDIR && dp->di_nlink != 0 && dp->di_dtime == 0) {
+		if ((dirent->name[0] != '.' || dirent->name_len != 1) &&
+		    (dirent->name[0] != '.' || dirent->name[1] != '.' ||
+		     dirent->name_len != 2)) {
+		retval = ext2fs_dir_iterate(fs, ino, 0, NULL,
+					    mapfilesindir, private);
+		if (retval)
+			return retval;
 		}
 	}
 	return 0;
@@ -264,7 +280,7 @@ mapfilesfromdir(ino_t maxino, long *tapesize, char *directory)
 	struct mapfile_context mfc;
 	ino_t dir_ino;
 	char dir_name [MAXPATHLEN];
-	int i;
+	int i, anydirskipped = 0;
 
 	/*
 	 * Mark every directory in the path as being dumped
@@ -280,8 +296,7 @@ mapfilesfromdir(ino_t maxino, long *tapesize, char *directory)
 					dir_name);
 				exit(X_ABORT);
 			}
-/*			SETINO(dir_ino, dumpinomap); */
-			SETINO(dir_ino, dumpdirmap);
+			mapfileino(dir_ino, tapesize, &anydirskipped);
 		}
 	}
 	/*
@@ -292,11 +307,10 @@ mapfilesfromdir(ino_t maxino, long *tapesize, char *directory)
 		com_err(disk, retval, "while translating %s", directory);
 		exit(X_ABORT);
 	}
-/*	SETINO(dir_ino, dumpinomap); */
-	SETINO(dir_ino, dumpdirmap);
+	mapfileino(dir_ino, tapesize, &anydirskipped);
 
 	mfc.tapesize = tapesize;
-	mfc.anydirskipped = 0;
+	mfc.anydirskipped = &anydirskipped;
 	retval = ext2fs_dir_iterate(fs, dir_ino, 0, NULL, mapfilesindir,
 				    (void *)&mfc);
 
@@ -305,13 +319,25 @@ mapfilesfromdir(ino_t maxino, long *tapesize, char *directory)
 		exit(X_ABORT);
 	}
 	/*
+	 * Ensure that the root inode actually appears in the file list
+	 * for a subdir
+	 */
+	mapfileino(ROOTINO, tapesize, &anydirskipped);
+	/*
 	 * Restore gets very upset if the root is not dumped,
 	 * so ensure that it always is dumped.
 	 */
-/*	SETINO(ROOTINO, dumpinomap); */
-	SETINO(ROOTINO, dumpdirmap);
-	return (mfc.anydirskipped);
+	SETINO(ROOTINO, dumpinomap);
+	return anydirskipped;
 }
+#endif
+
+#ifdef __linux__
+struct mapdirs_context {
+	int *ret;
+	int nodump;
+	long *tapesize;
+};
 #endif
 
 /*
@@ -336,8 +362,10 @@ mapdirs(ino_t maxino, long *tapesize)
 #ifndef __linux__
 	register int i;
 	long filesize;
+#else
+	struct mapdirs_context mdc;
 #endif
-	int ret, change = 0;
+	int ret, change = 0, nodump;
 
 	isdir = 0;		/* XXX just to get gcc to shut up */
 	for (map = dumpdirmap, ino = 1; ino < maxino; ino++) {
@@ -345,12 +373,24 @@ mapdirs(ino_t maxino, long *tapesize)
 			isdir = *map++;
 		else
 			isdir >>= 1;
-		if ((isdir & 1) == 0 || TSTINO(ino, dumpinomap))
+		/*
+		 * If dir has been removed from the used map, it's either
+		 * because it had the nodump flag, or it herited it from
+		 * its parent. A directory can't be in dumpinomap if not
+		 * in usedinomap, but we have to go through it anyway 
+	 	 * to propagate the nodump attribute.
+		 */
+		nodump = (TSTINO(ino, usedinomap) == 0);
+		if ((isdir & 1) == 0 ||
+		    (TSTINO(ino, dumpinomap) && nodump == 0))
 			continue;
 		dp = getino(ino);
 #ifdef	__linux__
 		ret = 0;
-		ext2fs_dir_iterate(fs, ino, 0, NULL, searchdir, (void *) &ret);
+		mdc.ret = &ret;
+		mdc.nodump = nodump;
+		mdc.tapesize = tapesize;
+		ext2fs_dir_iterate(fs, ino, 0, NULL, searchdir, (void *) &mdc);
 #else	/* __linux__ */
 		filesize = dp->di_size;
 		for (ret = 0, i = 0; filesize > 0 && i < NDADDR; i++) {
@@ -375,7 +415,11 @@ mapdirs(ino_t maxino, long *tapesize)
 			change = 1;
 			continue;
 		}
-		if ((ret & HASSUBDIRS) == 0) {
+		if (nodump) {
+			if (ret & HASSUBDIRS)
+				change = 1; /* subdirs have inherited nodump */
+			CLRINO(ino, dumpdirmap);
+		} else if ((ret & HASSUBDIRS) == 0) {
 			if (!TSTINO(ino, dumpinomap)) {
 				CLRINO(ino, dumpdirmap);
 				change = 1;
@@ -431,7 +475,14 @@ dirindir(ino_t ino, daddr_t blkno, int ind_level, long *filesize)
 static	int
 searchdir(struct ext2_dir_entry *dp, int offset, int blocksize, char *buf, void *private)
 {
-	int *ret = (int *) private;
+	struct mapdirs_context *mdc;
+	int *ret;
+	long *tapesize;
+	struct dinode *ip;
+
+	mdc = (struct mapdirs_context *)private;
+	ret = mdc->ret;
+	tapesize = mdc->tapesize;
 
 	if (dp->inode == 0)
 		return 0;
@@ -441,15 +492,29 @@ searchdir(struct ext2_dir_entry *dp, int offset, int blocksize, char *buf, void 
 		if (dp->name[1] == '.' && dp->name_len == 2)
 			return 0;
 	}
-	if (TSTINO(dp->inode, dumpinomap)) {
-		*ret |= HASDUMPEDFILE;
-		if (*ret & HASSUBDIRS)
-			return DIRENT_ABORT;
-	}
-	if (TSTINO(dp->inode, dumpdirmap)) {
-		*ret |= HASSUBDIRS;
-		if (*ret & HASDUMPEDFILE)
-			return DIRENT_ABORT;
+	if (mdc->nodump) {
+		ip = getino(dp->inode);
+		if (TSTINO(dp->inode, dumpinomap)) {
+			CLRINO(dp->inode, dumpinomap);
+			CLRINO(dp->inode, usedinomap);
+			*tapesize -= blockest(ip);
+		}
+		/* Add dir back to the dir map, to propagate nodump */
+		if ((ip->di_mode & IFMT) == IFDIR) {
+			SETINO(dp->inode, dumpdirmap);
+			*ret |= HASSUBDIRS;
+		}
+	} else {
+		if (TSTINO(dp->inode, dumpinomap)) {
+			*ret |= HASDUMPEDFILE;
+			if (*ret & HASSUBDIRS)
+				return DIRENT_ABORT;
+		}
+		if (TSTINO(dp->inode, dumpdirmap)) {
+			*ret |= HASSUBDIRS;
+			if (*ret & HASDUMPEDFILE)
+				return DIRENT_ABORT;
+		}
 	}
 	return 0;
 }
