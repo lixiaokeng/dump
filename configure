@@ -849,6 +849,7 @@ Optional Features:
   --enable-largefile         enable Large File System support (default is YES)
   --enable-qfa               enable Quick File Access support (default is YES)
   --enable-qfadebug          include Quick File Access debugging code (default is NO)
+  --enable-macosx            include Mac OSX restore compatibility (default is NO)
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -3507,6 +3508,27 @@ else
   echo "Not including Quick File Access debugging code by default"
 
 fi;
+
+# Check whether --enable-macosx or --disable-macosx was given.
+if test "${enable_macosx+set}" = set; then
+  enableval="$enable_macosx"
+  if test "$enableval" = "yes"
+then
+
+cat >>confdefs.h <<\_ACEOF
+#define DUMP_MACOSX 1
+_ACEOF
+
+	echo "Including Mac OSX restore compatibility code"
+else
+	echo "Not including Mac OSX restore compatibility code"
+fi
+
+else
+  echo "Not including Mac OSX restore compatibility code by default"
+
+fi;
+
 
 
 # Check whether --with-cc or --without-cc was given.

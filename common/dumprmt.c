@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dumprmt.c,v 1.27 2003/03/30 15:40:33 stelian Exp $";
+	"$Id: dumprmt.c,v 1.28 2003/10/26 16:05:45 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -114,6 +114,8 @@ int	krcmd __P((char **, int /*u_short*/, char *, char *, int *, char *));
 static	int errfd = -1;
 extern	int dokerberos;
 extern	int ntrec;		/* blocking factor on tape */
+extern	int abortifconnerr;	/* set to 1 if this lib should exit on connection errors
+                                otherwise just print a message using msg */
 #ifndef errno
 extern	int errno;
 #endif
@@ -152,8 +154,8 @@ rmtconnaborted(UNUSED(int signo))
 			}
 		}
 	}
-
-	exit(X_ABORT);
+	if (abortifconnerr)
+		exit(X_ABORT);
 }
 
 static int
@@ -174,20 +176,36 @@ rmtgetconn(void)
 
 	if (!rsh && sp == NULL) {
 		sp = getservbyname(dokerberos ? "kshell" : "shell", "tcp");
-		if (sp == NULL)
-			errx(1, "%s/tcp: unknown service",
-			    dokerberos ? "kshell" : "shell");
+		if (sp == NULL) {
+			if (abortifconnerr) {
+				errx(1, "%s/tcp: unknown service", dokerberos ? "kshell" : "shell");
+			} else {
+				msg("%s/tcp: unknown service", dokerberos ? "kshell" : "shell");
+				return 0;
+			}
+		}
 	}
 	if (pwd == NULL) {
 		pwd = getpwuid(getuid());
-		if (pwd == NULL)
-			errx(1, "who are you?");
+		if (pwd == NULL) {
+			if (abortifconnerr) {
+				errx(1, "who are you?");
+			} else {
+				msg("who are you?");
+				return 0;
+			}
+		}
 	}
 	if ((cp = strchr(rmtpeer, '@')) != NULL) {
 		tuser = rmtpeer;
 		*cp = '\0';
-		if (!okname(tuser))
-			exit(X_STARTUP);
+		if (!okname(tuser)) {
+			if (abortifconnerr) {
+				exit(X_STARTUP);
+			} else {
+				return 0;
+			}
+		}
 		rmtpeer = ++cp;
 	} else
 		tuser = pwd->pw_name;
@@ -250,7 +268,7 @@ rmtgetconn(void)
 			perror("TCP_NODELAY setsockopt");
 		fromrmtape = tormtape;
 	}
-	(void)fprintf(stderr, "Connection to %s established.\n", rmtpeer);
+	(void)fprintf(stdout, "Connection to %s established.\n", rmtpeer);
 	return 1;
 }
 
@@ -305,9 +323,11 @@ rmtread(char *buf, size_t count)
 
 	(void)snprintf(line, sizeof (line), "R%u\n", (unsigned)count);
 	n = rmtcall("read", line);
-	if (n < 0)
+	if (n < 0) {
 		/* rmtcall() properly sets errno for us on errors. */
-		return (n);
+		errno = n;
+		return (-1);
+	}
 	for (i = 0; i < n; i += cc) {
 		cc = read(fromrmtape, buf+i, n - i);
 		if (cc <= 0)

@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: dump.h,v 1.46 2003/05/12 14:16:39 stelian Exp $
+ *	$Id: dump.h,v 1.47 2003/10/26 16:05:46 stelian Exp $
  */
 
 /*-
@@ -261,6 +261,15 @@ extern int errno;
 #define	DUMP_CURRENT_REV	1
 
 int dump_fs_open(const char *disk, ext2_filsys *fs);
+#endif
+
+#ifndef	__linux__
+#ifndef	_PATH_UTMP
+#define	_PATH_UTMP	"/etc/utmp"
+#endif
+#ifndef	_PATH_FSTAB
+#define	_PATH_FSTAB	"/etc/fstab"
+#endif
 #endif
 
 #ifdef sunos

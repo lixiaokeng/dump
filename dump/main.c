@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.86 2003/05/12 14:16:39 stelian Exp $";
+	"$Id: main.c,v 1.87 2003/10/26 16:05:47 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -45,6 +45,7 @@ static const char rcsid[] =
 #include <ctype.h>
 #include <compaterr.h>
 #include <fcntl.h>
+#include <fstab.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -65,6 +66,7 @@ static const char rcsid[] =
 #include <ext2fs/ext2fs.h>
 #include <sys/stat.h>
 #include <bsdcompat.h>
+#include <linux/fs.h>	/* for definition of BLKFLSBUF */
 #elif defined sunos
 #include <sys/vnode.h>
 
@@ -85,6 +87,8 @@ static const char rcsid[] =
 #define SBOFF (SBLOCK * DEV_BSIZE)
 #endif
 
+int abortifconnerr = 1;		/* set to 1 if lib dumprmt.o should exit on connection errors
+                                otherwise just print a message using msg */
 /*
  * Dump maps used to describe what is to be dumped.
  */
@@ -173,6 +177,8 @@ int	sizest = 0;	/* return size estimate only */
 int	compressed = 0;	/* use zlib to compress the output, compress level 1-9 */
 long long bytes_written = 0; /* total bytes written */
 long	uncomprblks = 0;/* uncompressed blocks written */
+
+long smtc_errno;
 
 #ifdef	__linux__
 char	*__progname;
@@ -496,24 +502,36 @@ main(int argc, char *argv[])
 			tsize = cartridge ? 1700L*120L : 2300L*120L;
 	}
 
-	if (strchr(tapeprefix, ':')) {
-		host = tapeprefix;
-		tapeprefix = strchr(host, ':');
-		*tapeprefix++ = '\0';
+	{
+		int i;
+		char *n;
+
+		if ((n = strchr(tapeprefix, ':'))) {
+			for (i = 0; i < (n - tapeprefix); i++) {
+				if (tapeprefix[i] == '/')
+					break;
+			}
+			if (tapeprefix[i] != '/') {
+				host = tapeprefix;
+				tapeprefix = strchr(host, ':');
+				*tapeprefix++ = '\0';
 #ifdef RDUMP
-		if (index(tapeprefix, '\n')) {
-			msg("invalid characters in tape\n");
-			msg("The ENTIRE dump is aborted.\n");
-			exit(X_STARTUP);
-		}
-		if (rmthost(host) == 0)
-			exit(X_STARTUP);
+				if (index(tapeprefix, '\n')) {
+					msg("invalid characters in tape\n");
+					msg("The ENTIRE dump is aborted.\n");
+					exit(X_STARTUP);
+				}
+				if (rmthost(host) == 0)
+					exit(X_STARTUP);
 #else
-		msg("remote dump not enabled\n");
-		msg("The ENTIRE dump is aborted.\n");
-		exit(X_STARTUP);
+				msg("remote dump not enabled\n");
+				msg("The ENTIRE dump is aborted.\n");
+				exit(X_STARTUP);
 #endif
+			}
+		}
 	}
+
 	(void)setuid(getuid()); /* rmthost() is the only reason to be setuid */
 	if (Apath && (Afile = open(Apath, O_WRONLY|O_CREAT|O_TRUNC,
 				   S_IRUSR | S_IWUSR | S_IRGRP |
@@ -688,7 +706,7 @@ main(int argc, char *argv[])
 		exit(X_STARTUP);
 	}
 #ifdef BLKFLSBUF
-	(void)ioctl(diskfd, BLKFLSBUF);
+	(void)ioctl(diskfd, BLKFLSBUF, 0);
 #endif
 	retval = dump_fs_open(disk, &fs);
 	if (retval) {

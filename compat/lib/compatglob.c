@@ -65,10 +65,11 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: compatglob.c,v 1.9 2003/03/30 15:40:35 stelian Exp $";
+	"$Id: compatglob.c,v 1.10 2003/10/26 16:05:46 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
+#include <sys/types.h>
 
 #ifndef HAVE_GLOB
 
@@ -358,7 +359,7 @@ globtilde(const Char *pattern, Char *patbuf, size_t patbuf_len, glob_t *pglob)
 		 * the password file
 		 */
 		if (
-#ifndef __linux__
+#if !defined(__linux__) && !defined(sunos)
 #ifndef	__NETBSD_SYSCALLS
 		    issetugid() != 0 ||
 #endif

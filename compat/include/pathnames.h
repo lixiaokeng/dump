@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: pathnames.h,v 1.13 2003/03/30 15:40:34 stelian Exp $
+ *	$Id: pathnames.h,v 1.14 2003/10/26 16:05:46 stelian Exp $
  */
 
 /*
@@ -46,7 +46,12 @@
 #endif
 
 #ifndef _PATH_DEFTAPE
+#ifdef __linux__
 #define	_PATH_DEFTAPE	"/dev/st0"
+#endif
+#ifdef sunos
+#define	_PATH_DEFTAPE	"/dev/rmt/0"
+#endif
 #endif
 
 #define	_PATH_RMT	"/etc/rmt"		/* path on remote host */

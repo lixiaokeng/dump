@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: restore.h,v 1.27 2003/03/30 15:40:40 stelian Exp $
+ *	$Id: restore.h,v 1.28 2003/10/26 16:05:48 stelian Exp $
  */
 
 /*
@@ -180,6 +180,11 @@ extern int	gTapeposfd;
 extern int	createtapeposflag;
 extern unsigned long qfadumpdate;
 extern long long curtapepos;
+#ifdef sunos
+int		fdsmtc;
+long	scsiid;
+char	smtcpath[2048];
+#endif
 #endif /* USE_QFA */
 
 #define do_compare_error \

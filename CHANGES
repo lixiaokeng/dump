@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.232 2003/09/03 15:00:21 stelian Exp $
+$Id: CHANGES,v 1.233 2003/10/26 16:05:44 stelian Exp $
 
 Changes between versions 0.4b34 and 0.4b35 (released ??????????????)
 ====================================================================
@@ -21,6 +21,21 @@ Changes between versions 0.4b34 and 0.4b35 (released ??????????????)
 	64bit build problems because quad_t is redifined with a 
 	different signature. Thanks to Mike Harris <mharris@redhat.com>
 	for reporting this bug.
+
+5.	Made dump/restore build on Solaris, making possible to
+	restore Linux's "enhanced" tapes. Thanks to Uwe Gohlke
+	<uwe@ugsoft.de> for the patch.
+
+6.	Made an extension in the dump tape format capable of saving
+	MacOSX specific inode extensions. Uwe Gohlke <uwe@ugsoft.de>
+	wrote the extension and contributed the restore code back
+	into this codebase. The same extension mechanism will be
+	used in the future to save ACLs...
+
+7.	Made rmt work correctly with regard to QFA and local/remote
+	files and tapes. The remote access will however work only 
+	when the dump provided rmt version is used. If you want to
+	use another rmt server, please do not use the QFA feature.
 
 Changes between versions 0.4b33 and 0.4b34 (released April 18, 2003)
 ====================================================================

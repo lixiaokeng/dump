@@ -3,6 +3,9 @@
 /* Define this if you want to include Quick File Access debugging code. */
 #undef DEBUG_QFA
 
+/* Define this if you want to include Mac OSX restore compatibility. */
+#undef DUMP_MACOSX
+
 /* Define this if you have bzlib compression library. */
 #undef HAVE_BZLIB
 

@@ -37,10 +37,12 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: utilities.c,v 1.22 2003/03/30 15:40:40 stelian Exp $";
+	"$Id: utilities.c,v 1.23 2003/10/26 16:05:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
+#include <compatlfs.h>
+#include <sys/types.h>
 #include <errno.h>
 #include <compaterr.h>
 #include <stdio.h>
@@ -53,6 +55,7 @@ static const char rcsid[] =
 #ifdef	__linux__
 #include <sys/time.h>
 #include <time.h>
+#include <fcntl.h>
 #ifdef HAVE_EXT2FS_EXT2_FS_H
 #include <ext2fs/ext2_fs.h>
 #else
@@ -61,10 +64,18 @@ static const char rcsid[] =
 #include <ext2fs/ext2fs.h>
 #include <bsdcompat.h>
 #else	/* __linux__ */
+#ifdef sunos
+#include <sys/time.h>
+#include <sys/fcntl.h>
+#include <bsdcompat.h>
+#else
 #include <ufs/ufs/dinode.h>
 #include <ufs/ufs/dir.h>
+#endif
 #endif	/* __linux__ */
-
+#ifdef DUMP_MACOSX
+#include "darwin.h"
+#endif
 #include "restore.h"
 #include "extern.h"
 
@@ -251,11 +262,14 @@ linkit(char *existing, char *new, int type)
 			 * Most likely, the immutable or append-only attribute
 			 * is set. Clear the attributes and try again.
 			 */
+#ifdef sunos
+#else
 			if (fgetflags (existing, &s) != -1 &&
 			    fsetflags (existing, 0) != -1) {
 			    	ret = link(existing, new);
 				fsetflags(existing, s);
 			}
+#endif
 #endif
 			if (ret < 0) {
 				warn("warning: cannot create hard link %s->%s",
@@ -467,6 +481,51 @@ panic(fmt, va_alist)
 	}
 }
 
+void resizemaps(dump_ino_t oldmax, dump_ino_t newmax)
+{
+	char *map;
+
+	if (usedinomap) {
+		map = calloc((unsigned)1, (unsigned)howmany(newmax, NBBY));
+		if (map == NULL)
+			errx(1, "no memory for active inode map");
+		memcpy(map, usedinomap, howmany(oldmax, NBBY));
+		free(usedinomap);
+		usedinomap = map;
+	}
+	if (dumpmap) {
+		map = calloc((unsigned)1, (unsigned)howmany(newmax, NBBY));
+		if (map == NULL)
+			errx(1, "no memory for file dump list");
+		memcpy(map, dumpmap, howmany(oldmax, NBBY));
+		free(dumpmap);
+		dumpmap = map;
+	}
+}
+
+void
+GetPathFile(char *source, char *path, char *fname)
+{
+	char	*p, *s;
+
+	*path = 0;
+	*fname = 0;
+	p = s = source;
+	while (*s) {
+		if (*s == '/') {
+			p = s + 1;
+		}
+		s++;
+	}
+	if (p == source) {
+		*path = 0;
+	} else {
+		strncpy(path, source, p - source);
+		path[p - source] = 0;
+	}
+	strcpy(fname, p);
+}
+
 #ifdef USE_QFA
 /*
  * search for ino in QFA file
@@ -493,7 +552,11 @@ Inode2Tapepos(dump_ino_t ino, long *tnum, long long *tpos, int exactmatch)
 	*tnum = 0;
 	if (fseek(gTapeposfp, gSeekstart, SEEK_SET) == -1)
 		return errno;
-	while (fgets(gTps, sizeof(gTps), gTapeposfp) != NULL) {
+	while (1) {
+		gSeekstart = ftell(gTapeposfp); /* remember for later use */
+		if (fgets(gTps, sizeof(gTps), gTapeposfp) == NULL) {
+			return 0;
+		}
 		gTps[strlen(gTps) - 1] = 0;	/* delete end of line */
 		p = gTps;
 		bzero(numbuff, sizeof(numbuff));
@@ -538,26 +601,123 @@ Inode2Tapepos(dump_ino_t ino, long *tnum, long long *tpos, int exactmatch)
 	}
 	return 0;
 }
+
+#ifdef sunos
+int
+GetSCSIIDFromPath(char *devPath, long *id)
+{
+	int				len;
+	char			fbuff[2048];
+	char			path[2048];
+	char			fname[2048];
+	char			*fpn = fname;
+	char			idstr[32];
+	char			*ip = idstr;
+
+	bzero(fbuff, sizeof(fbuff));
+	if ((len = readlink(devPath, fbuff, 2048)) == -1) {
+		return errno;
+	}
+	fbuff[len] = 0;
+	GetPathFile(fbuff, path, fname);
+	(void)memset(idstr, 0, sizeof(idstr));
+	while (*fpn && (*fpn != ',')) {
+		if (*fpn <= '9' && *fpn >= '0') {
+			*ip = *fpn;
+			ip++;
+		}
+		fpn++;
+	}
+	if (*idstr) {
+		*id = atol(idstr);
+	} else {
+		*id = -1;
+	}
+	return 0;
+}
+#endif
 #endif /* USE_QFA */
 
-void resizemaps(dump_ino_t oldmax, dump_ino_t newmax)
+#ifdef DUMP_MACOSX
+int
+CreateAppleDoubleFileRes(char *oFile, FndrFileInfo *finderinfo, mode_t mode, int flags,
+		struct timeval *timep, u_int32_t uid, u_int32_t gid)
 {
-	char *map;
+	int				err = 0;
+	int				fdout;
+	char			*p;
+	char			*f;
+	char			*pp;
+	ASDHeaderPtr	hp;
+	ASDEntryPtr		ep;
+	long			thesize;
+	long			n;
+	long			loops;
+	long			remain;
 
-	if (usedinomap) {
-		map = calloc((unsigned)1, (unsigned)howmany(newmax, NBBY));
-		if (map == NULL)
-			errx(1, "no memory for active inode map");
-		memcpy(map, usedinomap, howmany(oldmax, NBBY));
-		free(usedinomap);
-		usedinomap = map;
+
+	n = 1;	/* number of entries in double file ._ only finderinfo */
+	/*
+	no data fork
+	n++;
+	currently no resource fork
+	n++;
+	*/
+
+	thesize = sizeof(ASDHeader) + (n * sizeof(ASDEntry)) + INFOLEN;
+	if ((pp = p = (char *)malloc(thesize)) == NULL) {
+		err = errno;
+		return err;
 	}
-	if (dumpmap) {
-		map = calloc((unsigned)1, (unsigned)howmany(newmax, NBBY));
-		if (map == NULL)
-			errx(1, "no memory for file dump list");
-		memcpy(map, dumpmap, howmany(oldmax, NBBY));
-		free(dumpmap);
-		dumpmap = map;
+
+	hp = (ASDHeaderPtr)p;
+	p += sizeof(ASDHeader);
+	ep = (ASDEntryPtr)p;
+	p += sizeof(ASDEntry) * n;
+
+	hp->magic = ADOUBLE_MAGIC;
+	hp->version = ASD_VERSION2;
+
+	bzero(&hp->filler, sizeof(hp->filler));
+	hp->entries = (short)n;
+	
+	ep->entryID = EntryFinderInfo;
+	ep->offset = p - pp - CORRECT;
+	ep->len = INFOLEN; /*  sizeof(MacFInfo) + sizeof(FXInfo); */
+	bzero(p, ep->len);
+	bcopy(finderinfo, p, sizeof(FndrFileInfo));
+	p += ep->len;
+	ep++;
+
+	if ((fdout = open(oFile, O_WRONLY | O_CREAT | O_TRUNC, 0666)) < 0) {
+		err = errno;
+		free(pp);
+		return err;
 	}
+
+	/* write the ASDHeader */
+	if (write(fdout, pp, sizeof(ASDHeader) - CORRECT) == -1) {
+		err = errno;
+		close(fdout);
+		free(pp);
+		unlink(oFile);
+		return err;
+	}
+	/* write the ASDEntries */
+	if (write(fdout, pp + sizeof(ASDHeader), thesize - sizeof(ASDHeader)) == -1) {
+		err = errno;
+		close(fdout);
+		free(pp);
+		unlink(oFile);
+		return err;
+	}
+
+	(void)fchown(fdout, uid, gid);
+	(void)fchmod(fdout, mode);
+	close(fdout);
+	(void)fsetflags(oFile, flags);
+	utimes(oFile, timep);
+	free(pp);
+	return err;
 }
+#endif /* DUMP_MACOSX */

@@ -13,6 +13,7 @@
 
 #include <config.h>
 #include <compatlfs.h>
+#include <sys/types.h>
 #include <stdio.h>
 #include <sys/param.h>
 #include <string.h>
@@ -20,6 +21,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <malloc.h>
+#include <sys/cdefs.h>
 #include "bylabel.h"
 
 #define PROC_PARTITIONS "/proc/partitions"

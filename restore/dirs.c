@@ -42,10 +42,11 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dirs.c,v 1.23 2003/03/30 15:40:38 stelian Exp $";
+	"$Id: dirs.c,v 1.24 2003/10/26 16:05:47 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
+#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/file.h>
 #include <sys/stat.h>
@@ -58,8 +59,13 @@ static const char rcsid[] =
 #endif
 #include <bsdcompat.h>
 #else	/* __linux__ */
+#ifdef sunos
+#include <sys/fcntl.h>
+#include <bsdcompat.h>
+#else
 #include <ufs/ufs/dinode.h>
 #include <ufs/ufs/dir.h>
+#endif
 #endif	/* __linux__ */
 #include <protocols/dumprestore.h>
 
@@ -73,7 +79,11 @@ static const char rcsid[] =
 #ifdef	__linux__
 #include <endian.h>
 #else
+#ifdef sunos
+#include <arpa/nameser_compat.h>
+#else
 #include <machine/endian.h>
+#endif
 #endif
 
 #include "pathnames.h"
@@ -150,6 +160,10 @@ static void		 putent __P((struct direct *));
 static void		 rst_seekdir __P((RST_DIR *, long, long));
 static long		 rst_telldir __P((RST_DIR *));
 static struct direct	*searchdir __P((dump_ino_t, char *));
+
+#ifdef sunos
+extern int fdsmtc;
+#endif
 
 /*
  *	Extract directory contents, building up a directory structure
@@ -660,7 +674,10 @@ setdirmodes(int flags)
 #ifdef	__linux__
 				(void) fsetflags(cp, node.flags);
 #else
+#ifdef sunos
+#else
 				(void) chflags(cp, node.flags);
+#endif
 #endif
 			utimes(cp, node.timep);
 			ep->e_flags &= ~NEW;
@@ -727,7 +744,7 @@ inodetype(dump_ino_t ino)
  * If requested, save its pertinent mode, owner, and time info.
  */
 static struct inotab *
-#ifdef	__linux__
+#if defined(__linux__) || defined(sunos)
 allocinotab(dump_ino_t ino, struct new_bsd_inode *dip, long seekpt)
 #else
 allocinotab(dump_ino_t ino, struct dinode *dip, long seekpt)
@@ -746,17 +763,17 @@ allocinotab(dump_ino_t ino, struct dinode *dip, long seekpt)
 	if (mf == NULL)
 		return (itp);
 	node.ino = ino;
-#ifdef	__linux__
+#if defined(__linux__) || defined(sunos)
 	node.timep[0].tv_sec = dip->di_atime.tv_sec;
 	node.timep[0].tv_usec = dip->di_atime.tv_usec;
 	node.timep[1].tv_sec = dip->di_mtime.tv_sec;
 	node.timep[1].tv_usec = dip->di_mtime.tv_usec;
-#else	/* __linux__ */
+#else	/* __linux__  || sunos */
 	node.timep[0].tv_sec = dip->di_atime;
 	node.timep[0].tv_usec = dip->di_atimensec / 1000;
 	node.timep[1].tv_sec = dip->di_mtime;
 	node.timep[1].tv_usec = dip->di_mtimensec / 1000;
-#endif	/* __linux__ */
+#endif	/* __linux__  || sunos */
 	node.mode = dip->di_mode;
 	node.flags = dip->di_flags;
 	node.uid = dip->di_uid;

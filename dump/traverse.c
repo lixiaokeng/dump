@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.55 2003/03/30 15:40:37 stelian Exp $";
+	"$Id: traverse.c,v 1.56 2003/10/26 16:05:47 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1238,7 +1238,7 @@ dumpmap(char *map, int type, dump_ino_t ino)
 		writerec(cp, 0);
 }
 
-#if defined __linux__ && !defined(int32_t)
+#if defined(__linux__) && !defined(int32_t)
 #define int32_t __s32
 #endif
 
@@ -1311,7 +1311,7 @@ getino(dump_ino_t inum)
 /*
  * Read a chunk of data from the disk.
  * Try to recover from hard errors by reading in sector sized pieces.
- * Error recovery is attempted at most breademax times before seeking
+ * Error recovery is attempted at most BREADEMAX times before seeking
  * consent from the operator to continue.
  */
 int	breaderrors = 0;

@@ -42,11 +42,12 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.74 2003/03/31 09:42:59 stelian Exp $";
+	"$Id: tape.c,v 1.75 2003/10/26 16:05:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
 #include <compatlfs.h>
+#include <sys/types.h>
 #include <errno.h>
 #include <compaterr.h>
 #include <system.h>
@@ -72,8 +73,18 @@ static const char rcsid[] =
 #include <ext2fs/ext2fs.h>
 #include <bsdcompat.h>
 #else	/* __linux__ */
+#ifdef sunos
+#define quad_t int64_t
+#include <sys/time.h>
+#include <sys/fcntl.h>
+#include <bsdcompat.h>
+#else
 #include <ufs/ufs/dinode.h>
+#endif
 #endif	/* __linux__ */
+#ifdef DUMP_MACOSX
+#include "darwin.h"
+#endif
 #include <protocols/dumprestore.h>
 
 #ifdef HAVE_ZLIB
@@ -138,6 +149,10 @@ static int	 converthead __P((struct s_spcl *));
 static void	 converttapebuf __P((struct tapebuf *));
 static void	 readtape __P((char *));
 static void	 setdumpnum __P((void));
+#ifdef DUMP_MACOSX
+static void	 xtrfilefinderinfo __P((char *, size_t));
+#endif
+
 static u_int	 swabi __P((u_int));
 #if 0
 static u_long	 swabl __P((u_long));
@@ -179,12 +194,19 @@ static void	xtrcmpskip __P((char *, size_t));
 static int readmapflag;
 static int readingmaps;		/* set to 1 while reading the maps */
 
+#ifdef DUMP_MACOSX
+static DumpFinderInfo	gFndrInfo;
+#endif
+
 /*
  * Set up an input source. This is called from main.c before setup() is.
  */
 void
 setinput(char *source)
 {
+	int i;
+	char *n;
+
 	FLUSHTAPEBUF();
 	if (bflag)
 		newtapebuf(ntrec);
@@ -193,12 +215,18 @@ setinput(char *source)
 	terminal = stdin;
 
 #ifdef RRESTORE
-	if (strchr(source, ':')) {
-		host = source;
-		source = strchr(host, ':');
-		*source++ = '\0';
-		if (rmthost(host) == 0)
-			exit(1);
+	if ((n = strchr(source, ':'))) {
+		for (i = 0; i < (n - source); i++) {
+			if (source[i] == '/')
+				break;
+		}
+		if (source[i] != '/') {
+			host = source;
+			source = strchr(host, ':');
+			*source++ = '\0';
+			if (rmthost(host) == 0)
+				exit(1);
+		}
 	} else
 #endif
 	if (strcmp(source, "-") == 0) {
@@ -504,7 +532,7 @@ again:
 				goto again;
 			}
 		}
-#endif
+#endif	/* USE_QFA */
 		return;
 	}
 	closemt();
@@ -529,9 +557,17 @@ again:
 	}
 	if (haderror || (bot_code && !Mflag)) {
 		haderror = 0;
+#ifdef sunos
 		fprintf(stderr, "Mount volume %ld\n", (long)newvol);
-		fprintf(stderr, "Enter ``none'' if there are no more volumes\n");
-		fprintf(stderr, "otherwise enter volume name (default: %s) ", magtape);
+#else
+		fprintf(stderr, "Mount tape volume %ld\n", (long)newvol);
+#endif
+		fprintf(stderr, "Enter ``none'' if there are no more tapes\n");
+#ifdef sunos
+		fprintf(stderr, "then enter volume name (default: %s) ", magtape);
+#else
+		fprintf(stderr, "otherwise enter tape name (default: %s) ", magtape);
+#endif
 		(void) fflush(stderr);
 		(void) fgets(buf, TP_BSIZE, terminal);
 		if (feof(terminal))
@@ -548,6 +584,15 @@ again:
 				magtape[pos - magtape] = '\0';
 		}
 	}
+#if defined(USE_QFA) && defined(sunos)
+	if (createtapeposflag || tapeposflag) {
+		if (OpenSMTCmt(magtape) < 0) {
+			volno = -1;
+			haderror = 1;
+			goto again;
+		}
+	}
+#endif	/* USE_QFA */
 #ifdef RRESTORE
 	if (host)
 		mt = rmtopen(magtape, O_RDONLY);
@@ -589,7 +634,11 @@ gethdr:
 	}
 	if (tmpbuf.c_date != dumpdate || tmpbuf.c_ddate != dumptime) {
 		fprintf(stderr, "Wrong dump date\n\tgot: %s",
+#ifdef sunos
+			ctime(&tmpbuf.c_date));
+#else
 			ctime4(&tmpbuf.c_date));
+#endif
 		fprintf(stderr, "\twanted: %s", ctime(&dumpdate));
 		volno = 0;
 		haderror = 1;
@@ -686,17 +735,33 @@ setdumpnum(void)
 	tcom.mt_op = MTFSF;
 	tcom.mt_count = dumpnum - 1;
 #ifdef RRESTORE
-	if (host)
-		rmtioctl(MTFSF, dumpnum - 1);
-	else
+	if (host) {
+		if (rmtioctl(MTFSF, dumpnum - 1) < 0) {
+			fprintf(stderr, "rmtioctl MTFSF: %s\n", strerror(errno));
+            exit(1);
+		}
+	} else
 #endif
-		if (ioctl(mt, (int)MTIOCTOP, (char *)&tcom) < 0)
-			warn("ioctl MTFSF");
+		if (ioctl(mt, (int)MTIOCTOP, (char *)&tcom) < 0) {
+			fprintf(stderr, "rmtioctl MTFSF: %s\n", strerror(errno));
+			exit(1);
+			/* warn("ioctl MTFSF"); */
+		}
 }
 
 void
 printdumpinfo(void)
 {
+#ifdef sunos
+	Vprintf(stdout, "Dump   date: %s", ctime(&spcl.c_date));
+	Vprintf(stdout, "Dumped from: %s",
+	    (spcl.c_ddate == 0) ? "the epoch\n" : ctime(&spcl.c_ddate));
+	if (spcl.c_host[0] == '\0')
+		return;
+	Vprintf(stdout, "Level %d dump of %s on %s:%s\n",
+		spcl.c_level, spcl.c_filesys, spcl.c_host, spcl.c_dev);
+	Vprintf(stdout, "Label: %s\n", spcl.c_label);
+#else
 	fprintf(stdout, "Dump   date: %s", ctime4(&spcl.c_date));
 	fprintf(stdout, "Dumped from: %s",
 	    (spcl.c_ddate == 0) ? "the epoch\n" : ctime4(&spcl.c_ddate));
@@ -705,6 +770,7 @@ printdumpinfo(void)
 	fprintf(stdout, "Level %d dump of %s on %s:%s\n",
 		spcl.c_level, spcl.c_filesys, spcl.c_host, spcl.c_dev);
 	fprintf(stdout, "Label: %s\n", spcl.c_label);
+#endif
 }
 
 void 
@@ -719,12 +785,6 @@ printvolinfo(void)
 	}
 }
 
-#ifdef sunos
-struct timeval
-	time_t		tv_sec;		/* seconds */
-	suseconds_t	tv_usec;	/* and microseconds */
-};
-#endif
 
 int
 extractfile(struct entry *ep, int doremove)
@@ -831,7 +891,14 @@ extractfile(struct entry *ep, int doremove)
 #ifdef  __linux__
 			(void) fsetflags(name, flags);
 #else
+#ifdef sunos
+			{
+			warn("%s: cannot call chflags", name);
+			/* (void) chflags(name, flags); */
+			}
+#else
 			(void) chflags(name, flags);
+#endif
 #endif
 		skipfile();
 		utimes(name, timep);
@@ -862,7 +929,17 @@ extractfile(struct entry *ep, int doremove)
 			(void) fsetflags(name, flags);
 			}
 #else
+#ifdef sunos
+			{
+			warn("%s: cannot call chflags on a special file", name);
+			/* (void) chflags(name, flags); */
+			}
+#else
+			{
+			warn("%s: chflags called on a special file", name);
 			(void) chflags(name, flags);
+			}
+#endif
 #endif
 		skipfile();
 		utimes(name, timep);
@@ -898,7 +975,14 @@ extractfile(struct entry *ep, int doremove)
 #ifdef	__linux__
 			(void) fsetflags(name, flags);
 #else
+#ifdef sunos
+			{
+			warn("%s: cannot call chflags", name);
+			/* (void) chflags(name, flags); */
+			}
+#else
 			(void) chflags(name, flags);
+#endif
 #endif
 		utimes(name, timep);
 		return (GOOD);
@@ -906,6 +990,180 @@ extractfile(struct entry *ep, int doremove)
 	}
 	/* NOTREACHED */
 }
+
+#ifdef DUMP_MACOSX
+int
+extractfinderinfoufs(char *name)
+{
+	int err;
+	char			oFileRsrc[MAXPATHLEN];
+	int flags;
+	mode_t mode;
+	struct timeval timep[2];
+	struct entry *ep;
+	int	sz;
+	attrinfo_block_t gABuf;
+	u_int32_t	uid;
+	u_int32_t	gid;
+	char	path[MAXPATHLEN], fname[MAXPATHLEN];
+
+	curfile.name = name;
+	curfile.action = USING;
+	timep[0].tv_sec = curfile.dip->di_atime.tv_sec;
+	timep[0].tv_usec = curfile.dip->di_atime.tv_usec;
+	timep[1].tv_sec = curfile.dip->di_mtime.tv_sec;
+	timep[1].tv_usec = curfile.dip->di_mtime.tv_usec;
+	mode = curfile.dip->di_mode;
+	flags = curfile.dip->di_flags;
+        uid = curfile.dip->di_uid;
+        gid =  curfile.dip->di_gid;
+
+	switch (mode & IFMT) {
+
+	default:
+		fprintf(stderr, "%s: (extr. finfoufs) unknown file mode 0%o\n", name, mode);
+		skipfile();
+		return (FAIL);
+
+	case IFDIR:
+		fprintf(stderr, "%s: (extr. finfoufs[IFDIR]) unknown file mode 0%o\n", name, mode);
+		skipfile();
+		return (FAIL);
+
+	case IFLNK:
+		skipfile();
+		return (GOOD);
+
+	case IFREG:
+		Vprintf(stdout, "extract finderinfo file %s\n", name);
+		if (Nflag) {
+			skipfile();
+			return (GOOD);
+		}
+		getfile(xtrfilefinderinfo, xtrskip);
+
+		GetPathFile(name, path, fname);
+		strcpy(oFileRsrc, path);
+		strcat(oFileRsrc, "._");
+		strcat(oFileRsrc, fname);
+
+		if ((err = CreateAppleDoubleFileRes(oFileRsrc, &gFndrInfo.fndrinfo,
+				mode, flags, timep, uid, gid)) != 0) {
+			fprintf(stderr, "%s: cannot create finderinfo: %s\n",
+			name, strerror(errno));
+			skipfile();
+			return (FAIL);
+		}
+		return (GOOD);
+	}
+	/* NOTREACHED */
+}
+
+
+int
+extractresourceufs(char *name)
+{
+	char			oFileRsrc[MAXPATHLEN];
+	int flags;
+	mode_t mode;
+	struct timeval timep[2];
+	char	path[MAXPATHLEN], fname[MAXPATHLEN];
+	ASDHeaderPtr	hp;
+	ASDEntryPtr	ep;
+	u_long	loff;
+	 u_int32_t	uid;
+	u_int32_t	gid;
+	u_int64_t	di_size;
+	char		*p;
+	char		buf[1024];
+
+	curfile.name = name;
+	curfile.action = USING;
+	timep[0].tv_sec = curfile.dip->di_atime.tv_sec;
+	timep[0].tv_usec = curfile.dip->di_atime.tv_usec;
+	timep[1].tv_sec = curfile.dip->di_mtime.tv_sec;
+	timep[1].tv_usec = curfile.dip->di_mtime.tv_usec;
+	mode = curfile.dip->di_mode;
+	flags = curfile.dip->di_flags;
+	uid = curfile.dip->di_uid;
+	gid =  curfile.dip->di_gid;
+	di_size = curfile.dip->di_size;
+
+	switch (mode & IFMT) {
+
+	default:
+		fprintf(stderr, "%s: (extr. resufs) unknown file mode 0%o\n", name, mode);
+		skipfile();
+		return (FAIL);
+
+	case IFDIR:
+		fprintf(stderr, "%s: (extr. resufs [IFDIR]) unknown file mode 0%o\n", name, mode);
+		skipfile();
+		return (FAIL);
+
+	case IFLNK:
+		skipfile();
+		return (GOOD);
+
+	case IFREG:
+		Vprintf(stdout, "extract resource file %s\n", name);
+		if (Nflag) {
+			skipfile();
+			return (GOOD);
+		}
+
+		GetPathFile(name, path, fname);
+		strcpy(oFileRsrc, path);
+		strcat(oFileRsrc, "._");
+		strcat(oFileRsrc, fname);
+
+		if ((ofile = open(oFileRsrc, O_RDONLY, 0)) < 0) {
+			fprintf(stderr, "%s: cannot read finderinfo: %s\n",
+			    name, strerror(errno));
+			skipfile();
+			return (FAIL);
+		}
+		read(ofile, buf, 70);
+		(void) close(ofile);
+		p = buf;
+		hp = (ASDHeaderPtr)p;
+		/* the header */
+		hp->entries++;
+		p += sizeof(ASDHeader) - CORRECT;
+		ep = (ASDEntryPtr)p;
+		/* the finderinfo entry */
+		ep->offset += sizeof(ASDEntry);
+		loff = ep->offset;
+
+		p += sizeof(ASDEntry);
+		/* the finderinfo data */
+		bcopy(p, p + sizeof(ASDEntry), INFOLEN);
+		ep = (ASDEntryPtr)p;
+		/* the new resourcefork entry */
+		ep->entryID = EntryRSRCFork;
+		ep->offset = loff + INFOLEN;
+		ep->len = di_size;
+		/* write the new appledouble entries to the file */
+		if ((ofile = open(oFileRsrc, O_WRONLY | O_CREAT | O_TRUNC, 0666)) < 0) {
+			fprintf(stderr, "%s: cannot create resource file: %s\n",
+			    name, strerror(errno));
+			skipfile();
+			return (FAIL);
+		}
+		write(ofile, buf, 70 + sizeof(ASDEntry));
+		/* and add the resource data from tape */
+		getfile(xtrfile, xtrskip);
+
+		(void) fchown(ofile, uid, gid);
+		(void) fchmod(ofile, mode);
+		(void) close(ofile);
+		(void) fsetflags(oFileRsrc, flags);
+		utimes(oFileRsrc, timep);
+		return (GOOD);
+	}
+	/* NOTREACHED */
+}
+#endif /* DUMP_MACOSX */
 
 /*
  * skip over bit maps on the tape
@@ -1023,6 +1281,16 @@ xtrfile(char *buf, size_t size)
 		err(1, "write error extracting inode %lu, name %s\nwrite",
 			(unsigned long)curfile.ino, curfile.name);
 }
+
+#ifdef DUMP_MACOSX
+static void
+xtrfilefinderinfo(char *buf, size_t size)
+{
+	if (Nflag)
+		return;
+	bcopy(buf, &gFndrInfo, size);
+}
+#endif /* DUMP_MACOSX */
 
 /*
  * Skip over a hole in a file.
@@ -2580,7 +2848,132 @@ swabl(u_long x)
 }
 #endif
 
+void
+RequestVol(long tnum)
+{
+	FLUSHTAPEBUF();
+	getvol(tnum);
+}
+
 #ifdef USE_QFA
+#ifdef sunos
+extern int fdsmtc;
+
+struct uscsi_cmd {
+        int     uscsi_flags;            /* read, write, etc. see below */
+        short   uscsi_status;           /* resulting status  */
+        short   uscsi_timeout;          /* Command Timeout */
+        caddr_t uscsi_cdb;              /* cdb to send to target */
+        caddr_t uscsi_bufaddr;          /* i/o source/destination */
+        u_int   uscsi_buflen;           /* size of i/o to take place */
+        u_int   uscsi_resid;            /* resid from i/o operation */
+        u_char  uscsi_cdblen;           /* # of valid cdb bytes */
+        u_char  uscsi_rqlen;            /* size of uscsi_rqbuf */
+        u_char  uscsi_rqstatus;         /* status of request sense cmd */
+        u_char  uscsi_rqresid;          /* resid of request sense cmd */
+        caddr_t uscsi_rqbuf;            /* request sense buffer */
+        void   *uscsi_reserved_5;       /* Reserved for Future Use */
+};
+
+#define CDB_GROUP0      6       /*  6-byte cdb's */
+#define CDB_GROUP1      10      /* 10-byte cdb's */
+#define CDB_GROUP2      10      /* 10-byte cdb's */
+#define CDB_GROUP3      0       /* reserved */
+#define CDB_GROUP4      16      /* 16-byte cdb's */
+#define CDB_GROUP5      12      /* 12-byte cdb's */
+#define CDB_GROUP6      0       /* reserved */
+#define CDB_GROUP7      0       /* reserved */
+
+#define USCSI_WRITE     0x00000 /* send data to device */
+#define USCSI_SILENT    0x00001 /* no error messages */
+#define USCSI_DIAGNOSE  0x00002 /* fail if any error occurs */
+#define USCSI_ISOLATE   0x00004 /* isolate from normal commands */
+#define USCSI_READ      0x00008 /* get data from device */
+#define USCSI_RESET     0x04000 /* Reset target */
+#define USCSI_RESET_ALL 0x08000 /* Reset all targets */
+#define USCSI_RQENABLE  0x10000 /* Enable Request Sense extensions */
+
+#define USCSIIOC        (0x04 << 8)
+#define USCSICMD        (USCSIIOC|201)  /* user scsi command */
+
+#define USCSI_TIMEOUT	30
+#define USCSI_SHORT_TIMEOUT	900
+#define USCSI_LONG_TIMEOUT	14000
+
+#define B(s,i) ((unsigned char)((s) >> i))
+#define B1(s)                           ((unsigned char)(s))
+
+#define MSB4(s,v) *(s)=B(v,24),(s)[1]=B(v,16), (s)[2]=B(v,8), (s)[3]=B1(v)
+
+
+int
+GetTapePos(long long *pos)
+{
+	int					err = 0;
+	struct uscsi_cmd	scmd;
+	char				buf[512];
+	char				parm[512 * 8];
+	long				lpos;
+
+	(void)memset((void *)buf, 0, sizeof(buf));
+	(void)memset((void *)&scmd, 0, sizeof(scmd));
+	scmd.uscsi_flags = USCSI_READ|USCSI_SILENT;
+	scmd.uscsi_timeout = USCSI_TIMEOUT;
+	scmd.uscsi_cdb = buf;
+	scmd.uscsi_cdblen = CDB_GROUP1;
+	buf[0] = 0x34;	/* read position */
+	buf[1] = 0;
+	(void)memset((void *)parm, 0, 512);
+	scmd.uscsi_bufaddr = parm;
+	scmd.uscsi_buflen = 56;
+	if (ioctl(fdsmtc, USCSICMD, &scmd) == -1) {
+		err = errno;
+		return err;
+	}
+	(void)memcpy(&lpos, &parm[4], sizeof(long));
+	*pos = lpos;
+	return err;
+}
+
+int
+GotoTapePos(long long pos)
+{
+	int					err = 0;
+	struct uscsi_cmd	scmd;
+	char				buf[512];
+	char				parm[512 * 8];
+	long				lpos = (long)pos;
+
+	(void)memset((void *)buf, 0, sizeof(buf));
+	(void)memset((void *)&scmd, 0, sizeof(scmd));
+	scmd.uscsi_flags = USCSI_WRITE|USCSI_SILENT;
+	scmd.uscsi_timeout = 360;	/* 5 Minutes */
+	scmd.uscsi_cdb = buf;
+	scmd.uscsi_cdblen = CDB_GROUP1;
+	buf[0] = 0x2b;	/* locate */
+	buf[1] = 0;
+	MSB4(&buf[3], lpos);
+	(void)memset((void *)parm, 0, 512);
+	scmd.uscsi_bufaddr = NULL;
+	scmd.uscsi_buflen = 0;
+	if (ioctl(fdsmtc, USCSICMD, &scmd) == -1) {
+		err = errno;
+		return err;
+	}
+	return err;
+}
+#endif
+
+#define LSEEK_GET_TAPEPOS 	10
+#define LSEEK_GO2_TAPEPOS	11
+
+#ifdef	__linux__
+typedef struct mt_pos {
+	short	 mt_op;
+	int	 mt_count;
+} MTPosRec, *MTPosPtr;
+
+
 /*
  * get the current position of the tape
  */
@@ -2591,7 +2984,7 @@ GetTapePos(long long *pos)
 
 #ifdef RDUMP
 	if (host) {
-		*pos = (long long) rmtseek(0, SEEK_CUR);
+		*pos = (long long) rmtseek((OFF_T)0, (int)LSEEK_GET_TAPEPOS);
 		err = *pos < 0;
 	}
 	else
@@ -2617,11 +3010,6 @@ GetTapePos(long long *pos)
 	return err;
 }
 
-typedef struct mt_pos {
-	short	 mt_op;
-	int	 mt_count;
-} MTPosRec, *MTPosPtr;
-
 /*
  * go to specified position on tape
  */
@@ -2632,7 +3020,7 @@ GotoTapePos(long long pos)
 
 #ifdef RDUMP
 	if (host)
-		err = (rmtseek(pos, SEEK_SET) < 0);
+		err = (rmtseek((OFF_T)pos, (int)LSEEK_GO2_TAPEPOS) < 0);
 	else
 #endif
 	{
@@ -2655,6 +3043,7 @@ GotoTapePos(long long pos)
 	}
 	return err;
 }
+#endif /* __linux__ */
 
 /*
  * read next data from tape to re-sync
@@ -2676,29 +3065,42 @@ ReReadFromTape(void)
 void
 ReReadInodeFromTape(dump_ino_t theino)
 {
-	long cntloop = 0;
+	long	cntloop = 0;
 
 	FLUSHTAPEBUF();
 	noresyncmesg = 1;
 	do {
 		cntloop++;
 		gethead(&spcl);
-	} while (!(spcl.c_inumber == theino && spcl.c_type == TS_INODE && spcl.c_date == dumpdate) && (cntloop < ntrec));
+	} while (!(spcl.c_inumber == theino && spcl.c_type == TS_INODE && spcl.c_date == dumpdate));
 #ifdef DEBUG_QFA
-	fprintf(stderr, "%ld reads\n", cntloop);
-	if (cntloop == ntrec) {
-		fprintf(stderr, "DEBUG: bufsize %d\n", bufsize);
-		fprintf(stderr, "DEBUG: ntrec %ld\n", ntrec);
-	}
+	fprintf(stderr, "DEBUG: %ld reads\n", cntloop);
+	fprintf(stderr, "DEBUG: bufsize %ld\n", bufsize);
+	fprintf(stderr, "DEBUG: ntrec %ld\n", ntrec);
+	fprintf(stderr, "DEBUG: %ld reads\n", cntloop);
 #endif
 	findinode(&spcl);
 	noresyncmesg = 0;
 }
-#endif /* USE_QFA */
 
-void
-RequestVol(long tnum)
+#ifdef sunos
+int
+OpenSMTCmt(char *themagtape)
 {
-	FLUSHTAPEBUF();
-	getvol(tnum);
+	if (GetSCSIIDFromPath(themagtape, &scsiid)) {
+		fprintf(stderr, "can't get SCSI-ID for %s\n", themagtape);
+		return -1;
+	}
+	if (scsiid < 0) {
+		fprintf(stderr, "can't get SCSI-ID for %s\n", themagtape);
+		return -1;
+	}
+	sprintf(smtcpath, "/dev/rsmtc%ld,0", scsiid);
+	if ((fdsmtc = open(smtcpath, O_RDWR)) == -1) {
+		fprintf(stderr, "can't open smtc device: %s, %d\n", smtcpath, errno);
+		return -1;
+	}
+	return 0;
 }
+#endif /* sunos */
+#endif /* USE_QFA */

@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: dumprestore.h,v 1.19 2003/03/31 09:42:57 stelian Exp $
+ *	$Id: dumprestore.h,v 1.20 2003/10/26 16:05:46 stelian Exp $
  */
 
 /*
@@ -71,7 +71,13 @@
 #define NFS_MAGIC   	(int)60012
 #define CHECKSUM	(int)84446
 
+#ifdef __linux__
 typedef u_int32_t	dump_ino_t;
+#endif
+
+#ifdef sunos
+typedef unsigned int	dump_ino_t;
+#endif
 
 union u_data {
 	char	s_addrs[TP_NINDIR];	/* 1 => data; 0 => hole in inode */
@@ -92,7 +98,11 @@ union u_spcl {
 #ifdef	__linux__
 		struct	new_bsd_inode c_dinode;
 #else
+#ifdef sunos
+		struct	new_bsd_inode c_dinode;
+#else
 		struct	dinode	c_dinode;   /* ownership and mode of inode */
+#endif
 #endif
 		int32_t	c_count;	    /* number of valid c_addr entries */
 		union u_data c_data;	    /* see above */
@@ -104,7 +114,8 @@ union u_spcl {
 		int32_t	c_flags;	    /* additional information */
 		int32_t	c_firstrec;	    /* first record on volume */
 		int32_t	c_ntrec;	    /* blocksize on volume */
-		int32_t	c_spare[31];	    /* reserved for future uses */
+                int32_t	c_extattributes;    /* additional inode info */
+                int32_t	c_spare[30];	    /* reserved for future uses */
 	} s_spcl;
 } u_spcl;
 #define spcl u_spcl.s_spcl
@@ -130,6 +141,15 @@ union u_spcl {
 #define DR_METAONLY	0x0100	/* only the metadata of the inode has
 				   been dumped */
 #define DR_INODEINFO	0x0002	/* TS_END header contains c_inos information */
+#define DR_EXTATTRIBUTES	0x8000
+
+/*
+ * extattributes inode info
+ */
+#define EXT_REGULAR		0
+#define EXT_MACOSFNDRINFO	1
+#define EXT_MACOSRESFORK	2
+#define EXT_ACL			3
 
 
 /*
@@ -144,7 +164,11 @@ struct tapebuf {
 	unsigned int	compressed:1;
 	unsigned int	flags:3;
 	unsigned int	length:28;
+#ifdef sunos
+	char		buf;
+#else
 	char		buf[0];	/* the data */
+#endif
 };
 
 #endif /* !_DUMPRESTORE_H_ */

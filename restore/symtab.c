@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: symtab.c,v 1.21 2003/03/30 15:40:40 stelian Exp $";
+	"$Id: symtab.c,v 1.22 2003/10/26 16:05:48 stelian Exp $";
 #endif /* not lint */
 
 /*
@@ -63,7 +63,12 @@ static const char rcsid[] =
 #endif
 #include <bsdcompat.h>
 #else	/* __linux__ */
+#ifdef sunos
+#include <sys/fcntl.h>
+#include <bsdcompat.h>
+#else
 #include <ufs/ufs/dinode.h>
+#endif
 #endif	/* __linux__ */
 
 #include <errno.h>

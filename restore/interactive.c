@@ -37,10 +37,11 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: interactive.c,v 1.26 2003/03/30 15:40:38 stelian Exp $";
+	"$Id: interactive.c,v 1.27 2003/10/26 16:05:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
+#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/stat.h>
 
@@ -52,8 +53,13 @@ static const char rcsid[] =
 #endif
 #include <bsdcompat.h>
 #else	/* __linux__ */
+#ifdef sunos
+#include <sys/fcntl.h>
+#include <bsdcompat.h>
+#else
 #include <ufs/ufs/dinode.h>
 #include <ufs/ufs/dir.h>
+#endif
 #endif	/* __linux__ */
 #include <protocols/dumprestore.h>
 
@@ -67,6 +73,9 @@ static const char rcsid[] =
 
 #ifdef	__linux__
 #include <ext2fs/ext2fs.h>
+#endif
+
+#if defined(__linux__) || defined(sunos)
 extern char * __progname;
 #endif
 

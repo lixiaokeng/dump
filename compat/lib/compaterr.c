@@ -37,10 +37,11 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: compaterr.c,v 1.10 2003/03/30 15:40:35 stelian Exp $";
+	"$Id: compaterr.c,v 1.11 2003/10/26 16:05:46 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
+#include <sys/types.h>
 #include <compaterr.h>
 #include <errno.h>
 #include <stdio.h>

@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: extern.h,v 1.22 2003/03/30 15:40:38 stelian Exp $
+ *	$Id: extern.h,v 1.23 2003/10/26 16:05:48 stelian Exp $
  */
 
 /*-
@@ -39,6 +39,12 @@
 
 #include <config.h>
 #include <compatlfs.h>
+#ifndef __P
+#include <sys/cdefs.h>
+#endif
+#ifdef DUMP_MACOSX
+#include "darwin.h"
+#endif
 
 struct entry	*addentry __P((char *, dump_ino_t, int));
 long		 addfile __P((char *, dump_ino_t, int));
@@ -131,5 +137,20 @@ int	GetTapePos __P((long long *));
 int	GotoTapePos __P((long long));
 void	ReReadFromTape __P((void));
 void	ReReadInodeFromTape __P((dump_ino_t));
+void    GetPathFile __P((char *, char *, char *));
+
+#ifdef sunos
+int		GetSCSIIDFromPath __P((char *, long *));
+int		OpenSMTCmt(char *);
+#endif
 #endif
 void	RequestVol __P((long));
+
+#ifdef DUMP_MACOSX
+int	extractfinderinfoufs __P((char *));
+int	extractresourceufs __P((char *));
+int	CreateAppleDoubleFileRes __P((char *, FndrFileInfo *, mode_t, int, struct timeval *, u_int32_t, u_int32_t));
+#endif
+
+
+

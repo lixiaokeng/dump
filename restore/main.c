@@ -37,11 +37,12 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.44 2003/03/30 15:40:38 stelian Exp $";
+	"$Id: main.c,v 1.45 2003/10/26 16:05:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
 #include <compatlfs.h>
+#include <sys/types.h>
 #include <fcntl.h>
 #include <sys/param.h>
 #include <sys/stat.h>
@@ -59,7 +60,15 @@ static const char rcsid[] =
 #include <signal.h>
 #include <string.h>
 #else	/* __linux__ */
+#ifdef sunos
+#include <signal.h>
+#include <string.h>
+#include <sys/fcntl.h>
+#include <bsdcompat.h>
+#include <sys/mtio.h>
+#else
 #include <ufs/ufs/dinode.h>
+#endif
 #endif	/* __linux__ */
 #include <protocols/dumprestore.h>
 
@@ -76,6 +85,9 @@ static const char rcsid[] =
 #include "pathnames.h"
 #include "restore.h"
 #include "extern.h"
+
+int abortifconnerr = 1;		/* set to 1 if lib dumprmt.o should exit on connection errors
+                                otherwise just print a message using msg */
 
 int	aflag = 0, bflag = 0, cvtflag = 0, dflag = 0, vflag = 0, yflag = 0;
 int	hflag = 1, mflag = 1, Mflag = 0, Nflag = 0, Vflag = 0, zflag = 0;
@@ -111,6 +123,8 @@ int	createtapeposflag;
 unsigned long qfadumpdate;
 long long curtapepos;
 #endif /* USE_QFA */
+
+long smtc_errno;
 
 #if defined(__linux__) || defined(sunos)
 char	*__progname;
@@ -379,6 +393,18 @@ main(int argc, char *argv[])
 		/* end reading header info */
 		/* tape position table starts here */
 		gSeekstart = ftell(gTapeposfp); /* remember for later use */
+#ifdef sunos
+		if (GetSCSIIDFromPath(inputdev, &scsiid)) {
+			errx(1, "can't get SCSI-ID for %s\n", inputdev);
+		}
+		if (scsiid < 0) {
+			errx(1, "can't get SCSI-ID for %s\n", inputdev);
+		}
+		sprintf(smtcpath, "/dev/rsmtc%ld,0", scsiid);
+		if ((fdsmtc = open(smtcpath, O_RDWR)) == -1) {
+			errx(1, "can't open smtc device: %s, %d\n", smtcpath, errno);
+		}
+#endif
 	}
 #endif /* USE_QFA */
 
@@ -535,6 +561,11 @@ main(int argc, char *argv[])
 		setdirmodes(oflag ? FORCE : 0);
 		if (dflag)
 			checkrestore();
+#ifdef sunos
+		if (fdsmtc != -1) {
+			close(fdsmtc);
+		}
+#endif /* sunos */
 #ifdef DEBUG_QFA
 		tiend = time(NULL);
 		titaken = tiend - tistart;
@@ -547,6 +578,18 @@ main(int argc, char *argv[])
 #ifdef DEBUG_QFA
 		tistart = time(NULL);
 #endif
+#ifdef sunos
+		if (GetSCSIIDFromPath(inputdev, &scsiid)) {
+			errx(1, "can't get SCSI-ID for %s\n", inputdev);
+		}
+		if (scsiid < 0) {
+			errx(1, "can't get SCSI-ID for %s\n", inputdev);
+		}
+		sprintf(smtcpath, "/dev/rsmtc%ld,0", scsiid);
+		if ((fdsmtc = open(smtcpath, O_RDWR)) == -1) {
+			errx(1, "can't open smtc device: %s, %d\n", smtcpath, errno);
+		}
+#endif /* sunos */
 		setup();
 		msg("writing QFA positions to %s\n", gTapeposfile);
 		(void) umask(orig_umask);
@@ -556,7 +599,7 @@ main(int argc, char *argv[])
 			errx(1, "can't create tapeposfile\n");
 		(void) umask(FORCED_UMASK);
 		/* print QFA-file header */
-		sprintf(gTps, "%s\n%s\n%ld\n\n", QFA_MAGIC, QFA_VERSION,(unsigned long)spcl.c_date);
+		sprintf(gTps, "%s\n%s\n%ld\n\n", QFA_MAGIC, QFA_VERSION, (unsigned long)spcl.c_date);
 		if (write(gTapeposfd, gTps, strlen(gTps)) != (ssize_t)strlen(gTps))
 			errx(1, "can't write tapeposfile\n");
 		sprintf(gTps, "ino\ttapeno\ttapepos\n");
@@ -578,14 +621,19 @@ main(int argc, char *argv[])
 			treescan(name, ino, addfile);
 		}
 		createfiles();
+#ifdef sunos
+		if (fdsmtc != -1) {
+			close(fdsmtc);
+		}
+#endif /* sunos */
 #ifdef DEBUG_QFA
 		tiend = time(NULL);
 		titaken = tiend - tistart;
-		msg("writing QFA positions took %d:%02d:%02d\n", titaken / 3600,
+		msg("writing QFA positions took %d:%02d:%02d\n", titaken / 3600, 
 			(titaken % 3600) / 60, titaken % 60);
 #endif /* DEBUG_QFA */
 		break;
-#endif /* USE_QFA */
+#endif	/* USE_QFA */
 	}
 	exit(0);
 	/* NOTREACHED */

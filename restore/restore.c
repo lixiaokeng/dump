@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: restore.c,v 1.31 2003/03/30 15:40:39 stelian Exp $";
+	"$Id: restore.c,v 1.32 2003/10/26 16:05:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -54,8 +54,14 @@ static const char rcsid[] =
 #endif
 #include <bsdcompat.h>
 #else	/* __linux__ */
+#ifdef sunos
+#include <sys/fcntl.h>
+#include <bsdcompat.h>
+#else
 #include <ufs/ufs/dinode.h>
+#endif
 #endif	/* __linux__ */
+
 #include <protocols/dumprestore.h>
 
 #include <compaterr.h>
@@ -214,7 +220,10 @@ removeoldleaves(void)
 #ifdef	__linux__
 			(void)fprintf(stderr, "BUG! Should call delwhiteout\n");
 #else
+#ifdef sunos
+#else
 			delwhiteout(ep);
+#endif
 #endif
 			freeentry(ep);
 		}
@@ -799,12 +808,42 @@ createleaves(char *symtabfile)
 			doremove = 0;
 		(void) extractfile(ep, doremove);
 		ep->e_flags &= ~(NEW|EXTRACT);
+
+finderres:
+		if ((first == curfile.ino) && (spcl.c_flags & DR_EXTATTRIBUTES)) {
+			switch (spcl.c_extattributes) {
+			case EXT_MACOSFNDRINFO:
+#ifdef DUMP_MACOSX
+				(void)extractfinderinfoufs(myname(ep));
+#else
+				msg("MacOSX not supported in this version, skipping\n");
+#endif
+				break;
+			case EXT_MACOSRESFORK:
+#ifdef DUMP_MACOSX
+				(void)extractresourceufs(myname(ep));
+#else
+				msg("MacOSX not supported in this version, skipping\n");
+#endif
+				break;
+			case EXT_ACL:
+				msg("ACLs not supported in this version, skipping\n");
+				skipfile();
+				break;
+			default:
+				msg("unexpected inode extension %ld, skipping\n", spcl.c_extattributes);
+				skipfile();
+				break;
+			}
+			goto finderres;
+		}
+
 		/*
 		 * We checkpoint the restore after every tape reel, so
 		 * as to simplify the amount of work required by the
 		 * 'R' command.
 		 */
-	next:
+next:
 		if (curvol != volno) {
 			dumpsymtable(symtabfile, volno);
 			skipmaps();
@@ -844,8 +883,9 @@ createfiles(void)
 	long curvol;
 #ifdef USE_QFA
 	long tnum, tmpcnt;
-	long long tpos, curtpos;
+	long long tpos, curtpos = 0;
 	time_t tistart, tiend, titaken;
+	int		volChg;
 #endif
 
 	Vprintf(stdout, "Extract requested files\n");
@@ -907,38 +947,41 @@ createfiles(void)
 #ifdef USE_QFA
 		tistart = time(NULL);
 		if (tapeposflag) {
-			/* get tape position for inode (position directly) */
-			(void)Inode2Tapepos(next, &tnum, &tpos, 1);
-			if (tpos == 0)
-				/* get tape position for last available inode
-				 * (position before) */
-				(void)Inode2Tapepos(next, &tnum, &tpos, 0);
+			/* get tape position for inode */
+			(void)Inode2Tapepos(next, &tnum, &tpos, 0);
 			if (tpos != 0) {
-				if (tnum != volno)
+				if (tnum != volno) {
 					(void)RequestVol(tnum);
+					volChg = 1;
+				} else {
+					volChg = 0;
+				}
 				if (GetTapePos(&curtpos) == 0) {
 					/*  curtpos +1000 ???, some drives 
 					 *  might be too slow */
-					if (tpos != curtpos) {
+					if (((tpos > (curtpos + 1000)) && (volChg == 0)) || ((tpos != curtpos) && (volChg == 1))) {
+						volChg = 0;
 #ifdef DEBUG_QFA
-						msg("positioning tape %ld from %lld to %lld for inode %10lu ...\n", volno, curtpos, tpos, (unsigned long)next);
+						msg("positioning tape %ld from %lld to %lld for inode %lu ...\n", volno, curtpos, tpos, (unsigned long)next);
 #endif
 						if (GotoTapePos(tpos) == 0) {
 #ifdef DEBUG_QFA
-							if (GetTapePos(&curtpos) == 0)
-								msg("before resync at tape position %lld (%ld, %ld, %s)\n", curtpos, next, curfile.ino, curfile.name);
+							if (GetTapePos(&curtpos) == 0) {
+								msg("before resnyc at tape position %lld (%ld, %ld, %s)\n", curtpos, next, curfile.ino, curfile.name);
+							}
 #endif
 							ReReadInodeFromTape(next);
 #ifdef DEBUG_QFA
-							if (GetTapePos(&curtpos) == 0)
-								msg("after resync at tape position %lld (%ld, %ld, %s)\n", curtpos, next, curfile.ino, curfile.name);
+							if (GetTapePos(&curtpos) == 0) {
+								msg("after resnyc at tape position %lld (%ld, %ld, %s)\n", curtpos, next, curfile.ino, curfile.name);
+							}
 #endif
 						}
-					}
+					} else {
 #ifdef DEBUG_QFA
-					else
-						msg("already at tape %ld position %ld for inode %10lu ...\n", volno, tpos, (unsigned long)next);
+						msg("already at tape %ld position %ld for inode %lu ...\n", volno, tpos, (unsigned long)next);
 #endif
+					}
 				}
 			}
 		}
@@ -999,9 +1042,9 @@ createfiles(void)
 				panic("corrupted symbol table\n");
 #ifdef USE_QFA
 			if (!createtapeposflag)
+#endif
 				fprintf(stderr, "%s: (inode %lu) not found on tape\n", 
 					myname(ep), (unsigned long)next);
-#endif
 			ep->e_flags &= ~NEW;
 			next = lowerbnd(next);
 		}
@@ -1020,13 +1063,41 @@ createfiles(void)
 #endif
 				sprintf(gTps, "%ld\t%ld\t%lld\n", (unsigned long)curfile.ino, volno, curtapepos);
 				if (write(gTapeposfd, gTps, strlen(gTps)) != (ssize_t)strlen(gTps))
-					warn("error writing tapepos file.\n");
+		       			warn("error writing tapepos file.\n");
 				skipfile();
-			}
-			else {
-				msg("restoring %s\n", myname(ep));
+			} else {
 #endif /* USE_QFA */
 				(void) extractfile(ep, 0);
+
+finderres:
+				if ((next == curfile.ino) && (spcl.c_flags & DR_EXTATTRIBUTES)) {
+					switch (spcl.c_extattributes) {
+					case EXT_MACOSFNDRINFO:
+#ifdef DUMP_MACOSX
+						(void)extractfinderinfoufs(myname(ep));
+#else
+						msg("MacOSX not supported in this version, skipping\n");
+#endif
+						break;
+					case EXT_MACOSRESFORK:
+#ifdef DUMP_MACOSX
+						(void)extractresourceufs(myname(ep));
+#else
+						msg("MacOSX not supported in this version, skipping\n");
+#endif
+						break;
+					case EXT_ACL:
+						msg("ACLs not supported in this version, skipping\n");
+						skipfile();
+						break;
+					default:
+						msg("unexpected inode extension %ld, skipping\n", spcl.c_extattributes);
+						skipfile();
+						break;
+					}
+					goto finderres;
+				}
+
 #ifdef USE_QFA
 			}
 #endif /* USE_QFA */
@@ -1055,7 +1126,10 @@ createlinks(void)
 #ifdef	__linux__
 			(void)fprintf(stderr, "BUG! Should call addwhiteout\n");
 #else
+#ifdef sunos
+#else
 			(void) addwhiteout(myname(ep));
+#endif
 #endif
 			ep->e_flags &= ~NEW;
 		}

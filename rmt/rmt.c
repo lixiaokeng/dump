@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: rmt.c,v 1.26 2003/04/08 19:52:37 stelian Exp $";
+	"$Id: rmt.c,v 1.27 2003/10/26 16:05:49 stelian Exp $";
 #endif /* not linux */
 
 /*
@@ -111,9 +111,10 @@ static int	rmt_version = 0;
 #define MTS_FLAGS	'f'
 #define MTS_BF		'b'
 
-char	*checkbuf __P((char *, int));
-void	 error __P((int));
-void	 getstring __P((char *));
+static char	*checkbuf __P((char *, int));
+static void	 error __P((int));
+static void	 getstring __P((char *));
+static unsigned long swaplong __P((unsigned long inv));
 #ifdef ERMT
 char	*cipher __P((char *, int, int));
 void	decrypt __P((void));
@@ -127,6 +128,8 @@ main(int argc, char *argv[])
 	int n, i, cc, oflags;
 	unsigned long block = 0;
 	char *cp;
+
+	int magtape = 0;
 
 #ifdef ERMT
 	if (argc > 1 && strcmp(argv[1], "-d") == 0)
@@ -176,6 +179,10 @@ top:
 		if (tape < 0)
 			goto ioerror;
 		block = 0;
+		{
+		struct mtget mt_stat;
+		magtape = ioctl(tape, MTIOCGET, (char *)&mt_stat) == 0;
+		}
 		goto respond;
 
 	case 'C':
@@ -187,11 +194,59 @@ top:
 		block = 0;
 		goto respond;
 
+#ifdef USE_QFA
+#define LSEEK_GET_TAPEPOS 	10
+#define LSEEK_GO2_TAPEPOS	11
+#endif
+
 	case 'L':
 		getstring(count);
 		getstring(pos);
 		DEBUG2("rmtd: L %s %s\n", count, pos);
-		rval = LSEEK(tape, (OFF_T)atoll(count), atoi(pos));
+		if (!magtape) { /* traditional */
+			rval = LSEEK(tape, (OFF_T)atoll(count), atoi(pos));
+		}
+		else {
+			switch (atoi(pos)) {
+			case SEEK_SET:
+			case SEEK_CUR:
+			case SEEK_END:
+				rval = LSEEK(tape, (OFF_T)atoll(count), atoi(pos));
+				break;
+#ifdef USE_QFA
+			case LSEEK_GET_TAPEPOS: /* QFA */
+			case LSEEK_GO2_TAPEPOS:
+				{
+				struct mtop buf;
+				long mtpos;
+
+				buf.mt_op = MTSETDRVBUFFER;
+				buf.mt_count = MT_ST_BOOLEANS | MT_ST_SCSI2LOGICAL;
+				if (ioctl(tape, MTIOCTOP, &buf) < 0) {
+					goto ioerror;
+				}
+
+				if (atoi(pos) == LSEEK_GET_TAPEPOS) { /* get tapepos */
+					if (ioctl(tape, MTIOCPOS, &mtpos) < 0) {
+						goto ioerror;
+					}
+					rval = (OFF_T)mtpos;
+				} else {
+					buf.mt_op = MTSEEK;
+					buf.mt_count = atoi(count);
+					if (ioctl(tape, MTIOCTOP, &buf) < 0) {
+						goto ioerror;
+					}
+					rval = (OFF_T)buf.mt_count;
+				}
+				}
+				break;
+#endif /* USE_QFA */
+			default:
+				errno = EINVAL;
+				goto ioerror;
+			}
+		}
 		if (rval < 0)
 			goto ioerror;
 		goto respond;
@@ -254,7 +309,7 @@ top:
 			struct mtop mtop;
 			mtop.mt_op = -1;
 			if (rmt_version) {
-				/* rmt version 1, assume UNIX client */
+				/* rmt version 1, assume UNIX/Solaris/Mac OS X client */
 				switch (atoi(op)) {
 #ifdef  MTWEOF
 					case 0:
@@ -296,6 +351,21 @@ top:
 						mtop.mt_op = MTNOP;
 						break;
 #endif
+#ifdef  MTRETEN
+                    case 8:
+                        mtop.mt_op = MTRETEN;
+                        break;
+#endif
+#ifdef  MTERASE
+                    case 9:
+                        mtop.mt_op = MTERASE;
+                        break;
+#endif
+#ifdef  MTEOM
+                    case 10:
+                        mtop.mt_op = MTEOM;
+                        break;
+#endif
 				}
 				if (mtop.mt_op == -1) {
 					errno = EINVAL;
@@ -307,8 +377,9 @@ top:
 				mtop.mt_op = atoi(op);
 			}
 			mtop.mt_count = atoi(count);
-			if (ioctl(tape, MTIOCTOP, (char *)&mtop) < 0)
+			if (ioctl(tape, MTIOCTOP, (char *)&mtop) < 0) {
 				goto ioerror;
+			}
 			rval = mtop.mt_count;
 		}
 		goto respond;
@@ -355,8 +426,9 @@ top:
 				goto ioerror;
 		}
 		mtop.mt_count = atoi (count);
-		if (ioctl (tape, MTIOCTOP, (char *) &mtop) < 0)
+		if (ioctl (tape, MTIOCTOP, (char *) &mtop) < 0) {
 			goto ioerror;
+		}
 
 		rval = mtop.mt_count;
 
@@ -366,12 +438,33 @@ top:
 	case 'S':		/* status */
 		DEBUG("rmtd: S\n");
 		{ struct mtget mtget;
-		  if (ioctl(tape, MTIOCGET, (char *)&mtget) < 0)
+
+		  if (ioctl(tape, MTIOCGET, (char *)&mtget) < 0) {
 			goto ioerror;
-		  rval = sizeof (mtget);
-		  (void)sprintf(resp, "A%lld\n", (long long)rval);
-		  (void)write(1, resp, strlen(resp));
-		  (void)write(1, (char *)&mtget, sizeof (mtget));
+		  }
+
+		  if (rmt_version) {
+			rval = sizeof(mtget);
+            		/* assume byte order:
+            		Linux on Intel (little), Solaris on SPARC (big), Mac OS X on PPC (big)
+            		thus need byte swapping from little to big
+            		*/
+			mtget.mt_type = swaplong(mtget.mt_type);
+			mtget.mt_resid = swaplong(mtget.mt_resid);
+			mtget.mt_dsreg = swaplong(mtget.mt_dsreg);
+			mtget.mt_gstat = swaplong(mtget.mt_gstat);
+			mtget.mt_erreg = swaplong(mtget.mt_erreg);
+			mtget.mt_fileno = swaplong(mtget.mt_fileno);
+			mtget.mt_blkno = swaplong(mtget.mt_blkno);
+			(void)sprintf(resp, "A%lld\n", (long long)rval);
+			(void)write(1, resp, strlen(resp));
+			(void)write(1, (char *)&mtget, sizeof (mtget));
+		  } else {
+		  	rval = sizeof (mtget);
+			(void)sprintf(resp, "A%lld\n", (long long)rval);
+			(void)write(1, resp, strlen(resp));
+			(void)write(1, (char *)&mtget, sizeof (mtget));
+		  }
 		  goto top;
 		}
 
@@ -379,11 +472,15 @@ top:
 	{	char s;
 		struct mtget mtget;
  
+		DEBUG ("rmtd: s\n");
+
 		if (read (0, &s, 1) != 1)
 			goto top;
+		DEBUG1 ("rmtd: s %d\n", s);
  
-		if (ioctl (tape, MTIOCGET, (char *) &mtget) < 0)
+		if (ioctl (tape, MTIOCGET, (char *) &mtget) < 0) {
 			goto ioerror;
+		}
 
 		switch (s) {
 			case MTS_TYPE:
@@ -418,11 +515,11 @@ top:
 		goto respond;
 	}
 
-        case 'V':               /* version */
-                getstring(op);
-                DEBUG1("rmtd: V %s\n", op);
-                rval = 2;
-                goto respond;
+	case 'V':	/* version */
+		getstring(op);
+		DEBUG1("rmtd: V %s\n", op);
+		rval = 2;
+		goto respond;
 
 	default:
 		DEBUG1("rmtd: garbage command %c\n", c);
@@ -438,7 +535,7 @@ ioerror:
 	goto top;
 }
 
-void getstring(char *bp)
+static void getstring(char *bp)
 {
 	int i;
 	char *cp = bp;
@@ -452,7 +549,7 @@ void getstring(char *bp)
 	cp[i] = '\0';
 }
 
-char *
+static char *
 checkbuf(char *record, int size)
 {
 
@@ -472,11 +569,29 @@ checkbuf(char *record, int size)
 	return (record);
 }
 
-void
+static void
 error(int num)
 {
 
 	DEBUG2("rmtd: E %d (%s)\n", num, strerror(num));
 	(void)snprintf(resp, sizeof(resp), "E%d\n%s\n", num, strerror(num));
 	(void)write(1, resp, strlen(resp));
+}
+
+static unsigned long
+swaplong(unsigned long inv)
+{
+	 union lconv {
+		unsigned long   ul;
+		unsigned char   uc[4];
+	} *inp, outv;
+
+	inp = (union lconv *)&inv;
+
+	outv.uc[0] = inp->uc[3];
+	outv.uc[1] = inp->uc[2];
+	outv.uc[2] = inp->uc[1];
+	outv.uc[3] = inp->uc[0];
+
+	return (outv.ul);
 }

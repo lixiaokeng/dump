@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: bsdcompat.h,v 1.19 2002/07/19 14:57:39 stelian Exp $
+ *	$Id: bsdcompat.h,v 1.20 2003/10/26 16:05:46 stelian Exp $
  */
 
 #include <config.h>
@@ -26,8 +26,13 @@
 #define	WINO		1
 #define	DEV_BSIZE	512
 #define	DEV_BSHIFT	9
+
+#ifndef sunos
 #define	MAXBSIZE	EXT2_MAX_BLOCK_SIZE
 #define ROOTINO		EXT2_ROOT_INO
+#else
+#define ROOTINO		2
+#endif
 #ifdef	EXT2_NODUMP_FL
 #define UF_NODUMP	EXT2_NODUMP_FL
 #endif
@@ -36,7 +41,6 @@
 #define roundup(x, y)	((((x)+((y)-1))/(y))*(y))
 #define powerof2(x)	((((x)-1)&(x))==0)
 
-#define dbtob(b)	((unsigned)(b) << DEV_BSHIFT)
 #define fsbtodb(sb,b)	((int)(((long long)(b) * EXT2_BLOCK_SIZE((sb)->super)) / DEV_BSIZE))
 #define dbtofsb(sb,b)	((int)(((long long)(b) * DEV_BSIZE) / EXT2_BLOCK_SIZE((sb)->super)))
 
@@ -74,6 +78,25 @@ typedef __u64		u_quad_t;
 #define	NIADDR		 3
 
 #define NINDIR(fs)	EXT2_ADDR_PER_BLOCK(fs->super)
+
+#ifdef sunos
+typedef uint8_t __u8;
+typedef uint16_t __u16;
+typedef uint32_t __u32;
+typedef int8_t __s8;
+typedef int16_t __s16;
+typedef int32_t __s32;
+#ifndef u_int
+#typedef unsigned int u_int;
+#endif
+#ifndef u_int16_t
+typedef unsigned short u_int16_t;
+#endif
+#ifndef u_char
+typedef unsigned char u_char;
+#endif
+typedef int64_t quad_t;
+#endif /* sunos */
 
 struct dinode {
 	__u16	di_mode;
@@ -118,6 +141,10 @@ struct dinode {
 #define MAXNAMLEN	255
 #endif
 
+#ifdef sunos
+#define MAXNAMLEN	255
+#endif
+
 /*
  * For old libc.
  */
@@ -130,6 +157,10 @@ struct dinode {
 #define DT_REG		 8
 #define DT_LNK		10
 #define DT_SOCK		12
+
+#ifdef sunos
+#define DT_WHT		14
+#endif
 #endif
 
 #ifndef d_fileno
@@ -158,20 +189,23 @@ struct direct {
  * without the d_name field, plus enough space for the name with a terminating
  * null byte (dp->d_namlen+1), rounded up to a 4 byte boundary.
  */
+#ifdef __linux__
 #if	0
 #if (BYTE_ORDER == LITTLE_ENDIAN)
 #define DIRSIZ(oldfmt, dp) \
     ((oldfmt) ? \
     ((sizeof (struct direct) - (MAXNAMLEN+1)) + (((dp)->d_type+1 + 3) &~ 3)) : \
     ((sizeof (struct direct) - (MAXNAMLEN+1)) + (((dp)->d_namlen+1 + 3) &~ 3)))
-#else
+#else /* BYTE_ORDER */
 #define DIRSIZ(oldfmt, dp) \
     ((sizeof (struct direct) - (MAXNAMLEN+1)) + (((dp)->d_namlen+1 + 3) &~ 3))
 #endif
-#else
-
+#else /* 0 */
 #define DIRSIZ(oldfmt,dp)	EXT2_DIR_REC_LEN(((dp)->d_namlen & 0xff) + 1)
-
+#endif
+#else /* __linux__ */
+#define DIRSIZ(oldfmt, dp) \
+	((sizeof (struct direct) - (MAXNAMLEN+1)) + (((dp)->d_namlen+1 + 3) &~ 3))
 #endif
 
 /*
