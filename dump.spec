@@ -4,7 +4,7 @@
 
 Summary: Programs for backing up and restoring ext2/ext3 filesystems.
 Name: dump
-Version: 0.4b27
+Version: 0.4b28pre1
 Release: 1
 License: BSD
 URL: http://dump.sourceforge.net
