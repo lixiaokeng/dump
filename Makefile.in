@@ -1,0 +1,23 @@
+srcdir=		@srcdir@
+top_srcdir=	@top_srcdir@
+
+@MCONFIG@
+
+RM=		@RM@
+SUBDIRS=	compat/lib common dump restore @RMTDIR@
+
+all clean install dep depend realclean distclean::
+	for i in $(SUBDIRS); do \
+		(cd $$i && $(MAKE) $@) || exit 1; \
+	done
+
+distclean::
+	$(RM) -f config.status config.log config.cache
+	$(RM) -f MCONFIG Makefile config.h
+
+# +++ Dependency line eater +++
+# 
+# Makefile dependencies follow.  This must be the last section in
+# the Makefile.in file
+#
+

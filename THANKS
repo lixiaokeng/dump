@@ -1,0 +1,30 @@
+Dump and restore were written by the people of the CSRG at the University
+of California, Berkeley.
+
+They were ported to Linux by Remy Card <card@Linux.EU.Org>, by using
+the Ext2fs library, written by Theodore Ts'o <tytso@mit.edu>.
+
+Kevin Layer <layer@Franz.COM> added the comparison code in restore.
+
+Doug Paul <dbp@dragonsys.com> helped me to make dump able to backup 2GB+
+filesystems.
+
+David Frey <david@eos.lugs.ch> (the Debian dump maintainer) and the people
+from Red Hat Software provided lots of patches.
+
+Thanks to people who reported problems with the port, sent patches, and
+suggested various improvements.
+Here is a partial list of them (if I have forgotten someone, please complain):
+
+Henry Katz		hkatz@hkatz.dialup.access.net
+Klaus Kudielka		kkudielk@cacofonix.nt.tuwien.ac.at
+Florian La Roche	florian@jurix.jura.uni-sb.de
+Greg Lutz		greglutz@ix.netcom.com
+David Miller		davem@caip.rutgers.edu
+David Monro		davidm@cs.su.oz.au
+Lukas Nellen		L.Nellen@ThPhys.Uni-Heidelberg.DE
+Brent Olson		night@halcyon.com
+Bob Snyder		rsnyder@janet.advsys.com
+Stephen Tweedie		sct@dcs.ed.ac.uk
+Daniel Veillard		Daniel.Veillard@imag.fr
+Jason Venner		jason@idiom.com

@@ -1,0 +1,119 @@
+
+Changes between versions 0.4b3 and 0.4b4
+========================================
+
+1.	Dump now runs correctly on kernels 2.1.x
+	Fix made by Gerald Peters <gapeters@worldnet.att.net>
+
+Changes between versions 0.4b2 and 0.4b3
+========================================
+
+1.	Use realpath() if available
+
+2.	Report statistics
+
+Changes between versions 0.4b1 and 0.4b2
+========================================
+
+1.	Fixed the bug fix from Greg Lutz (I had made a mistake when integrating
+	the patch)
+
+2.	Fixed restore to make it able to read FreeBSD 2.x dumps again
+
+3.	Fixed configure.in to correctly handle --enable-rmt
+
+Changes between versions 0.3 and 0.4b1
+======================================
+
+1.	Integrated the changes from 4.4BSD-Lite2
+
+2.	Integrated the patches from Debian and Red Hat
+
+3.	Portability changes: use the __u32, __u16, __s32, and __s16 types
+
+4.	Changed dump to use the Ext2fs library to get block addresses.  This
+	should solve the endianness problem on SparcLinux.
+
+5.	Created a configure.in file (shamelessly stolen from the e2fsprogs
+	distribution's one) to use autoconf
+
+6.	Fixed a few minor bugs
+
+Changes between versions 0.2e and 0.2f
+======================================
+
+1.	Added the creation of named pipes (fifos) in restore.
+
+2.	Added the -N flag in the restore manual page.
+
+3.	Added the file kernel.patch which contains the llseek() optimization
+	patch for 1.2.x kernels.
+
+4.	Fixed a bug in the restoration of symbolic links: owner and group were
+	not restored.
+
+5.	Integrated some changes from FreeBSD 2.2.
+
+6.	Added a call to ftruncate() after restoring each file to restore
+	correctly files ending by a hole.
+
+Changes between versions 0.2d and 0.2e
+======================================
+
+1.	Fixed a bug in the "set owner/mode" process.  Every file was restored
+	with owner = root (0) and group = root/wheel/whatever (0).
+
+Changes between versions 0.2c and 0.2d
+======================================
+
+1.	Dump is now able to backup 2GB+ filesystems.
+
+2.	Dump and restore can now be linked as static binaries.
+
+Changes between versions 0.2b and 0.2c
+======================================
+
+1.	Fixed a bug when dumping ``slow'' (i.e. normal) symbolic links.
+
+Changes between versions 0.2a and 0.2b
+======================================
+
+1.	Really fixed the bug that I should have corrected in 0.2a.
+
+2.	Enabled optimization again.
+
+Changes between versions 0.2 and 0.2a
+=====================================
+
+1.	Disabled the optimization during compilation.
+
+Changes between versions 0.1 and 0.2
+====================================
+
+1.	Fixed a bug in fstab.c which caused a null pointer to be stored in
+	the fs_type field (actually, I modified the file fstab.c to make it
+	use the mntent functions).
+
+2.	Dump and restore now use a 4.3 BSD compatible dump format.  Backups
+	made by dump should be readable by the BSD restore and backups made
+	by the BSD dump should be readable by restore.  Unfortunately, this
+	means that the dump format has changed between version 0.1 and version
+	0.2 :-(
+
+3.	Dump is now able to backup a subtree, it is no longer limited to whole
+	filesystems like the BSD version.
+
+4.	Dump now uses ext2_llseek() so it is able to backup filesystems bigger
+	than 2 GB.
+
+Changes between versions 0.0 and 0.1
+====================================
+
+1.	Now create links rdump and rrestore during the `make install' step.
+
+2.	Linux port specific bugs added to the manual pages
+
+3.	Incorrect estimation of the number of tapes blocks fixed when doing
+	incremental backups.
+
+4.	Better ls-like format in restore in interactive mode.

@@ -1,0 +1,12 @@
+
+	Yet another bug fix release of dump/restore for Ext2fs is available
+on tsx-11.mit.edu in /pub/linux/packages/ext2fs/dump-0.2c.tar.gz.
+
+	A stupid bug has been fixed.  This bug caused an incorrect dump of
+``slow'' (i.e. normal) symbolic links.  There is no new features (yet :-).
+
+	Thanks to the many people who have sent me success and bug reports!
+
+--
+Remy Card
+Remy.Card@freenix.fr

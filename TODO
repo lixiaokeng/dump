@@ -1,0 +1,13 @@
+1.	Fix the multi-volume problem (is there one after all?, I could not
+	reproduce it and some people told me that multi-volume dumps were Ok).
+
+2.	Make dump honor the no-dump attribute on directories.  Currently, it
+	honours it only on files.  This means that a directory flagged with
+	the no-dump attribute will be dumped if it contains a file without
+	the no-dump flag.
+
+3.	Change the way rdump and rrestore call rmt.  Currently, rcmd() is used
+	but it may be better to call rsh.  I have to look at the GNU tar code.
+
+4.	Make dump able to backup several directories and/or files in one
+	invocation, like the SunOS version.

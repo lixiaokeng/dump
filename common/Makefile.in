@@ -1,0 +1,26 @@
+top_srcdir=	@top_srcdir@
+srcdir=		@srcdir@
+
+@MCONFIG@
+
+INC=		-I$(top_srcdir)/dump
+CFLAGS=		@CCOPTS@ -pipe $(GINC) $(INC) $(DEFS)
+SRCS=		dumprmt.c
+OBJS=		dumprmt.o
+
+all::		$(OBJS)
+
+install::
+
+clean::
+	$(RM) -f \#* *.s *.o *.a *~ core
+
+distclean::	clean
+	$(RM) -f Makefile Makefile.old .depend
+
+# +++ Dependency line eater +++
+# 
+# Makefile dependencies follow.  This must be the last section in
+# the Makefile.in file
+#
+

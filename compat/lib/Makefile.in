@@ -1,0 +1,31 @@
+top_srcdir=	@top_srcdir@
+srcdir=		@srcdir@
+
+@MCONFIG@
+
+INC=		-I$(top_srcdir)/compat/include
+CFLAGS=	       	@CCOPTS@ -pipe $(GINC) $(INC) $(DEFS)
+SRCS=		err.c fstab.c glob.c
+OBJS=		err.o fstab.o glob.o
+LIB=		libcompat.a
+
+all::		$(LIB)
+
+$(LIB):		$(OBJS)
+	$(AR) r $(LIB) $(OBJS)
+	$(RANLIB) $(LIB)
+
+install::
+
+clean::
+	$(RM) -f \#* *.s *.o *.a *~ core
+
+distclean::	clean
+	$(RM) -f Makefile Makefile.old .depend
+
+# +++ Dependency line eater +++
+# 
+# Makefile dependencies follow.  This must be the last section in
+# the Makefile.in file
+#
+

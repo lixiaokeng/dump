@@ -1,0 +1,18 @@
+Begin3
+Title:          dump and restore for Ext2fs
+Version:        0.4b4
+Entered-date:   17JAN97
+Description:    Port of the 4.4BSD dump and restore backup suite
+Keywords:       backup, filesystem, Ext2fs
+Author:         University of California, Berkeley
+Maintained-by:  card@Linux.EU.Org (Remy Card)
+Primary-site:   tsx-11.mit.edu /pub/linux/ALPHA/ext2fs
+                126kB dump-0.4b4.tar.gz
+                627 dump.lsm
+Alternate-site: 
+Original-site:  ftp.freebsd.org /pub/bsd-sources/4.4BSD-Lite2/sbin
+                dump/*
+                restore/*
+Platforms:      linux 2.0.x, e2fsprogs 1.06
+Copying-policy: BSD
+End

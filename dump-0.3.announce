@@ -1,0 +1,32 @@
+
+	Ok, I'm back ;-)
+
+	Dump 0.3 is now available on tsx-11.mit.edu in the directory
+/pub/linux/packages/ext2fs.
+
+	Restore is now able to restore named pipes (fifos).  Thanks to
+Jason Venner <jason@idiom.com> for reporting the bug.  I have also fixed
+a bug in the symlink restoration: owner and group were not set by previous
+version.  Thanks to Klaus Kudielka <kkudielk@cacofonix.nt.tuwien.ac.at> for
+reporting it.  Restore is now able to restore correctly files ending with
+a hole (mainly DLL shared libraries under Linux).  Thanks to David Monro
+<davidm@cs.su.oz.au> for sending me a patch much cleaner than mine :-)
+
+	Kevin Layer <layer@Franz.COM> has implemented a verify option in
+restore.  It is now possible to check a dump against the contents of the
+filesystem.  Thank you very much, Kevin!
+
+	Some bug fixes from FreeBSD 2.2-current have also been integrated.
+
+	Last, I have added the file `linux-1.2.x.patch' in the distribution. 
+This patch for 1.2 kernels should be applied if you want to get better
+performances.
+
+	I remind you that dump and restore should be considered as software
+in BETA test.  Don't rely too much on them for your backups...
+
+--
+Remy Card
+Remy.Card@freenix.fr
+
+No to nuclear testings!

@@ -1,0 +1,245 @@
+AC_INIT(dump/dump.h)
+
+MCONFIG=./MCONFIG
+AC_SUBST_FILE(MCONFIG)
+
+AC_CONFIG_HEADER(config.h)
+
+dnl
+dnl Check for programs
+dnl
+AC_PROG_MAKE_SET
+AC_PROG_LN_S
+AC_PATH_PROG(CP, cp, cp)
+AC_PATH_PROG(MV, mv, mv)
+AC_PATH_PROG(RM, rm, rm)
+AC_CHECK_TOOL(AR, ar, ar)
+AC_CHECK_TOOL(RANLIB, ranlib, :)
+AC_CHECK_TOOL(PATCH, patch, :)
+AC_PROG_CC
+AC_PROG_INSTALL
+
+dnl
+dnl Handle --enable-dumpdates-patch
+dnl
+AC_ARG_ENABLE([dumpdates-patch],
+[  --enable-dumpdates-patch apply the dumpdates patch from Debian],
+if test "$enableval" = "yes"
+then
+	if test "$PATCH" = ":"
+	then
+		AC_MSG_ERROR(The patch program was not found on your system)
+	fi
+	(cd $srcdir; $PATCH -p < debian-patch)
+fi
+,
+)
+
+dnl
+dnl Handle --enable-debug
+dnl
+AC_ARG_ENABLE([debug],
+[  --enable-debug          include debugging code],
+if test "$enableval" = "no"
+then
+	DUMPDEBUG=""
+	RESTOREDEBUG=""
+else
+	DUMPDEBUG="-DFDEBUG -DTDEBUG -DWRITEDEBUG -DDIRDEBUG"
+	RESTOREDEBUG="-DDIRDEBUG"
+fi,
+DUMPDEBUG=""
+RESTOREDEBUG=""
+)
+AC_SUBST(DUMPDEBUG)
+AC_SUBST(RESTOREDEBUG)
+
+dnl
+dnl Handle --enable-static
+dnl
+AC_ARG_ENABLE([static],
+[  --enable-static         link dump and restore statically],
+if test "$enableval" = "no"
+then
+	STATIC=""
+else
+	STATIC="-static"
+fi
+,
+STATIC=""
+echo "Linking dump and restore dynamically by default"
+)
+AC_SUBST(STATIC)
+
+dnl
+dnl Handle --enable-rmt
+dnl
+AC_ARG_ENABLE([rmt],
+[  --enable-rmt            compile and install rmt],
+if test "$enableval" = "no"
+then
+	RMTDIR=""
+	RMTMAKEFILE=""
+else
+	RMTDIR="rmt"
+	RMTMAKEFILE="rmt/Makefile"
+fi
+,
+RMTDIR=""
+echo "Not compiling rmt by default"
+)
+AC_SUBST(RMTDIR)
+
+dnl
+dnl set $(CC) from --with-cc=value
+dnl
+AC_ARG_WITH([cc],
+[  --with-cc=COMPILER      select compiler to use],
+AC_MSG_RESULT(CC=$withval)
+CC=$withval,
+if test -z "$CC" ; then CC=cc; fi
+[AC_MSG_RESULT(CC defaults to $CC)])dnl
+export CC
+AC_SUBST([CC])
+
+dnl
+dnl set $(LD) from --with-linker=value
+dnl
+AC_ARG_WITH([linker],
+[  --with-linker=LINKER    select linker to use],
+AC_MSG_RESULT(LD=$withval)
+LD=$withval,
+if test -z "$LD" ; then LD=$CC; fi
+[AC_MSG_RESULT(LD defaults to $LD)])dnl
+export LD
+AC_SUBST([LD])
+
+dnl
+dnl set $(CCOPTS) from --with-ccopts=value
+dnl
+AC_ARG_WITH([ccopts],
+[  --with-ccopts=CCOPTS    select compiler command line options],
+AC_MSG_RESULT(CCOPTS is $withval)
+CCOPTS=$withval
+CFLAGS="$CFLAGS $withval",
+CCOPTS=)dnl
+AC_SUBST(CCOPTS)
+
+dnl
+dnl set $(LDFLAGS) from --with-ldopts=value
+dnl
+AC_ARG_WITH([ldopts],
+[  --with-ldopts=LDOPTS    select linker command line options],
+AC_MSG_RESULT(LDFLAGS is $withval)
+LDFLAGS=$withval,
+LDFLAGS=)dnl
+AC_SUBST(LDFLAGS)
+
+dnl
+dnl set $(BINOWNER) from --with-binowner
+dnl
+AC_ARG_WITH([binowner],
+[  --with-binowner=USER    select owner for binaries],
+AC_MSG_RESULT(BINOWNER is $withval)
+BINOWNER=$withval,
+BINOWNER=root
+echo "BINOWNER defaults to $BINOWNER"
+)dnl
+AC_SUBST(BINOWNER)
+
+dnl
+dnl set $(BINGRP) from --with-bingrp
+dnl
+AC_ARG_WITH([bingrp],
+[  --with-bingrp=GROUP     select group for binaries],
+AC_MSG_RESULT(BINGRP is $withval)
+BINGRP=$withval,
+BINGRP=tty
+echo "BINGRP defaults to $BINGRP"
+)dnl
+AC_SUBST(BINGRP)
+
+dnl
+dnl set $(BINMODE) from --with-binmode
+dnl
+AC_ARG_WITH([binmode],
+[  --with-binmode=MODE     select mode for binaries],
+AC_MSG_RESULT(BINMODE is $withval)
+BINMODE=$withval,
+BINMODE=6555
+echo "BINMODE defaults to $BINMODE"
+)dnl
+AC_SUBST(BINMODE)
+
+dnl
+dnl set $(MANOWNER) from --with-manowner
+dnl
+AC_ARG_WITH([manowner],
+[  --with-manowner=USER    select owner for manual pages],
+AC_MSG_RESULT(MANOWNER is $withval)
+MANOWNER=$withval,
+MANOWNER=man
+echo "MANOWNER defaults to $MANOWNER"
+)dnl
+AC_SUBST(MANOWNER)
+
+dnl
+dnl set $(MANGRP) from --with-mangrp
+dnl
+AC_ARG_WITH([mangrp],
+[  --with-mangrp=group     select group for manual pages],
+AC_MSG_RESULT(MANGRP is $withval)
+MANGRP=$withval,
+MANGRP=tty
+echo "MANGRP defaults to $MANGRP"
+)dnl
+AC_SUBST(MANGRP)
+
+dnl
+dnl set $(MANMODE) from --with-manmode
+dnl
+AC_ARG_WITH([manmode],
+[  --with-manmode=MODE     select mode for manual pages],
+AC_MSG_RESULT(MANMODE is $withval)
+MANMODE=$withval,
+MANMODE=0444
+echo "MANMODE defaults to $MANMODE"
+)dnl
+AC_SUBST(MANMODE)
+
+dnl
+dnl Check for Ext2fs headers and libraries
+dnl
+AC_CHECK_HEADER(ext2fs/ext2fs.h, [ext2fs_h=yes], [ext2fs_h=no])
+AC_CHECK_LIB(ext2fs, ext2fs_open, [ext2fs_lib=yes], [ext2fs_lib=no], [-lcom_err])
+if test "$ext2fs_h" = no -o "$ext2fs_lib" = no; then
+	AC_MSG_ERROR(You need to install the Ext2fs libraries from the E2fsprogs distribution first)
+fi
+
+dnl
+dnl Check for library functions
+dnl
+AC_CHECK_FUNCS(err errx verr verrx vwarn vwarnx warn warnx realpath)
+
+dnl
+dnl Check for types
+dnl
+AC_CHECK_TYPE(quad_t, __s64)
+AC_CHECK_TYPE(u_quad_t, __u64)
+
+dnl
+dnl Compute top_buildir
+dnl
+top_builddir=`cd .; pwd`
+AC_SUBST(top_builddir)
+
+dnl
+dnl Create directories
+dnl
+test -d compat || mkdir compat
+test -d compat/lib || mkdir compat/lib
+
+dnl
+dnl Output files
+dnl
+AC_OUTPUT(MCONFIG Makefile common/Makefile compat/lib/Makefile dump/Makefile restore/Makefile $RMTMAKEFILE)

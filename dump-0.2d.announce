@@ -1,0 +1,12 @@
+
+	Ok, I am still trying to saturate comp.os.linux.announce :-)  Yet
+another bug fix release of dump/restore for Ext2fs is available on
+tsx-11.mit.edu in /pub/linux/packages/ext2fs/dump-0.2d.tar.gz.
+
+	Dump is now able to backup 2GB+ filesystems.  Thanks to Doug Paul
+<dbp@dragonsys.com> for the patch.  Dump and restore can now be linked as
+static binaries (you have to edit the file MCONFIG before building them).
+
+--
+Remy Card
+Remy.Card@freenix.fr

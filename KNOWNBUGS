@@ -1,0 +1,11 @@
+Known bugs and limitations of the dump/restore port
+===================================================
+
+1.	Multi-volume does not work: restore does not succeeds in
+	resynchronizing itself on a multi-volume dump.  Thus, some files are
+	not restored.
+
+2.	I have tried to minimize changes in the BSD source and some parts
+	may look ugly.  dump/tape.c is really awfull but this is pure BSD
+	code :-)  Maybe, I should replace it with a simpler and cleaner
+	version.

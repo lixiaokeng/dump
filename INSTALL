@@ -1,0 +1,15 @@
+
+	Installation of the dump/restore port should be quite easy, since
+a configure script is now provided.
+
+	Configuration is made by running the configure script.  Run
+`configure --help' to get a list of options.
+
+	After configuring the package, you can type `make' to compile the
+programs, and `make install' to install the binaries in /sbin and the
+manual pages in `/usr/man/man8'.
+
+	You need to have the latest Ext2fs programs installed on your system
+since this version of dump uses the Ext2fs library written by Theodore T'so.
+The Ext2fs programs distribution is available from tsx-11.mit.edu in the
+directory /pub/linux/packages/ext2fs.

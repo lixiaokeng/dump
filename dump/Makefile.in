@@ -1,0 +1,49 @@
+top_srcdir=	@top_srcdir@
+srcdir=		@srcdir@
+
+@MCONFIG@
+
+CFLAGS=		@CCOPTS@ -pipe $(GINC) $(INC) $(DEFS) @DUMPDEBUG@
+LDFLAGS:=	$(LDFLAGS) @STATIC@
+LIBS=		$(GLIBS)
+DEPLIBS=	../compat/lib/libcompat.a
+
+PROG=		dump
+LINKS=		${BINDIR}/dump ${BINDIR}/rdump
+SRCS=		itime.c main.c optr.c tape.c traverse.c unctime.c
+OBJS=		itime.o main.o optr.o tape.o traverse.o unctime.o \
+		../common/dumprmt.o
+MAN8=		dump.8
+MLINKS=		$(MANDIR)/dump.8 $(MANDIR)/rdump.8
+
+all::		$(PROG)
+
+$(PROG):	$(OBJS) $(DEPLIBS)
+	$(LD) $(CFLAGS) $(LDFLAGS) -o $(PROG) $(OBJS) $(LIBS)
+
+install::	$(PROG)
+	$(INSTALLBIN) $(PROG) $(BINDIR)
+	$(INSTALLMAN) $(srcdir)/$(MAN8) $(MANDIR)
+	@set $(LINKS) $(MLINKS); \
+	while test $$# -ge 2; do \
+		l=$(DESTDIR)$$1; \
+		shift; \
+		t=$(DESTDIR)$$1; \
+		shift; \
+		echo $$t -\> $$l; \
+		$(RM) -f $$t; \
+		$(LN_S) $$l $$t; \
+	done; true
+
+clean::
+	$(RM) -f $(PROG) \#* *.s *.o *.a *~ core
+
+distclean::	clean
+	$(RM) -f Makefile Makefile.old .depend
+
+# +++ Dependency line eater +++
+# 
+# Makefile dependencies follow.  This must be the last section in
+# the Makefile.in file
+#
+
