@@ -1,4 +1,10 @@
-$Id: CHANGES,v 1.139 2001/09/12 12:40:07 stelian Exp $
+$Id: CHANGES,v 1.140 2001/10/02 09:41:24 stelian Exp $
+
+Changes between versions 0.4b24 and 0.4b25 (released ??????????????????)
+========================================================================
+
+1.	Added a mini howto from Patrick Walsh in the examples 
+	directory.
 
 Changes between versions 0.4b23 and 0.4b24 (released September 12, 2001)
 ========================================================================
