@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.259 2004/11/22 10:32:31 stelian Exp $
+$Id: CHANGES,v 1.260 2004/12/10 13:31:20 stelian Exp $
 
 Changes between versions 0.4b37 and 0.4b38 (released ????????????)
 ==================================================================
@@ -21,6 +21,11 @@ Changes between versions 0.4b37 and 0.4b38 (released ????????????)
 	due to a bogus calculation on the inode map size.
 	Thanks to Kevin B. Haines <K.B.Haines@rl.ac.uk> for 
 	submitting the bug and testing the fix.
+
+6.	Fix a problem in restore where the final \0 in the symbolic
+	link names could have been lost, generating corrupt filenames.
+	Thanks to Kyle Wilson <kyle.wilson@amd.com> for reporting the
+	bug.
 
 Changes between versions 0.4b36 and 0.4b37 (released July 7, 2004)
 ==================================================================

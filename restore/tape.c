@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.82 2004/08/16 09:39:47 stelian Exp $";
+	"$Id: tape.c,v 1.83 2004/12/10 13:31:21 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1317,10 +1317,13 @@ xtrlnkfile(char *buf, size_t size)
 {
 
 	pathlen += size;
-	if (pathlen > MAXPATHLEN)
+	if (pathlen > MAXPATHLEN) {
+		buf[size - 1] = '\0';
 		errx(1, "symbolic link name: %s->%s%s; too long %d",
 		    curfile.name, lnkbuf, buf, pathlen);
+	}
 	(void) strcat(lnkbuf, buf);
+	lnkbuf[pathlen] = '\0';
 }
 
 /*
