@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.86 2005/01/24 10:32:14 stelian Exp $";
+	"$Id: tape.c,v 1.87 2005/01/24 10:37:58 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1730,7 +1730,7 @@ comparefile(char *name)
 			return;
 		}
 		if ((lsize = readlink(name, lbuf, MAXPATHLEN)) < 0) {
-			panic("readlink of %s failed: %s", name,
+			panic("readlink of %s failed: %s\n", name,
 			      strerror(errno));
 			do_compare_error;
 		}
