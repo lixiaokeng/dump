@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.81 2003/01/21 10:42:27 stelian Exp $";
+	"$Id: main.c,v 1.82 2003/03/07 09:15:50 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -772,7 +772,7 @@ main(int argc, char *argv[])
 	if (directory[0] == 0)
 		anydirskipped = mapfiles(maxino, &tapesize);
 	else {
-		if (STAT(pathname, &statbuf) == -1) {
+		if (LSTAT(pathname, &statbuf) == -1) {
 			msg("File cannot be accessed (%s).\n", pathname);
 			msg("The ENTIRE dump is aborted.\n");
 			exit(X_STARTUP);
@@ -789,7 +789,7 @@ main(int argc, char *argv[])
 		int anydirskipped2;
 		char *p = *argv;
 		/* check if file is available */
-		if (STAT(p, &statbuf) == -1) {
+		if (LSTAT(p, &statbuf) == -1) {
 			msg("File cannot be accessed (%s).\n", p);
 			msg("The ENTIRE dump is aborted.\n");
 			exit(X_STARTUP);

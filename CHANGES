@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.219 2003/03/06 14:35:48 stelian Exp $
+$Id: CHANGES,v 1.220 2003/03/07 09:15:44 stelian Exp $
 
 Changes between versions 0.4b33 and 0.4b34 (released ?????????????????)
 =======================================================================
@@ -36,6 +36,13 @@ Changes between versions 0.4b33 and 0.4b34 (released ?????????????????)
 	problem with incremental dumps if the timezone is modified 
 	between the dumps. Thanks to Philippe Troin <phil@fifi.org> for
 	the bug report and the patch.
+
+9.	Fixed a bug encountered when dumping individual files (not full
+	filesystems or directories) and dangling symbolic links happen
+	to be in the list of files. For as far as dump is concerned,
+	dangling symbolic links are allowed, and are dumped as is.
+	Thanks to Jin-su Ahn <jsahn@ee.snu.ac.kr> for reporting the
+	bug and providing the fix.
 
 Changes between versions 0.4b32 and 0.4b33 (released February 10, 2003)
 =======================================================================
