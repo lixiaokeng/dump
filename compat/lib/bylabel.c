@@ -24,6 +24,8 @@
 #include <sys/cdefs.h>
 #include "bylabel.h"
 
+#ifndef HAVE_BLKID
+
 #define PROC_PARTITIONS "/proc/partitions"
 #define DEVLABELDIR	"/dev"
 
@@ -255,3 +257,5 @@ get_device_label(const char * spec) {
 	}
 	return NULL;
 }
+
+#endif /* !HAVE_BLKID */

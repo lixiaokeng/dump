@@ -6,6 +6,9 @@
 /* Define this if you want to include Mac OSX restore compatibility. */
 #undef DUMP_MACOSX
 
+/* Define this if you have the blkid library. */
+#undef HAVE_BLKID
+
 /* Define this if you have bzlib compression library. */
 #undef HAVE_BZLIB
 

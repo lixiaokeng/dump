@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.251 2004/07/01 09:14:48 stelian Exp $
+$Id: CHANGES,v 1.252 2004/07/05 15:02:32 stelian Exp $
 
 Changes between versions 0.4b36 and 0.4b37 (released ??????????????)
 ====================================================================
@@ -25,6 +25,9 @@ Changes between versions 0.4b36 and 0.4b37 (released ??????????????)
 	lead to "bread lseek errors" on large filesystems. Thanks
 	to Bruce Lowekamp <lowekamp@users.sourceforge.net> for
 	reporting this bug and debugging the issue.
+
+5.	Made dump use the blkid library when searching for devices
+	by label or uuid instead of dump's own routines.
 
 Changes between versions 0.4b35 and 0.4b36 (released April 21, 2004)
 ====================================================================
