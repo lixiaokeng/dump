@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.67 2000/06/30 09:00:38 stelian Exp $
+$Id: CHANGES,v 1.68 2000/06/30 09:12:14 stelian Exp $
 
 Changes between versions 0.4b17 and 0.4b18 (released June 30, 2000)
 ===================================================================
@@ -24,6 +24,11 @@ Changes between versions 0.4b17 and 0.4b18 (released June 30, 2000)
 	now. Users who need the suid-root capabilities in order
 	to make network backups should read first the man page
 	of dump and enable the suid bit manually.
+
+5.	Added -ltermcap to the compile parameters for restore
+	when using readline support, in order to make the compile
+	process work on some systems (SuSE ?). Thanks to 
+	Patrik Schindler <poc@pocnet.net> for reporting the bug.
 
 Changes between versions 0.4b16 and 0.4b17 (released June 1st, 2000)
 ====================================================================

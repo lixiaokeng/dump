@@ -1358,7 +1358,7 @@ if test "${enable_readline+set}" = set; then
 then
 	READLINE=""
 else
-	READLINE="-lreadline"
+	READLINE="-lreadline -ltermcap"
 	cat >> confdefs.h <<\EOF
 #define HAVE_READLINE 1
 EOF

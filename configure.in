@@ -100,7 +100,7 @@ if test "$enableval" = "no"
 then
 	READLINE=""
 else
-	READLINE="-lreadline"
+	READLINE="-lreadline -ltermcap"
 	AC_DEFINE(HAVE_READLINE)
 fi
 ,
