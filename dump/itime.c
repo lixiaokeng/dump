@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: itime.c,v 1.22 2002/01/25 15:08:59 stelian Exp $";
+	"$Id: itime.c,v 1.23 2002/08/01 10:23:26 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -56,6 +56,7 @@ static const char rcsid[] =
 #include <sys/param.h>
 #include <sys/time.h>
 #include <time.h>
+#include <fcntl.h>
 #ifdef	__linux__
 #ifdef HAVE_EXT2FS_EXT2_FS_H
 #include <ext2fs/ext2_fs.h>
@@ -94,6 +95,7 @@ void
 initdumptimes(int createdumpdates)
 {
 	FILE *df;
+	struct flock lock;
 
 	if ((df = fopen(dumpdates, "r")) == NULL) {
 		if (errno != ENOENT) {
@@ -122,7 +124,11 @@ initdumptimes(int createdumpdates)
 			msg("WARNING: no file `%s'\n", dumpdates);
 	}
 	if (df != NULL) {
-		(void) flock(fileno(df), LOCK_SH);
+		memset(&lock, 0, sizeof(lock));
+		lock.l_type = F_RDLCK;
+		if (fcntl(fileno(df), F_SETLKW, &lock) < 0)
+			quit("cannot set read lock on %s: %s\n",
+				dumpdates, strerror(errno));
 		readdumptimes(df);
 		(void) fclose(df);
 	}
@@ -200,13 +206,17 @@ putdumptime(void)
 	struct dumpdates *dtwalk;
 	int i;
 	int fd;
+	struct flock lock;
 
 	if(uflag == 0)
 		return;
 	if ((df = fopen(dumpdates, "r+")) == NULL)
 		quit("cannot rewrite %s: %s\n", dumpdates, strerror(errno));
 	fd = fileno(df);
-	(void) flock(fd, LOCK_EX);
+	memset(&lock, 0, sizeof(lock));
+	lock.l_type = F_WRLCK;
+	if (fcntl(fd, F_SETLKW, &lock) < 0)
+		quit("cannot set write lock on %s: %s\n", dumpdates, strerror(errno));
 	free((char *)ddatev);
 	ddatev = 0;
 	nddates = 0;
