@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.170 2002/04/04 08:20:19 stelian Exp $
+$Id: CHANGES,v 1.171 2002/04/11 14:52:07 stelian Exp $
 
 Changes between versions 0.4b27 and 0.4b28 (released ?????????????????)
 =======================================================================
@@ -26,7 +26,7 @@ Changes between versions 0.4b27 and 0.4b28 (released ?????????????????)
 5.	Removed the inclusion of some kernel headers in the dump
 	source, which prevented the compile in some kernel/glibc
 	headers/architecture combination. Thanks to Bdale Garbee
-	<bdale@gag.com> for reporting the bug.
+	<bdale@gag.com> for reporting the bug. 
 
 6.	Added the appropriate error message when dump fails to
 	open the output file for writing. Thanks to Amith Varghese
