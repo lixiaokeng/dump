@@ -10,6 +10,7 @@ License: BSD
 Group: Applications/Archiving
 Source: http://download.sourceforge.net/dump/dump-%{version}.tar.gz
 Requires: rmt
+BuildRequires: e2fsprogs-devel
 BuildRoot: %{_tmppath}/%{name}-root
 
 %description
