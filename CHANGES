@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.33 2000/01/09 23:47:29 tiniou Exp $
+$Id: CHANGES,v 1.34 2000/01/11 12:32:53 tiniou Exp $
 
 Changes between versions 0.4b12 and 0.4b13 (released ???????????????)
 =====================================================================
@@ -14,6 +14,10 @@ Changes between versions 0.4b12 and 0.4b13 (released ???????????????)
 	causing dump to block when dumping really huge filesystems.
 	Many thanks to Patrik Schindler <poc@pocnet.net> for 
 	helping me find this bug.
+
+4.	Fix the treatment for an interrupt signal when dump access
+	the remote tape through RSH. Thanks to Christian Weisgerber
+	<naddy@mips.rhein-neckar.de> for providing the patch.
 
 Changes between versions 0.4b11 and 0.4b12 (released January 8, 2000)
 =====================================================================

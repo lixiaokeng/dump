@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dumprmt.c,v 1.8 1999/11/02 09:35:56 tiniou Exp $";
+	"$Id: dumprmt.c,v 1.9 2000/01/11 12:33:44 tiniou Exp $";
 #endif /* not lint */
 
 #ifdef __linux__
@@ -450,6 +450,7 @@ int piped_child(const char **command) {
 			msg ("cannot dup2 pipe: %s\n", strerror(errno));
 			exit(1);
 		}
+		setpgid(0, getpid());
 		execvp (command[0], (char *const *) command);
 		msg("cannot exec %s: %s\n", command[0], strerror(errno));
 		exit(1);
