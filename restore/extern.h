@@ -39,7 +39,7 @@
  * SUCH DAMAGE.
  *
  *	@(#)extern.h	8.2 (Berkeley) 1/7/94
- *	$Id: extern.h,v 1.3 1999/10/11 12:59:20 stelian Exp $
+ *	$Id: extern.h,v 1.4 1999/10/11 13:08:09 stelian Exp $
  */
 
 struct entry	*addentry __P((char *, ino_t, int));
@@ -119,3 +119,7 @@ int		rmtioctl __P((int, int));
 int		rmtopen __P((const char *, int));
 int		rmtread __P((const char *, int));
 int		rmtseek __P((int, int));
+
+/* From e2fsprogs */
+int fsetflags __P((const char *, unsigned long));
+int setflags __P((int, unsigned long));

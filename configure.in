@@ -20,22 +20,6 @@ AC_PROG_CC
 AC_PROG_INSTALL
 
 dnl
-dnl Handle --enable-dumpdates-patch
-dnl
-AC_ARG_ENABLE([dumpdates-patch],
-[  --enable-dumpdates-patch apply the dumpdates patch from Debian],
-if test "$enableval" = "yes"
-then
-	if test "$PATCH" = ":"
-	then
-		AC_MSG_ERROR(The patch program was not found on your system)
-	fi
-	(cd $srcdir; $PATCH -p < debian-patch)
-fi
-,
-)
-
-dnl
 dnl Handle --enable-debug
 dnl
 AC_ARG_ENABLE([debug],
@@ -208,6 +192,18 @@ echo "MANMODE defaults to $MANMODE"
 AC_SUBST(MANMODE)
 
 dnl
+dnl set $(DUMPDATESPATH) from --with-dumpdatespath
+dnl
+AC_ARG_WITH([dumpdatespath],
+[  --with-dumpdatespath=path     select path for dumpdates file],
+AC_MSG_RESULT(DUMPDATESPATH is $withval)
+DUMPDATESPATH=$withval,
+DUMPDATESPATH="/etc/dumpdates"
+echo "DUMPDATESPATH defaults to $DUMPDATESPATH"
+)dnl
+AC_SUBST(DUMPDATESPATH)
+
+dnl
 dnl Check for Ext2fs headers and libraries
 dnl
 AC_CHECK_HEADER(ext2fs/ext2fs.h, [ext2fs_h=yes], [ext2fs_h=no])
@@ -242,4 +238,4 @@ test -d compat/lib || mkdir compat/lib
 dnl
 dnl Output files
 dnl
-AC_OUTPUT(MCONFIG Makefile common/Makefile compat/lib/Makefile dump/Makefile restore/Makefile $RMTMAKEFILE)
+AC_OUTPUT(MCONFIG Makefile common/Makefile compat/include/Makefile compat/lib/Makefile dump/Makefile restore/Makefile $RMTMAKEFILE)

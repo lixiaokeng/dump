@@ -49,7 +49,7 @@
 static char sccsid[] = "@(#)tape.c	8.9 (Berkeley) 5/1/95";
 #endif
 static const char rcsid[] =
-	"$Id: tape.c,v 1.3 1999/10/11 12:59:21 stelian Exp $";
+	"$Id: tape.c,v 1.4 1999/10/11 13:08:10 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -602,10 +602,11 @@ extractfile(char *name)
 		}
 		(void) chown(name, curfile.dip->di_uid, curfile.dip->di_gid);
 		(void) chmod(name, mode);
+		if (flags)
 #ifdef  __linux__
-		(void) fsetflags(name, flags);
+			(void) fsetflags(name, flags);
 #else
-		(void) chflags(name, flags);
+			(void) chflags(name, flags);
 #endif
 		skipfile();
 		utimes(name, timep);
@@ -627,10 +628,14 @@ extractfile(char *name)
 		}
 		(void) chown(name, curfile.dip->di_uid, curfile.dip->di_gid);
 		(void) chmod(name, mode);
+		if (flags)
 #ifdef	__linux__
-		(void) fsetflags(name, flags);
+			{
+			warn("%s: fsetflags called on a special file", name);
+			(void) fsetflags(name, flags);
+			}
 #else
-		(void) chflags(name, flags);
+			(void) chflags(name, flags);
 #endif
 		skipfile();
 		utimes(name, timep);
@@ -652,10 +657,11 @@ extractfile(char *name)
 		}
 		(void) fchown(ofile, curfile.dip->di_uid, curfile.dip->di_gid);
 		(void) fchmod(ofile, mode);
+		if (flags)
 #ifdef	__linux__
-		(void) fsetflags(ofile, flags);
+			(void) setflags(ofile, flags);
 #else
-		(void) fchflags(ofile, flags);
+			(void) fchflags(ofile, flags);
 #endif
 		getfile(xtrfile, xtrskip);
 		(void) close(ofile);

@@ -44,7 +44,7 @@
 static char sccsid[] = "@(#)itime.c	8.1 (Berkeley) 6/5/93";
 #endif
 static const char rcsid[] =
-	"$Id: itime.c,v 1.3 1999/10/11 12:59:18 stelian Exp $";
+	"$Id: itime.c,v 1.4 1999/10/11 13:08:07 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -93,7 +93,7 @@ static	int makedumpdate __P((struct dumpdates *, char *));
 static	void readdumptimes __P((FILE *));
 
 void
-initdumptimes(void)
+initdumptimes(int createdumpdates)
 {
 	FILE *df;
 
@@ -103,25 +103,31 @@ initdumptimes(void)
 			    strerror(errno));
 			/* NOTREACHED */
 		}
-		/*
-		 * Dumpdates does not exist, make an empty one.
-		 */
-		msg("WARNING: no file `%s', making an empty one\n", dumpdates);
-		if ((df = fopen(dumpdates, "w")) == NULL) {
-			quit("cannot create %s: %s\n", dumpdates,
-			    strerror(errno));
-			/* NOTREACHED */
+		if (createdumpdates) {
+			/*
+		 	 * Dumpdates does not exist, make an empty one.
+		 	 */
+			msg("WARNING: no file `%s', making an empty one\n", dumpdates);
+			if ((df = fopen(dumpdates, "w")) == NULL) {
+				quit("cannot create %s: %s\n", dumpdates,
+			    	strerror(errno));
+				/* NOTREACHED */
+			}
+			(void) fclose(df);
+			if ((df = fopen(dumpdates, "r")) == NULL) {
+				quit("cannot read %s even after creating it: %s\n",
+			    	dumpdates, strerror(errno));
+				/* NOTREACHED */
+			}
 		}
-		(void) fclose(df);
-		if ((df = fopen(dumpdates, "r")) == NULL) {
-			quit("cannot read %s even after creating it: %s\n",
-			    dumpdates, strerror(errno));
-			/* NOTREACHED */
-		}
+		else
+			msg("WARNING: no file `%s'\n", dumpdates);
 	}
-	(void) flock(fileno(df), LOCK_SH);
-	readdumptimes(df);
-	(void) fclose(df);
+	if (df != NULL) {
+		(void) flock(fileno(df), LOCK_SH);
+		readdumptimes(df);
+		(void) fclose(df);
+	}
 }
 
 static void
@@ -152,7 +158,7 @@ readdumptimes(FILE *df)
 }
 
 void
-getdumptime(void)
+getdumptime(int createdumpdates)
 {
 	register struct dumpdates *ddp;
 	register int i;
@@ -169,10 +175,11 @@ getdumptime(void)
 	/* if we're not going to update dumpdates, there's no point in reading
 	   it, particularly since /var might not be mounted... wait until here
 	   to benefit from the initialization of variables needed by parent */
-	if (uflag == 0)
+	if (!uflag && level == lastlevel)
 		return;
-
-	initdumptimes();
+	initdumptimes(createdumpdates);
+	if (ddatev == NULL)
+		return;
 	/*
 	 *	Go find the entry with the same name for a lower increment
 	 *	and older date

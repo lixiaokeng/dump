@@ -8,6 +8,7 @@
 
 #include <config.h>
 #include <sys/time.h>
+#include <dirent.h>
 
 #define	__dead		volatile
 
@@ -107,7 +108,9 @@ struct dinode {
  * This is the 4.4BSD directory entry structure
  */
 #define DIRBLKSIZ	DEV_BSIZE
+#ifndef MAXNAMLEN
 #define MAXNAMLEN	255
+#endif
 
 struct direct {
 	__u32	d_ino;
@@ -120,19 +123,6 @@ struct direct {
 #endif
 	char		d_name[MAXNAMLEN + 1];
 };
-
-/*
- * File types
- */
-#define DT_UNKNOWN	 0
-#define DT_FIFO		 1
-#define DT_CHR		 2
-#define DT_DIR		 4
-#define DT_BLK		 6
-#define DT_REG		 8
-#define DT_LNK		10
-#define DT_SOCK		12
-#define	DT_WHT		14
 
 /*
  * Convert between stat structure types and directory types.

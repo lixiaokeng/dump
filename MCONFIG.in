@@ -2,6 +2,9 @@ VPATH=		$(srcdir)
 
 top_builddir=	@top_builddir@
 
+VERSION=	dump 0.4b7
+DATE=		October 8, 1999
+
 AR=		@AR@
 CC=		@CC@
 INSTALL=	@INSTALL@
@@ -24,6 +27,7 @@ INSTALLMAN=	$(INSTALL) -o $(MANOWNER) -g $(MANGRP) -m $(MANMODE)
 BINDIR=		/sbin
 MANDIR=		/usr/man/man8
 
+DUMPDATESPATH=	@DUMPDATESPATH@
 #
 # Global include directories
 #

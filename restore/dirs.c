@@ -49,7 +49,7 @@
 static char sccsid[] = "@(#)dirs.c	8.7 (Berkeley) 5/1/95";
 #endif
 static const char rcsid[] =
-	"$Id: dirs.c,v 1.3 1999/10/11 12:59:19 stelian Exp $";
+	"$Id: dirs.c,v 1.4 1999/10/11 13:08:08 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -658,10 +658,11 @@ setdirmodes(int flags)
 			cp = myname(ep);
 			(void) chown(cp, node.uid, node.gid);
 			(void) chmod(cp, node.mode);
+			if (node.flags)
 #ifdef	__linux__
-			(void) setflags(cp, node.flags);
+				(void) fsetflags(cp, node.flags);
 #else
-			(void) chflags(cp, node.flags);
+				(void) chflags(cp, node.flags);
 #endif
 			utimes(cp, node.timep);
 			ep->e_flags &= ~NEW;

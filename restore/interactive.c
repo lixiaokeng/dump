@@ -44,7 +44,7 @@
 static char sccsid[] = "@(#)interactive.c	8.5 (Berkeley) 5/1/95";
 #endif
 static const char rcsid[] =
-	"$Id: interactive.c,v 1.3 1999/10/11 12:59:20 stelian Exp $";
+	"$Id: interactive.c,v 1.4 1999/10/11 13:08:09 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -561,12 +561,12 @@ printlist(char *name, char *basename)
 			     strcmp(dp->d_name, "..") == 0))
 				continue;
 			locname[namelen] = '\0';
-			if (namelen + dp->d_namlen >= MAXPATHLEN) {
+			if (namelen + strlen(dp->d_name) >= MAXPATHLEN) {
 				fprintf(stderr, "%s%s: name exceeds %d char\n",
 					locname, dp->d_name, MAXPATHLEN);
 			} else {
 				(void) strncat(locname, dp->d_name,
-				    (int)dp->d_namlen);
+				    (int)strlen(dp->d_name));
 				mkentry(locname, dp, listp++);
 				entries++;
 			}
@@ -633,9 +633,12 @@ mkentry(char *name, struct direct *dp, struct afile *fp)
 		fp->postfix = '#';
 		break;
 
+#ifndef __linux__
+	/* no need for this */
 	case DT_WHT:
 		fp->postfix = '%';
 		break;
+#endif
 
 	case DT_UNKNOWN:
 	case DT_DIR:
@@ -717,26 +720,20 @@ formatf(struct afile *list, int nentry)
  * Skip over directory entries that are not on the tape
  *
  * First have to get definition of a dirent.
+ *
+ * For Linux the dirent struct is now included from bsdcompat.h
  */
-#ifdef	__linux__
-struct dirent {
-	off_t           d_off;          /* offset of next disk dir entry */
-        unsigned long   d_fileno;       /* file number of entry */
-        unsigned short  d_reclen;       /* length of this record */
-        unsigned short  d_namlen;       /* length of string in d_name */
-        char            d_name[255+1];  /* name (up to MAXNAMLEN + 1) */
-};
-#else	/* __linux__ */
+#ifndef	__linux__
 #undef DIRBLKSIZ
 #include <dirent.h>
 #undef d_ino
-#endif	/* __linux__ */
+#endif	/* ! __linux__ */
 
 struct dirent *
 glob_readdir(RST_DIR *dirp)
 {
 	struct direct *dp;
-	static struct dirent adirent;
+	static struct dirent adirent; 
 
 	while ((dp = rst_readdir(dirp)) != NULL) {
 		if (!vflag && dp->d_ino == WINO)
@@ -747,7 +744,6 @@ glob_readdir(RST_DIR *dirp)
 	if (dp == NULL)
 		return (NULL);
 	adirent.d_fileno = dp->d_ino;
-	adirent.d_namlen = dp->d_namlen;
 	memmove(adirent.d_name, dp->d_name, dp->d_namlen + 1);
 	return (&adirent);
 }
@@ -759,7 +755,6 @@ static int
 glob_stat(const char *name, struct stat *stp)
 {
 	register struct direct *dp;
-
 	dp = pathsearch(name);
 	if (dp == NULL || (!dflag && TSTINO(dp->d_ino, dumpmap) == 0) ||
 	    (!vflag && dp->d_ino == WINO))

@@ -44,7 +44,7 @@
 static char sccsid[] = "@(#)tape.c	8.4 (Berkeley) 5/1/95";
 #endif
 static const char rcsid[] =
-	"$Id: tape.c,v 1.3 1999/10/11 12:59:19 stelian Exp $";
+	"$Id: tape.c,v 1.4 1999/10/11 13:08:08 stelian Exp $";
 #endif /* not lint */
 
 #ifdef __linux__
@@ -270,10 +270,19 @@ do_stats(void)
 	time_t tnow, ttaken;
 	int blocks;
 
+#ifdef __linux__
+	(void)time4(&tnow);
+#else
 	(void)time(&tnow);
+#endif
 	ttaken = tnow - tstart_volume;
 	blocks = spcl.c_tapea - tapea_volume;
-	msg("Volume %d completed at: %s", tapeno, ctime(&tnow));
+	msg("Volume %d completed at: %s", tapeno, 
+#ifdef __linux__
+					  ctime4(&tnow));
+#else
+					  ctime(&tnow));
+#endif
 	if (ttaken > 0) {
 		msg("Volume %d took %d:%02d:%02d\n", tapeno,
 			ttaken / 3600, (ttaken % 3600) / 60, ttaken % 60);
@@ -299,7 +308,11 @@ statussig(int notused)
 
 	if (blockswritten < 500)
 		return;
+#ifdef __linux__
+	(void) time4(&tnow);
+#else
 	(void) time((time_t *) &tnow);
+#endif
 	deltat = tstart_writing - tnow + (1.0 * (tnow - tstart_writing))
 		/ blockswritten * tapesize;
 	(void)snprintf(msgbuf, sizeof(msgbuf),
@@ -445,17 +458,10 @@ trewind(void)
 void
 close_rewind(void)
 {
-	time_t tstart_changevol, tend_changevol;
-
 	trewind();
 	(void)do_stats();
 	if (nexttape)
 		return;
-#ifdef  __linux__
-        (void)time4(&(tstart_changevol));
-#else
-	(void)time((time_t *)&(tstart_changevol));
-#endif
 	if (!nogripe) {
 		msg("Change Volumes: Mount volume #%d\n", tapeno+1);
 		broadcast("CHANGE DUMP VOLUMES!\7\7\n");
@@ -465,13 +471,6 @@ close_rewind(void)
 			dumpabort(0);
 			/*NOTREACHED*/
 		}
-#ifdef  __linux__
-	(void)time4(&(tend_changevol));
-#else
-	(void)time((time_t *)&(tend_changevol));
-#endif
-	if ((tstart_changevol != (time_t)-1) && (tend_changevol != (time_t)-1))
-		tstart_writing += (tend_changevol - tstart_changevol);
 }
 
 void
@@ -637,7 +636,11 @@ startnewtape(int top)
 	interrupt_save = signal(SIGINT, SIG_IGN);
 	parentpid = getpid();
 	tapea_volume = spcl.c_tapea;
-	(void)time(&tstart_volume);
+#ifdef __linux__
+	(void)time4(&tstart_volume);
+#else
+	(void)time((&tstart_volume);
+#endif
 
 restore_check_point:
 	(void)signal(SIGINT, interrupt_save);
@@ -750,7 +753,12 @@ restore_check_point:
 		spcl.c_flags |= DR_NEWHEADER;
 		writeheader((ino_t)slp->inode);
 		spcl.c_flags &=~ DR_NEWHEADER;
-		msg("Volume %d started at: %s", tapeno, ctime(&tstart_volume));
+		msg("Volume %d started at: %s", tapeno, 
+#ifdef __linux__
+						ctime4(&tstart_volume));
+#else
+						ctime(&tstart_volume));
+#endif
 		if (tapeno > 1)
 			msg("Volume %d begins with blocks from inode %d\n",
 				tapeno, slp->inode);

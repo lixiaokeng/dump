@@ -4,7 +4,7 @@ top_srcdir=	@top_srcdir@
 @MCONFIG@
 
 RM=		@RM@
-SUBDIRS=	compat/lib common dump restore @RMTDIR@
+SUBDIRS=	compat/lib compat/include common dump restore @RMTDIR@
 
 all clean install dep depend realclean distclean::
 	for i in $(SUBDIRS); do \

@@ -18,17 +18,21 @@ SRCS=		rmt.c
 OBJS=		rmt.o
 MAN8=		rmt.8
 
-all::		$(PROG)
+all::		$(PROG) rmt.8
 
 $(PROG):	$(OBJS) $(DEPLIBS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(PROG) $(OBJS) $(LIBS)
 
-install::	$(PROG)
+rmt.8:		rmt.8.in
+	sed -e "s|__DATE__|$(DATE)|g" \
+	    -e "s|__VERSION__|$(VERSION)|g" $< > $@
+
+install::	all
 	$(INSTALLBIN) $(PROG) $(BINDIR)
 	$(INSTALLMAN) $(srcdir)/$(MAN8) $(MANDIR)
 
 clean::
-	rm -f $(PROG) \#* *.s *.o *.a *~ core
+	rm -f $(PROG) \#* *.s *.o *.a *~ core rmt.8
 
 distclean::	clean
 	rm -f Makefile Makefile.old .depend 

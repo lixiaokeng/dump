@@ -16,12 +16,17 @@ OBJS=		itime.o main.o optr.o tape.o traverse.o unctime.o \
 MAN8=		dump.8
 MLINKS=		dump.8 $(MANDIR)/rdump.8
 
-all::		$(PROG)
+all::		$(PROG) dump.8
 
 $(PROG):	$(OBJS) $(DEPLIBS)
 	$(LD) $(CFLAGS) $(LDFLAGS) -o $(PROG) $(OBJS) $(LIBS)
 
-install::	$(PROG)
+dump.8:		dump.8.in
+	sed -e "s|__DUMPDATES__|$(DUMPDATESPATH)|g" \
+	    -e "s|__DATE__|$(DATE)|g" \
+	    -e "s|__VERSION__|$(VERSION)|g" $< > $@
+
+install::	all
 	$(INSTALLBIN) $(PROG) $(BINDIR)
 	$(INSTALLMAN) $(srcdir)/$(MAN8) $(MANDIR)
 	@set $(LINKS) $(MLINKS); \
@@ -36,7 +41,7 @@ install::	$(PROG)
 	done; true
 
 clean::
-	$(RM) -f $(PROG) \#* *.s *.o *.a *~ core
+	$(RM) -f $(PROG) \#* *.s *.o *.a *~ core dump.8
 
 distclean::	clean
 	$(RM) -f Makefile Makefile.old .depend

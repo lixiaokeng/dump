@@ -42,7 +42,7 @@
 
 #if defined(LIBC_RCS) && !defined(lint)
 static const char rcsid[] =
-	"$Id: compaterr.c,v 1.1 1999/10/11 12:59:17 stelian Exp $";
+	"$Id: compaterr.c,v 1.2 1999/10/11 13:08:07 stelian Exp $";
 #endif /* LIBC_RCS and not lint */
 
 #include <compaterr.h>

@@ -44,7 +44,7 @@
 static char sccsid[] = "@(#)optr.c	8.2 (Berkeley) 1/6/94";
 #endif
 static const char rcsid[] =
-	"$Id: optr.c,v 1.3 1999/10/11 12:59:19 stelian Exp $";
+	"$Id: optr.c,v 1.4 1999/10/11 13:08:08 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -60,6 +60,7 @@ static const char rcsid[] =
 #include <stdarg.h>
 #include <unistd.h>
 #include <utmp.h>
+#include <sys/stat.h>
 
 #ifdef __linux__
 #include <linux/ext2_fs.h>
@@ -97,7 +98,11 @@ query(const char *question)
 	FILE	*mytty;
 	time_t	firstprompt, when_answered;
 
-	firstprompt = time(NULL);
+#ifdef __linux__
+	(void)time4(&(firstprompt));
+#else
+	(void)time((time_t *)&(firstprompt));
+#endif
 
 	if ((mytty = fopen(_PATH_TTY, "r")) == NULL)
 		quit("fopen on %s fails: %s\n", _PATH_TTY, strerror(errno));
@@ -130,12 +135,16 @@ query(const char *question)
 	if (signal(SIGALRM, sig) == SIG_IGN)
 		signal(SIGALRM, SIG_IGN);
 	(void) fclose(mytty);
-	when_answered = time(NULL);
+#ifdef __linux__
+	(void)time4(&(when_answered));
+#else
+	(void)time((time_t *)&(when_answered));
+#endif
 	/*
 	 * Adjust the base for time estimates to ignore time we spent waiting
 	 * for operator input.
 	 */
-	if (tstart_writing != 0)
+	if ((tstart_writing != 0) && (when_answered != (time_t)-1) && (firstprompt != (time_t)-1))
 		tstart_writing += (when_answered - firstprompt);
 	return(back);
 }
@@ -314,7 +323,11 @@ timeest(void)
 {
 	time_t	tnow, deltat;
 
+#ifdef __linux__
+	(void) time4(&tnow);
+#else
 	(void) time((time_t *) &tnow);
+#endif
 	if (tnow >= tschedule) {
 		tschedule = tnow + 300;
 		if (blockswritten < 500)
@@ -501,6 +514,10 @@ fstabsearchdir(const char *key, char *directory)
 	register struct fstab *fs;
 	register struct fstab *found_fs = NULL;
 	unsigned int size = 0;
+	struct stat buf;
+
+	if (stat(key, &buf) == 0 && S_ISBLK(buf.st_mode))
+		return NULL;
 
 	for (pf = table; pf != NULL; pf = pf->pf_next) {
 		fs = pf->pf_fstab;
@@ -534,40 +551,42 @@ lastdump(char arg) /* w ==> just what to do; W ==> most recent dumps */
 {
 	register int i;
 	register struct fstab *dt;
-	register struct dumpdates *dtwalk;
+	register struct dumpdates *dtwalk=NULL;
 	char *lastname, *date;
 	int dumpme;
 	time_t tnow;
 
 	(void) time(&tnow);
 	getfstab();		/* /etc/fstab input */
-	initdumptimes();	/* /etc/dumpdates input */
-	qsort((char *) ddatev, nddates, sizeof(struct dumpdates *), datesort);
+	initdumptimes(0);	/* dumpdates input */
+	if (ddatev != NULL) {
+		qsort((char *) ddatev, nddates, sizeof(struct dumpdates *), datesort);
 
-	if (arg == 'w')
-		(void) printf("Dump these file systems:\n");
-	else
-		(void) printf("Last dump(s) done (Dump '>' file systems):\n");
-	lastname = "??";
-	ITITERATE(i, dtwalk) {
-		if (strncmp(lastname, dtwalk->dd_name,
-		    sizeof(dtwalk->dd_name)) == 0)
-			continue;
-		date = (char *)ctime(&dtwalk->dd_ddate);
-		date[16] = '\0';	/* blast away seconds and year */
-		lastname = dtwalk->dd_name;
-		dt = fstabsearch(dtwalk->dd_name);
-		dumpme = (dt != NULL &&
-		    dt->fs_freq != 0 &&
-		    dtwalk->dd_ddate < tnow - (dt->fs_freq * 86400));
-		if (arg != 'w' || dumpme)
-			(void) printf(
-			    "%c %8s\t(%6s) Last dump: Level %c, Date %s\n",
-			    dumpme && (arg != 'w') ? '>' : ' ',
-			    dtwalk->dd_name,
-			    dt ? dt->fs_file : "",
-			    dtwalk->dd_level,
-			    date);
+		if (arg == 'w')
+			(void) printf("Dump these file systems:\n");
+		else
+			(void) printf("Last dump(s) done (Dump '>' file systems):\n");
+		lastname = "??";
+		ITITERATE(i, dtwalk) {
+			if (strncmp(lastname, dtwalk->dd_name,
+		    		sizeof(dtwalk->dd_name)) == 0)
+				continue;
+			date = (char *)ctime(&dtwalk->dd_ddate);
+			date[16] = '\0';	/* blast away seconds and year */
+			lastname = dtwalk->dd_name;
+			dt = fstabsearch(dtwalk->dd_name);
+			dumpme = (dt != NULL &&
+		    		dt->fs_freq != 0 &&
+		    		dtwalk->dd_ddate < tnow - (dt->fs_freq * 86400));
+			if (arg != 'w' || dumpme)
+				(void) printf(
+			    		"%c %8s\t(%6s) Last dump: Level %c, Date %s\n",
+			    		dumpme && (arg != 'w') ? '>' : ' ',
+			    		dtwalk->dd_name,
+			    		dt ? dt->fs_file : "",
+			    		dtwalk->dd_level,
+			   		date);
+		}
 	}
 }
 

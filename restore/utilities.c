@@ -44,7 +44,7 @@
 static char sccsid[] = "@(#)utilities.c	8.5 (Berkeley) 4/28/95";
 #endif
 static const char rcsid[] =
-	"$Id: utilities.c,v 1.3 1999/10/11 12:59:21 stelian Exp $";
+	"$Id: utilities.c,v 1.4 1999/10/11 13:08:10 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -157,7 +157,6 @@ void
 newnode(struct entry *np)
 {
 	char *cp;
-
 	if (np->e_type != NODE)
 		badentry(np, "newnode: not a node");
 	cp = myname(np);

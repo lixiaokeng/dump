@@ -50,7 +50,7 @@ static const char copyright[] =
 static char sccsid[] = "@(#)rmt.c	8.1 (Berkeley) 6/6/93";
 #endif
 static const char rcsid[] =
-	"$Id: rmt.c,v 1.3 1999/10/11 12:59:21 stelian Exp $";
+	"$Id: rmt.c,v 1.4 1999/10/11 13:08:11 stelian Exp $";
 #endif /* not lint */
 
 /*
@@ -80,7 +80,7 @@ int	maxrecsize = -1;
 
 #define	SSIZE	64
 char	device[SSIZE];
-char	count[SSIZE], mode[SSIZE], pos[SSIZE], op[SSIZE];
+char	count[SSIZE], filemode[SSIZE], pos[SSIZE], op[SSIZE];
 
 char	resp[BUFSIZ];
 
@@ -118,14 +118,14 @@ top:
 		if (tape >= 0)
 			(void) close(tape);
 		getstring(device);
-		getstring(mode);
-		DEBUG2("rmtd: O %s %s\n", device, mode);
+		getstring(filemode);
+		DEBUG2("rmtd: O %s %s\n", device, filemode);
 		/*
 		 * XXX the rmt protocol does not provide a means to
 		 * specify the permission bits; allow rw for everyone,
 		 * as modified by the users umask
 		 */
-		tape = open(device, atoi(mode), 0666);
+		tape = open(device, atoi(filemode), 0666);
 		if (tape < 0)
 			goto ioerror;
 		goto respond;

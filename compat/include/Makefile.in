@@ -1,0 +1,24 @@
+top_srcdir=	@top_srcdir@
+srcdir=		@srcdir@
+
+@MCONFIG@
+
+all::		pathnames.h
+
+pathnames.h:	pathnames.h.in
+	sed -e "s|__DUMPDATES__|$(DUMPDATESPATH)|g" $< > $@
+
+install::
+
+clean::
+	$(RM) -f \#* *~ core pathnames.h
+
+distclean::	clean
+	$(RM) -f Makefile Makefile.old .depend
+
+# +++ Dependency line eater +++
+# 
+# Makefile dependencies follow.  This must be the last section in
+# the Makefile.in file
+#
+

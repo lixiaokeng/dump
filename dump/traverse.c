@@ -44,7 +44,7 @@
 static char sccsid[] = "@(#)traverse.c	8.7 (Berkeley) 6/15/95";
 #endif
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.3 1999/10/11 12:59:19 stelian Exp $";
+	"$Id: traverse.c,v 1.4 1999/10/11 13:08:08 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -338,7 +338,7 @@ mapdirs(ino_t maxino, long *tapesize)
 	register int isdir;
 	register char *map;
 	register ino_t ino;
-#ifndef __linux
+#ifndef __linux__
 	register int i;
 	long filesize;
 #endif

@@ -208,8 +208,8 @@ struct	dumptime *dthead;	/* head of the list version */
 int	nddates;		/* number of records (might be zero) */
 int	ddates_in;		/* we have read the increment file */
 struct	dumpdates **ddatev;	/* the arrayfied version */
-void	initdumptimes __P((void));
-void	getdumptime __P((void));
+void	initdumptimes __P((int));
+void	getdumptime __P((int));
 void	putdumptime __P((void));
 #define	ITITERATE(i, ddp) \
 	for (ddp = ddatev[i = 0]; i < nddates; ddp = ddatev[++i])
@@ -229,7 +229,7 @@ extern int errno;
 #endif
 
 #ifdef	__linux__
-#define	DUMP_CURRENT_REV	0
+#define	DUMP_CURRENT_REV	1
 #endif
 
 #ifndef	__linux__

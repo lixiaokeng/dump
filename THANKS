@@ -9,7 +9,8 @@ Kevin Layer <layer@Franz.COM> added the comparison code in restore.
 Doug Paul <dbp@dragonsys.com> helped me to make dump able to backup 2GB+
 filesystems.
 
-David Frey <david@eos.lugs.ch> (the Debian dump maintainer) and the people
+David Frey <david@eos.lugs.ch> (the old Debian dump maintainer), 
+Bdale Garbee <bdale@gag.com> (the new Debian dump maintainer) and the people
 from Red Hat Software provided lots of patches.
 
 Stelian Pop <pop@cybercable.fr> is now the current maintainer (since
@@ -19,7 +20,8 @@ Thanks to people who reported problems with the port, sent patches, and
 suggested various improvements.
 Here is a partial list of them (if I have forgotten someone, please complain):
 
-Bdale Garbee		ndale@gag.com
+Abhijit Dasgupta	abhijit@ans.net
+Eirik Fuller		eirik@netcom.com
 Henry Katz		hkatz@hkatz.dialup.access.net
 Klaus Kudielka		kkudielk@cacofonix.nt.tuwien.ac.at
 Florian La Roche	florian@jurix.jura.uni-sb.de

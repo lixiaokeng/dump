@@ -1,5 +1,53 @@
-Changes between versions 0.4b5 and 0.4b6
-========================================
+Changes between versions 0.4b6 and 0.4b7 (released October 8, 1999)
+===================================================================
+
+1.	Removed the 'k' flag from the restore 'about' text if kerberos
+	was not compiled in.
+
+2.	Prototyped (f)setflags from e2fsprogs and corrected the calls
+	to them (fsetflags takes a char*, setflags an open fd!).
+
+3.	(f)setflags is called only if the flags aren't empty. If the
+	file is a special file, a warning is printed, because changing
+	flags implies opening the device. Normally, a special file
+	should not have any flag... (Debian bug #29775, patch provided
+	by Abhijit Dasgupta <abhijit@ans.net>).
+
+4.	Made possible to dump a file system not mentioned in /etc/fstab.
+	(Debian bug #11904, patch provided by Eirik Fuller <eirik@netcom.com>).
+
+5.	Changed the default behaviour to not create dumpdates
+	unless 'u' option is specified. Removed the old "debian-patch"
+	which provided the same thing. (Debian bug #38136, #33818).
+
+6.	Removed all those dump*announce, since they were getting old...
+
+7.	Added warning messages if dumpdates does not exist and
+	when an inferior level dump does not exist (except for a level 0
+	dump).
+
+8.	Debugged the glob calls in interactive mode: restore used a 
+	dirent struct which was different from the /usr/include/dirent.h
+	one (this used to work, is it a glibc2 change?), so none of the 
+	compat glob (which used /usr/include/dirent.h) or the system glob 
+	worked. Restore use now the system dirent (and the system 
+	DT_* constants), which are compatible with BSD ones.
+
+9.	Added a configure flag (--with-dumpdatespath) to specify
+	the location of dumpdates file. By default, it is 
+	/etc/dumpdates.
+
+10.	Added the "AUTHOR" and "AVAILABILITY" sections and 
+	included the current date/version in man pages.
+
+11.	Corrected the estimation of remaining time when
+	the operator doesn't change the tapes quickly enough. This
+	was an old bug, I thought I corrected it, and discovered
+	that in fact it was corrected in two different places, so
+	the results canceled each other...
+
+Changes between versions 0.4b5 and 0.4b6 (released October 1, 1999)
+===================================================================
 
 1.	Integrated multiple patches from RedHat, Debian and SuSE:
 
@@ -14,13 +62,19 @@ Changes between versions 0.4b5 and 0.4b6
 	- workaround egcs bug (RedHat bugs #4281 and #2989).
 	- wire $(OPT) throughout Makefile's.
 
-2.	Fix some compile warnings, prototype all functions.
+2.	Upgrade the dump revision to 1, making possible to dump filesystems
+	made with e2fsprogs-1.15 or newer. Nothing seems to break...
 
-3.	Use glibc err/glob instead of internal compatibility
+3.	Fix some compile warnings, prototype all functions.
+
+4.	Use glibc err/glob instead of internal compatibility
 	routines (only if available).
 
-Changes between versions 0.4b4 and 0.4b5
-========================================
+5.	Fix a compile error on Linux 2.2.7 / libc5 (5.4.44) (patch provided
+	by Bernhard Sadlowski <sadlowsk@mathematik.uni-bielefeld.de>).
+
+Changes between versions 0.4b4 and 0.4b5 (released September 22, 1999)
+======================================================================
 
 1.	Integrated the changes from FreeBSD-3.1-RELEASE
 	(mostly bug fixes, buffer overruns, dump has now an "automatic
@@ -37,8 +91,8 @@ Changes between versions 0.4b4 and 0.4b5
 4.	Corrected the long standing bug when dumping multiple tapes.
 	This works for me, needs further testing.
 
-Changes between versions 0.4b3 and 0.4b4
-========================================
+Changes between versions 0.4b3 and 0.4b4 (released January 17, 1997)
+====================================================================
 
 1.	Dump now runs correctly on kernels 2.1.x
 	Fix made by Gerald Peters <gapeters@worldnet.att.net>

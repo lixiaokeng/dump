@@ -50,7 +50,7 @@ static const char copyright[] =
 static char sccsid[] = "@(#)main.c	8.6 (Berkeley) 5/1/95";
 #endif
 static const char rcsid[] =
-	"$Id: main.c,v 1.3 1999/10/11 12:59:18 stelian Exp $";
+	"$Id: main.c,v 1.4 1999/10/11 13:08:07 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -343,7 +343,6 @@ main(int argc, char *argv[])
 		signal(SIGTERM, sig);
 	if (signal(SIGINT, interrupt) == SIG_IGN)
 		signal(SIGINT, SIG_IGN);
-
 	set_operators();	/* /etc/group snarfed */
 	getfstab();		/* /etc/fstab snarfed */
 	/*
@@ -394,10 +393,17 @@ main(int argc, char *argv[])
 	spcl.c_level = level - '0';
 	spcl.c_type = TS_TAPE;
 	if (!Tflag)
-	        getdumptime();		/* dumpdates snarfed */
+	        getdumptime(uflag);		/* dumpdates snarfed */
+
+	if (spcl.c_ddate == 0 && spcl.c_level) {
+		msg("WARNING: There is no inferior level dump on this filesystem\n"); 
+		msg("WARNING: Assuming a level 0 dump by default\n");
+		level = '0';
+		spcl.c_level = 0;
+	}
 
 	msg("Date of this level %c dump: %s", level,
-#ifdef	__linux
+#ifdef	__linux__
 		spcl.c_date == 0 ? "the epoch\n" : ctime4(&spcl.c_date));
 #else
 		spcl.c_date == 0 ? "the epoch\n" : ctime(&spcl.c_date));
@@ -550,7 +556,11 @@ main(int argc, char *argv[])
 	"can't allocate tape buffers - try a smaller blocking factor.\n");
 
 	startnewtape(1);
+#ifdef __linux__
+	(void)time4(&(tstart_writing));
+#else
 	(void)time((time_t *)&(tstart_writing));
+#endif
 	dumpmap(usedinomap, TS_CLRI, maxino - 1);
 
 	msg("dumping (Pass III) [directories]\n");
@@ -595,7 +605,11 @@ main(int argc, char *argv[])
 		(void)dumpino(dp, ino);
 	}
 
+#ifdef __linux__
+	(void)time4(&(tend_writing));
+#else
 	(void)time((time_t *)&(tend_writing));
+#endif
 	spcl.c_type = TS_END;
 	for (i = 0; i < ntrec; i++)
 		writeheader(maxino - 1);

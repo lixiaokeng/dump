@@ -50,7 +50,7 @@ static const char copyright[] =
 static char sccsid[] = "@(#)main.c	8.6 (Berkeley) 5/4/95";
 #endif
 static const char rcsid[] =
-	"$Id: main.c,v 1.3 1999/10/11 12:59:20 stelian Exp $";
+	"$Id: main.c,v 1.4 1999/10/11 13:08:09 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -361,12 +361,17 @@ main(int argc, char *argv[])
 static void
 usage(void)
 {
+#ifdef KERBEROS
+#define kerbflag "k"
+#else
+#define kerbflag
+#endif
 	(void)fprintf(stderr, "usage:\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n",
-	  "restore -i [-chkmuvy] [-b blocksize] [-f file] [-s fileno]",
-	  "restore -r [-ckuvy] [-b blocksize] [-f file] [-s fileno]",
-	  "restore -R [-ckuvy] [-b blocksize] [-f file] [-s fileno]",
-	  "restore -x [-chkmuvy] [-b blocksize] [-f file] [-s fileno] [file ...]",
-	  "restore -t [-chkuvy] [-b blocksize] [-f file] [-s fileno] [file ...]");
+	  "restore -i [-ch" kerbflag "muvy] [-b blocksize] [-f file] [-s fileno]",
+	  "restore -r [-c" kerbflag "uvy] [-b blocksize] [-f file] [-s fileno]",
+	  "restore -R [-c" kerbflag "uvy] [-b blocksize] [-f file] [-s fileno]",
+	  "restore -x [-ch" kerbflag "muvy] [-b blocksize] [-f file] [-s fileno] [file ...]",
+	  "restore -t [-ch" kerbflag "kuvy] [-b blocksize] [-f file] [-s fileno] [file ...]");
 	exit(1);
 }
 

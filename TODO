@@ -5,3 +5,25 @@
 
 2.	Make dump able to backup several directories and/or files in one
 	invocation, like the SunOS version.
+
+3.	Verify that dump works correctly on rev 1 ext2fses (need success
+	reports)
+
+4.	More documentation? Examples, crontab?
+
+5.	Verify that dump works with kerberos authentification (this
+	was ported from *BSD and was not tested - in fact, this
+	wasn't even compiled in!). Need success reports for this.
+
+6.	Explore and correct dump problems on a 4GB+ filesystem.
+
+7.	Clean-up the code by removing all those #ifdef _BSD, 
+	since nobody would ever re-compile this on a BSD system. 
+	Since the tape format is the same, the native BSD
+	restore can be used to restore tapes...
+
+8.	Reimplement the ext2 specific code in a "backend" and
+	make the dump code more generic. This would allow creation
+	of other backends for other filesystems. Implementing a 
+	(v)fat backend should be quite easy, as for BSD ffs (we
+	already have the code for this).
