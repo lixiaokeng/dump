@@ -4,7 +4,7 @@
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *	Stelian Pop <pop@cybercable.fr>, 1999
  *
- *	$Id: bsdcompat.h,v 1.6 1999/10/13 09:57:18 stelian Exp $
+ *	$Id: bsdcompat.h,v 1.7 1999/10/22 18:12:32 tiniou Exp $
  */
 
 #include <config.h>
@@ -111,6 +111,20 @@ struct dinode {
 #define DIRBLKSIZ	DEV_BSIZE
 #ifndef MAXNAMLEN
 #define MAXNAMLEN	255
+#endif
+
+/*
+ * For old libc.
+ */
+#ifndef DT_UNKNOWN
+#define DT_UNKNOWN	 0
+#define DT_FIFO		 1
+#define DT_CHR		 2
+#define DT_DIR		 4
+#define DT_BLK		 6
+#define DT_REG		 8
+#define DT_LNK		10
+#define DT_SOCK		12
 #endif
 
 struct direct {
