@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.117 2001/06/18 10:58:27 stelian Exp $
+$Id: CHANGES,v 1.118 2001/06/18 11:07:45 stelian Exp $
 
 Changes between versions 0.4b22 and 0.4b23 (released ????????????)
 ==================================================================
@@ -13,6 +13,10 @@ Changes between versions 0.4b22 and 0.4b23 (released ????????????)
 	the linux kernel header. This ensures that dump always has the
 	latest version of this file. Patch submitted by
 	Andreas Dilger <adilger@turbolinux.com>.
+
+4.	Report any filesystem present in either /etc/fstab with a 
+	positive passno or /etc/dumpdates in dump -w output.
+	Patch submitted by Andreas Dilger <adilger@turbolinux.com>.
 
 Changes between versions 0.4b21 and 0.4b22 (released May 12, 2001)
 ==================================================================

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: optr.c,v 1.23 2001/06/18 10:58:28 stelian Exp $";
+	"$Id: optr.c,v 1.24 2001/06/18 11:07:45 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -463,7 +463,6 @@ getfstab(void)
 		    strcmp(fs->fs_type, FSTAB_RQ))
 			continue;
 		fs = allocfsent(fs);
-		fs->fs_passno = 0;
 		if ((pf = (struct pfstab *)malloc(sizeof (*pf))) == NULL)
 			quit("%s\n", strerror(errno));
 		pf->pf_fstab = fs;
@@ -559,15 +558,9 @@ static void
 print_wmsg(char arg, int dumpme, const char *dev, int level,
 	   const char *mtpt, time_t ddate)
 {
-	char *date = NULL;
-	
-	if (ddate) {
-		char *d;
-		date = (char *)ctime(&ddate);
-		d = strchr(date, '\n');
-		if (d) *d = '\0';
-	}
-
+#ifdef FDEBUG
+	printf("checking dev %s: lvl %d, mtpt %s\n", dev, level, mtpt);
+#endif
 	if (!dumpme && arg == 'w')
 		return;
 
@@ -576,10 +569,18 @@ print_wmsg(char arg, int dumpme, const char *dev, int level,
 		      dev,
 		      mtpt ? mtpt : "");
 
-	if (ddate)
-		printf("Level %c, Date %s\n",
-		      level, date);
-	else
+	/*
+	 * Check ddate > 365 to avoid issues with fs in stab but not dumpdates.
+	 * Not a problem, because ddate is in seconds since the epoch anyways.
+	 */
+	if (ddate > 365) {
+		char *date, *d;
+
+		date = (char *)ctime(&ddate);
+		d = strchr(date, '\n');
+		if (d) *d = '\0';
+		printf("Level %c, Date %s\n", level, date);
+	} else
 		printf("never\n");
 }
 
@@ -606,6 +607,7 @@ lastdump(char arg) /* w ==> just what to do; W ==> most recent dumps */
 	else
 		(void) printf("Last dump(s) done (Dump '>' file systems):\n");
 
+	/* For files in dumpdates, get the last dump level and date */
 	if (ddatev != NULL) {
 		struct dumpdates *dtwalk = NULL;
 		int i;
@@ -624,16 +626,19 @@ lastdump(char arg) /* w ==> just what to do; W ==> most recent dumps */
 				/* Overload fs_freq as dump level and
 				 * fs_passno as date, because we can't
 				 * change struct fstab format.
-				 * A negative fs_freq means this
+				 * A positive fs_freq means this
 				 * filesystem needs to be dumped.
 				 */
 				dt->fs_passno = dtwalk->dd_ddate;
 				if (dt->fs_freq > 0 && (dtwalk->dd_ddate <
 				    tnow - (dt->fs_freq * 86400)))
-					dt->fs_freq = -dtwalk->dd_level - 1;
+					dt->fs_freq = dtwalk->dd_level;
 				else
-					dt->fs_freq = dtwalk->dd_level + 1;
-
+					dt->fs_freq = -dtwalk->dd_level;
+#ifdef FDEBUG
+				printf("%s fs_freq set to %d\n", lastname,
+					dt->fs_freq);
+#endif
 			}
 		}
 	}
@@ -647,9 +652,10 @@ lastdump(char arg) /* w ==> just what to do; W ==> most recent dumps */
 			if (strncmp(dt->fs_vfstype, *type,
 				    sizeof(dt->fs_vfstype)) == 0) {
 				const char *disk = get_device_name(dt->fs_spec);
-				print_wmsg(arg, dt->fs_freq < 0,
+				print_wmsg(arg, dt->fs_freq > 0,
 					   disk ? disk : dt->fs_spec,
-					   dt->fs_freq < 0 ? -dt->fs_freq - 1 : dt->fs_freq - 1, 
+					   dt->fs_freq < 0 ? -dt->fs_freq :
+							      dt->fs_freq,
 					   dt->fs_file,
 					   dt->fs_passno);
 			}
