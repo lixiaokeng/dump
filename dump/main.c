@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.53 2001/07/19 09:03:44 stelian Exp $";
+	"$Id: main.c,v 1.54 2001/07/19 09:49:35 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1064,7 +1064,7 @@ exclude_ino(dump_ino_t ino)
  * This tests adds an inode to the exclusion list if it isn't already there
  */
 void
-do_exclude_ino(dump_ino_t ino)
+do_exclude_ino(dump_ino_t ino, const char *reason)
 {
 	if (!exclude_ino(ino)) {
 		if (iexclude_num == IEXCLUDE_MAXNUM) {
@@ -1072,7 +1072,11 @@ do_exclude_ino(dump_ino_t ino)
 			msg("The ENTIRE dump is aborted.\n");
 			exit(X_STARTUP);
 		}
-		msg("Added inode %u to exclude list\n", ino);
+		if (reason)
+			msg("Added inode %u to exclude list (%s)\n", 
+			    ino, reason);
+		else
+			msg("Added inode %u to exclude list\n", ino);
 		iexclude_list[iexclude_num++] = ino;
 	}
 }
@@ -1088,7 +1092,7 @@ do_exclude_ino_str(char * ino) {
 		msg("The ENTIRE dump is aborted.\n");
 		exit(X_STARTUP);
 	}
-	do_exclude_ino(inod);
+	do_exclude_ino(inod, NULL);
 }
 
 /*

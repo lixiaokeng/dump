@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.36 2001/07/19 09:03:44 stelian Exp $";
+	"$Id: traverse.c,v 1.37 2001/07/19 09:49:35 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -159,12 +159,9 @@ int dump_fs_open(const char *disk, ext2_filsys *fs)
 		else {
 			if (es->s_feature_compat &
 				EXT3_FEATURE_COMPAT_HAS_JOURNAL && 
-				journal_ino) {
-				msg("Exclude journal inode %u\n",
-				    journal_ino);
-				do_exclude_ino(journal_ino);
-			}
-			do_exclude_ino(EXT2_RESIZE_INO);
+				journal_ino)
+				do_exclude_ino(journal_ino, "journal inode");
+			do_exclude_ino(EXT2_RESIZE_INO, "resize inode");
 		}
 	}
 	return retval;
