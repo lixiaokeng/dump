@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.38 2001/05/12 11:36:12 stelian Exp $";
+	"$Id: tape.c,v 1.39 2001/05/26 11:04:46 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -448,8 +448,8 @@ again:
 			return;
 		}
 		if (buf[0] != '\n') {
-			(void) strcpy(magtape, buf);
-			magtape[strlen(magtape) - 1] = '\0';
+			(void) strncpy(magtape, buf, sizeof(magtape));
+			magtape[sizeof(magtape) - 1] = '\0';
 		}
 	}
 #ifdef RRESTORE

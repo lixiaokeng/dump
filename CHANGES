@@ -1,4 +1,10 @@
-$Id: CHANGES,v 1.114 2001/05/12 11:39:45 stelian Exp $
+$Id: CHANGES,v 1.115 2001/05/26 11:04:46 stelian Exp $
+
+Changes between versions 0.4b22 and 0.4b23 (released ????????????)
+==================================================================
+
+1.	Fixed a buffer overflow in restore/tape.c. Patch provided by
+	Marcus Meissner (Caldera International Security Dept.).
 
 Changes between versions 0.4b21 and 0.4b22 (released May 12, 2001)
 ==================================================================
