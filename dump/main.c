@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.60 2001/09/06 09:00:32 stelian Exp $";
+	"$Id: main.c,v 1.61 2001/11/11 00:06:39 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -107,6 +107,7 @@ int	bzipflag;	/* compression is done using bzlib */
 int	uflag;		/* update flag */
 int	Mflag;		/* multi-volume flag */
 int	qflag;		/* quit on errors flag */
+int     breademax = 32; /* maximum number of bread errors before we quit */
 char	*eot_script;	/* end of volume script fiag */
 int	diskfd;		/* disk file descriptor */
 int	tapefd;		/* tape file descriptor */
@@ -236,7 +237,7 @@ main(int argc, char *argv[])
 #endif /* USE_QFA */
 
 	while ((ch = getopt(argc, argv,
-			    "0123456789aB:b:cd:e:E:f:F:h:"
+			    "0123456789aB:b:cd:e:E:f:F:h:I:"
 #ifdef HAVE_BZLIB
 			    "j::"
 #endif
@@ -332,6 +333,11 @@ main(int argc, char *argv[])
 				compressed = numarg("compress level", 1L, 9L);
 			break;
 #endif /* HAVE_BZLIB */
+
+	        case 'I':
+		        breademax =
+			  numarg ("number of errors to ignore", 1L, 0L);
+			break;
 
 #ifdef KERBEROS
 		case 'k':
@@ -979,6 +985,7 @@ usage(void)
 		"MnqSu"
 		"] [-B records] [-b blocksize] [-d density]\n"
 		"\t%s [-e inode#,inode#,...] [-E file] [-f file] [-h level] "
+		"[-I nr errors] "
 #ifdef HAVE_BZLIB
 		"[-j zlevel] "
 #endif

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.38 2001/08/17 09:55:09 stelian Exp $";
+	"$Id: traverse.c,v 1.39 2001/11/11 00:06:39 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1239,11 +1239,10 @@ getino(dump_ino_t inum)
 /*
  * Read a chunk of data from the disk.
  * Try to recover from hard errors by reading in sector sized pieces.
- * Error recovery is attempted at most BREADEMAX times before seeking
+ * Error recovery is attempted at most breademax times before seeking
  * consent from the operator to continue.
  */
 int	breaderrors = 0;
-#define	BREADEMAX 32
 
 void
 bread(daddr_t blkno, char *buf, int size)
@@ -1282,9 +1281,9 @@ loop:
 	else
 		msg("short read error from %s: [block %d]: count=%d, got=%d\n",
 			disk, blkno, size, cnt);
-	if (++breaderrors > BREADEMAX) {
+	if (++breaderrors > breademax) {
 		msg("More than %d block read errors from %d\n",
-			BREADEMAX, disk);
+			breademax, disk);
 		broadcast("DUMP IS AILING!\n");
 		msg("This is an unrecoverable error.\n");
 		if (!query("Do you want to attempt to continue?")){

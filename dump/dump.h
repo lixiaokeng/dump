@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: dump.h,v 1.32 2001/08/16 15:24:21 stelian Exp $
+ *	$Id: dump.h,v 1.33 2001/11/11 00:06:39 stelian Exp $
  */
 
 /*-
@@ -77,6 +77,7 @@ extern int	bzipflag;	/* compression is done using bzlib */
 extern int	uflag;		/* update flag */
 extern int	Mflag;		/* multi-volume flag */
 extern int	qflag;		/* quit on errors flag */
+extern int      breademax;      /* maximum number of bread errors before we quit */
 extern char	*eot_script;	/* end of volume script fiag */
 extern int	diskfd;		/* disk file descriptor */
 extern int	tapefd;		/* tape file descriptor */

@@ -1,4 +1,4 @@
-$Id: THANKS,v 1.47 2001/09/06 09:00:31 stelian Exp $
+$Id: THANKS,v 1.48 2001/11/11 00:06:39 stelian Exp $
 
 Dump and restore were written by the people of the CSRG at the University
 of California, Berkeley.
@@ -29,6 +29,7 @@ Rob Cermak		cermak@ahab.rutgers.edu
 Isaac Chuang		ike@isl.stanford.edu
 Rainer Clasen		bj@ncc.cicely.de
 W. Reilly Cooley	wcooley@nakedape.cc
+Chris Danis		screechco@home.com
 Abhijit Dasgupta	abhijit@ans.net
 John R. Dennison	gerdesas@users.sourceforge.net
 Andreas Dilger		adilger@turbolinux.com
@@ -44,6 +45,7 @@ Jean-Paul van der Jagt	jeanpaul@dutepp0.et.tudelft.nl
 Helmut Jarausch		jarausch@igpm.rwth-aachen.de
 Eric Jergensen		eric@dvns.com
 Jeff Johnson		jbj@redhat.com
+Richard Jones           rich@annexia.org
 Charles Karney		karney@users.sourceforge.net
 Henry Katz		hkatz@hkatz.dialup.access.net
 Klaus Kudielka		kkudielk@cacofonix.nt.tuwien.ac.at
@@ -60,6 +62,7 @@ Lukas Nellen		L.Nellen@ThPhys.Uni-Heidelberg.DE
 Nuno Oliveira		nuno@eq.uc.pt
 Brent Olson		night@halcyon.com
 Jerry Peters		gapeters@worldnet.att.net
+David B. Peterson	dave@toppledwagon.com
 Dave Platt		dplatt@snulbug.mtview.ca.us
 Kenneth Porter		shiva@well.com
 Graham Reed		greed@users.sourceforge.net

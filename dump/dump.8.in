@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.33 2001/11/10 23:50:59 stelian Exp $
+.\"	$Id: dump.8.in,v 1.34 2001/11/11 00:06:39 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -49,6 +49,7 @@
 .Op Fl f Ar file
 .Op Fl F Ar script
 .Op Fl h Ar level
+.Op Fl I Ar nr errors
 .Op Fl j Ar compression level
 .Op Fl L Ar label
 .Op Fl Q Ar file
@@ -221,6 +222,15 @@ For security reasons,
 .Nm
 reverts back to the real user ID and the real group ID before 
 running the script.
+.It Fl I Ar nr errors
+By default,
+.Nm
+will ignore the first 32 read errors on the file
+system before asking for operator intervention. You can change this
+using this flag to any value. This is useful when running
+.Nm
+on an active filesystem where read errors simply indicate an
+inconsistency between the mapping and dumping passes.
 .It Fl j Ar compression level
 Compress every block to be written on the tape using bzlib library. This
 option will work only when dumping to a file or pipe or, when dumping
@@ -382,7 +392,7 @@ end of tape,
 end of dump,
 tape write error,
 tape open error or
-disk read error (if there is more than a threshold of 32).
+disk read error (if there is more than a threshold of nr errors).
 In addition to alerting all operators implied by the
 .Fl n
 key,
@@ -514,7 +524,8 @@ abnormal termination is indicated with an exit code of 3.
 It might be considered a bug that this version of dump can only handle ext2
 filesystems.  Specifically, it does not work with FAT filesystems.
 .Pp
-Fewer than 32 read errors on the filesystem are ignored. If noticing
+Fewer than 32 read errors (change this with -I)
+on the filesystem are ignored. If noticing
 read errors is important, the output from dump can be parsed to look for lines
 that contain the text 'read error'.
 .Pp
