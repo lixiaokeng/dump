@@ -1,7 +1,7 @@
-$Id: CHANGES,v 1.262 2004/12/15 11:00:00 stelian Exp $
+$Id: CHANGES,v 1.263 2005/01/07 13:30:29 stelian Exp $
 
-Changes between versions 0.4b37 and 0.4b38 (released ????????????)
-==================================================================
+Changes between versions 0.4b37 and 0.4b38 (released January 7, 2005)
+=====================================================================
 
 1.	Fix a couple of troff syntax bugs in the man pages.
 	Thanks to Eric Raymond <esr@thyrsus.com> for the patch.
