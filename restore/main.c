@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.22 2001/04/24 15:04:59 stelian Exp $";
+	"$Id: main.c,v 1.23 2001/04/26 08:59:32 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -118,8 +118,10 @@ main(int argc, char *argv[])
 	FILE *filelist = NULL;
 	char fname[MAXPATHLEN];
 #ifdef USE_QFA
-	time_t tistart, tiend, titaken;
 	tapeposflag = 0;
+#endif
+#ifdef USE_QFADEBUG
+	time_t tistart, tiend, titaken;
 #endif
 
 	/* Temp files should *not* be readable.  We set permissions later. */
@@ -251,7 +253,7 @@ main(int argc, char *argv[])
 
 #ifdef USE_QFA
 	if (!mflag && tapeposflag)
-		errx(1, "m and Q options are mutually exclusive"):
+		errx(1, "m and Q options are mutually exclusive");
 #endif
 
 	if (signal(SIGINT, onintr) == SIG_IGN)
@@ -435,7 +437,7 @@ main(int argc, char *argv[])
 	 * Batch extraction of tape contents.
 	 */
 	case 'x':
-#ifdef USE_QFA
+#ifdef USE_QFADEBUG
 		tistart = time(NULL);
 #endif
 		setup();
@@ -458,14 +460,12 @@ main(int argc, char *argv[])
 		setdirmodes(0);
 		if (dflag)
 			checkrestore();
-#ifdef USE_QFA
+#ifdef USE_QFADEBUG
 		tiend = time(NULL);
 		titaken = tiend - tistart;
-#ifdef USE_QFA
 		msg("restore took %d:%02d:%02d\n", titaken / 3600, 
 			(titaken % 3600) / 60, titaken % 60);
-#endif
-#endif
+#endif /* USE_QFADEBUG */
 		break;
 	}
 	exit(0);
