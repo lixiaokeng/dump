@@ -45,7 +45,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.13 2000/03/02 11:34:51 stelian Exp $";
+	"$Id: tape.c,v 1.14 2000/03/03 11:00:55 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -241,15 +241,11 @@ setup(void)
 		printdumpinfo();
 	if (filesys[0] == '\0') {
 		char *dirptr;
-printf("spcl.c_filesys = %s\n", spcl.c_filesys);
 		strncpy(filesys, spcl.c_filesys, NAMELEN);
 		filesys[NAMELEN - 1] = '\0';
 		dirptr = strstr(filesys, " (dir");
-printf("dirptr = %s\n", dirptr);
 		if (dirptr != NULL)
 			*dirptr = '\0';
-printf("dirptr = %s\n", dirptr);
-printf("filesys = %s\n", filesys);
 	}
 	dumptime = spcl.c_ddate;
 	dumpdate = spcl.c_date;
