@@ -46,13 +46,14 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.41 2001/07/18 11:46:31 stelian Exp $";
+	"$Id: tape.c,v 1.42 2001/07/18 12:54:06 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
 #include <compatlfs.h>
 #include <errno.h>
 #include <compaterr.h>
+#include <system.h>
 #include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -257,10 +258,18 @@ newcomprbuf(int size)
 void
 setup(void)
 {
-	int i, j, *ip;
+	int i, j, *ip, bot_code;
 	struct STAT stbuf;
 
 	Vprintf(stdout, "Verify tape and initialize maps\n");
+	if (bot_script) {
+		msg("Launching %s\n", bot_script);
+		bot_code = system_command(bot_script, magtape, 1);
+		if (bot_code != 0 && bot_code != 1) {
+			msg("Restore aborted by the beginning of tape script\n");
+			exit(1);
+		}
+	}
 #ifdef RRESTORE
 	if (host)
 		mt = rmtopen(magtape, 0);
@@ -374,7 +383,7 @@ getvol(long nextvol)
 	union u_spcl tmpspcl;
 #	define tmpbuf tmpspcl.s_spcl
 	char buf[TP_BSIZE];
-	int haderror = 0;
+	int haderror = 0, bot_code;
 
 	if (nextvol == 1) {
 		tapesread = 0;
@@ -438,7 +447,15 @@ again:
 		snprintf(magtape, MAXPATHLEN, "%s%03ld", magtapeprefix, newvol);
 		magtape[MAXPATHLEN - 1] = '\0';
 	}
-	if (!Mflag || haderror) {
+	if (bot_script && !haderror) {
+		msg("Launching %s\n", bot_script);
+		bot_code = system_command(bot_script, magtape, newvol);
+		if (bot_code != 0 && bot_code != 1) {
+			msg("Restore aborted by the beginning of tape script\n");
+			exit(1);
+		}
+	}
+	if (haderror || (bot_code && !Mflag)) {
 		haderror = 0;
 		fprintf(stderr, "Mount tape volume %ld\n", (long)newvol);
 		fprintf(stderr, "Enter ``none'' if there are no more tapes\n");

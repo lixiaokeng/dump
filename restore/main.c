@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.24 2001/04/27 15:22:47 stelian Exp $";
+	"$Id: main.c,v 1.25 2001/07/18 12:54:06 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -99,6 +99,7 @@ int	compare_ignore_not_found;
 int	compare_errors;
 char	filesys[NAMELEN];
 static const char *stdin_opt = NULL;
+char	*bot_script = NULL;
 
 #ifdef	__linux__
 char	*__progname;
@@ -145,7 +146,7 @@ main(int argc, char *argv[])
 		;                                                               
 	obsolete(&argc, &argv);
 	while ((ch = getopt(argc, argv, 
-		"b:CcdD:f:hi"
+		"b:CcdD:f:F:hi"
 #ifdef KERBEROS
 		"k"
 #endif
@@ -181,6 +182,9 @@ main(int argc, char *argv[])
 			if( !strcmp(optarg,"-") )
 				use_stdin("-f");
 			inputdev = optarg;
+			break;
+		case 'F':
+			bot_script = optarg;
 			break;
 		case 'h':
 			hflag = 0;
@@ -501,12 +505,12 @@ usage(void)
 
 	(void)fprintf(stderr,
 	  "usage:\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n",
-	  __progname, " -C [-c" kerbflag "Mvy] [-b blocksize] [-D filesystem] [-f file] [-s fileno]",
-	  __progname, " -i [-ch" kerbflag "mMuvy] [-b blocksize] [-f file] " qfaflag "[-s fileno]",
-	  __progname, " -r [-c" kerbflag "Muvy] [-b blocksize] [-f file] [-s fileno] [-T directory]",
-	  __progname, " -R [-c" kerbflag "Muvy] [-b blocksize] [-f file] [-s fileno] [-T directory]",
-	  __progname, " -t [-ch" kerbflag "Muvy] [-b blocksize] [-f file] " qfaflag "[-s fileno] [-X filelist] [file ...]",
-	  __progname, " -x [-ch" kerbflag "mMuvy] [-b blocksize] [-f file] " qfaflag "[-s fileno] [-X filelist] [file ...]");
+	  __progname, " -C [-c" kerbflag "Mvy] [-b blocksize] [-D filesystem] [-f file] [-F script ] [-s fileno]",
+	  __progname, " -i [-ch" kerbflag "mMuvy] [-b blocksize] [-f file] [-F script] " qfaflag "[-s fileno]",
+	  __progname, " -r [-c" kerbflag "Muvy] [-b blocksize] [-f file] [-F script] [-s fileno] [-T directory]",
+	  __progname, " -R [-c" kerbflag "Muvy] [-b blocksize] [-f file] [-F script] [-s fileno] [-T directory]",
+	  __progname, " -t [-ch" kerbflag "Muvy] [-b blocksize] [-f file] [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]",
+	  __progname, " -x [-ch" kerbflag "mMuvy] [-b blocksize] [-f file] [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]");
 	exit(1);
 }
 
@@ -543,6 +547,7 @@ obsolete(int *argcp, char **argvp[])
 		case 'b':
 		case 'D':
 		case 'f':
+		case 'F':
 		case 'Q':
 		case 's':
 		case 'T':

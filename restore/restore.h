@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: restore.h,v 1.15 2001/04/10 12:46:53 stelian Exp $
+ *	$Id: restore.h,v 1.16 2001/07/18 12:54:06 stelian Exp $
  */
 
 /*
@@ -62,6 +62,7 @@ extern int	uflag;		/* unlink symlink targets */
 extern int	vflag;		/* print out actions taken */
 extern int	yflag;		/* always try to recover from tape errors */
 extern int	zflag;		/* tape is in compressed format */
+extern char*	bot_script;	/* beginning of tape script */
 /*
  * Global variables
  */

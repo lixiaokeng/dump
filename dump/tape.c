@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.49 2001/07/18 09:50:48 stelian Exp $";
+	"$Id: tape.c,v 1.50 2001/07/18 12:54:06 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -52,6 +52,7 @@ static const char rcsid[] =
 #include <signal.h>
 #include <stdio.h>
 #include <compaterr.h>
+#include <system.h>
 #ifdef __STDC__
 #include <stdlib.h>
 #include <string.h>
@@ -116,7 +117,6 @@ static	void enslave __P((void));
 static	void flushtape __P((void));
 static	void killall __P((void));
 static	void rollforward __P((void));
-static	int system_command __P((const char *, const char *, int));
 
 /*
  * Concurrent dump mods (Caltech) - disk block reading and tape writing
@@ -460,48 +460,6 @@ flushtape(void)
 		}
 	}
 	timeest();
-}
-
-/*
- * Executes the command in a shell.
- * Returns -1 if an error occured, the exit status of
- * the command on success.
- */
-int system_command(const char *command, const char *device, int volnum) {
-	int pid, status;
-	char commandstr[4096];
-
-	pid = fork();
-	if (pid == -1) {
-		perror("  DUMP: unable to fork");
-		return -1;
-	}
-	if (pid == 0) {
-		setuid(getuid());
-		setgid(getgid());
-#if OLD_STYLE_FSCRIPT
-		snprintf(commandstr, sizeof(commandstr), "%s", command);
-#else
-		snprintf(commandstr, sizeof(commandstr), "%s %s %d", command, device, volnum);
-#endif
-		commandstr[sizeof(commandstr) - 1] = '\0';
-		execl("/bin/sh", "sh", "-c", commandstr, NULL);
-		perror("  DUMP: unable to execute shell");
-		exit(-1);
-	}
-	do {
-		if (waitpid(pid, &status, 0) == -1) {
-			if (errno != EINTR) {
-				perror("  DUMP: waitpid error");
-				return -1;
-			}
-		} else {
-			if (WIFEXITED(status))
-				return WEXITSTATUS(status);
-			else
-				return -1;
-		}
-	} while(1);
 }
 
 time_t

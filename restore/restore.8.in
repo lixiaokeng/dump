@@ -29,7 +29,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: restore.8.in,v 1.14 2001/04/24 15:04:59 stelian Exp $
+.\"	$Id: restore.8.in,v 1.15 2001/07/18 12:54:06 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt RESTORE 8
@@ -44,6 +44,7 @@
 .Op Fl b Ar blocksize
 .Op Fl D Ar filesystem
 .Op Fl f Ar file
+.Op Fl F Ar script
 .Op Fl s Ar fileno
 .Op Fl T Ar directory
 .Nm restore
@@ -51,6 +52,7 @@
 .Op Fl chkmMNuvy
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
+.Op Fl F Ar script
 .Op Fl Q Ar file
 .Op Fl s Ar fileno
 .Op Fl T Ar directory
@@ -59,6 +61,7 @@
 .Op Fl ckMNuvy
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
+.Op Fl F Ar script
 .Op Fl s Ar fileno
 .Op Fl T Ar directory
 .Nm restore
@@ -66,6 +69,7 @@
 .Op Fl ckMNuvy
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
+.Op Fl F Ar script
 .Op Fl s Ar fileno
 .Op Fl T Ar directory
 .Nm restore
@@ -73,6 +77,7 @@
 .Op Fl chkMNuvy
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
+.Op Fl F Ar script
 .Op Fl Q Ar file
 .Op Fl s Ar fileno
 .Op Fl T Ar directory
@@ -83,6 +88,7 @@
 .Op Fl chkmMNuvy
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
+.Op Fl F Ar script
 .Op Fl Q Ar file
 .Op Fl s Ar fileno
 .Op Fl T Ar directory
@@ -336,6 +342,21 @@ or
 reads from the named file on the remote host using
 .Xr rmt 8 .
 .Pp
+.It Fl F Ar script
+Run script at the beginning of each tape. The device name and the
+current volume number are passed on the command line.
+The script must return 0 if 
+.Nm
+should continue without asking the user to change the tape, 1 if 
+.Nm
+should continue but ask the user to change the tape. 
+Any other exit code will cause
+.Nm
+to abort.
+For security reasons,
+.Nm
+reverts back to the real user ID and the real group ID before 
+running the script.
 .It Fl k
 Use Kerberos authentication when contacting the remote tape server.
 (Only available if this options was enabled when
