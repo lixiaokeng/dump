@@ -1,4 +1,4 @@
-$Id: TODO,v 1.21 2001/07/25 13:21:31 stelian Exp $
+$Id: TODO,v 1.22 2001/08/16 13:15:21 stelian Exp $
 
 Need to verify:
 ---------------
@@ -40,22 +40,11 @@ All others:
 	     ufsrestore(1M) to determine whether a file  is  in
 	     the dump file that is being restored.
 
-8.	Modify (or get rid of) rmt in order to work with non Linux
-	systems (limited succes has been reported). A good version 
-	of rmt to be looked at is part of star 
-	http://www.fokus.gmd.de/research/cc/glone/employees/joerg.schilling/private/star.html
-
-9.	EA/ACL support in dump (requested by Michael Ju. Tokarev 
+8.	EA/ACL support in dump (requested by Michael Ju. Tokarev 
 	<mjt@tls.msk.ru>.
 
-10.	Better readline completition in restore (escape spaces etc).
+9.	Better readline completition in restore (escape spaces etc).
 
-11.	Dump compiled with RedHat's 7.0 gcc seems to hang for some
+10.	Dump compiled with RedHat's 7.0 gcc seems to hang for some
 	people. When compiled with kgcc all the problems disappear.
 	Will the RedHat's 7.1 gcc resolve this ?
-
-12.	Dump uses /dev/tty for reporting some messages. When invoked
-	from a script, /dev/tty may not exist. Why not using just
-	stderr ?
-
-13.	-a and -B option to dump are exclusive.
