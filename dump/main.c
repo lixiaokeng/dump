@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.43 2001/04/10 13:42:22 stelian Exp $";
+	"$Id: main.c,v 1.44 2001/04/11 15:24:03 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -917,7 +917,7 @@ sig(int signo)
 	case SIGTRAP:
 		if (pipeout)
 			quit("Signal on pipe: cannot recover\n");
-		msg("Rewriting attempted as response to unknown signal.\n");
+		msg("Rewriting attempted as response to unknown signal: %d.\n", signo);
 		(void)fflush(stderr);
 		(void)fflush(stdout);
 		close_rewind();
