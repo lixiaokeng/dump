@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: bsdcompat.h,v 1.21 2003/11/22 16:52:16 stelian Exp $
+ *	$Id: bsdcompat.h,v 1.22 2004/01/27 10:15:37 stelian Exp $
  */
 
 #include <config.h>
@@ -37,9 +37,15 @@
 #define UF_NODUMP	EXT2_NODUMP_FL
 #endif
 
+#ifndef howmany
 #define howmany(x,y)	(((x)+((y)-1))/(y))
+#endif
+#ifndef roundup
 #define roundup(x, y)	((((x)+((y)-1))/(y))*(y))
+#endif
+#ifndef powerof2
 #define powerof2(x)	((((x)-1)&(x))==0)
+#endif
 
 #define fsbtodb(sb,b)	((int)(((long long)(b) * EXT2_BLOCK_SIZE((sb)->super)) / DEV_BSIZE))
 #define dbtofsb(sb,b)	((int)(((long long)(b) * DEV_BSIZE) / EXT2_BLOCK_SIZE((sb)->super)))
