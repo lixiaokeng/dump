@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.22 2000/03/08 10:51:29 stelian Exp $";
+	"$Id: main.c,v 1.23 2000/08/19 23:48:10 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -410,6 +410,18 @@ main(int argc, char *argv[])
 		    NAMELEN);
 	}
 #endif
+
+	if (directory[0] != 0) {
+		if (level != '0') {
+			(void)fprintf(stderr, "Only level 0 dumps are allowed on a subdirectory\n");
+			exit(X_STARTUP);
+		}
+		if (uflag) {
+			(void)fprintf(stderr, "You can't update the dumpdates file when dumping a subdirectory\n");
+			exit(X_STARTUP);
+		}
+	}
+
 	spcl.c_dev[NAMELEN-1]='\0';
 	spcl.c_filesys[NAMELEN-1]='\0';
 	(void)strncpy(spcl.c_label, labelstr, sizeof(spcl.c_label) - 1);

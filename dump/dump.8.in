@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.15 2000/08/19 22:08:53 stelian Exp $
+.\"	$Id: dump.8.in,v 1.16 2000/08/19 23:48:10 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -51,20 +51,7 @@
 .Op Fl L Ar label
 .Op Fl s Ar feet
 .Op Fl T Ar date
-.Ar filesystem
-.Nm dump
-.Op Fl 0123456789ackMnSu
-.Op Fl B Ar records
-.Op Fl b Ar blocksize
-.Op Fl d Ar density
-.Op Fl e Ar inode number
-.Op Fl f Ar file
-.Op Fl F Ar script
-.Op Fl h Ar level
-.Op Fl L Ar label
-.Op Fl s Ar feet
-.Op Fl T Ar date
-.Ar directory
+.Ar file-to-dump
 .Nm dump
 .Op Fl W Li \&| Fl w
 .Pp
@@ -98,6 +85,16 @@ the actual size is determined by the tape size, density and/or
 block count options below.
 By default, the same output file name is used for each volume
 after prompting the operator to change media.
+.Pp
+.Ar file-to-dump
+is either a mountpoint of a filesystem
+or a directory to be backed up as a subset of a filesystem.
+In the former case, either the path to a mounted filesystem
+or the device of an unmounted filesystem can be used.
+In the latter case, certain restrictions are placed on the backup:
+.Fl u
+is not allowed and the only dump level that is supported is
+.Fl 0 .
 .Pp
 The following options are supported by
 .Nm Ns :
