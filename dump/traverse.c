@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.32 2001/04/10 13:42:22 stelian Exp $";
+	"$Id: traverse.c,v 1.33 2001/04/11 13:42:52 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -796,9 +796,10 @@ void
 dumpino(struct dinode *dp, dump_ino_t ino)
 {
 	unsigned long cnt;
-	fsizeT size;
+	fsizeT size, remaining;
 	char buf[TP_BSIZE];
 	struct old_bsd_inode obi;
+	int i;
 #ifdef	__linux__
 	struct block_context bc;
 #else
@@ -915,6 +916,16 @@ dumpino(struct dinode *dp, dump_ino_t ino)
 	bc.next_block = NDADDR;
 
 	ext2fs_block_iterate2(fs, (ext2_ino_t)ino, 0, NULL, dumponeblock, (void *)&bc);
+	/* deal with holes at the end of the inode */
+	remaining = i_size - bc.next_block*sblock->fs_fsize;
+	if (remaining > 0) 
+		for (i = 0; i < howmany(remaining, sblock->fs_fsize); i++) {
+			bc.buf[bc.cnt++] = 0;
+			if (bc.cnt == bc.max) {
+				blksout (bc.buf, bc.cnt, bc.ino);
+				bc.cnt = 0;
+			}
+		}
 	if (bc.cnt > 0) {
 		blksout (bc.buf, bc.cnt, bc.ino);
 	}

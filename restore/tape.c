@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.32 2001/04/10 12:46:53 stelian Exp $";
+	"$Id: tape.c,v 1.33 2001/04/11 13:42:52 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -840,6 +840,11 @@ loop:
 	if (curblk > 0) {
 		(*fill)((char *)buf, (size_t)(curblk * TP_BSIZE) + size);
 		last_write_was_hole = 0;
+	}
+	if (size > 0) {
+		fprintf(stderr, "Missing blocks at the end of %s, assuming hole\n", curfile.name);
+		(*skip)(clearedbuf, size);
+		last_write_was_hole = 1;
 	}
 	if (last_write_was_hole) {
 		ftruncate(ofile, origsize);
