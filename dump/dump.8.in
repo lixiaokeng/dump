@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.23 2001/03/23 14:40:12 stelian Exp $
+.\"	$Id: dump.8.in,v 1.24 2001/03/28 12:59:48 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -112,7 +112,7 @@ copy all files new or modified since the
 last dump of a lower level.
 The default level is 9.
 .It Fl B Ar records
-The number of 1 KB blocks per volume.
+The number of 1 kB blocks per volume.
 This option overrides the end-of-media detection, and calculation 
 of tape size based on length and density.
 .It Fl a
@@ -126,7 +126,7 @@ existing tape, or using a tape drive with hardware compression
 .It Fl b Ar blocksize
 The number of kilobytes per dump record.
 Since the IO system slices all requests into chunks of MAXBSIZE
-(typically 64KB), it is not possible to use a larger blocksize
+(typically 64kB), it is not possible to use a larger blocksize
 without having problems later with
 .Xr restore 8 .
 Therefore

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: rmt.c,v 1.12 2000/12/21 11:14:54 stelian Exp $";
+	"$Id: rmt.c,v 1.13 2001/03/28 12:59:49 stelian Exp $";
 #endif /* not linux */
 
 /*
@@ -87,6 +87,7 @@ main(int argc, char *argv[])
 	int rval = 0;
 	char c;
 	int n, i, cc;
+	unsigned long block = 0;
 
 	argc--, argv++;
 	if (argc > 0) {
@@ -116,14 +117,16 @@ top:
 		tape = open(device, atoi(filemode), 0666);
 		if (tape < 0)
 			goto ioerror;
+		block = 0;
 		goto respond;
 
 	case 'C':
-		DEBUG("rmtd: C\n");
+		DEBUG1("rmtd: C  (%lu blocks)\n", block);
 		getstring(device);		/* discard */
 		if (close(tape) < 0)
 			goto ioerror;
 		tape = -1;
+		block = 0;
 		goto respond;
 
 	case 'L':
@@ -138,7 +141,7 @@ top:
 	case 'W':
 		getstring(count);
 		n = atoi(count);
-		DEBUG1("rmtd: W %s\n", count);
+		DEBUG2("rmtd: W %s (block = %lu)\n", count, block);
 		record = checkbuf(record, n);
 		for (i = 0; i < n; i += cc) {
 			cc = read(0, &record[i], n - i);
@@ -150,11 +153,12 @@ top:
 		rval = write(tape, record, n);
 		if (rval < 0)
 			goto ioerror;
+		block += n >> 10;
 		goto respond;
 
 	case 'R':
 		getstring(count);
-		DEBUG1("rmtd: R %s\n", count);
+		DEBUG2("rmtd: R %s (block %lu)\n", count, block);
 		n = atoi(count);
 		record = checkbuf(record, n);
 		rval = read(tape, record, n);
@@ -163,6 +167,7 @@ top:
 		(void)sprintf(resp, "A%d\n", rval);
 		(void)write(1, resp, strlen(resp));
 		(void)write(1, record, rval);
+		block += n >> 10;
 		goto top;
 
 	case 'I':

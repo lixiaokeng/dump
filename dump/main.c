@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.40 2001/03/23 14:40:12 stelian Exp $";
+	"$Id: main.c,v 1.41 2001/03/28 12:59:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -596,12 +596,12 @@ main(int argc, char *argv[])
 	}
 
 	if (sizest) {
-		printf("%.0f\n", ((double)tapesize + 11) * TP_BSIZE);
+		printf("%.0f\n", ((double)tapesize + 1 + ntrec) * TP_BSIZE);
 		exit(X_FINOK);
 	} /* stop here for size estimate */
 
 	if (pipeout || unlimited) {
-		tapesize += 11;	/* 10 trailer blocks + 1 map header */
+		tapesize += 1 + ntrec;	/* 1 map header + trailer blocks */
 		msg("estimated %ld tape blocks.\n", tapesize);
 	} else {
 		double fetapes;
@@ -641,7 +641,7 @@ main(int argc, char *argv[])
 		/* count the dumped inodes map on each additional tape */
 		tapesize += (etapes - 1) *
 			(howmany(mapsize * sizeof(char), TP_BSIZE) + 1);
-		tapesize += etapes + 10;	/* headers + 10 trailer blks */
+		tapesize += etapes + ntrec;	/* headers + trailer blks */
 		msg("estimated %ld tape blocks on %3.2f tape(s).\n",
 		    tapesize, fetapes);
 	}
@@ -700,8 +700,8 @@ main(int argc, char *argv[])
 			continue;
 #ifdef __linux__
 		/*
-		 * No need to check here for deleted and not yes reallocated inodes
-		 * since this is done in dumpino().
+		 * No need to check here for deleted and not yet reallocated
+		 * inodes since this is done in dumpino().
 		 */
 #endif
 		(void)dumpino(dp, ino);
@@ -709,7 +709,12 @@ main(int argc, char *argv[])
 
 	tend_writing = time(NULL);
 	spcl.c_type = TS_END;
-	for (i = 0; i < ntrec; i++)
+	/*
+	 * Finish off the current tape record with trailer blocks, to ensure
+	 * at least the data in the last partial record makes it to tape.
+	 * Also make sure we write at least 1 trailer block.
+	 */
+	for (i = ntrec - (spcl.c_tapea % ntrec); i; --i)
 		writeheader(maxino - 1);
 
 	tnow = trewind();
@@ -723,7 +728,7 @@ main(int argc, char *argv[])
 		    ((double)spcl.c_tapea * TP_BSIZE / 1048576),
 		    spcl.c_volume);
 
-	/* report dump performance, avoid division through zero */
+	/* report dump performance, avoid division by zero */
 	if (tend_writing - tstart_writing == 0)
 		msg("finished in less than a second\n");
 	else
@@ -740,7 +745,7 @@ main(int argc, char *argv[])
 	if (compressed) {
 		long tapekb = bytes_written / 1024;
 		double rate = .0005 + (double) spcl.c_tapea / tapekb;
-		msg("Wrote %ldkB uncompressed, %ldKB compressed, %1.3f:1\n",
+		msg("Wrote %ldkB uncompressed, %ldkB compressed, %1.3f:1\n",
 			spcl.c_tapea, tapekb, rate);
 	}
 

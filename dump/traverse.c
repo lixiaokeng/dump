@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.30 2001/03/23 14:40:12 stelian Exp $";
+	"$Id: traverse.c,v 1.31 2001/03/28 12:59:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -128,6 +128,9 @@ typedef ino_t ext2_ino_t;
 #define EXT2_LIB_FEATURE_INCOMPAT_SUPP (EXT3_FEATURE_INCOMPAT_RECOVER | \
 					EXT2_FEATURE_INCOMPAT_FILETYPE)
 #endif
+#ifndef EXT2_RESIZE_INO
+#define EXT2_RESIZE_INO			7
+#endif
 
 int dump_fs_open(const char *disk, ext2_filsys *fs)
 {
@@ -152,12 +155,16 @@ int dump_fs_open(const char *disk, ext2_filsys *fs)
 			retval = EXT2_ET_UNSUPP_FEATURE;
 			ext2fs_close(*fs);
 		}
-		else if (es->s_feature_compat &
+		else {
+			if (es->s_feature_compat &
 				EXT3_FEATURE_COMPAT_HAS_JOURNAL && 
 				journal_ino && !exclude_ino(journal_ino)) {
-			iexclude_list[iexclude_num++] = journal_ino;
-			msg("Added ext3 journal inode %u to exclude list\n",
-			    journal_ino);
+				iexclude_list[iexclude_num++] = journal_ino;
+				msg("Exclude ext3 journal inode %u\n",
+				    journal_ino);
+			}
+			if (!exclude_ino(EXT2_RESIZE_INO))
+				iexclude_list[iexclude_num++] = EXT2_RESIZE_INO;
 		}
 	}
 	return retval;

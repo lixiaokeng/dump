@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.39 2001/03/23 14:40:12 stelian Exp $";
+	"$Id: tape.c,v 1.40 2001/03/28 12:59:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -303,7 +303,7 @@ do_stats(void)
 		xferrate += txfrate;
 		if (compressed) {
 			double rate = .0005 + (double) blocks / (double) volkb;
-			msg("Volume %d %ldKB uncompressed, %ldkB compressed,"
+			msg("Volume %d %ldkB uncompressed, %ldkB compressed,"
 				" %1.3f:1\n",
 				tapeno, blocks, volkb, rate);
 		}
@@ -327,7 +327,7 @@ mktimeest(time_t tnow)
 		/ blockswritten * tapesize;
 	if (tnow > tstart_volume)
 		(void)snprintf(msgbuf, sizeof(msgbuf),
-			"%3.2f%% done at %ld KB/s, finished in %d:%02d\n",
+			"%3.2f%% done at %ld kB/s, finished in %d:%02d\n",
 			(blockswritten * 100.0) / tapesize,
 			(spcl.c_tapea - tapea_volume) / (tnow - tstart_volume),
 			(int)(deltat / 3600), (int)((deltat % 3600) / 60));
