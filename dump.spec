@@ -4,7 +4,7 @@
 
 Summary: Programs for backing up and restoring ext2/ext3 filesystems.
 Name: dump
-Version: 0.4b22
+Version: 0.4b23
 Release: 1
 License: BSD
 Group: Applications/Archiving
@@ -127,6 +127,9 @@ rm -rf %{buildroot}
 %{_sbindir}/rrestore.static
 
 %changelog
+* Fri Jul 20 2001 Stelian Pop <pop@noos.fr>
+- dump 0.4b23 released, first packaging.
+
 * Sat May 12 2001 Stelian Pop <pop@noos.fr>
 - dump 0.4b22 released, first packaging.
 
