@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.82 2004/03/08 14:04:04 stelian Exp $";
+	"$Id: tape.c,v 1.83 2004/04/21 09:15:08 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1087,9 +1087,6 @@ doslave(int cmd,
 	int compresult;
 	volatile int do_compress = !first;
 	unsigned long worklen;
-#ifdef HAVE_BZLIB
-	unsigned int worklen2;
-#endif
 #ifdef HAVE_LZO
 	lzo_align_t __LZO_MMODEL *LZO_WorkMem;
 #endif
@@ -1226,7 +1223,7 @@ doslave(int cmd,
 #endif /* HAVE_ZLIB */
 #ifdef HAVE_BZLIB
 			if (zipflag == COMPRESS_BZLIB) {
-				worklen2 = worklen;
+				unsigned int worklen2 = worklen;
 				compresult = BZ2_bzBuffToBuffCompress(
 						       comp_buf->buf,
 						       &worklen2,
@@ -1244,10 +1241,12 @@ doslave(int cmd,
 #endif /* HAVE_BZLIB */
 #ifdef HAVE_LZO
 			if (zipflag == COMPRESS_LZO) {
+				lzo_uint worklen2 = worklen;
 				compresult = lzo1x_1_compress((char *)slp->tblock[0],writesize,
                                                               comp_buf->buf,
-							      (lzo_uintp)&worklen,
+							      &worklen2,
                                                               LZO_WorkMem);
+				worklen = worklen2;
 				if (compresult == LZO_E_OK)
 					compresult = 1;
 				else

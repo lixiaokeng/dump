@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.79 2004/04/13 13:04:33 stelian Exp $";
+	"$Id: tape.c,v 1.80 2004/04/21 09:15:22 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -2063,9 +2063,6 @@ decompress_tapebuf(struct tapebuf *tpbin, int readsize)
 	/* zflag gets set in setup() from the dump header          */
 	int cresult, blocklen;        
 	unsigned long worklen;
-#ifdef HAVE_BZLIB
-	unsigned int worklen2;
-#endif
 	char *output = NULL,*reason = NULL, *lengtherr = NULL;              
        
 	/* build a length error message */
@@ -2112,7 +2109,7 @@ decompress_tapebuf(struct tapebuf *tpbin, int readsize)
 #ifndef HAVE_BZLIB
 			errx(1,"This restore version doesn't support bzlib decompression");
 #else
-			worklen2 = worklen;
+			unsigned int worklen2 = worklen;
 			cresult = BZ2_bzBuffToBuffDecompress(
 					comprbuf, &worklen2, 
 					tpbin->buf, blocklen, 0, 0);
@@ -2145,8 +2142,10 @@ decompress_tapebuf(struct tapebuf *tpbin, int readsize)
 #ifndef HAVE_LZO
 			errx(1,"This restore version doesn't support lzo decompression");
 #else
+			lzo_uint worklen2 = worklen;
 			cresult = lzo1x_decompress(tpbin->buf, blocklen,
-                                                   comprbuf, (lzo_uintp) &worklen,NULL);
+                                                   comprbuf, &worklen2, NULL);
+			worklen = worklen2;
 			output = comprbuf;
 			switch (cresult) {
 				case LZO_E_OK:
