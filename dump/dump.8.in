@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.37 2002/01/25 14:59:53 stelian Exp $
+.\"	$Id: dump.8.in,v 1.38 2002/02/21 14:07:15 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -247,7 +247,8 @@ length blocks. You will need at least the 0.4b24 version of restore in
 order to extract compressed tapes. Tapes written using compression will
 not be compatible with the BSD tape format. The (optional) parameter 
 specifies the compression level bzlib will use. The default compression
-level is 2.
+level is 2. If the optional parameter is specified, there should be no 
+white space between the option letter and the parameter.
 .It Fl k
 Use Kerberos authentication to talk to remote tape servers.  (Only
 available if this option was enabled when
@@ -394,7 +395,8 @@ length blocks. You will need at least the 0.4b22 version of restore in
 order to extract compressed tapes. Tapes written using compression will
 not be compatible with the BSD tape format. The (optional) parameter 
 specifies the compression level zlib will use. The default compression
-level is 2.
+level is 2. If the optional parameter is specified, there should be no 
+white space between the option letter and the parameter.
 .El
 .Pp
 .Nm Dump
