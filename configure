@@ -841,6 +841,7 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-debug             include debugging code (default is NO)
   --enable-static            link dump and restore statically (default is NO)
+  --enable-staticz           link libz and libbz2 statically (default is NO)
   --enable-rmt               compile and install rmt (default is YES)
   --enable-ermt              compile ermt, an encrypting version of rmt (default is NO)
   --enable-kerberos          compile kerberos extensions (default is NO)
@@ -3320,6 +3321,24 @@ echo "Linking dump and restore dynamically by default"
 fi;
 
 
+# Check whether --enable-staticz or --disable-staticz was given.
+if test "${enable_staticz+set}" = set; then
+  enableval="$enable_staticz"
+  if test "$enableval" = "no"
+then
+	STATICZ="no"
+	echo "Linking libz and libbz2 dynamically"
+else
+	STATICZ="yes"
+	echo "Linking libz and libbz2 statically"
+fi
+
+else
+  STATICZ="no"
+echo "Linking libz and libbz2 dynamically by default"
+
+fi;
+
 # Check whether --enable-rmt or --disable-rmt was given.
 if test "${enable_rmt+set}" = set; then
   enableval="$enable_rmt"
@@ -4379,7 +4398,11 @@ else
 fi
 
 if test "$zlib_h" = yes -a "$zlib_lib" = yes; then
-	ZLIB="-lz"
+	if test "$STATICZ" = yes; then
+		ZLIB="-Wl,-Bstatic -lz -Wl,-Bdynamic"
+	else
+		ZLIB="-lz"
+	fi
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_ZLIB 1
@@ -4500,7 +4523,11 @@ else
 fi
 
 if test "$bzlib_h" = yes -a "$bzlib_lib" = yes; then
-	BZLIB="-lbz2"
+	if test "$STATICZ" = yes; then
+		BZLIB="-Wl,-Bstatic -lbz2 -Wl,-Bdynamic"
+	else
+		BZLIB="-lbz2"
+	fi
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_BZLIB 1

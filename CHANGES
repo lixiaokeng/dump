@@ -1,4 +1,16 @@
-$Id: CHANGES,v 1.247 2004/04/21 09:18:49 stelian Exp $
+$Id: CHANGES,v 1.248 2004/05/24 12:39:23 stelian Exp $
+
+Changes between versions 0.4b36 and 0.4b37 (released ??????????????)
+====================================================================
+
+1.	Added the --enable-staticz configure option which enables
+	dump and restore to be linked with static versions of
+	libz and libbz2 (and dynamic versions of all other libraries).
+	This will make Debian users happy, because libz and libbz2
+	were the only needed libraries living in /usr, all the
+	others live in /lib. In case of system emergency, it is 
+	better not to have to rely on an extra filesystem.
+	Thanks to Bdale Garbee <bdale@gag.com> for the suggestion.
 
 Changes between versions 0.4b35 and 0.4b36 (released April 21, 2004)
 ====================================================================
