@@ -1,0 +1,12 @@
+I took the dump_on_cd_2/EN/* scripts and merged the pair of scripts into one
+script, which checks it's arguments to tell whether or not it is called from
+dump and acts accordingly.
+
+The script commandline takes dump arguments except -f (output file/device), -F
+(script to run after each volume is finished) and -B (volume size) which are
+overridden in the script.
+
+Andrew Basterfield
+
+bob@cemetery.homeunix.org
+
