@@ -45,7 +45,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.18 2000/06/25 18:42:39 stelian Exp $";
+	"$Id: tape.c,v 1.19 2000/08/19 22:39:35 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -546,9 +546,9 @@ printdumpinfo(void)
 #endif
 	if (spcl.c_host[0] == '\0')
 		return;
-	fprintf(stderr, "Level %d dump of %s on %s:%s\n",
+	fprintf(stdout, "Level %d dump of %s on %s:%s\n",
 		spcl.c_level, spcl.c_filesys, spcl.c_host, spcl.c_dev);
-	fprintf(stderr, "Label: %s\n", spcl.c_label);
+	fprintf(stdout, "Label: %s\n", spcl.c_label);
 }
 
 int
