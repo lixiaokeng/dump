@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.85 2005/01/14 13:01:34 stelian Exp $";
+	"$Id: tape.c,v 1.86 2005/01/24 10:32:14 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1527,7 +1527,7 @@ cmpfiles(char *tapefile, char *diskfile, struct STAT *sbuf_disk)
 	int fd_tape, fd_disk;
 
 	if (STAT(tapefile, &sbuf_tape) != 0) {
-		panic("Can't lstat tmp file %s: %s\n", tapefile,
+		panic("can't lstat tmp file %s: %s\n", tapefile,
 		      strerror(errno));
 		do_compare_error;
 	}
@@ -1545,12 +1545,12 @@ cmpfiles(char *tapefile, char *diskfile, struct STAT *sbuf_disk)
 	}
 
 	if ((fd_tape = OPEN(tapefile, O_RDONLY)) < 0) {
-		panic("Can't open %s: %s\n", tapefile, strerror(errno));
+		panic("can't open %s: %s\n", tapefile, strerror(errno));
 		do_compare_error;
 	}
 	if ((fd_disk = OPEN(diskfile, O_RDONLY)) < 0) {
 		close(fd_tape);
-		panic("Can't open %s: %s\n", diskfile, strerror(errno));
+		panic("can't open %s: %s\n", diskfile, strerror(errno));
 		do_compare_error;
 	}
 
@@ -1652,7 +1652,7 @@ comparefile(char *name)
 	}
 
 	if ((r = LSTAT(name, &sb)) != 0) {
-		warn("%s: does not exist (%d)", name, r);
+		warn("unable to stat %s", name);
 		do_compare_error;
 		skipfile();
 		return;
@@ -1773,7 +1773,7 @@ comparefile(char *name)
 	case IFREG:
 #if COMPARE_ONTHEFLY
 		if ((ifile = OPEN(name, O_RDONLY)) < 0) {
-			panic("Can't open %s: %s\n", name, strerror(errno));
+			warn("can't open %s", name);
 			skipfile();
 			do_compare_error;
 		}

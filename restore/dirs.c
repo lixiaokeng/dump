@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dirs.c,v 1.30 2005/01/14 13:01:34 stelian Exp $";
+	"$Id: dirs.c,v 1.31 2005/01/24 10:32:14 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -753,7 +753,7 @@ comparedirmodes(void)
 			unsigned long newflags;
 
 			if (LSTAT(cp, &sb) < 0) {
-				warn("%s: does not exist", cp);
+				warn("unable to stat %s", cp);
 				do_compare_error;
 				continue;
 			}
