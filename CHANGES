@@ -1,6 +1,12 @@
-$Id: CHANGES,v 1.30 2000/01/08 10:00:39 tiniou Exp $
+$Id: CHANGES,v 1.31 2000/01/09 23:37:01 tiniou Exp $
 
-Changes between versions 0.4b11 and 0.4b12 (released January 8, 1999)
+Changes between versions 0.4b12 and 0.4b13 (released ???????????????)
+=====================================================================
+
+1.	Small Y2K fix in the man pages :). Thanks to Bernhard Sadlowski
+	<sadlowsk@Mathematik.Uni-Bielefeld.DE> for reporting the bug.
+
+Changes between versions 0.4b11 and 0.4b12 (released January 8, 2000)
 =====================================================================
 
 1.	Small fix in the dump man page. Thanks to Thorsten Kukuk 
