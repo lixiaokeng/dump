@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: dump.h,v 1.16 2000/12/04 15:43:16 stelian Exp $
+ *	$Id: dump.h,v 1.17 2000/12/05 16:31:36 stelian Exp $
  */
 
 /*-
@@ -147,6 +147,7 @@ void	dumpblock __P((daddr_t blkno, int size));
 void	startnewtape __P((int top));
 time_t	trewind __P((void));
 void	writerec __P((const void *dp, int isspcl));
+char	*mktimeest __P((time_t tnow));
 
 void 	Exit __P((int status));
 void	dumpabort __P((int signo));

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.25 2000/12/04 15:43:16 stelian Exp $";
+	"$Id: tape.c,v 1.26 2000/12/05 16:31:36 stelian Exp $";
 #endif /* not lint */
 
 #ifdef __linux__
@@ -295,26 +295,16 @@ do_stats(void)
 	return(tnow);
 }
 
-#if defined(SIGINFO)
-/*
- * statussig --
- *     information message upon receipt of SIGINFO
- *     (derived from optr.c::timeest())
- */
-void
-statussig(int notused)
+char *
+mktimeest(time_t tnow)
 {
-	time_t  tnow, deltat;
-	char    msgbuf[128];
-	int save_errno = errno;
+	static char msgbuf[128];
+	time_t deltat;
+
+	msgbuf[0] = '\0';
 
 	if (blockswritten < 500)
-		return;
-#ifdef __linux__
-	(void) time4(&tnow);
-#else
-	(void) time((time_t *) &tnow);
-#endif
+		return NULL;
 	if (blockswritten > tapesize)
 		tapesize = blockswritten;
 	deltat = tstart_writing - tnow + (1.0 * (tnow - tstart_writing))
@@ -324,7 +314,30 @@ statussig(int notused)
 		(blockswritten * 100.0) / tapesize,
 		(spcl.c_tapea - tapea_volume) / (tnow - tstart_volume),
 		(int)(deltat / 3600), (int)((deltat % 3600) / 60));
-	write(STDERR_FILENO, msgbuf, strlen(msgbuf));
+
+	return msgbuf;
+}
+
+#if defined(SIGINFO)
+/*
+ * statussig --
+ *     information message upon receipt of SIGINFO
+ */
+void
+statussig(int notused)
+{
+	time_t tnow;
+	int save_errno = errno;
+	char *buf;
+
+#ifdef __linux__
+	(void) time4(&tnow);
+#else
+	(void) time((time_t *) &tnow);
+#endif
+	buf = mktimeest(tnow);
+	if (buf)
+		write(STDERR_FILENO, buf, strlen(buf));
 	errno = save_errno;
 }
 #endif

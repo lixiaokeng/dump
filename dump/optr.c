@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: optr.c,v 1.16 2000/12/04 15:43:16 stelian Exp $";
+	"$Id: optr.c,v 1.17 2000/12/05 16:31:36 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -322,7 +322,7 @@ time_t	tschedule = 0;
 void
 timeest(void)
 {
-	time_t	tnow, deltat;
+	time_t tnow;
 
 #ifdef __linux__
 	(void) time4(&tnow);
@@ -330,17 +330,13 @@ timeest(void)
 	(void) time((time_t *) &tnow);
 #endif
 	if (tnow >= tschedule) {
+		char *buf = mktimeest(tnow);
 		tschedule = tnow + 300;
-		if (blockswritten < 500)
-			return;
-		if (blockswritten > tapesize)
-			tapesize = blockswritten;
-		deltat = tstart_writing - tnow +
-			(1.0 * (tnow - tstart_writing))
-			/ blockswritten * tapesize;
-		msg("%3.2f%% done, finished in %d:%02d\n",
-			(blockswritten * 100.0) / tapesize,
-			deltat / 3600, (deltat % 3600) / 60);
+		if (buf) {
+			fprintf(stderr, "  DUMP: ");
+			fwrite(buf, strlen(buf), 1, stderr);
+			fflush(stderr);
+		}
 	}
 }
 
