@@ -29,7 +29,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: restore.8.in,v 1.7 2000/01/21 10:23:30 stelian Exp $
+.\"	$Id: restore.8.in,v 1.8 2000/03/08 11:25:58 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt RESTORE 8
@@ -76,6 +76,14 @@
 .Op Fl T Ar directory
 .Op file ...
 .Nm restore
+.Fl t
+.Op Fl chkMNuvy
+.Op Fl b Ar blocksize
+.Op Fl f Ar file
+.Op Fl s Ar fileno
+.Op Fl T Ar directory
+.Op Fl X Ar filelist
+.Nm restore
 .Fl x
 .Op Fl chkmMNuvy
 .Op Fl b Ar blocksize
@@ -83,6 +91,14 @@
 .Op Fl s Ar fileno
 .Op Fl T Ar directory
 .Op file ...
+.Nm restore
+.Fl x
+.Op Fl chkmMNuvy
+.Op Fl b Ar blocksize
+.Op Fl f Ar file
+.Op Fl s Ar fileno
+.Op Fl T Ar directory
+.Op Fl X Ar filelist
 .Pp
 .in
 (The
@@ -258,6 +274,9 @@ Note that the
 flag replaces the function of the old
 .Xr dumpdir 8
 program.
+See also the
+.Fl X
+option below.
 .ne 1i
 .It Fl x
 The named files are read from the given media.
@@ -276,6 +295,9 @@ backup being extracted,
 unless the
 .Fl h
 flag has been specified.
+See also the
+.Fl X
+option below.
 .El
 .Pp
 The following additional options may be specified:
@@ -384,6 +406,17 @@ The
 (verbose)
 flag causes it to type the name of each file it treats
 preceded by its file type.
+.It Fl X Ar filelist
+Get the list of the files to be listed or extracted from the text file
+.Ar filelist
+instead of reading them on the command line. This can be used in 
+conjunction with the
+.Fl t
+or
+.Fl x
+commands. The file
+.Ar filelist
+should contain file names separated by newlines.
 .It Fl y
 Do not ask the user whether to abort the restore in the event of an error.
 Always try to skip over the bad block(s) and continue.

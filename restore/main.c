@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.9 2000/03/02 11:34:51 stelian Exp $";
+	"$Id: main.c,v 1.10 2000/03/08 11:25:58 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -104,6 +104,8 @@ main(int argc, char *argv[])
 	char *inputdev = _PATH_DEFTAPE;
 	char *symtbl = "./restoresymtable";
 	char *p, name[MAXPATHLEN];
+	FILE *filelist = NULL;
+	char fname[MAXPATHLEN];
 
 	/* Temp files should *not* be readable.  We set permissions later. */
 	(void) umask(077);
@@ -125,9 +127,9 @@ main(int argc, char *argv[])
 		;                                                               
 	obsolete(&argc, &argv);
 #ifdef KERBEROS
-#define	optlist "b:CcdD:f:hikmMNRrs:tT:uvxy"
+#define	optlist "b:CcdD:f:hikmMNRrs:tT:uvxX:y"
 #else
-#define	optlist "b:CcdD:f:himMNRrs:tT:uvxy"
+#define	optlist "b:CcdD:f:himMNRrs:tT:uvxX:y"
 #endif
 	while ((ch = getopt(argc, argv, optlist)) != -1)
 		switch(ch) {
@@ -198,6 +200,10 @@ main(int argc, char *argv[])
 			break;
 		case 'v':
 			vflag = 1;
+			break;
+		case 'X':
+			if ( !(filelist=fopen(optarg,"r")) )
+				errx(1, "can't open file for reading -- %s", optarg);
 			break;
 		case 'y':
 			yflag = 1;
@@ -309,6 +315,19 @@ main(int argc, char *argv[])
 		checkrestore();
 		dumpsymtable(symtbl, (long)1);
 		break;
+		
+#define NEXTFILE(p) \
+	if (filelist) { \
+		if ((p = fgets(fname, MAXPATHLEN, filelist))) \
+			*(p + strlen(p) - 1) = '\0'; \
+	} \
+	else { \
+		if (argc--) \
+			p = *argv++; \
+		else \
+			p = NULL; \
+	}
+	
 	/*
 	 * List contents of tape.
 	 */
@@ -316,8 +335,11 @@ main(int argc, char *argv[])
 		setup();
 		extractdirs(0);
 		initsymtable((char *)0);
-		while (argc--) {
-			canon(*argv++, name, sizeof(name));
+		for (;;) {
+			NEXTFILE(p);
+			if (!p)
+				break;
+			canon(p, name, sizeof(name));
 			ino = dirlookup(name);
 			if (ino == 0)
 				continue;
@@ -331,8 +353,11 @@ main(int argc, char *argv[])
 		setup();
 		extractdirs(1);
 		initsymtable((char *)0);
-		while (argc--) {
-			canon(*argv++, name, sizeof(name));
+		for (;;) {
+			NEXTFILE(p);
+			if (!p)
+				break;
+			canon(p, name, sizeof(name));
 			ino = dirlookup(name);
 			if (ino == 0)
 				continue;
@@ -363,12 +388,14 @@ usage(void)
 	(void)fprintf(stderr, 
 	  "%s %s\n", __progname, _DUMP_VERSION);
 	(void)fprintf(stderr,
-	  "usage:\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n",
+	  "usage:\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n",
 	  __progname, " -i [-ch" kerbflag "mMuvy] [-b blocksize] [-f file] [-s fileno]",
 	  __progname, " -r [-c" kerbflag "Muvy] [-b blocksize] [-f file] [-s fileno]",
 	  __progname, " -R [-c" kerbflag "Muvy] [-b blocksize] [-f file] [-s fileno]",
 	  __progname, " -x [-ch" kerbflag "mMuvy] [-b blocksize] [-f file] [-s fileno] [file ...]",
-	  __progname, " -t [-ch" kerbflag "Muvy] [-b blocksize] [-f file] [-s fileno] [file ...]");
+	  __progname, " -x [-ch" kerbflag "mMuvy] [-b blocksize] [-f file] [-s fileno] [-X filelist]",
+	  __progname, " -t [-ch" kerbflag "Muvy] [-b blocksize] [-f file] [-s fileno] [file ...]",
+	  __progname, " -t [-ch" kerbflag "Muvy] [-b blocksize] [-f file] [-s fileno] [-X filelist]");
 	exit(1);
 }
 
@@ -407,6 +434,7 @@ obsolete(int *argcp, char **argvp[])
 		case 'f':
 		case 's':
 		case 'T':
+		case 'X':
 			if (*argv == NULL) {
 				warnx("option requires an argument -- %c", *ap);
 				usage();
