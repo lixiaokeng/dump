@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.265 2005/01/13 15:41:05 stelian Exp $
+$Id: CHANGES,v 1.266 2005/01/14 13:01:32 stelian Exp $
 
 Changes between versions 0.4b38 and 0.4b39 (released ???????????????)
 =====================================================================
@@ -13,6 +13,9 @@ Changes between versions 0.4b38 and 0.4b39 (released ???????????????)
 	the directory being compared, which could very well be 
 	read only and preventing the corefile generation. Thanks
 	to Kenneth Porter <shiva@sewingwitch.com> for the bug report.
+
+3.	Silenced the failure to call fgetflags() when comparing an
+	entry which has no ext2 attributes (as in lsattr()).
 
 Changes between versions 0.4b37 and 0.4b38 (released January 7, 2005)
 =====================================================================

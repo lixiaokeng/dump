@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dirs.c,v 1.29 2004/12/15 11:00:01 stelian Exp $";
+	"$Id: dirs.c,v 1.30 2005/01/14 13:01:34 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -777,8 +777,10 @@ comparedirmodes(void)
 			}
 #ifdef	__linux__
 			if (lgetflags(cp, &newflags) < 0) {
-				warn("%s: lgetflags failed", cp);
-				do_compare_error;
+				if (node.flags != 0) {
+					warn("%s: lgetflags failed", cp);
+					do_compare_error;
+				}
 			}
 			else {
 				if (newflags != node.flags) {

@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.84 2004/12/15 11:00:01 stelian Exp $";
+	"$Id: tape.c,v 1.85 2005/01/14 13:01:34 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1678,8 +1678,10 @@ comparefile(char *name)
 	}
 #ifdef  __linux__
 	if (lgetflags(name, &newflags) < 0) {
-		warn("%s: lgetflags failed", name);
-		do_compare_error;
+		if (flags != 0) {
+			warn("%s: lgetflags failed", name);
+			do_compare_error;
+		}
 	}
 	else {
 		if (newflags != flags) {
