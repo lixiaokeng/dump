@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.24 2000/08/20 19:41:50 stelian Exp $";
+	"$Id: main.c,v 1.25 2000/09/01 14:40:27 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -202,8 +202,15 @@ main(int argc, char *argv[])
 			
 			                /* 04-Feb-00 ILC */
 		case 'e':		/* exclude an inode */
-		        iexclude_list[iexclude_num++] = 
-			  numarg("inode to exclude",0L,0L);
+			if (iexclude_num == IEXCLUDE_MAXNUM) {
+				(void)fprintf(stderr, "Too many -e options\n");
+				exit(X_STARTUP);
+			}
+		        iexclude_list[iexclude_num++] = numarg("inode to exclude",0L,0L);
+			if (iexclude_list[iexclude_num-1] <= ROOTINO) {
+				(void)fprintf(stderr, "Cannot exclude inode %d\n", iexclude_list[iexclude_num-1]);
+				exit(X_STARTUP);
+			}
 			msg("Added %d to exclude list\n",
 			    iexclude_list[iexclude_num-1]);
 			break;

@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.81 2000/09/01 14:26:23 stelian Exp $
+$Id: CHANGES,v 1.82 2000/09/01 14:39:21 stelian Exp $
 
 Changes between versions 0.4b19 and 0.4b20 (released ???????????????)
 =====================================================================
@@ -20,6 +20,11 @@ Changes between versions 0.4b19 and 0.4b20 (released ???????????????)
 	inode, excludes now correctly all the leaves of this 
 	directory. Thanks to John R. Dennison 
 	<gerdesas@users.sourceforge.net> for reporting the bug.
+
+4.	Fixed the '-e' option to disable the possibility
+	to exclude the root inode (which causes the dumps to
+	be unreadable by restore). Prevented array overflow
+	when multiple -e options are used.
 
 Changes between versions 0.4b18 and 0.4b19 (released August 20, 2000)
 =====================================================================
