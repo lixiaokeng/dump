@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: bsdcompat.h,v 1.18 2002/07/17 10:18:52 stelian Exp $
+ *	$Id: bsdcompat.h,v 1.19 2002/07/19 14:57:39 stelian Exp $
  */
 
 #include <config.h>
@@ -13,6 +13,7 @@
 #include <dirent.h>
 
 #define	__dead		volatile
+#define UNUSED(x)	x __attribute__ ((unused))
 
 #ifndef	NBBY
 #define NBBY		8

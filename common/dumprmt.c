@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dumprmt.c,v 1.21 2002/05/21 15:48:46 stelian Exp $";
+	"$Id: dumprmt.c,v 1.22 2002/07/19 14:57:39 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -132,7 +132,7 @@ rmthost(const char *host)
 }
 
 static void
-rmtconnaborted(int signo)
+rmtconnaborted(UNUSED(int signo))
 {
 	msg("Lost connection to remote host.\n");
 	if (errfd != -1) {
@@ -343,7 +343,7 @@ rmtstatus(void)
 	if (rmtstate != TS_OPEN)
 		return (NULL);
 	rmtcall("status", "S\n");
-	for (i = 0, cp = (char *)&mts; i < sizeof(mts); i++)
+	for (i = 0, cp = (char *)&mts; i < (int)sizeof(mts); i++)
 		*cp++ = rmtgetb();
 	return (&mts);
 }
@@ -363,7 +363,7 @@ static int
 rmtcall(const char *cmd, const char *buf)
 {
 
-	if (write(tormtape, buf, strlen(buf)) != strlen(buf))
+	if (write(tormtape, buf, strlen(buf)) != (ssize_t)strlen(buf))
 		rmtconnaborted(0);
 	return (rmtreply(cmd));
 }

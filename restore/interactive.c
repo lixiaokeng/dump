@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: interactive.c,v 1.24 2002/06/08 07:10:37 stelian Exp $";
+	"$Id: interactive.c,v 1.25 2002/07/19 14:57:39 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -510,7 +510,7 @@ canon(char *rawname, char *canonname, int len)
 		(void) strcpy(canonname, ".");
 	else
 		(void) strcpy(canonname, "./");
-	if (strlen(canonname) + strlen(rawname) >= len)
+	if (strlen(canonname) + strlen(rawname) >= (unsigned)len)
 		errx(1, "canonname: not enough buffer space");
 		
 	(void) strcat(canonname, rawname);
@@ -570,7 +570,7 @@ printlist(char *name, char *basename)
 		list = &single;
 		mkentry(name, dp, list);
 		len = strlen(basename) + 1;
-		if (strlen(name) - len > single.len) {
+		if (strlen(name) - len > (unsigned)single.len) {
 			freename(single.fname);
 			single.fname = savename(&name[len]);
 			single.len = strlen(single.fname);
@@ -591,7 +591,7 @@ printlist(char *name, char *basename)
 		entries = 0;
 		listp = list;
 		namelen = snprintf(locname, sizeof(locname), "%s/", name);
-		if (namelen >= sizeof(locname))
+		if (namelen >= (int)sizeof(locname))
 			namelen = sizeof(locname) - 1;
 		while ((dp = rst_readdir(dirp))) {
 			if (dp == NULL)
@@ -709,7 +709,7 @@ formatf(struct afile *list, int nentry)
 	bigino = ROOTINO;
 	endlist = &list[nentry];
 	for (fp = &list[0]; fp < endlist; fp++) {
-		if (bigino < fp->fnum)
+		if (bigino < (int)fp->fnum)
 			bigino = fp->fnum;
 		if (width < fp->len)
 			width = fp->len;
@@ -822,7 +822,7 @@ fcmp(const void *f1, const void *f2)
  * respond to interrupts
  */
 void
-onintr(int signo)
+onintr(UNUSED(int signo))
 {
 	int save_errno = errno;
 
@@ -1010,7 +1010,7 @@ filename_generator(const char *text, int state)
 }
 
 static char **
-restore_completion (const char *text, int start, int end)
+restore_completion (const char *text, int start, UNUSED(int end))
 {
 	char **matches;
 

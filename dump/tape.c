@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.69 2002/07/01 11:54:40 stelian Exp $";
+	"$Id: tape.c,v 1.70 2002/07/19 14:57:39 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -116,7 +116,11 @@ static int magtapeout;		/* output is really a tape */
 
 static	ssize_t dump_atomic_read __P((int, void *, size_t));
 static	ssize_t dump_atomic_write __P((int, const void *, size_t));
+#ifdef WRITEDEBUG
 static	void doslave __P((int, int, int));
+#else
+static	void doslave __P((int, int));
+#endif
 static	void enslave __P((void));
 static	void flushtape __P((void));
 static	void killall __P((void));
@@ -311,7 +315,7 @@ tperror(int errnum)
 }
 
 static void
-sigpipe(int signo)
+sigpipe(UNUSED(int signo))
 {
 
 	quit("Broken pipe\n");
@@ -914,13 +918,13 @@ restore_check_point:
 		if (tapeno > 1)
 			msg("Volume %d begins with blocks from inode %d\n",
 				tapeno, slp->inode);
-		if (tapeno < TP_NINOS)
+		if (tapeno < (int)TP_NINOS)
 			volinfo[tapeno] = slp->inode;
 	}
 }
 
 void
-dumpabort(int signo)
+dumpabort(UNUSED(int signo))
 {
 
 	if (master != 0 && master != getpid())
@@ -950,7 +954,7 @@ Exit(int status)
  * proceed - handler for SIGUSR2, used to synchronize IO between the slaves.
  */
 static void
-proceed(int signo)
+proceed(UNUSED(int signo))
 {
 	if (ready)
 		siglongjmp(jmpbuf, 1);
@@ -1011,7 +1015,11 @@ enslave(void)
 			    != sizeof i)
 				quit("master/slave protocol botched 3\n");
 #endif
-			doslave(cmd[0], i, (slaves[i].pid == slp->pid));
+			doslave(cmd[0], 
+#ifdef WRITEDEBUG
+				i, 
+#endif
+				(slaves[i].pid == slp->pid));
 			Exit(X_FINOK);
 		}
 		else
@@ -1057,15 +1065,20 @@ killall(void)
  * slaves.
  */
 static void
-doslave(int cmd, int slave_number, int first)
+doslave(int cmd, 
+#ifdef WRITEDEBUG
+	int slave_number, 
+#endif
+	int first)
 {
 	int nread;
-	int nextslave, size, eot_count, bufsize;
-	volatile int wrote = 0;
-	char *buffer;
+	int nextslave;
+	volatile int wrote = 0, size, eot_count, bufsize;
+	char * volatile buffer;
 #if defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
-	struct tapebuf *comp_buf = NULL;
-	int compresult, do_compress = !first;
+	struct tapebuf * volatile comp_buf = NULL;
+	int compresult;
+	volatile int do_compress = !first;
 	unsigned long worklen;
 #ifdef HAVE_BZLIB
 	unsigned int worklen2;
@@ -1200,7 +1213,7 @@ doslave(int cmd, int slave_number, int first)
 			}
 
 #endif /* HAVE_BZLIB */
-			if (compresult && worklen <= (writesize - 16)) {
+			if (compresult && worklen <= ((unsigned long)writesize - 16)) {
 				/* write the compressed buffer */
 				comp_buf->length = worklen;
 				comp_buf->compressed = 1;
@@ -1323,7 +1336,7 @@ dump_atomic_read(int fd, void *buf, size_t count)
 		while ((got = read(fd, buf, need)) > 0 && (need -= got) > 0)
 			(char *)buf += got;
 	} while (got == -1 && errno == EINTR);
-	return (got < 0 ? got : count - need);
+	return (got < 0 ? got : (ssize_t)count - need);
 }
 
 /*
@@ -1340,7 +1353,7 @@ dump_atomic_write(int fd, const void *buf, size_t count)
 		while ((got = write(fd, buf, need)) > 0 && (need -= got) > 0)
 			(char *)buf += got;
 	} while (got == -1 && errno == EINTR);
-	return (got < 0 ? got : count - need);
+	return (got < 0 ? got : (ssize_t)count - need);
 }
 
 
@@ -1393,7 +1406,7 @@ MkTapeString(struct s_spcl *spclptr, long long curtapepos) {
 		 tapeno, 
 		 curtapepos);
 	gTps[sizeof(gTps) - 1] = '\0';
-	if (write(gTapeposfd, gTps, strlen(gTps)) != strlen(gTps)) {
+	if (write(gTapeposfd, gTps, strlen(gTps)) != (ssize_t)strlen(gTps)) {
       		warn("error writing tapepos file.\n");
 	}
 }

@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dirs.c,v 1.20 2002/06/25 19:00:38 stelian Exp $";
+	"$Id: dirs.c,v 1.21 2002/07/19 14:57:39 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -276,7 +276,7 @@ treescan(char *pname, dump_ino_t ino, long (*todo) __P((char *, dump_ino_t, int)
 	 * skipping over "." and ".."
 	 */
 	namelen = snprintf(locname, sizeof(locname), "%s/", pname);
-	if (namelen >= sizeof(locname))
+	if (namelen >= (int)sizeof(locname))
 		namelen = sizeof(locname) - 1;
 	rst_seekdir(dirp, itp->t_seekpt, itp->t_seekpt);
 	dp = rst_readdir(dirp); /* "." */
@@ -296,7 +296,7 @@ treescan(char *pname, dump_ino_t ino, long (*todo) __P((char *, dump_ino_t, int)
 	 */
 	while (dp != NULL) {
 		locname[namelen] = '\0';
-		if (namelen + dp->d_namlen >= sizeof(locname)) {
+		if (namelen + dp->d_namlen >= (int)sizeof(locname)) {
 			fprintf(stderr, "%s%s: name exceeds %ld char\n",
 				locname, dp->d_name, (long)sizeof(locname) - 1);
 		} else {
@@ -381,7 +381,7 @@ putdir(char *buf, size_t size)
 				putent(&cvtbuf);
 			}
 	} else {
-		for (loc = 0; loc < size; ) {
+		for (loc = 0; loc < (long)size; ) {
 			dp = (struct direct *)(buf + loc);
 #ifdef	DIRDEBUG
 			printf ("reclen = %d, namlen = %d, type = %d\n",

@@ -41,12 +41,13 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.48 2002/07/17 10:18:52 stelian Exp $";
+	"$Id: traverse.c,v 1.49 2002/07/19 14:57:39 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
 #include <ctype.h>
 #include <stdio.h>
+#include <sys/types.h>
 #ifdef __STDC__
 #include <string.h>
 #include <unistd.h>
@@ -107,7 +108,7 @@ static	void mapfileino __P((dump_ino_t ino, struct dinode const *dp, long *tapes
 #ifdef HAVE_EXT2_JOURNAL_INUM
 #define ext2_journal_ino(sb) (sb->s_journal_inum)
 #else
-#define ext2_journal_ino(sb) (*((__u32 *)sb + 0x38))
+#define ext2_journal_ino(sb) (*((u_int32_t *)sb + 0x38))
 #endif
 #ifndef HAVE_EXT2_INO_T
 typedef ino_t ext2_ino_t;
@@ -200,7 +201,7 @@ blockest(struct dinode const *dp)
 	if (blkest > sizeest)
 		blkest = sizeest;
 #ifdef	__linux__
-	if (i_size > fs->blocksize * NDADDR) {
+	if (i_size > (u_quad_t)fs->blocksize * NDADDR) {
 		/* calculate the number of indirect blocks on the dump tape */
 		blkest +=
 			howmany(sizeest - NDADDR * fs->blocksize / TP_BSIZE,
@@ -234,7 +235,7 @@ blockest(struct dinode const *dp)
 
 /* The WANTTODUMP macro decides whether a file should be dumped. */
 #define	WANTTODUMP(dp, ino) \
-	(CHANGEDSINCE(dp, spcl.c_ddate) && \
+	(CHANGEDSINCE(dp, ((u_int32_t)spcl.c_ddate)) && \
 	 (!NODUMP_FLAG(dp)) && \
 	 (!exclude_ino(ino)))
 
@@ -271,7 +272,7 @@ mapfileino(dump_ino_t ino, struct dinode const *dp, long *tapesize, int *dirskip
 		SETINO(ino, dumpdirmap);
 	if (WANTTODUMP(dp, ino)) {
 		SETINO(ino, dumpinomap);
-		if (!MSINCE(dp, spcl.c_ddate))
+		if (!MSINCE(dp, (u_int32_t)spcl.c_ddate))
 			SETINO(ino, metainomap);
 		if (mode != IFREG && mode != IFDIR && mode != IFLNK)
 			*tapesize += 1;
@@ -295,7 +296,7 @@ mapfileino(dump_ino_t ino, struct dinode const *dp, long *tapesize, int *dirskip
  */
 #ifdef __linux__
 int
-mapfiles(dump_ino_t maxino, long *tapesize)
+mapfiles(UNUSED(dump_ino_t maxino), long *tapesize)
 {
 	ext2_ino_t ino;
 	int anydirskipped = 0;
@@ -358,7 +359,7 @@ mapfiles(dump_ino_t maxino, long *tapesize)
 
 #ifdef __linux__
 int
-maponefile(dump_ino_t maxino, long *tapesize, char *directory)
+maponefile(UNUSED(dump_ino_t maxino), long *tapesize, char *directory)
 {
 	errcode_t retval;
 	ext2_ino_t dir_ino;
@@ -368,7 +369,7 @@ maponefile(dump_ino_t maxino, long *tapesize, char *directory)
 	/*
 	 * Mark every directory in the path as being dumped
 	 */
-	for (i = 0; i < strlen (directory); i++) {
+	for (i = 0; i < (int)strlen (directory); i++) {
 		if (directory[i] == '/') {
 			strncpy (dir_name, directory, i);
 			dir_name[i] = '\0';
@@ -411,7 +412,8 @@ struct mapfile_context {
 };
 
 static int
-mapfilesindir(struct ext2_dir_entry *dirent, int offset, int blocksize, char *buf, void *private)
+mapfilesindir(struct ext2_dir_entry *dirent, UNUSED(int offset), 
+	      UNUSED(int blocksize), UNUSED(char *buf), void *private)
 {
 	struct dinode const *dp;
 	int mode;
@@ -447,7 +449,7 @@ mapfilesindir(struct ext2_dir_entry *dirent, int offset, int blocksize, char *bu
  * the directories in the filesystem.
  */
 int
-mapfilesfromdir(dump_ino_t maxino, long *tapesize, char *directory)
+mapfilesfromdir(UNUSED(dump_ino_t maxino), long *tapesize, char *directory)
 {
 	errcode_t retval;
 	struct mapfile_context mfc;
@@ -458,7 +460,7 @@ mapfilesfromdir(dump_ino_t maxino, long *tapesize, char *directory)
 	/*
 	 * Mark every directory in the path as being dumped
 	 */
-	for (i = 0; i < strlen (directory); i++) {
+	for (i = 0; i < (int)strlen (directory); i++) {
 		if (directory[i] == '/') {
 			strncpy (dir_name, directory, i);
 			dir_name[i] = '\0';
@@ -646,7 +648,8 @@ dirindir(dump_ino_t ino, daddr_t blkno, int ind_level, long *filesize)
  */
 #ifdef	__linux__
 static	int
-searchdir(struct ext2_dir_entry *dp, int offset, int blocksize, char *buf, void *private)
+searchdir(struct ext2_dir_entry *dp, UNUSED(int offset), 
+	  UNUSED(int blocksize), UNUSED(char *buf), void *private)
 {
 	struct mapdirs_context *mdc;
 	int *ret;
@@ -749,8 +752,8 @@ struct block_context {
  * Dump a block to the tape
  */
 static int
-dumponeblock(ext2_filsys fs, blk_t *blocknr, e2_blkcnt_t blockcnt,
-	     blk_t ref_block, int ref_offset, void * private)
+dumponeblock(UNUSED(ext2_filsys fs), blk_t *blocknr, e2_blkcnt_t blockcnt,
+	     UNUSED(blk_t ref_block), UNUSED(int ref_offset), void * private)
 {
 	struct block_context *p;
 	int i;
@@ -901,7 +904,7 @@ dumpino(struct dinode *dp, dump_ino_t ino, int metaonly)
 		msg("Warning: undefined file type 0%o\n", dp->di_mode & IFMT);
 		return;
 	}
-	if (i_size > NDADDR * sblock->fs_bsize)
+	if (i_size > (u_quad_t)NDADDR * sblock->fs_bsize)
 #ifdef	__linux__
 		cnt = NDADDR * EXT2_FRAGS_PER_BLOCK(fs->super);
 #else
@@ -923,7 +926,7 @@ dumpino(struct dinode *dp, dump_ino_t ino, int metaonly)
 	/* deal with holes at the end of the inode */
 	if (i_size > ((u_quad_t)bc.next_block) * sblock->fs_fsize) {
 		remaining = i_size - ((u_quad_t)bc.next_block) * sblock->fs_fsize;
-		for (i = 0; i < howmany(remaining, sblock->fs_fsize); i++) {
+		for (i = 0; i < (int)howmany(remaining, sblock->fs_fsize); i++) {
 			bc.buf[bc.cnt++] = 0;
 			if (bc.cnt == bc.max) {
 				blksout (bc.buf, bc.cnt, bc.ino);
@@ -960,7 +963,8 @@ struct convert_dir_context {
  * size of the entry, and creates it in a temporary buffer
  */
 static int
-convert_dir(struct ext2_dir_entry *dirent, int offset, int blocksize, char *buf, void *private)
+convert_dir(struct ext2_dir_entry *dirent, UNUSED(int offset), 
+	    UNUSED(int blocksize), UNUSED(char *buf), void *private)
 {
 	struct convert_dir_context *p;
 	struct direct *dp;

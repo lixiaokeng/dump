@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: symtab.c,v 1.18 2002/01/25 15:09:00 stelian Exp $";
+	"$Id: symtab.c,v 1.19 2002/07/19 14:57:40 stelian Exp $";
 #endif /* not lint */
 
 /*
@@ -518,7 +518,7 @@ dumpsymtable(char *filename, long checkpt)
 	/*
 	 * Convert entry pointers to indexes, and output
 	 */
-	for (i = 0; i < entrytblsize; i++) {
+	for (i = 0; (long)i < entrytblsize; i++) {
 		if (entry[i] == NULL)
 			tentry = NULL;
 		else

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: optr.c,v 1.31 2002/02/04 11:18:45 stelian Exp $";
+	"$Id: optr.c,v 1.32 2002/07/19 14:57:39 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -161,7 +161,7 @@ char lastmsg[BUFSIZ];
  *	sleep for 2 minutes in case nobody comes to satisfy dump
  */
 static void
-alarmcatch(int signo)
+alarmcatch(UNUSED(int signo))
 {
 	int save_errno = errno;
 	if (notify == 0) {
@@ -189,7 +189,7 @@ alarmcatch(int signo)
  *	Here if an inquisitive operator interrupts the dump program
  */
 void
-interrupt(int signo)
+interrupt(UNUSED(int signo))
 {
 	msg("Interrupt received.\n");
 	if (query("Do you want to abort dump?"))

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.73 2002/07/17 10:18:52 stelian Exp $";
+	"$Id: main.c,v 1.74 2002/07/19 14:57:39 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -879,10 +879,10 @@ main(int argc, char *argv[])
 		/* print QFA-file header */
 		snprintf(gTps, sizeof(gTps), "%s\n%s\n%ld\n\n", QFA_MAGIC, QFA_VERSION, (unsigned long)spcl.c_date);
 		gTps[sizeof(gTps) - 1] = '\0';
-		if (write(gTapeposfd, gTps, strlen(gTps)) != strlen(gTps))
+		if (write(gTapeposfd, gTps, strlen(gTps)) != (ssize_t)strlen(gTps))
 			quit("can't write tapeposfile\n");
 		sprintf(gTps, "ino\ttapeno\ttapepos\n");
-		if (write(gTapeposfd, gTps, strlen(gTps)) != strlen(gTps))
+		if (write(gTapeposfd, gTps, strlen(gTps)) != (ssize_t)strlen(gTps))
 			quit("can't write tapeposfile\n");
 	}
 #endif /* USE_QFA */

@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.185 2002/07/17 10:18:52 stelian Exp $
+$Id: CHANGES,v 1.186 2002/07/19 14:57:38 stelian Exp $
 
 Changes between versions 0.4b29 and 0.4b30 (released ????????????????)
 ======================================================================
@@ -28,7 +28,11 @@ Changes between versions 0.4b29 and 0.4b30 (released ????????????????)
 	transparently support both inode formats, the change should
 	have no side effects. Thanks to John Yu <jky@cs.bu.edu> for
 	reporting the bug.
-	
+
+6.	Fixed a lot of warnings in the code shown when compiling
+	with 'gcc -W'. Thanks to Matthias Andree 
+	<matthias.andree@stud.uni-dortmund.de> for reporting this.
+
 Changes between versions 0.4b28 and 0.4b29 (released June 8, 2002)
 ==================================================================
 

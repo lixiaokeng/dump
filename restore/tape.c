@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.62 2002/05/21 15:48:46 stelian Exp $";
+	"$Id: tape.c,v 1.63 2002/07/19 14:57:40 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -334,7 +334,7 @@ setup(void)
 	if (vflag || command == 't' || command == 'C')
 		printdumpinfo();
 #ifdef USE_QFA
-	if (tapeposflag && spcl.c_date != qfadumpdate)
+	if (tapeposflag && (unsigned long)spcl.c_date != qfadumpdate)
 		errx(1, "different QFA/dumpdates detected\n");
 #endif
 	if (filesys[0] == '\0') {
@@ -705,7 +705,7 @@ printvolinfo(void)
 
 	if (volinfo[1] == ROOTINO) {
 		printf("Starting inode numbers by volume:\n");
-		for (i = 1; i < TP_NINOS && volinfo[i] != 0; ++i)
+		for (i = 1; i < (int)TP_NINOS && volinfo[i] != 0; ++i)
 			printf("\tVolume %d: %lu\n", i, (unsigned long)volinfo[i]);
 	}
 }
@@ -1020,7 +1020,7 @@ xtrfile(char *buf, size_t size)
  */
 /* ARGSUSED */
 static void
-xtrskip(char *buf, size_t size)
+xtrskip(UNUSED(char *buf), size_t size)
 {
 
 	if (LSEEK(ofile, (off_t)size, SEEK_CUR) == -1)
@@ -1047,7 +1047,7 @@ xtrlnkfile(char *buf, size_t size)
  */
 /* ARGSUSED */
 static void
-xtrlnkskip(char *buf, size_t size)
+xtrlnkskip(UNUSED(char *buf), UNUSED(size_t size))
 {
 
 	errx(1, "unallocated block in symbolic link %s", curfile.name);
@@ -1069,7 +1069,7 @@ xtrmap(char *buf, size_t size)
  */
 /* ARGSUSED */
 static void
-xtrmapskip(char *buf, size_t size)
+xtrmapskip(UNUSED(char *buf), size_t size)
 {
 
 	panic("hole in map\n");
@@ -1081,7 +1081,7 @@ xtrmapskip(char *buf, size_t size)
  */
 /* ARGSUSED */
 void
-xtrnull(char *buf, size_t size)
+xtrnull(UNUSED(char *buf), UNUSED(size_t size))
 {
 
 	return;
@@ -1099,7 +1099,7 @@ xtrcmpfile(char *buf, size_t size)
 	if (cmperror)
 		return;
 	
-	if (read(ifile, cmpbuf, size) != size) {
+	if (read(ifile, cmpbuf, size) != (ssize_t)size) {
 		fprintf(stderr, "%s: size has changed.\n", 
 			curfile.name);
 		cmperror = 1;
@@ -1118,7 +1118,7 @@ xtrcmpfile(char *buf, size_t size)
  * Skip over a hole in a file.
  */
 static void
-xtrcmpskip(char *buf, size_t size)
+xtrcmpskip(UNUSED(char *buf), size_t size)
 {
 	static char cmpbuf[MAXBSIZE];
 	int i;
@@ -1126,14 +1126,14 @@ xtrcmpskip(char *buf, size_t size)
 	if (cmperror)
 		return;
 	
-	if (read(ifile, cmpbuf, size) != size) {
+	if (read(ifile, cmpbuf, size) != (ssize_t)size) {
 		fprintf(stderr, "%s: size has changed.\n", 
 			curfile.name);
 		cmperror = 1;
 		return;
 	}
 
-	for (i = 0; i < size; ++i)
+	for (i = 0; i < (int)size; ++i)
 		if (cmpbuf[i] != '\0') {
 			fprintf(stderr, "%s: tape and disk copies are different\n",
 				curfile.name);
@@ -1262,7 +1262,7 @@ static char tmpfilename[MAXPATHLEN];
 void
 comparefile(char *name)
 {
-	int mode;
+	unsigned int mode;
 	struct STAT sb;
 	int r;
 #if !COMPARE_ONTHEFLY
@@ -1352,7 +1352,7 @@ comparefile(char *name)
 			return;
 		}
 
-		if (sb.st_rdev != (int)curfile.dip->di_rdev) {
+		if (sb.st_rdev != (dev_t)curfile.dip->di_rdev) {
 			fprintf(stderr,
 				"%s: device changed from %d,%d to %d,%d.\n",
 				name,
@@ -1614,7 +1614,7 @@ readtape_comprfile(char *buf)
 	/* read the block prefix */
 	ret = read_a_block(mt, tapebuf, PREFIXSIZE, &rl);
 
-	if (Vflag && (ret == 0 || rl < PREFIXSIZE  ||  tpb->length == 0))
+	if (Vflag && (ret == 0 || rl < (int)PREFIXSIZE  ||  tpb->length == 0))
 		ret = 0;
 	if (ret <= 0)
 		goto readerr;
@@ -1781,10 +1781,10 @@ decompress_tapebuf(struct tapebuf *tpbin, int readsize)
        
 	/* build a length error message */
 	blocklen = tpbin->length;
-	if (readsize < blocklen + PREFIXSIZE)
+	if (readsize < blocklen + (int)PREFIXSIZE)
 		lengtherr = "short";
 	else
-		if (readsize > blocklen + PREFIXSIZE)
+		if (readsize > blocklen + (int)PREFIXSIZE)
 			lengtherr = "long";
 
 	worklen = comprlen;
@@ -1954,7 +1954,7 @@ findtapeblksize(void)
 			len = bufsize - TP_BSIZE;
 		}
 		if (read_a_block(mt, tapebuf+TP_BSIZE, len, &i) < 0
-		    || (i != len && i % TP_BSIZE != 0))
+		    || (i != (long)len && i % TP_BSIZE != 0))
 			errx(1,"Error reading dump file header");
 		tbufptr = tapebuf;
 		numtrec = ntrec;

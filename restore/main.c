@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.40 2002/06/08 07:10:37 stelian Exp $";
+	"$Id: main.c,v 1.41 2002/07/19 14:57:39 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -554,10 +554,10 @@ main(int argc, char *argv[])
 			errx(1, "can't create tapeposfile\n");
 		/* print QFA-file header */
 		sprintf(gTps, "%s\n%s\n%ld\n\n", QFA_MAGIC, QFA_VERSION,(unsigned long)spcl.c_date);
-		if (write(gTapeposfd, gTps, strlen(gTps)) != strlen(gTps))
+		if (write(gTapeposfd, gTps, strlen(gTps)) != (ssize_t)strlen(gTps))
 			errx(1, "can't write tapeposfile\n");
 		sprintf(gTps, "ino\ttapeno\ttapepos\n");
-		if (write(gTapeposfd, gTps, strlen(gTps)) != strlen(gTps))
+		if (write(gTapeposfd, gTps, strlen(gTps)) != (ssize_t)strlen(gTps))
 			errx(1, "can't write tapeposfile\n");
 
 		extractdirs(1);

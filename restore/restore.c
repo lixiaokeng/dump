@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: restore.c,v 1.29 2002/04/04 08:20:23 stelian Exp $";
+	"$Id: restore.c,v 1.30 2002/07/19 14:57:40 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -159,7 +159,7 @@ addfile(char *name, dump_ino_t ino, int type)
  */
 /* ARGSUSED */
 long
-deletefile(char *name, dump_ino_t ino, int type)
+deletefile(char *name, dump_ino_t ino, UNUSED(int type))
 {
 	long descend = hflag ? GOOD : FAIL;
 	struct entry *ep;
@@ -951,7 +951,7 @@ createfiles(void)
 			if (volinfo[1] == ROOTINO) {
 				int i, goodvol = 1;
 
-				for (i = 1; i < TP_NINOS && volinfo[i] != 0; ++i)
+				for (i = 1; i < (int)TP_NINOS && volinfo[i] != 0; ++i)
 					if (volinfo[i] < next)
 						goodvol = i;
 
@@ -1023,7 +1023,7 @@ createfiles(void)
 				msg("inode %ld at tapepos %ld\n", curfile.ino, curtapepos);
 #endif
 				sprintf(gTps, "%ld\t%ld\t%lld\n", (unsigned long)curfile.ino, volno, curtapepos);
-				if (write(gTapeposfd, gTps, strlen(gTps)) != strlen(gTps))
+				if (write(gTapeposfd, gTps, strlen(gTps)) != (ssize_t)strlen(gTps))
 					warn("error writing tapepos file.\n");
 				skipfile();
 			}
