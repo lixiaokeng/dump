@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.55 2000/05/28 16:24:13 stelian Exp $
+$Id: CHANGES,v 1.56 2000/05/28 16:51:13 stelian Exp $
 
 Changes between versions 0.4b16 and 0.4b17 (released ??????????????)
 ====================================================================
@@ -10,6 +10,11 @@ Changes between versions 0.4b16 and 0.4b17 (released ??????????????)
 2.	Use posix signal handling to preserve dump functionality 
 	with libc5. Thanks to Jeff Johnson <jbj@redhat.com> for
 	the patch.
+
+3.	Made the exit code of restore in case of a 'C'ompare
+	command reflect the result of the compare. An exit status
+	of 0 means the dump archive is correct, 1 means tape errors,
+	2 means that some files were modified.
 
 Changes between versions 0.4b15 and 0.4b16 (released March 11, 2000)
 ====================================================================

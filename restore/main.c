@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.11 2000/03/09 13:12:31 stelian Exp $";
+	"$Id: main.c,v 1.12 2000/05/28 16:52:21 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -87,6 +87,7 @@ time_t	dumpdate;
 FILE 	*terminal;
 char	*tmpdir;
 int	compare_ignore_not_found;
+int	compare_errors;
 char	filesys[NAMELEN];
 static const char *stdin_opt = NULL;
 
@@ -250,6 +251,7 @@ main(int argc, char *argv[])
 
 		Vprintf(stdout, "Begin compare restore\n");
 		compare_ignore_not_found = 0;
+		compare_errors = 0;
 		setup();
 		printf("filesys = %s\n", filesys);
 		if (stat(filesys, &stbuf) < 0)
@@ -262,6 +264,10 @@ main(int argc, char *argv[])
 		treescan(".", ROOTINO, nodeupdates);
 		compareleaves();
 		checkrestore();
+		if (compare_errors) {
+			printf("Some files were modified!\n");
+			exit(2);
+		}
 		break;
 	}
 

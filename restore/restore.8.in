@@ -29,7 +29,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: restore.8.in,v 1.9 2000/03/09 13:12:31 stelian Exp $
+.\"	$Id: restore.8.in,v 1.10 2000/05/28 16:52:21 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt RESTORE 8
@@ -481,6 +481,14 @@ After a dump read error,
 may have to resynchronize itself.
 This message lists the number of blocks that were skipped over.
 .El
+.Pp
+.Nm Restore
+exits with zero status on success.
+Tape errors are indicated with an exit code of 1.
+.Pp
+When doing a comparison of files from a dump, an exit code
+of 2 indicates that some files were modified or deleted since
+the dump was made.
 .Sh ENVIRONMENT
 If the following environment variable exists it will be utilized by
 .Nm restore :

@@ -4,7 +4,7 @@
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *	Stelian Pop <pop@cybercable.fr>, 1999-2000
  *
- *	$Id: restore.h,v 1.8 2000/03/02 11:34:51 stelian Exp $
+ *	$Id: restore.h,v 1.9 2000/05/28 16:52:21 stelian Exp $
  */
 
 /*
@@ -79,6 +79,7 @@ extern int	compare_ignore_not_found;
 				/* used to compare incremental dumps, */
 				/* so messages about "not found" files */
 				/* isn't seen. */
+extern int	compare_errors;	/* did we encounter any compare errors? */
 extern char	filesys[NAMELEN];/* name of dumped filesystem */
 
 /*

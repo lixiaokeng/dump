@@ -45,7 +45,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.14 2000/03/03 11:00:55 stelian Exp $";
+	"$Id: tape.c,v 1.15 2000/05/28 16:52:21 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -918,12 +918,14 @@ cmpfiles(char *tapefile, char *diskfile, struct stat *sbuf_disk)
 	if (stat(tapefile, &sbuf_tape) != 0) {
 		panic("Can't lstat tmp file %s: %s\n", tapefile,
 		      strerror(errno));
+		compare_errors = 1;
 	}
 
 	if (sbuf_disk->st_size != sbuf_tape.st_size) {
 		fprintf(stderr,
 			"%s: size changed from %ld to %ld.\n",
 			diskfile, (long)sbuf_tape.st_size, (long)sbuf_disk->st_size);
+		compare_errors = 1;
 #ifdef COMPARE_FAIL_KEEP_FILE
 		return (0);
 #else
@@ -933,10 +935,12 @@ cmpfiles(char *tapefile, char *diskfile, struct stat *sbuf_disk)
 
 	if ((fd_tape = open(tapefile, O_RDONLY)) < 0) {
 		panic("Can't open %s: %s\n", tapefile, strerror(errno));
+		compare_errors = 1;
 	}
 	if ((fd_disk = open(diskfile, O_RDONLY)) < 0) {
 		close(fd_tape);
 		panic("Can't open %s: %s\n", diskfile, strerror(errno));
+		compare_errors = 1;
 	}
 
 	if (do_cmpfiles(fd_tape, fd_disk, sbuf_tape.st_size)) {
@@ -944,6 +948,7 @@ cmpfiles(char *tapefile, char *diskfile, struct stat *sbuf_disk)
 			diskfile);
 		close(fd_tape);
 		close(fd_disk);
+		compare_errors = 1;
 #ifdef COMPARE_FAIL_KEEP_FILE
 		/* rename the file to live in /tmp */
 		/* rename `tapefile' to /tmp/<basename of diskfile> */
@@ -990,6 +995,7 @@ comparefile(char *name)
 
 	if ((r = lstat(name, &sb)) != 0) {
 		warn("%s: does not exist (%d)", name, r);
+		compare_errors = 1;
 		skipfile();
 		return;
 	}
@@ -1004,6 +1010,7 @@ comparefile(char *name)
 	if (sb.st_mode != mode) {
 		fprintf(stderr, "%s: mode changed from 0%o to 0%o.\n",
 			name, mode & 07777, sb.st_mode & 07777);
+		compare_errors = 1;
 	}
 	switch (mode & IFMT) {
 	default:
@@ -1025,6 +1032,7 @@ comparefile(char *name)
 		if (!(sb.st_mode & S_IFLNK)) {
 			fprintf(stderr, "%s: is no longer a symbolic link\n",
 				name);
+			compare_errors = 1;
 			return;
 		}
 		lnkbuf[0] = '\0';
@@ -1034,17 +1042,20 @@ comparefile(char *name)
 			fprintf(stderr,
 				"%s: zero length symbolic link (ignored)\n",
 				name);
+			compare_errors = 1;
 			return;
 		}
 		if ((lsize = readlink(name, lbuf, MAXPATHLEN)) < 0) {
 			panic("readlink of %s failed: %s", name,
 			      strerror(errno));
+			compare_errors = 1;
 		}
 		lbuf[lsize] = 0;
 		if (strcmp(lbuf, lnkbuf) != 0) {
 			fprintf(stderr,
 				"%s: symbolic link changed from %s to %s.\n",
 				name, lnkbuf, lbuf);
+			compare_errors = 1;
 			return;
 		}
 		return;
@@ -1055,6 +1066,7 @@ comparefile(char *name)
 		if (!(sb.st_mode & (S_IFCHR|S_IFBLK))) {
 			fprintf(stderr, "%s: no longer a special file\n",
 				name);
+			compare_errors = 1;
 			skipfile();
 			return;
 		}
@@ -1067,6 +1079,7 @@ comparefile(char *name)
 				(int)curfile.dip->di_rdev & 0xff,
 				((int)sb.st_rdev >> 8) & 0xff,
 				(int)sb.st_rdev & 0xff);
+			compare_errors = 1;
 		}
 		skipfile();
 		return;

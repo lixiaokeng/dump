@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: restore.c,v 1.7 2000/01/21 10:17:41 stelian Exp $";
+	"$Id: restore.c,v 1.8 2000/05/28 16:52:21 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -610,8 +610,10 @@ removeoldnodes(void)
 static void
 compare_entry(struct entry *ep, int do_compare)
 {
-	if ((ep->e_flags & (NEW|EXTRACT)) == 0)
+	if ((ep->e_flags & (NEW|EXTRACT)) == 0) {
 		badentry(ep, "unexpected file on tape");
+		compare_errors = 1;
+	}
 	if (do_compare) (void) comparefile(myname(ep));
 	ep->e_flags &= ~(NEW|EXTRACT);
 }
@@ -642,6 +644,7 @@ compareleaves(void)
 			if (ep == NULL)
 				panic("%d: bad first\n", first);
 			fprintf(stderr, "%s: not found on tape\n", myname(ep));
+			compare_errors = 1;
 			ep->e_flags &= ~(NEW|EXTRACT);
 			first = lowerbnd(first);
 		}
@@ -655,12 +658,15 @@ compareleaves(void)
 		if (first != curfile.ino) {
 			fprintf(stderr, "expected next file %ld, got %lu\n",
 				(long)first, (unsigned long)curfile.ino);
+			compare_errors = 1;
 			skipfile();
 			goto next;
 		}
 		ep = lookupino(curfile.ino);
-		if (ep == NULL)
+		if (ep == NULL) {
 			panic("unknown file on tape\n");
+			compare_errors = 1;
+		}
 		compare_entry(ep, 1);
 		for (ep = ep->e_links; ep != NULL; ep = ep->e_links) {
 			compare_entry(ep, 0);
