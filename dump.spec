@@ -9,18 +9,18 @@ Release: 1
 License: BSD
 Group: Applications/Archiving
 Source: http://download.sourceforge.net/dump/dump-%{version}.tar.gz
-Requires: rmt
 BuildPrereq: e2fsprogs-devel, libtermcap-devel, readline-devel
+Requires: rmt
 BuildRoot: %{_tmppath}/%{name}-root
 
 %description
-The dump package contains both dump and restore.  Dump examines files in
-a filesystem, determines which ones need to be backed up, and copies
-those files to a specified disk, tape or other storage medium.  The
-restore command performs the inverse function of dump; it can restore a
-full backup of a filesystem.  Subsequent incremental backups can then be
-layered on top of the full backup.  Single files and directory subtrees
-may also be restored from full or partial backups.
+The dump package contains both dump and restore. Dump examines files
+in a filesystem, determines which ones need to be backed up, and
+copies those files to a specified disk, tape, or other storage medium.
+The restore command performs the inverse function of dump; it can
+restore a full backup of a filesystem. Subsequent incremental backups
+can then be layered on top of the full backup. Single files and
+directory subtrees may also be restored from full or partial backups.
 
 Install dump if you need a system for both backing up filesystems and
 restoring filesystems after backups.
@@ -32,25 +32,25 @@ Group: Applications/Archiving
 %description -n rmt
 The rmt utility provides remote access to tape devices for programs
 like dump (a filesystem backup program), restore (a program for
-restoring files from a backup) and tar (an archiving program).
+restoring files from a backup), and tar (an archiving program).
 
 %package -n dump-static
 Summary: Statically linked versions of dump and restore.
 Group: Applications/Archiving
 
 %description -n dump-static
-The dump package contains both dump and restore.  Dump examines files in
+The dump package contains both dump and restore. Dump examines files in
 a filesystem, determines which ones need to be backed up, and copies
-those files to a specified disk, tape or other storage medium.  The
+those files to a specified disk, tape, or other storage medium. The
 restore command performs the inverse function of dump; it can restore a
-full backup of a filesystem.  Subsequent incremental backups can then be
-layered on top of the full backup.  Single files and directory subtrees
+full backup of a filesystem. Subsequent incremental backups can then be
+layered on top of the full backup. Single files and directory subtrees
 may also be restored from full or partial backups.
 
 Install dump if you need a system for both backing up filesystems and
 restoring filesystems after backups.
 
-This packages contains statically linked versions of dump and restore.
+This package contains statically linked versions of dump and restore.
 
 %prep
 %setup -q
@@ -80,12 +80,12 @@ mkdir -p %{buildroot}%{_sbindir}
 mkdir -p %{buildroot}%{_mandir}/man8
 
 %makeinstall SBINDIR=%{buildroot}%{_sbindir} MANDIR=%{buildroot}%{_mandir}/man8 BINOWNER=$(id -un) BINGRP=$(id -gn) MANOWNER=$(id -un) MANGRP=$(id -gn)
+mkdir -p $RPM_BUILD_ROOT/usr/sbin
 
 cp dump/dump.static %{buildroot}%{_sbindir}
 cp restore/restore.static %{buildroot}%{_sbindir}
 
-{ cd %{buildroot}
-  strip .%{_sbindir}/* || :
+pushd $RPM_BUILD_ROOT
   ln -sf dump .%{_sbindir}/rdump
   ln -sf dump.static .%{_sbindir}/rdump.static
   ln -sf restore .%{_sbindir}/rrestore
@@ -94,7 +94,13 @@ cp restore/restore.static %{buildroot}%{_sbindir}
   mkdir -p .%{_sysconfdir}
   > .%{_sysconfdir}/dumpdates
   ln -sf ..%{_sbindir}/rmt .%{_sysconfdir}/rmt
-}
+  # quick workaround :)
+  mv sbin/* usr/sbin/
+  mv usr/sbin/*static sbin/
+  mv usr/sbin/rmt sbin/
+  # somehow, rpm didn't strip these...
+  strip usr/sbin/* sbin/* || :  
+popd
 
 %clean
 rm -rf %{buildroot}
@@ -104,10 +110,10 @@ rm -rf %{buildroot}
 %doc CHANGES COPYRIGHT KNOWNBUGS MAINTAINERS README REPORTING-BUGS THANKS TODO
 %doc dump.lsm
 %attr(0664,root,disk)	%config(noreplace) %{_sysconfdir}/dumpdates
-%attr(0755,root,root)	%{_sbindir}/dump
-%{_sbindir}/rdump
-%attr(0755,root,root)	%{_sbindir}/restore
-%{_sbindir}/rrestore
+%attr(0755,root,root)	/usr/sbin/dump
+/usr/sbin/rdump
+%attr(0755,root,root)	/usr/sbin/restore
+/usr/sbin/rrestore
 %{_mandir}/man8/dump.*
 %{_mandir}/man8/rdump.*
 %{_mandir}/man8/restore.*
