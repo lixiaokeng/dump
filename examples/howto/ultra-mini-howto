@@ -1,0 +1,244 @@
+Stelian,
+
+    I just got dump running on my system backing up a handful of unix
+servers and at the end of it I wrote a quick and dirty document that lays
+out the answers to some of the questions that I had.  I don't want to
+maintain it or get a flood of e-mail from people asking for help on it, so I
+signed it, but intentionally didn't put an e-mail address.
+
+    You are welcome to make this prettier, totally discard it, or put it up
+on the web page.  I hope it is accurate and relieves some of the common
+questions from the list.
+
+..Patrick
+
+
+
+
+Dump/Restore Ultra-Mini-FAQ
+
+Disclaimer: I am not an expert in dump/restore.  In fact,
+I'm a newbie.  But I've been picking things up as I
+implement it here and I wanted to pass some of those
+things along in the form of a very basic HOWTO.
+
+-Patrick Walsh
+
+1) Introduction/ Non-rewinding device
+2) Dump command line
+3) Sending 2 or more filesystems to a tape
+4) Compressing dumps on the fly
+5) The "nodump" file and directory attribute.
+6) Restoring your dumps (including compressed).
+7) How to confirm a backup
+8) Example backup script
+
+ 1) Introduction/ Non-rewinding device
+
+You use dump to backup to a file or a tape device.  If
+you're backing up to a tape device, then the first thing
+you need to understand is that there are two devices
+that refer to your tape drive.  There is the "rewinding"
+device and the "non-rewinding" device.
+
+I wish I could tell you an easy way to figure out what
+your device names are, but I don't know one.  On my
+local box I had a /dev/tape device that linked to
+/dev/st0.  It turns out that /dev/st0 is my "rewinding"
+tape drive.  If I write to this device it will always
+rewind before starting to write.  This means that if
+you try to dump two filesystems, only the second one
+will be stored.  If your tape device is /dev/st0, like
+mine, then your non-rewinding tape device is probably
+/dev/nst0.
+
+Anyway, through the rest of this I will refer to $TAPE
+and $RWTAPE.  $TAPE is the non-rewinding device (in my
+case /dev/nst0) and $RWTAPE is the rewinding tape (in my
+case /dev/st0 and /dev/tape).  $FS is the filesystem you
+are backing up, such as /dev/hda1.
+
+ 2) What options should I use?
+
+Use the man page to figure out what options to send
+to dump.  I use "dump 0uanf $TAPE $FS".
+
+  u=update /etc/dumpdates after a successful dump
+  a=auto-size -- bypass all tape length calculations and
+    write until eof
+  n=notify 'operators' group when dump needs attention
+  f=backup to file or device specified, or - for stdout
+
+ 3) You want to send two or more filesystems to the tape.
+
+OK, rewind using the mt command, then dump multiple times
+to the non-rewinding device, and you're done:
+
+mt -f $TAPE rewind
+dump 0uanf $TAPE $FS1
+dump 0uanf $TAPE $FS2
+etc.
+
+Check the man page of mt if you want to know how to eject
+the tape or retension it or anything.
+
+ 4) You want to compress your dumps on the fly.  No
+problem.  Send your backup to STDOUT and manipulate it
+from there.  It's easier if you're sending your output to
+the hard drive:
+
+dump 0uanf - $FS | gzip -c > /backup/outfile.dump.gz
+
+You want that to be written to the tape on the fly?  Try
+this:
+
+mt -f $TAPE rewind
+dump 0uanf - $FS |gzip -c |dd if=- of=$TAPE
+
+[ You can also use the -z or -J options of dump in the 
+  recent versions to enable internal compression - stelian ]
+
+ 5) You read the man page and you're wondering what the
+heck a "nodump" flag is.  For example, how can you get
+dump to stop backing up /tmp or ~/.netscape/cache.  You
+have two options: either exclude the inode in your dump
+command, or flag the files and directories with the
+"nodump" flag.  To flag /tmp, for example, do this:
+
+chattr -R +d /tmp
+
+Want more details?  Try 'man chattr' and 'man lsattr'.
+
+ 6) You want to know how to restore your backup.
+
+Read the restore man page.  But barring that, the easy way
+is to use restore in interactive mode.  If you have three
+filesystems on one tape and you want to restore files from
+the second one, you need to do this:
+
+mt -f $TAPE rewind
+mt -f $TAPE fsf 1     # skip forward one file
+restore -if $TAPE
+
+OK, suppose now that you used the commands in section 4 to
+compress the dump file before it was written to disk.  Use
+this command:
+
+mt -f $TAPE rewind
+mt -f $TAPE fsf 1
+dd if=$TAPE of=- |gzip -dc |restore -rf -
+
+Obviously if you dumped to a file instead of a tape it is
+much easier:
+
+gzip -dc $filename |restore -rf -
+
+ 7) How to confirm your backup
+
+ Check out the restore man page and read up on the -C option.
+
+ 8) That about sums up my knowledge on the matter, but
+I feel better having written something for other people to
+look at so it doesn't take them quite so long to learn the
+things I did.  I've included my backup script below.
+There are much better ones floating around, so go find
+someone else's and use theirs if mine won't work for you
+or you don't understand it.
+
+
+#!/bin/csh
+# System backup script for NARNIA
+
+# This is a script that will backup the entire hard drive
+# to the NT server (not my choice) \\fs1.
+#
+# On each Sunday night, a full backup will be made
+# of the hard drive and each day of the week thereafter an incremental
+# backup will be made that captures only those changes since the night
+# before.
+# Each full backup will be sent to the local tape as well as to the
+# NT machine.
+#
+# The files will be stored in partition-specific files with integer
+# endings that specify the day of the week they were saved.  Files
+# with zero on the end will always be full backups.
+
+# Dump options:
+#   a=auto-size -- bypass all tape length calculations and write until eof
+#   f=write the backup to file or device specified or - for stdout
+#   n=notify operators group when dump needs attention
+#   u=update /etc/dumpdates after a successful dump
+
+# Set variables that control the script.
+setenv MOUNTPOINT '/root/fs1backup'
+setenv OUTDIR '/root/fs1backup/narnia'
+setenv TAPE '/dev/nst0'  # non-rewinding tape
+
+# Auto-set variable that determines level of backup.
+setenv DAY `date +'%w'`
+
+# Mount the backup partition to /root/fs1backup
+/usr/bin/smbmount \\\\fs1\\backup $MOUNTPOINT -o
+"username=uname,password=pword"
+
+# Delete files created on this day last week
+rm -f $OUTDIR/*$DAY.dump.gz
+
+# Do the actual backing up, one filesystem at a time.
+
+# /dev/hda1 = /boot
+/sbin/dump $DAY'uanf' - /dev/hda1 | gzip -c >$OUTDIR/boot-$DAY.dump.gz
+
+# /dev/hda2 = /
+/sbin/dump $DAY'uanf' - /dev/hda2 | gzip -c >$OUTDIR/root-$DAY.dump.gz
+
+# /dev/hda3 = /usr
+/sbin/dump $DAY'uanf' - /dev/hda3 | gzip -c >$OUTDIR/usr-$DAY.dump.gz
+
+# /dev/hdb2 = /u1
+/sbin/dump $DAY'uanf' - /dev/hdb2 | gzip -c >$OUTDIR/u1-$DAY.dump.gz
+
+
+# OK, presumably everything is now backed up to \\fs1. On level 0
+# dumps, lets backup to the local drive too.
+if ($DAY == 0) then
+ mt -f $TAPE retension
+ foreach i ($OUTDIR/*0.dump.gz)
+  dd if=$i of=$TAPE
+ end
+ mt -f $TAPE rewind
+endif
+
+
+# Unmount the backup partition, not needed outside of script
+umount /root/fs1backup
+
+# Explicitly free up the temporary variables
+unsetenv DAY
+unsetenv MOUNTPOINT
+unsetenv OUTDIR
+unsetenv TAPE
+
+
+# RESTORE DIRECTIONS:
+# If from tape:
+#    dd if=$TAPE of=- | gzip -dc | restore -rf -
+# or dd if=$TAPE |gzip -dc |restore -rf -
+#
+# Note: must queue tape to proper position first.  This
+# is done by first rewinding then advancing to the proper
+# file.  The order that files are written to tape is
+# *probably* 0=/boot 1=/ 2=/usr 3=/u1
+#
+# Use mt to skip between them:
+#  mt -f $TAPE rewind
+# restore -if $TAPE   #now restoring /boot, probably
+# mt -f $TAPE fsf 1
+# restore -if $TAPE   #now restoring /
+# mt -f $TAPE fsf 1
+# restore -if $TAPE   #now restoring /usr
+# #etc.
+#
+# Otherwise:
+#    gzip -dc $filename | restore -rf -
+
