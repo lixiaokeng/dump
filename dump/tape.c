@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.85 2004/07/01 09:14:49 stelian Exp $";
+	"$Id: tape.c,v 1.86 2004/07/07 11:07:29 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -60,7 +60,11 @@ int    write(), read();
 #ifdef __linux__
 #include <sys/types.h>
 #include <sys/time.h>
-#include <linux/fs.h>	/* for definition of BLKFLSBUF */
+#include <sys/ioctl.h>
+#include <sys/mount.h>	/* for definition of BLKFLSBUF */
+#ifndef BLKFLSBUF	/* last resort... */
+#define BLKFLSBUF _IO(0x12, 97) /* Flush buffer cache.  */
+#endif
 #include <time.h>
 #endif
 #include <sys/param.h>
