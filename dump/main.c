@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.82 2003/03/07 09:15:50 stelian Exp $";
+	"$Id: main.c,v 1.83 2003/03/26 10:58:22 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -106,7 +106,8 @@ char	*dumpdates;	/* name of the file containing dump date information*/
 char	lastlevel;	/* dump level of previous dump */
 char	level;		/* dump level of this dump */
 int	bzipflag;	/* compression is done using bzlib */
-int	Afile = 0;	/* archive file descriptor */
+int	Afile = -1;	/* archive file descriptor */
+int	AfileActive = 1;/* Afile flag */
 int	uflag;		/* update flag */
 int	mflag;		/* dump metadata only if possible */
 int	Mflag;		/* multi-volume flag */
@@ -270,14 +271,6 @@ main(int argc, char *argv[])
 
 		case 'A':		/* archive file */
 			Apath = optarg;
-			if ((Afile = open(Apath, O_RDWR|O_CREAT|O_TRUNC,
-					  S_IRUSR | S_IWUSR)) < 0) {
-				msg("Cannot open %s for writing: %s\n",
-				    optarg, strerror(errno));
-				msg("The ENTIRE dump is aborted.\n");
-				exit(X_STARTUP);
-			}
-			memset(volinfo, 0, TP_NINOS * sizeof(dump_ino_t));
 			break;
 
 		case 'a':		/* `auto-size', Write to EOM. */
@@ -515,6 +508,14 @@ main(int argc, char *argv[])
 #endif
 	}
 	(void)setuid(getuid()); /* rmthost() is the only reason to be setuid */
+	if (Apath && (Afile = open(Apath, O_WRONLY|O_CREAT|O_TRUNC,
+				   S_IRUSR | S_IWUSR | S_IRGRP |
+				   S_IWGRP | S_IROTH | S_IWOTH)) < 0) {
+		msg("Cannot open %s for writing: %s\n",
+		    optarg, strerror(errno));
+		msg("The ENTIRE dump is aborted.\n");
+		exit(X_STARTUP);
+	}
 
 	if (signal(SIGHUP, SIG_IGN) != SIG_IGN)
 		signal(SIGHUP, sig);
@@ -880,7 +881,10 @@ main(int argc, char *argv[])
 #ifdef USE_QFA
 	if (tapepos) {
 		msg("writing QFA positions to %s\n", gTapeposfile);
-		if ((gTapeposfd = open(gTapeposfile, O_RDWR|O_CREAT|O_TRUNC, S_IRUSR | S_IWUSR)) < 0)
+		if ((gTapeposfd = open(gTapeposfile,
+				       O_WRONLY|O_CREAT|O_TRUNC,
+				       S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
+				       | S_IROTH | S_IWOTH)) < 0)
 			quit("can't open tapeposfile\n");
 		/* print QFA-file header */
 		snprintf(gTps, sizeof(gTps), "%s\n%s\n%ld\n\n", QFA_MAGIC, QFA_VERSION, (unsigned long)spcl.c_date);
@@ -965,7 +969,7 @@ main(int argc, char *argv[])
 	tend_writing = time(NULL);
 	spcl.c_type = TS_END;
 
-	if (Afile) {
+	if (Afile >= 0) {
 		volinfo[1] = ROOTINO;
 		memcpy(spcl.c_inos, volinfo, TP_NINOS * sizeof(dump_ino_t));
 		spcl.c_flags |= DR_INODEINFO;
@@ -1011,7 +1015,7 @@ main(int argc, char *argv[])
 			spcl.c_tapea, tapekb, rate);
 	}
 
-	if (Afile)
+	if (Afile >= 0)
 		msg("Archiving dump to %s\n", Apath);
 
 	broadcast("DUMP IS DONE!\7\7\n");

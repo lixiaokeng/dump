@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.72 2003/01/10 10:52:48 stelian Exp $";
+	"$Id: tape.c,v 1.73 2003/03/26 10:58:22 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -110,7 +110,6 @@ extern	int ntrec;		/* blocking factor on tape */
 extern	int cartridge;
 char	*nexttape;
 extern  pid_t rshpid;
-int 	eot_code = 1;
 long long tapea_bytes = 0;	/* bytes_written at start of current volume */
 static int magtapeout;		/* output is really a tape */
 
@@ -237,14 +236,14 @@ writerec(const void *dp, int isspcl)
 	*(union u_spcl *)(*(nextblock)) = *(union u_spcl *)dp;
 
 	/* Need to write it to the archive file */
-	if (Afile < 0 && isspcl && (spcl.c_type == TS_END))
-		Afile = -Afile;
-	if (Afile > 0) {
+	if (! AfileActive && isspcl && (spcl.c_type == TS_END))
+		AfileActive = 1;
+	if (AfileActive && Afile >= 0) {
 		/* When we dump an inode which is not a directory,
 		 * it means we ended the archive contents */
 		if (isspcl && (spcl.c_type == TS_INODE) &&
 		    ((spcl.c_dinode.di_mode & S_IFMT) != IFDIR))
-			Afile = -Afile;
+			AfileActive = 0;
 		else {
 			union u_spcl tmp;
 			tmp = *(union u_spcl *)dp;
@@ -560,15 +559,6 @@ trewind(void)
 				(void) close(f);
 			}
 		}
-		eot_code = 1;
-		if (eot_script && spcl.c_type != TS_END) {
-			msg("Launching %s\n", eot_script);
-			eot_code = system_command(eot_script, tape, tapeno);
-		}
-		if (eot_code != 0 && eot_code != 1) {
-			msg("Dump aborted by the end of tape script\n");
-			dumpabort(0);
-		}
 	}
 	return do_stats();
 }
@@ -577,8 +567,19 @@ trewind(void)
 void
 close_rewind(void)
 {
+	int eot_code = 1;
 	(void)trewind();
-	if (nexttape || Mflag || (eot_code == 0) )
+	if (nexttape || Mflag)
+		return;
+	if (eot_script) {
+		msg("Launching %s\n", eot_script);
+		eot_code = system_command(eot_script, tape, tapeno);
+	}
+	if (eot_code != 0 && eot_code != 1) {
+		msg("Dump aborted by the end of tape script\n");
+		dumpabort(0);
+	}
+	if (eot_code == 0)
 		return;
 	if (!nogripe) {
 		msg("Change Volumes: Mount volume #%d\n", tapeno+1);

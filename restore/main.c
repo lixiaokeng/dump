@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.42 2002/11/15 09:25:41 stelian Exp $";
+	"$Id: main.c,v 1.43 2003/03/26 10:58:22 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -124,6 +124,8 @@ static void obsolete __P((int *, char **[]));
 static void usage __P((void));
 static void use_stdin __P((const char *));
 
+#define FORCED_UMASK (077)
+
 int
 main(int argc, char *argv[])
 {
@@ -134,6 +136,7 @@ main(int argc, char *argv[])
 	char *p, name[MAXPATHLEN];
 	FILE *filelist = NULL;
 	char fname[MAXPATHLEN];
+	mode_t orig_umask;
 #ifdef DEBUG_QFA
 	time_t tistart, tiend, titaken;
 #endif
@@ -143,7 +146,7 @@ main(int argc, char *argv[])
 #endif /* USE_QFA */
 
 	/* Temp files should *not* be readable.  We set permissions later. */
-	(void) umask(077);
+	orig_umask = umask(FORCED_UMASK);
 	filesys[0] = '\0';
 #if defined(__linux__) || defined(sunos)
 	__progname = argv[0];
@@ -550,8 +553,12 @@ main(int argc, char *argv[])
 #endif
 		setup();
 		msg("writing QFA positions to %s\n", gTapeposfile);
-		if ((gTapeposfd = open(gTapeposfile, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR)) < 0)
+		(void) umask(orig_umask);
+		if ((gTapeposfd = open(gTapeposfile, O_WRONLY|O_CREAT|O_TRUNC,
+				       S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP
+				       |S_IROTH|S_IWOTH)) < 0)
 			errx(1, "can't create tapeposfile\n");
+		(void) umask(FORCED_UMASK);
 		/* print QFA-file header */
 		sprintf(gTps, "%s\n%s\n%ld\n\n", QFA_MAGIC, QFA_VERSION,(unsigned long)spcl.c_date);
 		if (write(gTapeposfd, gTps, strlen(gTps)) != (ssize_t)strlen(gTps))

@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.220 2003/03/07 09:15:44 stelian Exp $
+$Id: CHANGES,v 1.221 2003/03/26 10:58:19 stelian Exp $
 
 Changes between versions 0.4b33 and 0.4b34 (released ?????????????????)
 =======================================================================
@@ -43,6 +43,28 @@ Changes between versions 0.4b33 and 0.4b34 (released ?????????????????)
 	dangling symbolic links are allowed, and are dumped as is.
 	Thanks to Jin-su Ahn <jsahn@ee.snu.ac.kr> for reporting the
 	bug and providing the fix.
+
+10.	Fixed open and creation modes and permissions for QFA and
+	table-of-contents files in dump and restore. Thanks to 
+	Philippe Troin <phil@fifi.org> for the patch.
+
+11.	Fixed the archive file descriptor handling enabling it to be 0.
+	This can happen in some cases when shell redirections are used.
+	Thanks to Philippe Troin <phil@fifi.org> for the patch.
+
+12.	Delayed the opening of archive file until after suid had been
+	dropped (fixing a possible security issue if dump is suid). 
+	Thanks to Philippe Troin <phil@fifi.org> for the patch.
+
+13.	Fixed the 'S' command handling in the rmt client part.
+	Thanks to Philippe Troin <phil@fifi.org> for the patch.
+	
+14.	Modified the end-of-tape script handling to print out statistics
+	(and stop the timer) before launching the eot script. Also, the eot
+	script does not get run anymore when using -M (which makes sense) or
+	when multiple tapes are listed on the command line 
+	(-f tape0,tape1,tapen) (which also makes sense).
+	Thanks to Philippe Troin <phil@fifi.org> for the patch.
 
 Changes between versions 0.4b32 and 0.4b33 (released February 10, 2003)
 =======================================================================

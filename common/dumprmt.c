@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dumprmt.c,v 1.25 2003/02/12 11:02:29 stelian Exp $";
+	"$Id: dumprmt.c,v 1.26 2003/03/26 10:58:22 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -350,7 +350,15 @@ rmtstatus(void)
 
 	if (rmtstate != TS_OPEN)
 		return (NULL);
-	rmtcall("status", "S\n");
+	i = rmtcall("status", "S");
+	if (i < 0) return NULL;
+	if (i != (int)sizeof(mts)) {
+		msg("mtget sizes different between host (%d) "
+		    "and remote tape (%d)", sizeof(mts), i);
+		for ( /* empty */; i > 0; --i)
+			rmtgetb();
+		return NULL;
+	}
 	for (i = 0, cp = (char *)&mts; i < (int)sizeof(mts); i++)
 		*cp++ = rmtgetb();
 	return (&mts);

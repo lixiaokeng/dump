@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: dump.h,v 1.42 2003/01/10 14:42:50 stelian Exp $
+ *	$Id: dump.h,v 1.43 2003/03/26 10:58:22 stelian Exp $
  */
 
 /*-
@@ -78,6 +78,7 @@ extern char	*dumpdates;	/* name of the file containing dump date information*/
 extern char	lastlevel;	/* dump level of previous dump */
 extern char	level;		/* dump level of this dump */
 extern int	Afile;		/* archive file descriptor */
+extern int      AfileActive;    /* Afile flag */
 extern int	bzipflag;	/* compression is done using bzlib */
 extern int	uflag;		/* update flag */
 extern int	mflag;		/* dump metadata only if possible flag */
