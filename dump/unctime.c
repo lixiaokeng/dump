@@ -37,15 +37,9 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
+ *
+ * $Id: unctime.c,v 1.5 1999/10/11 13:31:12 stelian Exp $
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)unctime.c	8.2 (Berkeley) 6/14/94";
-#endif
-static const char rcsid[] =
-	"$Id: unctime.c,v 1.4 1999/10/11 13:08:08 stelian Exp $";
-#endif /* not lint */
 
 #include <time.h>
 #ifdef __STDC__

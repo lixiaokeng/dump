@@ -1,3 +1,5 @@
+$Id: TODO,v 1.4 1999/10/11 13:31:04 stelian Exp $
+
 1.	Make dump honor the no-dump attribute on directories.  Currently, it
 	honours it only on files.  This means that a directory flagged with
 	the no-dump attribute will be dumped if it contains a file without

@@ -42,15 +42,9 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
+ *
+ * $Id: dirs.c,v 1.5 1999/10/11 13:31:12 stelian Exp $
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)dirs.c	8.7 (Berkeley) 5/1/95";
-#endif
-static const char rcsid[] =
-	"$Id: dirs.c,v 1.4 1999/10/11 13:08:08 stelian Exp $";
-#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/file.h>

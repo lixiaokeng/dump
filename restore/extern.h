@@ -38,8 +38,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)extern.h	8.2 (Berkeley) 1/7/94
- *	$Id: extern.h,v 1.4 1999/10/11 13:08:09 stelian Exp $
+ * $Id: extern.h,v 1.5 1999/10/11 13:31:12 stelian Exp $
  */
 
 struct entry	*addentry __P((char *, ino_t, int));

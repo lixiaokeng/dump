@@ -41,7 +41,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)glob.h	8.1 (Berkeley) 6/2/93
+ * $Id: compatglob.h,v 1.2 1999/10/11 13:31:09 stelian Exp $
  */
 
 #ifndef _GLOB_H_

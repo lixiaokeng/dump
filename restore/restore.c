@@ -37,15 +37,9 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
+ *
+ * $Id: restore.c,v 1.5 1999/10/11 13:31:13 stelian Exp $
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)restore.c	8.3 (Berkeley) 9/13/94";
-#endif
-static const char rcsid[] =
-	"$Id: restore.c,v 1.4 1999/10/11 13:08:09 stelian Exp $";
-#endif /* not lint */
 
 #include <sys/types.h>
 

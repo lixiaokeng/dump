@@ -38,7 +38,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)dump.h	8.2 (Berkeley) 4/28/95
+ * $Id: dump.h,v 1.5 1999/10/11 13:31:11 stelian Exp $
  */
 
 #define MAXINOPB	(MAXBSIZE / sizeof(struct dinode))

@@ -43,7 +43,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)dumprestore.h	8.2 (Berkeley) 1/21/94
+ * $Id: dumprestore.h,v 1.3 1999/10/11 13:31:09 stelian Exp $
  */
 
 #ifndef _PROTOCOLS_DUMPRESTORE_H_

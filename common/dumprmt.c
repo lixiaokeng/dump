@@ -4,6 +4,7 @@
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *      Stelian Pop <pop@cybercable.fr>, 1999
  *
+ * $Id: dumprmt.c,v 1.5 1999/10/11 13:31:08 stelian Exp $
  */
 
 /*-
@@ -44,7 +45,7 @@
 static char sccsid[] = "@(#)dumprmt.c	8.3 (Berkeley) 4/28/95";
 #endif
 static const char rcsid[] =
-	"$Id: dumprmt.c,v 1.4 1999/10/11 13:08:06 stelian Exp $";
+	"$Id: dumprmt.c,v 1.5 1999/10/11 13:31:08 stelian Exp $";
 #endif /* not lint */
 
 #ifdef __linux__

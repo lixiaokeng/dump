@@ -1,3 +1,5 @@
+# $Id: MCONFIG.in,v 1.4 1999/10/11 13:31:03 stelian Exp $
+
 VPATH=		$(srcdir)
 
 top_builddir=	@top_builddir@

@@ -37,13 +37,9 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *	From: @(#)err.c	8.1 (Berkeley) 6/4/93
+ *
+ * $Id: compaterr.c,v 1.3 1999/10/11 13:31:10 stelian Exp $
  */
-
-#if defined(LIBC_RCS) && !defined(lint)
-static const char rcsid[] =
-	"$Id: compaterr.c,v 1.2 1999/10/11 13:08:07 stelian Exp $";
-#endif /* LIBC_RCS and not lint */
 
 #include <compaterr.h>
 #include <errno.h>

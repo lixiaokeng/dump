@@ -38,8 +38,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)err.h	8.1 (Berkeley) 6/2/93
- *      $Id: compaterr.h,v 1.2 1999/10/11 13:08:06 stelian Exp $
+ * $Id: compaterr.h,v 1.3 1999/10/11 13:31:09 stelian Exp $
  */
 
 #ifndef _ERR_H_

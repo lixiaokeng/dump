@@ -37,15 +37,9 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
+ *
+ * $Id: traverse.c,v 1.5 1999/10/11 13:31:11 stelian Exp $
  */
-
-#ifndef lint
-#if 0
-static char sccsid[] = "@(#)traverse.c	8.7 (Berkeley) 6/15/95";
-#endif
-static const char rcsid[] =
-	"$Id: traverse.c,v 1.4 1999/10/11 13:08:08 stelian Exp $";
-#endif /* not lint */
 
 #include <sys/param.h>
 #include <sys/stat.h>

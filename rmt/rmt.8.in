@@ -29,7 +29,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     @(#)rmt.8	8.3 (Berkeley) 6/1/94
+.\"     $Id: rmt.8.in,v 1.2 1999/10/11 13:31:14 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt RMT 8

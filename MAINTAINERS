@@ -1,3 +1,5 @@
+$Id: MAINTAINERS,v 1.2 1999/10/11 13:31:03 stelian Exp $
+
 The dump and restore backup suit was ported to Linux's Second
 Extended File System by Rémy Card <card@Linux.EU.Org>
 

@@ -1,3 +1,4 @@
+$Id: INSTALL,v 1.2 1999/10/11 13:31:03 stelian Exp $
 
 	Installation of the dump/restore port should be quite easy, since
 a configure script is now provided.

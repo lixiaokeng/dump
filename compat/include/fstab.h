@@ -38,7 +38,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)fstab.h	8.1 (Berkeley) 6/2/93
+ * $Id: fstab.h,v 1.3 1999/10/11 13:31:09 stelian Exp $
  */
 
 #ifndef _FSTAB_H_
