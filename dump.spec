@@ -70,7 +70,7 @@ rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/sbin
 mkdir -p ${RPM_BUILD_ROOT}%{_prefix}/man/man8
 
-make install BINDIR=$RPM_BUILD_ROOT/sbin MANDIR=${RPM_BUILD_ROOT}%{_prefix}/man/man8
+make install BINDIR=$RPM_BUILD_ROOT/sbin MANDIR=${RPM_BUILD_ROOT}%{_prefix}/man/man8 BINOWNER=$(id -un) BINGRP=$(id -gn) MANOWNER=$(id -un) MANGRP=$(id -gn)
 
 cp dump/dump.static $RPM_BUILD_ROOT/sbin
 cp restore/restore.static $RPM_BUILD_ROOT/sbin

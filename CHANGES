@@ -1,10 +1,14 @@
-$Id: CHANGES,v 1.31 2000/01/09 23:37:01 tiniou Exp $
+$Id: CHANGES,v 1.32 2000/01/09 23:40:10 tiniou Exp $
 
 Changes between versions 0.4b12 and 0.4b13 (released ???????????????)
 =====================================================================
 
 1.	Small Y2K fix in the man pages :). Thanks to Bernhard Sadlowski
 	<sadlowsk@Mathematik.Uni-Bielefeld.DE> for reporting the bug.
+
+2.	Removed the requirement to build the RPM as root from the
+	spec file. Thanks to Christian Weisgerber 
+	<naddy@mips.rhein-neckar.de> for submitting this.
 
 Changes between versions 0.4b11 and 0.4b12 (released January 8, 2000)
 =====================================================================
