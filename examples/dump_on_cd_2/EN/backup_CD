@@ -22,7 +22,7 @@ while [ "$ANSWER" != "y" ] ; do
 	read -p "Did you insert CD No. 1? (y/n)" ANSWER
 	if [ "$ANSWER" == "y" ] ; then
 		$RECORD_BIN -blank=fast
-		$RECORD_BIN -eject -pad -tsize=$TSIZE -data $FIFO ; echo "Did you insert CD No. 2 (y/n)" &
+		$RECORD_BIN -eject -pad -tsize=$TSIZE -data $FIFO &
 		$DUMP_BIN 
 		rm -f $FIFO
 		exit 0

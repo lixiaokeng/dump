@@ -13,7 +13,7 @@ while [ "$ANSWER" != "y" ] ; do
 	read -p "Is the DVD ready? (y/n)" ANSWER
 	if [ "$ANSWER" == "y" ] ; then
 		$RECORD_BIN -blank=fast
-		$RECORD_BIN -dao -eject -pad -tsize=$TSIZE -data $1 ; echo "Is the DVD ready? (y/n)" &
+		$RECORD_BIN -dao -eject -pad -tsize=$TSIZE -data $1 &
 		exit 0
 	elif [ "$ANSWER" == "n" ] ; then
 		EXIT=""

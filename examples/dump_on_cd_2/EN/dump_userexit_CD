@@ -11,7 +11,7 @@ while [ "$ANSWER" != "y" ] ; do
 	read -p "Is the CD ready? (y/n)" ANSWER
 	if [ "$ANSWER" == "y" ] ; then
 		$RECORD_BIN -blank=fast
-		$RECORD_BIN -eject -pad -data $1 ; echo "Is the CD ready? (y/n)" &
+		$RECORD_BIN -eject -pad -data $1 &
 		exit 0
 	elif [ "$ANSWER" == "n" ] ; then
 		EXIT=""

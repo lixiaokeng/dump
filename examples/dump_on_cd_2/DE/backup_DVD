@@ -30,7 +30,7 @@ while [ "$ANSWER" != "j" ] ; do
 	read -p "Ist die DVD No. 1 eingelegt? (j/n)" ANSWER
 	if [ "$ANSWER" == "j" ] ; then
 		$RECORD_BIN -blank=fast
-		$RECORD_BIN -eject -dao -pad -tsize=$TSIZE -data $FIFO ; echo "Ist die DVD No. 2 eingelegt (j/n)" &
+		$RECORD_BIN -eject -dao -pad -tsize=$TSIZE -data $FIFO &
 		$DUMP_BIN 
 		rm -f $FIFO
 		exit 0
