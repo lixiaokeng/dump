@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: restore.c,v 1.22 2002/01/16 09:32:14 stelian Exp $";
+	"$Id: restore.c,v 1.23 2002/01/16 10:53:28 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -870,7 +870,7 @@ createfiles(void)
 			if (!pipein)
 				getvol((long)0);
 			if (curfile.ino == maxino) {
-				next = lowerbnd(next);
+				next = lowerbnd(first);
 				while (next < curfile.ino) {
 					ep = lookupino(next);
 					if (ep == NULL)

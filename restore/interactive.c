@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: interactive.c,v 1.18 2002/01/16 09:32:14 stelian Exp $";
+	"$Id: interactive.c,v 1.19 2002/01/16 10:53:28 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -145,8 +145,8 @@ runcmdshell(void)
 	arglist.glob.gl_opendir = (void *)rst_opendir;
 	arglist.glob.gl_readdir = (void *)glob_readdir;
 	arglist.glob.gl_closedir = (void *)rst_closedir;
-	arglist.glob.gl_lstat = glob_stat;
-	arglist.glob.gl_stat = glob_stat;
+	arglist.glob.gl_lstat = (int (*)(const char *, void *))glob_stat;
+	arglist.glob.gl_stat = (int (*)(const char *, void *))glob_stat;
 	canon("/", curdir, sizeof(curdir));
 loop:
 	if (setjmp(reset) != 0) {
