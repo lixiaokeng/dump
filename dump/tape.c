@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.70 2002/07/19 14:57:39 stelian Exp $";
+	"$Id: tape.c,v 1.71 2002/07/29 12:00:33 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -546,7 +546,7 @@ trewind(void)
 #ifdef RDUMP
 		if (host) {
 			rmtclose();
-			while (rmtopen(tape, "O_RDONLY") < 0)
+			while (rmtopen(tape, O_RDONLY) < 0)
 				sleep(10);
 			rmtclose();
 		}
@@ -868,7 +868,7 @@ restore_check_point:
 			msg("Dumping volume %d on %s\n", tapeno, tape);
 		}
 #ifdef RDUMP
-		while ((tapefd = (host ? rmtopen(tape, "O_WRONLY|O_CREAT|O_TRUNC") : pipeout ? 
+		while ((tapefd = (host ? rmtopen(tape, O_WRONLY|O_CREAT|O_TRUNC) : pipeout ? 
 			fileno(stdout) : 
 			OPEN(tape, O_WRONLY|O_CREAT|O_TRUNC, 0666))) < 0)
 #else

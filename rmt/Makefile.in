@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.6 2002/01/02 10:13:16 stelian Exp $
+# $Id: Makefile.in,v 1.7 2002/07/29 12:00:34 stelian Exp $
 
 top_srcdir=	@top_srcdir@
 srcdir=		@srcdir@
@@ -8,24 +8,19 @@ srcdir=		@srcdir@
 CFLAGS=		@CCOPTS@ -pipe $(OPT) $(GINC) $(INC) $(DEFS)
 LDFLAGS=	@LDOPTS@ @STATIC@
 LIBS=		$(GLIBS)
-
-#DEBUG=		-DFDEBUG -DTDEBUG -DWRITEDEBUG
-#INC=		-I../compat/include
-#CFLAGS=		-pipe $(DEFS) $(DEBUG) $(INC) $(GINC) $(OPT)
-#DEPLIBS=	../compat/lib/libcompat.a
-#LIBS=		$(GLIBS) -L../compat/lib -lcompat
+DEPLIBS=	../compat/lib/libcompat.a
 
 PROG=		rmt
 SRCS=		rmt.c
 OBJS=		rmt.o
 MAN8=		rmt.8
 
-all::		$(PROG) rmt.8
+all::		$(PROG) $(MAN8)
 
 $(PROG):	$(OBJS) $(DEPLIBS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(PROG) $(OBJS) $(LIBS)
+	$(LD) $(CFLAGS) $(LDFLAGS) -o $(PROG) $(OBJS) $(LIBS)
 
-rmt.8:		rmt.8.in
+$(MAN8):		rmt.8.in
 	sed -e "s|__DATE__|$(DATE)|g" \
 	    -e "s|__VERSION__|$(VERSION)|g" $< > $@
 

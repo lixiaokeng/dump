@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dumprmt.c,v 1.22 2002/07/19 14:57:39 stelian Exp $";
+	"$Id: dumprmt.c,v 1.23 2002/07/29 12:00:33 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -49,6 +49,7 @@ static const char rcsid[] =
 #include <sys/mtio.h>
 #include <sys/socket.h>
 #include <sys/time.h>
+#include <fcntl.h>
 #ifdef __linux__
 #include <sys/types.h>
 #ifdef HAVE_EXT2FS_EXT2_FS_H
@@ -76,6 +77,7 @@ static const char rcsid[] =
 #include <ctype.h>
 #include <errno.h>
 #include <compaterr.h>
+#include <rmtflags.h>
 #include <netdb.h>
 #include <pwd.h>
 #include <stdio.h>
@@ -273,11 +275,17 @@ okname(const char *cp0)
 }
 
 int
-rmtopen(const char *tape, const char *mode)
+rmtopen(const char *tape, const int mode)
 {
 	char buf[MAXPATHLEN];
+	char *rmtflags;
 
-	(void)snprintf(buf, sizeof (buf), "O%s\n%s\n", tape, mode);
+	rmtflags = rmtflags_tochar(mode);
+	(void)snprintf(buf, sizeof (buf), "O%s\n%d %s\n", 
+		       tape, 
+		       mode & O_ACCMODE, 
+		       rmtflags);
+	free(rmtflags);
 	rmtstate = TS_OPEN;
 	return (rmtcall(tape, buf));
 }

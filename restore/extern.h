@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: extern.h,v 1.18 2002/05/21 15:48:46 stelian Exp $
+ *	$Id: extern.h,v 1.19 2002/07/29 12:00:34 stelian Exp $
  */
 
 /*-
@@ -118,7 +118,7 @@ void		 xtrnull __P((char *, size_t));
 void		rmtclose __P((void));
 int		rmthost __P((const char *));
 int		rmtioctl __P((int, int));
-int		rmtopen __P((const char *, const char *));
+int		rmtopen __P((const char *, const int));
 int		rmtread __P((const char *, int));
 int		rmtseek __P((int, int));
 

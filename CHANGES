@@ -1,4 +1,11 @@
-$Id: CHANGES,v 1.189 2002/07/25 09:56:47 stelian Exp $
+$Id: CHANGES,v 1.190 2002/07/29 12:00:30 stelian Exp $
+
+Changes between versions 0.4b30 and 0.4b31 (released ?????????????)
+===================================================================
+
+1.	Fixed rmt open flags transmission (GNU's symbolic syntax over
+	rmt) which I broke in 0.4b29. Thanks to Eros Albertazzi
+	<eros@lamel.bo.cnr.it> for reporting the bug.
 
 Changes between versions 0.4b29 and 0.4b30 (released July 25, 2002)
 ===================================================================
