@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: dump.h,v 1.34 2002/01/16 09:32:14 stelian Exp $
+ *	$Id: dump.h,v 1.35 2002/01/22 11:12:28 stelian Exp $
  */
 
 /*-
@@ -118,7 +118,6 @@ extern int	gTapeposfd;
 extern char	*gTapeposfile;
 extern char	gTps[255];
 extern int32_t	gThisDumpDate;
-int	GetTapePos __P((long *pos));
 #endif /* USE_QFA */
 
 #ifndef __P

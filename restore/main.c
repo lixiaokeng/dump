@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.35 2002/01/16 10:29:26 stelian Exp $";
+	"$Id: main.c,v 1.36 2002/01/22 11:12:28 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -240,6 +240,7 @@ main(int argc, char *argv[])
 		case 'Q':
 			gTapeposfile = optarg;
 			tapeposflag = 1;
+			aflag = 1;
 			break;
 #endif
 		case 's':

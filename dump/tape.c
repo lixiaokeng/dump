@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.59 2002/01/16 09:32:14 stelian Exp $";
+	"$Id: tape.c,v 1.60 2002/01/22 11:12:28 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -115,6 +115,7 @@ char	*nexttape;
 extern  pid_t rshpid;
 int 	eot_code = 1;
 long long tapea_bytes = 0;	/* bytes_written at start of current volume */
+static int magtapeout;		/* output is really a tape */
 
 static	ssize_t atomic_read __P((int, void *, size_t));
 static	ssize_t atomic_write __P((int, const void *, size_t));
@@ -123,6 +124,10 @@ static	void enslave __P((void));
 static	void flushtape __P((void));
 static	void killall __P((void));
 static	void rollforward __P((void));
+#ifdef USE_QFA
+static int GetTapePos __P((long *));
+static void MkTapeString __P((struct s_spcl *, long));
+#endif
 
 /*
  * Concurrent dump mods (Caltech) - disk block reading and tape writing
@@ -850,6 +855,17 @@ restore_check_point:
 			if (!query("Do you want to retry the open?"))
 				dumpabort(0);
 		}
+#ifdef RDUMP
+		if (!host)
+#endif
+			{
+				struct mtget mt_stat;
+				magtapeout = ioctl(tapefd, MTIOCGET, (char *)&mt_stat) == 0;
+				/*
+				msg("Output is to %s\n", 
+					magtapeout ? "tape" : "file/pipe");
+				*/
+			}
 
 		enslave();  /* Share open tape file descriptor with slaves */
 
@@ -1191,22 +1207,18 @@ doslave(int cmd, int slave_number, int first)
 
 #ifdef USE_QFA
 		if (gTapeposfd >= 0) {
-			uspclptr = (union u_spcl *)&slp->tblock[0];
-			spclptr = &uspclptr->s_spcl;
-			if ((spclptr->c_magic == NFS_MAGIC) && 
-			    (spclptr->c_type == TS_INODE) &&
-			    (spclptr->c_date == gThisDumpDate)) {
-				/* if an error occured previously don't
-				 * try again */
-				if (gtperr == 0) {
-					if ((gtperr = GetTapePos(&curtapepos)) == 0) {
-#ifdef DEBUG_QFA
-						msg("inode %ld at tapepos %ld\n", spclptr->c_inumber, curtapepos);
-#endif
-						sprintf(gTps, "%ld\t%d\t%ld\n", (unsigned long)spclptr->c_inumber, tapeno, curtapepos);
-						if (write(gTapeposfd, gTps, strlen(gTps)) != strlen(gTps)) {
-				       			warn("error writing tapepos file.\n");
-						}
+			int i;
+			for (i = 0; i < ntrec; ++i) {
+				uspclptr = (union u_spcl *)&slp->tblock[i];
+				spclptr = &uspclptr->s_spcl;
+				if ((spclptr->c_magic == NFS_MAGIC) && 
+				    (spclptr->c_type == TS_INODE) &&
+				    (spclptr->c_date == gThisDumpDate)) {
+					/* if an error occured previously don't
+					 * try again */
+					if (gtperr == 0) {
+						if ((gtperr = GetTapePos(&curtapepos)) == 0)
+							MkTapeString(spclptr, curtapepos);
 					}
 				}
 			}
@@ -1307,18 +1319,42 @@ atomic_write(int fd, const void *buf, size_t count)
 /*
  * read the current tape position
  */
-int
+static int
 GetTapePos(long *pos)
 {
 	int err = 0;
 
-	*pos = 0;
-	if (ioctl(tapefd, MTIOCPOS, pos) == -1) {
+	if (magtapeout) {
+		*pos = 0;
+		err = (ioctl(tapefd, MTIOCPOS, pos) < 0);
+	}
+	else {
+		*pos = lseek(tapefd, 0, SEEK_CUR);
+		err = (*pos < 0);
+	}
+	if (err) {
 		err = errno;
 		msg("[%ld] error: %d (getting tapepos: %ld)\n", getpid(), 
 			err, *pos);
 		return err;
 	}
 	return err;
+}
+
+static void 
+MkTapeString(struct s_spcl *spclptr, long curtapepos) {
+
+#ifdef DEBUG_QFA
+	msg("inode %ld at tapepos %ld\n", spclptr->c_inumber, curtapepos);
+#endif
+
+	snprintf(gTps, sizeof(gTps), "%ld\t%d\t%ld\n", 
+		 (unsigned long)spclptr->c_inumber, 
+		 tapeno, 
+		 curtapepos);
+	gTps[sizeof(gTps) - 1] = '\0';
+	if (write(gTapeposfd, gTps, strlen(gTps)) != strlen(gTps)) {
+      		warn("error writing tapepos file.\n");
+	}
 }
 #endif /* USE_QFA */

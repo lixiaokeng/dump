@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.65 2002/01/16 09:32:14 stelian Exp $";
+	"$Id: main.c,v 1.66 2002/01/22 11:12:28 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -470,6 +470,13 @@ main(int argc, char *argv[])
 		tapeprefix = strchr(host, ':');
 		*tapeprefix++ = '\0';
 #ifdef RDUMP
+#ifdef USE_QFA
+		if (tapepos) {
+			msg("Cannot use -Q option on remote media\n");
+			msg("The ENTIRE dump is aborted.\n");
+			exit(X_STARTUP);
+		}
+#endif
 		if (index(tapeprefix, '\n')) {
 			msg("invalid characters in tape\n");
 			msg("The ENTIRE dump is aborted.\n");
@@ -846,10 +853,11 @@ main(int argc, char *argv[])
 #ifdef USE_QFA
 	if (tapepos) {
 		msg("writing QFA positions to %s\n", gTapeposfile);
-		if ((gTapeposfd = open(gTapeposfile, O_RDWR|O_CREAT, S_IRUSR | S_IWUSR)) < 0)
+		if ((gTapeposfd = open(gTapeposfile, O_RDWR|O_CREAT|O_TRUNC, S_IRUSR | S_IWUSR)) < 0)
 			quit("can't open tapeposfile\n");
 		/* print QFA-file header */
-		sprintf(gTps, "%s\n%s\n%ld\n\n", QFA_MAGIC, QFA_VERSION, (unsigned long)spcl.c_date);
+		snprintf(gTps, sizeof(gTps), "%s\n%s\n%ld\n\n", QFA_MAGIC, QFA_VERSION, (unsigned long)spcl.c_date);
+		gTps[sizeof(gTps) - 1] = '\0';
 		if (write(gTapeposfd, gTps, strlen(gTps)) != strlen(gTps))
 			quit("can't write tapeposfile\n");
 		sprintf(gTps, "ino\ttapeno\ttapepos\n");

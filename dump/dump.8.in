@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.35 2002/01/16 09:32:14 stelian Exp $
+.\"	$Id: dump.8.in,v 1.36 2002/01/22 11:12:28 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -298,6 +298,9 @@ page, on how to set the driver to return logical tape positions.
 Before calling restore with parameter Q, always make sure the st
 driver is set to return the same type of tape position used during the 
 call to dump. Otherwise restore may be confused.
+.Pp
+This option can be used when dumping to local tapes (see above)
+or to local files.
 .It Fl s Ar feet
 Attempt to calculate the amount of tape needed at a particular density.
 If this amount is exceeded,

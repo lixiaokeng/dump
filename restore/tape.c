@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.53 2002/01/16 10:29:26 stelian Exp $";
+	"$Id: tape.c,v 1.54 2002/01/22 11:12:28 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -190,6 +190,10 @@ setinput(char *source)
 
 #ifdef RRESTORE
 	if (strchr(source, ':')) {
+#ifdef USE_QFA
+		if (tapeposflag)
+			errx(1, "cannot use -Q option on remote media");
+#endif
 		host = source;
 		source = strchr(host, ':');
 		*source++ = '\0';
@@ -2385,8 +2389,15 @@ GetTapePos(long *pos)
 {
 	int err = 0;
 
-	*pos = 0;
-	if (ioctl(mt, MTIOCPOS, pos) == -1) {
+	if (magtapein) {
+		*pos = 0;
+		err = (ioctl(mt, MTIOCPOS, pos) < 0);
+	}
+	else {
+		*pos = lseek(mt, 0, SEEK_CUR);
+		err = (*pos < 0);
+	}
+	if (err) {
 		err = errno;
 		fprintf(stdout, "[%ld] error: %d (getting tapepos: %ld)\n", 
 			(unsigned long)getpid(), err, *pos);
@@ -2407,11 +2418,18 @@ int
 GotoTapePos(long pos)
 {
 	int err = 0;
-	struct mt_pos buf;
 
-	buf.mt_op = MTSEEK;
-	buf.mt_count = pos;
-	if (ioctl(mt, MTIOCTOP, &buf) == -1) {
+	if (magtapein) {
+		struct mt_pos buf;
+		buf.mt_op = MTSEEK;
+		buf.mt_count = pos;
+		err = (ioctl(mt, MTIOCTOP, &buf) < 0);
+	}
+	else {
+		pos = lseek(mt, pos, SEEK_SET);
+		err = (pos < 0);
+	}
+	if (err) {
 		err = errno;
 		fprintf(stdout, "[%ld] error: %d (setting tapepos: %ld)\n", 
 			(unsigned long)getpid(), err, pos);
