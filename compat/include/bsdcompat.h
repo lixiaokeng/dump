@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: bsdcompat.h,v 1.16 2002/01/16 09:32:14 stelian Exp $
+ *	$Id: bsdcompat.h,v 1.17 2002/06/10 14:05:00 stelian Exp $
  */
 
 #include <config.h>
@@ -36,7 +36,8 @@
 #define powerof2(x)	((((x)-1)&(x))==0)
 
 #define dbtob(b)	((unsigned)(b) << DEV_BSHIFT)
-#define fsbtodb(sb,b)	((int)(((long long)b * EXT2_BLOCK_SIZE(sb->super)) / DEV_BSIZE))
+#define fsbtodb(sb,b)	((int)(((long long)(b) * EXT2_BLOCK_SIZE((sb)->super)) / DEV_BSIZE))
+#define dbtofsb(sb,b)	((int)(((long long)(b) * DEV_BSIZE) / EXT2_BLOCK_SIZE((sb)->super)))
 
 #define	sblock		fs
 #define fs_fsize	fragsize

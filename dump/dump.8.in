@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.41 2002/06/05 13:29:15 stelian Exp $
+.\"	$Id: dump.8.in,v 1.42 2002/06/10 14:05:00 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -567,6 +567,21 @@ Fewer than 32 read errors (change this with -I)
 on the filesystem are ignored. If noticing
 read errors is important, the output from dump can be parsed to look for lines
 that contain the text 'read error'.
+.Pp
+When a read error occurs,
+.Nm
+prints out the corresponding physical disk block and sector number and the
+ext2 logical block number.
+It doesn't print out the corresponing file name or even the inode number. 
+The user has to use 
+.Xr debugfs 8 ,
+commands
+.Pa ncheck
+and
+.Pa icheck
+to translate the
+.Pa ext2blk
+number printed out by dump into an inode number, then into a file name.
 .Pp
 Each reel requires a new process, so parent processes for
 reels already written just hang around until the entire tape

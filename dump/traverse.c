@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.46 2002/05/16 21:22:36 stelian Exp $";
+	"$Id: traverse.c,v 1.47 2002/06/10 14:05:00 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -51,6 +51,7 @@ static const char rcsid[] =
 #include <string.h>
 #include <unistd.h>
 #endif
+#include <errno.h>
 
 #include <sys/param.h>
 #include <sys/stat.h>
@@ -1278,7 +1279,6 @@ void
 bread(daddr_t blkno, char *buf, int size)
 {
 	int cnt, i;
-	extern int errno;
 
 loop:
 #ifdef	__linux__
@@ -1306,11 +1306,12 @@ loop:
 		goto loop;
 	}
 	if (cnt == -1)
-		msg("read error from %s: %s: [block %d]: count=%d\n",
-			disk, strerror(errno), blkno, size);
+		msg("read error from %s: %s: [block %d, ext2blk %d]: count=%d\n",
+			disk, strerror(errno), blkno, 
+			dbtofsb(sblock, blkno), size);
 	else
-		msg("short read error from %s: [block %d]: count=%d, got=%d\n",
-			disk, blkno, size, cnt);
+		msg("short read error from %s: [block %d, ext2blk %d]: count=%d, got=%d\n",
+			disk, blkno, dbtofsb(sblock, blkno), size, cnt);
 	if (++breaderrors > breademax) {
 		msg("More than %d block read errors from %d\n",
 			breademax, disk);
@@ -1338,11 +1339,12 @@ loop:
 		if ((cnt = read(diskfd, buf, (int)dev_bsize)) == dev_bsize)
 			continue;
 		if (cnt == -1) {
-			msg("read error from %s: %s: [sector %d]: count=%d\n",
-				disk, strerror(errno), blkno, dev_bsize);
+			msg("read error from %s: %s: [sector %d, ext2blk %d]: count=%d\n",
+				disk, strerror(errno), blkno, 
+				dbtofsb(sblock, blkno), dev_bsize);
 			continue;
 		}
-		msg("short read error from %s: [sector %d]: count=%d, got=%d\n",
-			disk, blkno, dev_bsize, cnt);
+		msg("short read error from %s: [sector %d, ext2blk %d]: count=%d, got=%d\n",
+			disk, blkno, dbtofsb(sblock, blkno), dev_bsize, cnt);
 	}
 }

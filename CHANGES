@@ -1,5 +1,13 @@
-$Id: CHANGES,v 1.180 2002/06/08 07:19:28 stelian Exp $
+$Id: CHANGES,v 1.181 2002/06/10 14:04:59 stelian Exp $
 
+Changes between versions 0.4b29 and 0.4b30 (released ????????????????)
+======================================================================
+
+1.	Made dump print out the ext2 logical block number in case of a read
+	error, which can be given as an argument to debugfs' ncheck command,
+	in order to find out the affected inode. Added note about this 
+	usage in dump's man page.
+	
 Changes between versions 0.4b28 and 0.4b29 (released June 8, 2002)
 ==================================================================
 
