@@ -2,7 +2,7 @@
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
- *	Stelian Pop <pop@cybercable.fr>, 1999 
+ *	Stelian Pop <pop@cybercable.fr>, 1999-2000
  */
 
 /*-
@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.11 2000/01/07 19:24:04 tiniou Exp $";
+	"$Id: main.c,v 1.12 2000/01/21 10:17:41 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>

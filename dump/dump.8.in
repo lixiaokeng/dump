@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.8 2000/01/07 19:24:04 tiniou Exp $
+.\"	$Id: dump.8.in,v 1.9 2000/01/21 10:17:41 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -476,11 +476,7 @@ Starting with 0.4b5, the new maintainer is Stelian Pop
 .Sh AVAILABILITY
 The
 .Nm dump/restore
-backup suit is available for anonymous ftp from tsx-11.mit.edu
-in /pub/linux/ALPHA/ext2fs (development versions) or 
-/pub/linux/packages/ext2fs (stable versions).
-.Pp
-An alternate downloading location is http://perso.cybercable.fr/pop/dump.
+backup suit is available from http://dump.sourceforge.net
 .Sh HISTORY
 A
 .Nm

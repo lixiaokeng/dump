@@ -4,7 +4,7 @@ Version: 0.4b12
 Release: 1
 Copyright: UCB
 Group: Applications/Archiving
-Source: http://perso.cybercable.fr/pop/dump/dump-%{version}.tar.gz
+Source: http://sourceforge.net/download.php/dump/dump-%{version}.tar.gz
 Requires: rmt
 BuildRoot: /var/tmp/%{name}-root
 

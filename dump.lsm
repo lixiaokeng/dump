@@ -6,10 +6,9 @@ Description:    Port of the 4.4BSD dump and restore backup suite
 Keywords:       backup, filesystem, Ext2fs
 Author:         University of California, Berkeley
 Maintained-by:  pop@cybercable.fr (Stelian Pop)
-Primary-site:   tsx-11.mit.edu /pub/linux/ALPHA/ext2fs
+Primary-site:   http://dump.sourceforge.net/
                 135kB dump-0.4b12.tar.gz
                 677 dump.lsm
-Alternate-site: http://perso.cybercable.fr/pop/dump
 Original-site:  ftp.freebsd.org /pub/bsd-sources/4.4BSD-Lite2/sbin
                 dump/*
                 restore/*

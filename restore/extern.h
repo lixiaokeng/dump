@@ -2,9 +2,9 @@
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
- *	Stelian Pop <pop@cybercable.fr>, 1999 
+ *	Stelian Pop <pop@cybercable.fr>, 1999-2000
  *
- *	$Id: extern.h,v 1.6 1999/10/13 09:57:20 stelian Exp $
+ *	$Id: extern.h,v 1.7 2000/01/21 10:17:41 stelian Exp $
  */
 
 /*-

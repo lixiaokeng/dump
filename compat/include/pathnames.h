@@ -2,9 +2,9 @@
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
- *	Stelian Pop <pop@cybercable.fr>, 1999 
+ *	Stelian Pop <pop@cybercable.fr>, 1999-2000
  *
- *	$Id: pathnames.h,v 1.5 1999/10/13 09:57:18 stelian Exp $
+ *	$Id: pathnames.h,v 1.6 2000/01/21 10:17:41 stelian Exp $
  */
 
 /*
