@@ -45,7 +45,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.15 2000/05/28 16:52:21 stelian Exp $";
+	"$Id: tape.c,v 1.16 2000/06/01 18:30:08 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -124,6 +124,15 @@ static void	 xtrlnkskip __P((char *, size_t));
 static void	 xtrmap __P((char *, size_t));
 static void	 xtrmapskip __P((char *, size_t));
 static void	 xtrskip __P((char *, size_t));
+
+#define COMPARE_ONTHEFLY 1
+
+#if COMPARE_ONTHEFLY
+static int	ifile;		/* input file for compare */
+static int	cmperror;	/* compare error */
+static void	xtrcmpfile __P((char *, size_t));
+static void	xtrcmpskip __P((char *, size_t));
+#endif
 
 static int readmapflag;
 
@@ -873,6 +882,63 @@ xtrnull(char *buf, size_t size)
 	return;
 }
 
+#if COMPARE_ONTHEFLY
+/*
+ * Compare the next block of a file.
+ */
+static void
+xtrcmpfile(char *buf, size_t size)
+{
+	static char cmpbuf[MAXBSIZE];
+
+	if (cmperror)
+		return;
+	
+	if (read(ifile, cmpbuf, size) != size) {
+		fprintf(stderr, "%s: size has changed.\n", 
+			curfile.name);
+		cmperror = 1;
+		return;
+	}
+	
+	if (memcmp(buf, cmpbuf, size) != 0) {
+		fprintf(stderr, "%s: tape and disk copies are different\n",
+			curfile.name);
+		cmperror = 1;
+		return;
+	}
+}
+
+/*
+ * Skip over a hole in a file.
+ */
+static void
+xtrcmpskip(char *buf, size_t size)
+{
+	static char cmpbuf[MAXBSIZE];
+	int i;
+
+	if (cmperror)
+		return;
+	
+	if (read(ifile, cmpbuf, size) != size) {
+		fprintf(stderr, "%s: size has changed.\n", 
+			curfile.name);
+		cmperror = 1;
+		return;
+	}
+
+	for (i = 0; i < size; ++i)
+		if (cmpbuf[i] != '\0') {
+			fprintf(stderr, "%s: tape and disk copies are different\n",
+				curfile.name);
+			cmperror = 1;
+			return;
+		}
+}
+#endif /* COMPARE_ONTHEFLY */
+
+#if !COMPARE_ONTHEFLY
 static int
 do_cmpfiles(int fd_tape, int fd_disk, long size)
 {
@@ -982,16 +1048,22 @@ cmpfiles(char *tapefile, char *diskfile, struct stat *sbuf_disk)
 	return (1);
 #endif
 }
+#endif /* !COMPARE_ONTHEFLY */
 
+#if !COMPARE_ONTHEFLY
 static char tmpfilename[MAXPATHLEN];
+#endif
 
 void
 comparefile(char *name)
 {
-	static char *tmpfile = NULL;
 	int mode;
-	struct stat sb, stemp;
+	struct stat sb;
 	int r;
+#if !COMPARE_ONTHEFLY
+	static char *tmpfile = NULL;
+	struct stat stemp;
+#endif
 
 	if ((r = lstat(name, &sb)) != 0) {
 		warn("%s: does not exist (%d)", name, r);
@@ -1085,6 +1157,28 @@ comparefile(char *name)
 		return;
 
 	case IFREG:
+#if COMPARE_ONTHEFLY
+		if ((ifile = open(name, O_RDONLY)) < 0) {
+			panic("Can't open %s: %s\n", name, strerror(errno));
+			skipfile();
+			compare_errors = 1;
+		}
+		else {
+			cmperror = 0;
+			getfile(xtrcmpfile, xtrcmpskip);
+			if (!cmperror) {
+				char c;
+				if (read(ifile, &c, 1) != 0) {
+					fprintf(stderr, "%s: size has changed.\n", 
+						name);
+					cmperror = 1;
+				}
+			}
+			if (cmperror)
+				compare_errors = 1;
+			close(ifile);
+		}
+#else
 		if (tmpfile == NULL) {
 			/* argument to mktemp() must not be in RO space: */
 			snprintf(tmpfilename, sizeof(tmpfilename), "%s/restoreCXXXXXX", tmpdir);
@@ -1107,6 +1201,7 @@ comparefile(char *name)
 		cmpfiles(tmpfile, name, &sb);
 		unlink(tmpfile);
 #endif
+#endif /* COMPARE_ONTHEFLY */
 		return;
 	}
 	/* NOTREACHED */

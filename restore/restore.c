@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: restore.c,v 1.8 2000/05/28 16:52:21 stelian Exp $";
+	"$Id: restore.c,v 1.9 2000/06/01 18:30:08 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/types.h>
@@ -481,6 +481,7 @@ nodeupdates(char *name, ino_t ino, int type)
 		if (compare_ignore_not_found) break;
 		fprintf(stderr, "%s: (inode %lu) not found on tape\n",
 			name, (unsigned long)ino);
+		compare_errors = 1;
 		break;
 
 	/*

@@ -44,3 +44,6 @@
 
 /* Define if you want to include readline support.  */
 #undef HAVE_READLINE
+
+/* Define this is you want old style F script (no arguments) */
+#undef OLD_STYLE_FSCRIPT

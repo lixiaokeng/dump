@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.19 2000/05/28 16:24:14 stelian Exp $";
+	"$Id: tape.c,v 1.20 2000/06/01 18:30:08 stelian Exp $";
 #endif /* not lint */
 
 #ifdef __linux__
@@ -422,7 +422,11 @@ int system_command(const char *command, const char *device, int volnum) {
 	if (pid == 0) {
 		setuid(getuid());
 		setgid(getgid());
+#if OLD_STYLE_FSCRIPT
+		snprintf(commandstr, sizeof(commandstr), "%s", command);
+#else
 		snprintf(commandstr, sizeof(commandstr), "%s %s %d", command, device, volnum);
+#endif
 		commandstr[sizeof(commandstr) - 1] = '\0';
 		execl("/bin/sh", "sh", "-c", commandstr, NULL);
 		perror("  DUMP: unable to execute shell");

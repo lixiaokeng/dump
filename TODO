@@ -1,4 +1,4 @@
-$Id: TODO,v 1.15 2000/05/29 14:17:37 stelian Exp $
+$Id: TODO,v 1.16 2000/06/01 18:30:08 stelian Exp $
 
 Need to verify:
 ---------------
@@ -43,7 +43,3 @@ All others:
 	     the   specified   archive_file   to   be  used  by
 	     ufsrestore(1M) to determine whether a file  is  in
 	     the dump file that is being restored.
-
-9.	Do the compare on the fly in restore C mode (useful
-	when comparing huge files and you have not enough space
-	in /tmp).
