@@ -1,4 +1,4 @@
-$Id: TODO,v 1.16 2000/06/01 18:30:08 stelian Exp $
+$Id: TODO,v 1.17 2001/02/16 14:16:54 stelian Exp $
 
 Need to verify:
 ---------------
@@ -43,3 +43,15 @@ All others:
 	     the   specified   archive_file   to   be  used  by
 	     ufsrestore(1M) to determine whether a file  is  in
 	     the dump file that is being restored.
+
+9.	Modify (or get rid of) rmt in order to work with non Linux
+	systems (limited succes has been reported). A good version 
+	of rmt to be looked at is part of star 
+	http://www.fokus.gmd.de/research/cc/glone/employees/joerg.schilling/private/star.html
+
+10.	Rework the makefiles, actually --prefix doesn't work in
+	configure. Maybe use automake in the same step ?
+
+11.	EA/ACL support in dump (requested by Michael Ju. Tokarev 
+	<mjt@tls.msk.ru>.
+
