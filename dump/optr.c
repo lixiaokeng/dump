@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: optr.c,v 1.10 2000/02/10 09:42:32 stelian Exp $";
+	"$Id: optr.c,v 1.11 2000/08/19 23:15:38 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -529,7 +529,7 @@ fstabsearchdir(const char *key, char *directory)
 	for (pf = table; pf != NULL; pf = pf->pf_next) {
 		fs = pf->pf_fstab;
 		if (strlen(fs->fs_file) > size &&
-		    strlen(key) > strlen(fs->fs_file) + 2 &&
+		    strlen(key) > strlen(fs->fs_file) + 1 &&
 		    strncmp(fs->fs_file, key, strlen(fs->fs_file)) == 0 &&
 		    (key[strlen(fs->fs_file)] == '/' ||
 		     fs->fs_file[strlen(fs->fs_file) - 1] == '/')) {
