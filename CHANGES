@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.93 2000/12/04 14:00:14 stelian Exp $
+$Id: CHANGES,v 1.94 2000/12/04 16:05:35 stelian Exp $
 
 Changes between versions 0.4b20 and 0.4b21 (released ?????????????????)
 =======================================================================
@@ -12,8 +12,8 @@ Changes between versions 0.4b20 and 0.4b21 (released ?????????????????)
 	who reported this stupid error.
 
 3.	Fixed a build problem on old lib5 based systems dealing with 
-	_PATH_MNTTAB being undefined. Thanks to <johna@onevista.com>
-	for reporting the bug.
+	_PATH_MNTTAB being undefined. Thanks to John Adams
+	<johna@onevista.com> for reporting the bug.
 
 Changes between versions 0.4b19 and 0.4b20 (released November 10, 2000)
 =======================================================================
