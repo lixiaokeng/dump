@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.53 2001/07/20 11:02:45 stelian Exp $";
+	"$Id: tape.c,v 1.54 2001/08/16 15:24:21 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -94,6 +94,10 @@ int    write(), read();
 #ifdef HAVE_ZLIB
 #include <zlib.h>
 #endif /* HAVE_ZLIB */
+
+#ifdef HAVE_BZLIB
+#include <bzlib.h>
+#endif /* HAVE_BZLIB */
 
 #include "dump.h"
 
@@ -1017,11 +1021,14 @@ doslave(int cmd, int slave_number, int first)
 	int nextslave, size, eot_count, bufsize;
 	volatile int wrote = 0;
 	char *buffer;
-#ifdef HAVE_ZLIB
+#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
 	struct tapebuf *comp_buf = NULL;
 	int compresult, do_compress = !first;
 	unsigned long worklen;
-#endif /* HAVE_ZLIB */
+#ifdef HAVE_BZLIB
+	unsigned int worklen2;
+#endif
+#endif /* HAVE_ZLIB || HAVE_BZLIB */
 	struct slave_results returns;
 #ifdef	__linux__
 	errcode_t retval;
@@ -1053,15 +1060,18 @@ doslave(int cmd, int slave_number, int first)
 		quit("master/slave protocol botched - didn't get pid of next slave.\n");
 	}
 
-#ifdef HAVE_ZLIB
+#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
 	/* if we're doing a compressed dump, allocate the compress buffer */
 	if (compressed) {
 		comp_buf = malloc(sizeof(struct tapebuf) + TP_BSIZE + writesize);
 		if (comp_buf == NULL)
 			quit("couldn't allocate a compress buffer.\n");
-		comp_buf->flags = 0;
+		if (bzipflag)
+			comp_buf->flags = COMPRESS_BZLIB;
+		else
+			comp_buf->flags = COMPRESS_ZLIB;
 	}
-#endif /* HAVE_ZLIB */
+#endif /* HAVE_ZLIB || HAVE_BZLIB */
 
 	/*
 	 * Get list of blocks to dump, read the blocks into tape buffer
@@ -1090,7 +1100,7 @@ doslave(int cmd, int slave_number, int first)
 		bufsize = writesize;			/* length to write */
 		returns.clen = returns.unclen = bufsize;
 
-#ifdef HAVE_ZLIB
+#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
 		/* 
 		 * When writing a compressed dump, each block except
 		 * the first one on each tape is written
@@ -1107,9 +1117,38 @@ doslave(int cmd, int slave_number, int first)
 		if (compressed && do_compress) {
 			comp_buf->length = bufsize;
 			worklen = TP_BSIZE + writesize;
-			compresult = compress2(comp_buf->buf, &worklen,
-				(char *)slp->tblock[0], writesize, compressed);
-			if (compresult == Z_OK && worklen <= (writesize - 16)) {
+#ifdef HAVE_ZLIB
+			if (!bzipflag) {
+				compresult = compress2(comp_buf->buf, 
+						       &worklen,
+						       (char *)slp->tblock[0],
+						       writesize, 
+						       compressed);
+				if (compresult == Z_OK)
+					compresult = 1;
+				else
+					compresult = 0;
+			}
+#endif /* HAVE_ZLIB */
+#ifdef HAVE_BZLIB
+			if (bzipflag) {
+				worklen2 = worklen;
+				compresult = BZ2_bzBuffToBuffCompress(
+						       comp_buf->buf,
+						       &worklen2,
+						       (char *)slp->tblock[0],
+						       writesize,
+						       compressed,
+						       0, 30);
+				worklen = worklen2;
+				if (compresult == BZ_OK)
+					compresult = 1;
+				else
+					compresult = 0;
+			}
+
+#endif /* HAVE_BZLIB */
+			if (compresult && worklen <= (writesize - 16)) {
 				/* write the compressed buffer */
 				comp_buf->length = worklen;
 				comp_buf->compressed = 1;
@@ -1128,7 +1167,7 @@ doslave(int cmd, int slave_number, int first)
 		}
 		/* compress the remaining blocks if we're compressing */
 		do_compress = compressed;
-#endif /* HAVE_ZLIB */
+#endif /* HAVE_ZLIB  || HAVE_BZLIB */
 
 		if (sigsetjmp(jmpbuf, 1) == 0) {
 			ready = 1;

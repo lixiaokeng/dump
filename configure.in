@@ -369,6 +369,19 @@ fi
 AC_SUBST(ZLIB)
 
 dnl
+dnl Check for bzlib headers and libraries
+dnl
+AC_CHECK_HEADER(bzlib.h, [bzlib_h=yes], [bzlib_h=no])
+AC_CHECK_LIB(bz2, BZ2_bzBuffToBuffCompress, [bzlib_lib=yes], [bzlib_lib=no])
+if test "$bzlib_h" = yes -a "$bzlib_lib" = yes; then
+	BZLIB="-lbz2"
+	AC_DEFINE(HAVE_BZLIB)
+else
+	BZLIB=""
+fi
+AC_SUBST(BZLIB)
+
+dnl
 dnl Check for library functions
 dnl
 AC_CHECK_FUNCS(err errx verr verrx vwarn vwarnx warn warnx realpath lchown)

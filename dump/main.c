@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.58 2001/08/16 13:12:30 stelian Exp $";
+	"$Id: main.c,v 1.59 2001/08/16 15:24:21 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -102,6 +102,7 @@ char	*tapeprefix;	/* prefix of the tape file */
 char	*dumpdates;	/* name of the file containing dump date information*/
 char	lastlevel;	/* dump level of previous dump */
 char	level;		/* dump level of this dump */
+int	bzipflag;	/* compression is done using bzlib */
 int	uflag;		/* update flag */
 int	Mflag;		/* multi-volume flag */
 int	qflag;		/* quit on errors flag */
@@ -234,7 +235,11 @@ main(int argc, char *argv[])
 #endif /* USE_QFA */
 
 	while ((ch = getopt(argc, argv,
-			    "0123456789aB:b:cd:e:E:f:F:h:L:"
+			    "0123456789aB:b:cd:e:E:f:F:h:"
+#ifdef HAVE_BZLIB
+			    "j::"
+#endif
+			    "L:"
 #ifdef KERBEROS
 			    "k"
 #endif
@@ -317,6 +322,15 @@ main(int argc, char *argv[])
 		case 'h':
 			honorlevel = numarg("honor level", 0L, 10L);
 			break;
+
+#ifdef HAVE_BZLIB
+		case 'j':
+			compressed = 2;
+			bzipflag = 1;
+			if (optarg)
+				compressed = numarg("compress level", 1L, 9L);
+			break;
+#endif /* HAVE_BZLIB */
 
 #ifdef KERBEROS
 		case 'k':
@@ -693,8 +707,8 @@ main(int argc, char *argv[])
 		msg("Label: %s\n", spcl.c_label);
 
 		if (compressed)
-			msg("Compressing output at compression level %d\n", 
-			    compressed);
+			msg("Compressing output at compression level %d (%s)\n", 
+			    compressed, bzipflag ? "bzlib" : "zlib");
 	}
 
 #if defined(SIGINFO)
@@ -961,10 +975,14 @@ usage(void)
 		"MnqSu"
 		"] [-B records] [-b blocksize] [-d density]\n"
 		"\t%s [-e inode#,inode#,...] [-E file] [-f file] [-h level] "
+#ifdef HAVE_BZLIB
+		"[-j zlevel] "
+#endif
+		"\n\t%s "
 #ifdef USE_QFA
 		"[-Q file] "
 #endif
-		"\n\t%s [-s feet] [-T date] "
+		"[-s feet] [-T date] "
 #ifdef HAVE_ZLIB
 		"[-z zlevel] "
 #endif

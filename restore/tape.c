@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.45 2001/07/20 09:01:46 stelian Exp $";
+	"$Id: tape.c,v 1.46 2001/08/16 15:24:22 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -84,6 +84,10 @@ static const char rcsid[] =
 #include <zlib.h>
 #endif /* HAVE_ZLIB */
 
+#ifdef HAVE_BZLIB
+#include <bzlib.h>
+#endif /* HAVE_BZLIB */
+
 #include "restore.h"
 #include "extern.h"
 #include "pathnames.h"
@@ -102,7 +106,7 @@ static int	numtrec;
 static char	*tapebuf;		/* input buffer for read */
 static int	bufsize;		/* buffer size without prefix */
 static char	*tbufptr = NULL;	/* active tape buffer */
-#ifdef HAVE_ZLIB
+#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
 static char	*comprbuf;		/* uncompress work buf */
 static size_t	comprlen;		/* size including prefix */
 #endif
@@ -148,7 +152,7 @@ static void	 xtrmapskip __P((char *, size_t));
 static void	 xtrskip __P((char *, size_t));
 static void	 setmagtapein __P((void));
 
-#ifdef HAVE_ZLIB
+#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
 static void	newcomprbuf __P((int));
 static void	readtape_set __P((char *));
 static void	readtape_uncompr __P((char *));
@@ -235,7 +239,7 @@ newtapebuf(long size)
 	tapebufsize = size;
 }
 
-#ifdef HAVE_ZLIB
+#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
 static void
 newcomprbuf(int size)
 {
@@ -249,7 +253,7 @@ newcomprbuf(int size)
 	if (comprbuf == NULL)
 		errx(1, "Cannot allocate space for decompress buffer");
 }
-#endif /* HAVE_ZLIB */
+#endif /* HAVE_ZLIB || HAVE_BZLIB */
 
 /*
  * Verify that the tape drive can be accessed and
@@ -298,7 +302,7 @@ setup(void)
 
 	if (zflag) {
 		fprintf(stderr, "Dump tape is compressed.\n");
-#ifdef HAVE_ZLIB
+#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
 		newcomprbuf(ntrec);
 #else
 		errx(1,"This restore version doesn't support decompression");
@@ -1295,7 +1299,7 @@ comparefile(char *name)
 	/* NOTREACHED */
 }
 
-#ifdef HAVE_ZLIB
+#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
 static void (*readtape_func)(char *) = readtape_set;
 
 /*
@@ -1328,7 +1332,7 @@ readtape_set(char *buf)
 	readtape(buf);
 }
 
-#endif /* HAVE_ZLIB */
+#endif /* HAVE_ZLIB || HAVE_BZLIB */
 
 /*
  * This is the original readtape(), it's used for reading uncompressed input.
@@ -1336,7 +1340,7 @@ readtape_set(char *buf)
  * Handle read errors, and end of media.
  */
 static void
-#ifdef HAVE_ZLIB
+#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
 readtape_uncompr(char *buf)
 #else
 readtape(char *buf)
@@ -1460,7 +1464,7 @@ getmore:
 	tpblksread++;
 }
 
-#ifdef HAVE_ZLIB
+#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
 
 /*
  * Read a compressed format block from a file or pipe and uncompress it.
@@ -1646,6 +1650,9 @@ decompress_tapebuf(struct tapebuf *tpbin, int readsize)
 	/* zflag gets set in setup() from the dump header          */
 	int cresult, blocklen;        
 	unsigned long worklen;
+#ifdef HAVE_BZLIB
+	unsigned int worklen2;
+#endif
 	char *output = NULL,*reason = NULL, *lengtherr = NULL;              
        
 	/* build a length error message */
@@ -1657,41 +1664,88 @@ decompress_tapebuf(struct tapebuf *tpbin, int readsize)
 			lengtherr = "long";
 
 	worklen = comprlen;
-	cresult = Z_OK;
+	cresult = 1;
 	if (tpbin->compressed) {
 		/* uncompress whatever we read, if it fails, complain later */
-		cresult = uncompress(comprbuf, &worklen, tpbin->buf, blocklen);
-		output = comprbuf;
+		if (tpbin->flags == COMPRESS_ZLIB) {
+#ifndef HAVE_ZLIB
+			errx(1,"This restore version doesn't support zlib decompression");
+#else
+			cresult = uncompress(comprbuf, &worklen, 
+					     tpbin->buf, blocklen);
+			output = comprbuf;
+			switch (cresult) {
+				case Z_OK:
+					break;
+				case Z_MEM_ERROR:
+					reason = "not enough memory";
+					break;
+				case Z_BUF_ERROR:
+					reason = "buffer too small";
+					break;
+				case Z_DATA_ERROR:
+					reason = "data error";
+					break;
+				default:
+					reason = "unknown";
+			}
+			if (cresult == Z_OK)
+				cresult = 1;
+			else
+				cresult = 0;
+#endif /* HAVE_ZLIB */
+		}
+		if (tpbin->flags == COMPRESS_BZLIB) {
+#ifndef HAVE_BZLIB
+			errx(1,"This restore version doesn't support bzlib decompression");
+#else
+			worklen2 = worklen;
+			cresult = BZ2_bzBuffToBuffDecompress(
+					comprbuf, &worklen2, 
+					tpbin->buf, blocklen, 0, 0);
+			worklen = worklen2;
+			output = comprbuf;
+			switch (cresult) {
+				case BZ_OK:
+					break;
+				case BZ_MEM_ERROR:
+					reason = "not enough memory";
+					break;
+				case BZ_OUTBUFF_FULL:
+					reason = "buffer too small";
+					break;
+				case BZ_DATA_ERROR:
+				case BZ_DATA_ERROR_MAGIC:
+				case BZ_UNEXPECTED_EOF:
+					reason = "data error";
+					break;
+				default:
+					reason = "unknown";
+			}
+			if (cresult == BZ_OK)
+				cresult = 1;
+			else
+				cresult = 0;
+#endif /* HAVE_BZLIB */
+		}
 	}
 	else {
 		output = tpbin->buf;
 		worklen = blocklen;
 	}
-	switch (cresult) {
-		case Z_OK:
-			numtrec = worklen / TP_BSIZE;
-			if (worklen % TP_BSIZE != 0)
-				reason = "length mismatch";
-			break;
-		case Z_MEM_ERROR:
-			reason = "not enough memory";
-			break;
-		case Z_BUF_ERROR:
-			reason = "buffer too small";
-			break;
-		case Z_DATA_ERROR:
-			reason = "data error";
-			break;
-		default:
-			reason = "unknown";
-	} /*switch */
+	if (cresult) {
+		numtrec = worklen / TP_BSIZE;
+		if (worklen % TP_BSIZE != 0)
+			reason = "length mismatch";
+	}
 	if (reason) {
 		if (lengtherr)
 			fprintf(stderr, "%s compressed block: %d expected: %d\n",
 				lengtherr, readsize, tpbin->length + PREFIXSIZE);
 		fprintf(stderr, "decompression error, block %ld: %s\n",
 			tpblksread+1, reason);
-		if (cresult != Z_OK)   output = NULL;
+		if (!cresult)
+			output = NULL;
 	}
 	return output;
 }
@@ -1719,7 +1773,7 @@ msg_read_error(char *m)
 			break;
 	}
 }
-#endif /* HAVE_ZLIB */
+#endif /* HAVE_ZLIB || HAVE_BZLIB */
 
 /*
  * Read the first block and get the blocksize from it. Test

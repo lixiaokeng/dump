@@ -65,6 +65,9 @@
 /* Define this if you have zlib compression library */
 #undef HAVE_ZLIB
 
+/* Define this if you have bzlib compression library */
+#undef HAVE_BZLIB
+
 /* Define this if you want Quick File Access support */
 #undef USE_QFA
 

@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.31 2001/08/16 09:37:59 stelian Exp $
+.\"	$Id: dump.8.in,v 1.32 2001/08/16 15:24:21 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -49,6 +49,7 @@
 .Op Fl f Ar file
 .Op Fl F Ar script
 .Op Fl h Ar level
+.Op Fl j Ar compression level
 .Op Fl L Ar label
 .Op Fl Q Ar file
 .Op Fl s Ar feet
@@ -220,6 +221,15 @@ For security reasons,
 .Nm
 reverts back to the real user ID and the real group ID before 
 running the script.
+.It Fl j Ar compression level
+Compress every block to be written on the tape using bzlib library. This
+option will work only when dumping to a file or pipe or, when dumping
+to a tape drive, if the tape drive is capable of writing variable 
+length blocks. You will need at least the 0.4b24 version of restore in 
+order to extract compressed tapes. Tapes written using compression will
+not be compatible with the BSD tape format. The (optional) parameter 
+specifies the compression level bzlib will use. The default compression
+level is 2.
 .It Fl k
 Use Kerberos authentication to talk to remote tape servers.  (Only
 available if this option was enabled when

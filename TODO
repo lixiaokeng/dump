@@ -1,4 +1,4 @@
-$Id: TODO,v 1.22 2001/08/16 13:15:21 stelian Exp $
+$Id: TODO,v 1.23 2001/08/16 15:24:21 stelian Exp $
 
 Need to verify:
 ---------------
@@ -29,22 +29,20 @@ All others:
 4.	Implement a DEBUG option which doesn't fork on each tape, making
 	it able to debug dump with gdb.
 
-5.	Extend the compression patch to use bzip2.
+5.	Make a bootable dump tape? I don't know if it is possible...
 
-6.	Make a bootable dump tape? I don't know if it is possible...
-
-7.	From Kjetil Torgrim Homme <kjetilho@ifi.uio.no>:
+6.	From Kjetil Torgrim Homme <kjetilho@ifi.uio.no>:
 	  a archive_file
 	     Archive file. Archive a dump table-of-contents  in
 	     the   specified   archive_file   to   be  used  by
 	     ufsrestore(1M) to determine whether a file  is  in
 	     the dump file that is being restored.
 
-8.	EA/ACL support in dump (requested by Michael Ju. Tokarev 
+7.	EA/ACL support in dump (requested by Michael Ju. Tokarev 
 	<mjt@tls.msk.ru>.
 
-9.	Better readline completition in restore (escape spaces etc).
+8.	Better readline completition in restore (escape spaces etc).
 
-10.	Dump compiled with RedHat's 7.0 gcc seems to hang for some
+9.	Dump compiled with RedHat's 7.0 gcc seems to hang for some
 	people. When compiled with kgcc all the problems disappear.
 	Will the RedHat's 7.1 gcc resolve this ?

@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: dump.h,v 1.31 2001/08/16 09:37:59 stelian Exp $
+ *	$Id: dump.h,v 1.32 2001/08/16 15:24:21 stelian Exp $
  */
 
 /*-
@@ -73,6 +73,7 @@ extern char	*tapeprefix;	/* prefix of the tape file */
 extern char	*dumpdates;	/* name of the file containing dump date information*/
 extern char	lastlevel;	/* dump level of previous dump */
 extern char	level;		/* dump level of this dump */
+extern int	bzipflag;	/* compression is done using bzlib */
 extern int	uflag;		/* update flag */
 extern int	Mflag;		/* multi-volume flag */
 extern int	qflag;		/* quit on errors flag */
