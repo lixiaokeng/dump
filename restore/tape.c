@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.42 2001/07/18 12:54:06 stelian Exp $";
+	"$Id: tape.c,v 1.43 2001/07/18 13:46:17 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -383,7 +383,7 @@ getvol(long nextvol)
 	union u_spcl tmpspcl;
 #	define tmpbuf tmpspcl.s_spcl
 	char buf[TP_BSIZE];
-	int haderror = 0, bot_code;
+	int haderror = 0, bot_code = 1;
 
 	if (nextvol == 1) {
 		tapesread = 0;
