@@ -75,6 +75,23 @@ echo "Not compiling rmt by default"
 AC_SUBST(RMTDIR)
 
 dnl
+dnl Handle --enable-kerberos
+dnl
+AC_ARG_ENABLE([kerberos],
+[  --enable-kerberos       compile kerberos extensions],
+if test "$enableval" = "yes"
+then
+	OPTDEFS="-DKERBEROS"
+else
+	OPTDEFS=""
+fi
+,
+OPTDEFS=""
+echo "Not compiling kerberos extensions by default"
+)
+AC_SUBST(OPTDEFS)
+
+dnl
 dnl set $(CC) from --with-cc=value
 dnl
 AC_ARG_WITH([cc],
