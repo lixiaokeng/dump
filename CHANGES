@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.257 2004/08/16 09:39:45 stelian Exp $
+$Id: CHANGES,v 1.258 2004/11/22 10:22:40 stelian Exp $
 
 Changes between versions 0.4b37 and 0.4b38 (released ????????????)
 ==================================================================
@@ -12,6 +12,10 @@ Changes between versions 0.4b37 and 0.4b38 (released ????????????)
 3.	Fixed restore negative size display bug when comparing a
 	dump containing files over 2GB. Thanks to Steve Bonds
 	<sbonds@users.sourceforge.net> for the bug report.
+
+4.	Do not save directory entries to non-dumped inodes 
+	(excluded from dump). This will eliminate the 'missing
+	file' warnings when doing 'restore -C'.
 
 Changes between versions 0.4b36 and 0.4b37 (released July 7, 2004)
 ==================================================================

@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.61 2004/07/01 09:14:49 stelian Exp $";
+	"$Id: traverse.c,v 1.62 2004/11/22 10:22:43 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -984,6 +984,11 @@ convert_dir(struct ext2_dir_entry *dirent, UNUSED(int offset),
 	struct convert_dir_context *p;
 	struct direct *dp;
 	int reclen;
+
+	/* do not save entries to excluded inodes */
+	if (TSTINO(dirent->inode, dumpinomap) == 0 &&
+	    TSTINO(dirent->inode, dumpdirmap) == 0)
+		return 0;
 
 	p = (struct convert_dir_context *)private;
 
