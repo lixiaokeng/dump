@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: rmt.c,v 1.16 2002/01/16 09:32:14 stelian Exp $";
+	"$Id: rmt.c,v 1.17 2002/04/12 13:02:16 stelian Exp $";
 #endif /* not linux */
 
 /*
@@ -80,6 +80,8 @@ FILE	*debug;
 
 /*
  * Support for Sun's extended RMT protocol
+ * 	code originally written by Jörg Schilling <schilling@fokus.gmd.de>
+ * 	and relicensed by his permission from GPL to BSD for use in dump.
  */
 #define RMTI_VERSION    -1
 #define RMT_VERSION 1
