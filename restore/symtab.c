@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: symtab.c,v 1.24 2005/01/14 13:04:07 stelian Exp $";
+	"$Id: symtab.c,v 1.25 2005/03/30 13:34:00 stelian Exp $";
 #endif /* not lint */
 
 /*
@@ -712,8 +712,10 @@ initsymtable(char *filename)
 		panic("initsymtable called from command %c\n", command);
 		break;
 	}
-	resizemaps(maxino, hdr.maxino);
-	maxino = hdr.maxino;
+	if (hdr.maxino > maxino) {
+		resizemaps(maxino, hdr.maxino);
+		maxino = hdr.maxino;
+	}
 	entrytblsize = hdr.entrytblsize;
 	entry = (struct entry **)
 		(base + tblsize - (entrytblsize * sizeof(struct entry *)));
