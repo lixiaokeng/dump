@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.221 2003/03/26 10:58:19 stelian Exp $
+$Id: CHANGES,v 1.222 2003/03/30 15:40:31 stelian Exp $
 
 Changes between versions 0.4b33 and 0.4b34 (released ?????????????????)
 =======================================================================
@@ -65,6 +65,9 @@ Changes between versions 0.4b33 and 0.4b34 (released ?????????????????)
 	when multiple tapes are listed on the command line 
 	(-f tape0,tape1,tapen) (which also makes sense).
 	Thanks to Philippe Troin <phil@fifi.org> for the patch.
+
+15.	Relicensed dump/restore under the 'revised' BSD license, as per
+	ftp://ftp.cs.berkeley.edu/ucb/4bsd/README.Impt.License.Change.
 
 Changes between versions 0.4b32 and 0.4b33 (released February 10, 2003)
 =======================================================================

@@ -3,7 +3,7 @@
  *	dump and restore backup suit
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: compatlfs.h,v 1.3 2003/01/10 14:42:50 stelian Exp $
+ *	$Id: compatlfs.h,v 1.4 2003/03/30 15:40:34 stelian Exp $
  */
 
 /*-
@@ -18,11 +18,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
+ * 3. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
