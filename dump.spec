@@ -1,3 +1,7 @@
+%define	_sbindir /sbin
+# XXX --enable-kerberos		needs krcmd
+%define	myoptions --with-binmode=6755 --with-manowner=root --with-mangrp=root --with-manmode=0644 --with-dumpdates="%{_sysconfdir}/dumpdates" --enable-readline
+
 Summary: Programs for backing up and restoring filesystems.
 Name: dump
 Version: 0.4b18
@@ -6,7 +10,7 @@ Copyright: UCB
 Group: Applications/Archiving
 Source: http://sourceforge.net/download.php/dump/dump-%{version}.tar.gz
 Requires: rmt
-BuildRoot: /var/tmp/%{name}-root
+BuildRoot: %{_tmppath}/%{name}-root
 
 %description
 The dump package contains both dump and restore.  Dump examines files in
@@ -51,8 +55,7 @@ This packages contains statically linked versions of dump and restore.
 %setup -q
 
 %build
-
-./configure --prefix=/usr --with-binmode=0755 --with-manowner=root --with-mangrp=root --with-manmode=0644 --enable-static --enable-readline
+%configure %{myoptions} --enable-static
 
 make OPT="$RPM_OPT_FLAGS -Wall -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wno-char-subscripts"
 
@@ -61,60 +64,61 @@ mv restore/restore restore/restore.static
 
 make distclean
 
-./configure --prefix=/usr --with-binmode=0755 --with-manowner=root --with-mangrp=root --with-manmode=0644 --enable-rmt --enable-readline
+%configure %{myoptions} --enable-rmt
 
 make OPT="$RPM_OPT_FLAGS -Wall -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wno-char-subscripts"
 
 %install
-rm -rf $RPM_BUILD_ROOT
-mkdir -p $RPM_BUILD_ROOT/sbin
-mkdir -p ${RPM_BUILD_ROOT}%{_prefix}/man/man8
+rm -rf %{buildroot}
+mkdir -p %{buildroot}%{_sbindir}
+mkdir -p %{buildroot}%{_mandir}/man8
 
-make install BINDIR=$RPM_BUILD_ROOT/sbin MANDIR=${RPM_BUILD_ROOT}%{_prefix}/man/man8 BINOWNER=$(id -un) BINGRP=$(id -gn) MANOWNER=$(id -un) MANGRP=$(id -gn)
+%makeinstall BINDIR=%{buildroot}%{_sbindir} MANDIR=%{buildroot}%{_mandir}/man8 BINOWNER=$(id -un) BINGRP=$(id -gn) MANOWNER=$(id -un) MANGRP=$(id -gn)
 
-cp dump/dump.static $RPM_BUILD_ROOT/sbin
-cp restore/restore.static $RPM_BUILD_ROOT/sbin
+cp dump/dump.static %{buildroot}%{_sbindir}
+cp restore/restore.static %{buildroot}%{_sbindir}
 
-{ cd $RPM_BUILD_ROOT
-  strip ./sbin/* || :
-  ln -sf dump ./sbin/rdump
-  ln -sf dump.static ./sbin/rdump.static
-  ln -sf restore ./sbin/rrestore
-  ln -sf restore.static ./sbin/rrestore.static
-  chmod ug-s ./sbin/rmt
-  mkdir -p ./etc
-  > ./etc/dumpdates
-  ln -sf ../sbin/rmt ./etc/rmt
+{ cd %{buildroot}
+  strip .%{_sbindir}/* || :
+  ln -sf dump .%{_sbindir}/rdump
+  ln -sf dump.static .%{_sbindir}/rdump.static
+  ln -sf restore .%{_sbindir}/rrestore
+  ln -sf restore.static .%{_sbindir}/rrestore.static
+  chmod ug-s .%{_sbindir}/rmt
+  mkdir -p .%{_sysconfdir}
+  > .%{_sysconfdir}/dumpdates
+  ln -sf ..%{_sbindir}/rmt .%{_sysconfdir}/rmt
 }
 
 %clean
-rm -rf $RPM_BUILD_ROOT
+rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root)
-%doc CHANGES COPYRIGHT KNOWNBUGS MAINTAINERS README REPORTING-BUGS THANKS TODO dump.lsm
-%attr(0664,root,disk)	%config(noreplace) /etc/dumpdates
-%attr(0755,root,tty)	/sbin/dump
-/sbin/rdump
-%attr(0755,root,tty)	/sbin/restore
-/sbin/rrestore
-%{_prefix}/man/man8/dump.*
-%{_prefix}/man/man8/rdump.*
-%{_prefix}/man/man8/restore.*
-%{_prefix}/man/man8/rrestore.*
+%doc CHANGES COPYRIGHT KNOWNBUGS MAINTAINERS README REPORTING-BUGS THANKS TODO
+%doc dump.lsm
+%attr(0664,root,disk)	%config(noreplace) %{_sysconfdir}/dumpdates
+%attr(0755,root,root)	%{_sbindir}/dump
+%{_sbindir}/rdump
+%attr(0755,root,root)	%{_sbindir}/restore
+%{_sbindir}/rrestore
+%{_mandir}/man8/dump.*
+%{_mandir}/man8/rdump.*
+%{_mandir}/man8/restore.*
+%{_mandir}/man8/rrestore.*
 
 %files -n rmt
 %defattr(-,root,root)
-%attr(0755,root,root)	/sbin/rmt
-/etc/rmt
-%{_prefix}/man/man8/rmt.*
+%attr(0755,root,root)	%{_sbindir}/rmt
+%{_sysconfdir}/rmt
+%{_mandir}/man8/rmt.*
 
 %files -n dump-static
 %defattr(-,root,root)
-%attr(0755,root,tty)	/sbin/dump.static
-/sbin/rdump.static
-%attr(0755,root,tty)	/sbin/restore.static
-/sbin/rrestore.static
+%attr(0755,root,root)	%{_sbindir}/dump.static
+%{_sbindir}/rdump.static
+%attr(0755,root,root)	%{_sbindir}/restore.static
+%{_sbindir}/rrestore.static
 
 %changelog
 * Thu Jun 30 2000 Stelian Pop <pop@cybercable.fr>

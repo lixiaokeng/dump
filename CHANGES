@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.74 2000/08/20 15:17:36 stelian Exp $
+$Id: CHANGES,v 1.75 2000/08/20 15:46:52 stelian Exp $
 
 Changes between versions 0.4b17 and 0.4b19 (released ?????????????)
 ===================================================================
@@ -29,6 +29,9 @@ Changes between versions 0.4b17 and 0.4b19 (released ?????????????)
 	times (therefore generation some warning messages).
 	Thanks to Kenneth Porter <shiva@well.com> for
 	reporting the bug.
+
+7.	Update the RPM spec file to the latest RedHat version,
+	providing FHS packaging and other cosmetic changes.
 
 Changes between versions 0.4b17 and 0.4b18 (released June 30, 2000)
 ===================================================================
