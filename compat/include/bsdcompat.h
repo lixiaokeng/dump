@@ -5,12 +5,13 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: bsdcompat.h,v 1.22 2004/01/27 10:15:37 stelian Exp $
+ *	$Id: bsdcompat.h,v 1.23 2004/07/01 09:14:48 stelian Exp $
  */
 
 #include <config.h>
 #include <sys/time.h>
 #include <dirent.h>
+#include <ext2fs/ext2fs.h>
 
 #define	__dead		volatile
 #define UNUSED(x)	x __attribute__ ((unused))
@@ -47,7 +48,7 @@
 #define powerof2(x)	((((x)-1)&(x))==0)
 #endif
 
-#define fsbtodb(sb,b)	((int)(((long long)(b) * EXT2_BLOCK_SIZE((sb)->super)) / DEV_BSIZE))
+#define fsbtodb(sb,b)	((ext2_loff_t)(((long long)(b) * EXT2_BLOCK_SIZE((sb)->super)) / DEV_BSIZE))
 #define dbtofsb(sb,b)	((int)(((long long)(b) * DEV_BSIZE) / EXT2_BLOCK_SIZE((sb)->super)))
 
 #define	sblock		fs
@@ -117,8 +118,8 @@ struct dinode {
 	__u32	di_blocks;
 	__u32	di_flags;
 	__u32	di_reserved1;
-	daddr_t	di_db[NDADDR];
-	daddr_t	di_ib[NIADDR];
+	__u32	di_db[NDADDR];
+	__u32	di_ib[NIADDR];
 	__u32	di_gen;
 	__u32	di_file_acl;
 	__u32	di_dir_acl;
@@ -248,8 +249,8 @@ struct old_bsd_inode {
 		char	di_usymlink[MAXFASTLINK + 1];
 	}		di_un;
 #else
-	daddr_t		di_db[NDADDR];
-	daddr_t		di_ib[NIADDR];
+	__u32		di_db[NDADDR];
+	__u32		di_ib[NIADDR];
 #endif
 	__s32		di_flags;
 	__s32		di_blocks;
@@ -277,8 +278,8 @@ struct new_bsd_inode {
 	struct bsdtimeval	di_atime;
 	struct bsdtimeval	di_mtime;
 	struct bsdtimeval	di_ctime;
-	daddr_t		di_db[NDADDR];
-	daddr_t		di_ib[NIADDR];
+	__u32		di_db[NDADDR];
+	__u32		di_ib[NIADDR];
 	__u32		di_flags;
 	__s32		di_blocks;
 	__s32		di_gen;

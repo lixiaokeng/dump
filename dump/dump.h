@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: dump.h,v 1.48 2004/04/21 08:55:51 stelian Exp $
+ *	$Id: dump.h,v 1.49 2004/07/01 09:14:49 stelian Exp $
  */
 
 /*-
@@ -42,7 +42,7 @@
 #include <compatlfs.h>
 
 #define MAXINOPB	(MAXBSIZE / sizeof(struct dinode))
-#define MAXNINDIR	(MAXBSIZE / sizeof(daddr_t))
+#define MAXNINDIR	(MAXBSIZE / sizeof(blk_t))
 #define NUM_STR_SIZE	32	/* a generic number buffer size */
 
 /*
@@ -156,8 +156,8 @@ int	maponefile __P((dump_ino_t maxino, long *tapesize, char *directory));
 int	mapdirs __P((dump_ino_t maxino, long *tapesize));
 
 /* file dumping routines */
-void	blksout __P((daddr_t *blkp, int frags, dump_ino_t ino));
-void	bread __P((daddr_t blkno, char *buf, int size));
+void	blksout __P((blk_t *blkp, int frags, dump_ino_t ino));
+void	bread __P((ext2_loff_t blkno, char *buf, int size));
 void	dumpino __P((struct dinode *dp, dump_ino_t ino, int metaonly));
 #ifdef	__linux__
 void	dumpdirino __P((struct dinode *dp, dump_ino_t ino));
@@ -169,7 +169,7 @@ void	mkchecksum __P((union u_spcl *tmpspcl));
 /* tape writing routines */
 int	alloctape __P((void));
 void	close_rewind __P((void));
-void	dumpblock __P((daddr_t blkno, int size));
+void	dumpblock __P((blk_t blkno, int size));
 void	startnewtape __P((int top));
 time_t	trewind __P((void));
 void	writerec __P((const void *dp, int isspcl));

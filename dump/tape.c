@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.84 2004/05/25 10:39:29 stelian Exp $";
+	"$Id: tape.c,v 1.85 2004/07/01 09:14:49 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -142,7 +142,7 @@ static int MkTapeString __P((struct s_spcl *, long long));
  * The following structure defines the instruction packets sent to slaves.
  */
 struct req {
-	daddr_t dblk;
+	ext2_loff_t dblk;
 	int count;
 };
 int reqsiz;
@@ -234,7 +234,7 @@ void
 writerec(const void *dp, int isspcl)
 {
 
-	slp->req[trecno].dblk = (daddr_t)0;
+	slp->req[trecno].dblk = (ext2_loff_t)0;
 	slp->req[trecno].count = 1;
 	/* XXX post increment triggers an egcs-1.1.2-12 bug on alpha/sparc */
 	*(union u_spcl *)(*(nextblock)) = *(union u_spcl *)dp;
@@ -272,9 +272,10 @@ writerec(const void *dp, int isspcl)
 }
 
 void
-dumpblock(daddr_t blkno, int size)
+dumpblock(blk_t blkno, int size)
 {
-	int avail, tpblks, dblkno;
+	int avail, tpblks;
+	ext2_loff_t dblkno;
 
 	dblkno = fsbtodb(sblock, blkno);
 	tpblks = size >> tp_bshift;

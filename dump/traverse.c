@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.60 2004/03/10 16:26:30 stelian Exp $";
+	"$Id: traverse.c,v 1.61 2004/07/01 09:14:49 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -771,7 +771,7 @@ dumponeblock(UNUSED(ext2_filsys fs), blk_t *blocknr, e2_blkcnt_t blockcnt,
 	     UNUSED(blk_t ref_block), UNUSED(int ref_offset), void * private)
 {
 	struct block_context *p;
-	int i;
+	e2_blkcnt_t i;
 
 	if (blockcnt < NDADDR)
 		return 0;
@@ -1198,9 +1198,9 @@ dmpindir(dump_ino_t ino, daddr_t blk, int ind_level, fsizeT *size)
  * Collect up the data into tape record sized buffers and output them.
  */
 void
-blksout(daddr_t *blkp, int frags, dump_ino_t ino)
+blksout(blk_t *blkp, int frags, dump_ino_t ino)
 {
-	daddr_t *bp;
+	blk_t *bp;
 	int i, j, count, blks, tbperdb;
 
 	blks = howmany(frags * sblock->fs_fsize, TP_BSIZE);
@@ -1325,14 +1325,14 @@ getino(dump_ino_t inum)
 int	breaderrors = 0;
 
 void
-bread(daddr_t blkno, char *buf, int size)
+bread(ext2_loff_t blkno, char *buf, int size)
 {
 	int cnt, i;
 
 loop:
 #ifdef	__linux__
-	if (ext2fs_llseek(diskfd, (((ext2_loff_t)blkno) << dev_bshift), 0) !=
-			(((ext2_loff_t)blkno) << dev_bshift))
+	if (ext2fs_llseek(diskfd, (blkno << dev_bshift), 0) !=
+			(blkno << dev_bshift))
 #else
 	if (lseek(diskfd, ((off_t)blkno << dev_bshift), 0) !=
 						((off_t)blkno << dev_bshift))
@@ -1378,8 +1378,8 @@ loop:
 	memset(buf, 0, size);
 	for (i = 0; i < size; i += dev_bsize, buf += dev_bsize, blkno++) {
 #ifdef	__linux__
-		if (ext2fs_llseek(diskfd, (((ext2_loff_t)blkno) << dev_bshift), 0) !=
-				(((ext2_loff_t)blkno) << dev_bshift))
+		if (ext2fs_llseek(diskfd, (blkno << dev_bshift), 0) !=
+				(blkno << dev_bshift))
 #else
 		if (lseek(diskfd, ((off_t)blkno << dev_bshift), 0) !=
 						((off_t)blkno << dev_bshift))

@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.250 2004/06/17 09:01:13 stelian Exp $
+$Id: CHANGES,v 1.251 2004/07/01 09:14:48 stelian Exp $
 
 Changes between versions 0.4b36 and 0.4b37 (released ??????????????)
 ====================================================================
@@ -20,6 +20,11 @@ Changes between versions 0.4b36 and 0.4b37 (released ??????????????)
 3.	Make dump's reading of the dumpdates file a bit more robust,
 	preventing dump from crashing when the dumpdates file has
 	been modified by hand.
+
+4.	Fixed some offset calculations in dump code which could 
+	lead to "bread lseek errors" on large filesystems. Thanks
+	to Bruce Lowekamp <lowekamp@users.sourceforge.net> for
+	reporting this bug and debugging the issue.
 
 Changes between versions 0.4b35 and 0.4b36 (released April 21, 2004)
 ====================================================================

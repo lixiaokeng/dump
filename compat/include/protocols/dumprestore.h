@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: dumprestore.h,v 1.21 2004/04/13 13:03:55 stelian Exp $
+ *	$Id: dumprestore.h,v 1.22 2004/07/01 09:14:49 stelian Exp $
  */
 
 /*
@@ -92,7 +92,7 @@ union u_spcl {
 		int32_t	c_date;		    /* date of this dump */
 		int32_t	c_ddate;	    /* date of previous dump */
 		int32_t	c_volume;	    /* dump volume number */
-		daddr_t	c_tapea;	    /* logical block of this record */
+		u_int32_t c_tapea;	    /* logical block of this record */
 		dump_ino_t c_inumber;	    /* number of inode */
 		int32_t	c_magic;	    /* magic number (see above) */
 		int32_t	c_checksum;	    /* record checksum */
