@@ -1,4 +1,4 @@
-$Id: THANKS,v 1.12 1999/12/05 18:21:21 tiniou Exp $
+$Id: THANKS,v 1.13 1999/12/06 21:37:47 tiniou Exp $
 
 Dump and restore were written by the people of the CSRG at the University
 of California, Berkeley.
@@ -30,6 +30,7 @@ Jeremy Fitzhardinge	jeremy@goop.org
 Eirik Fuller		eirik@netcom.com
 Henry Katz		hkatz@hkatz.dialup.access.net
 Klaus Kudielka		kkudielk@cacofonix.nt.tuwien.ac.at
+Thorsten Kukuk		kukuk@suse.de
 Florian La Roche	florian@jurix.jura.uni-sb.de
 Patrick J. LoPresti	patl@cag.lcs.mit.edu
 Greg Lutz		greglutz@ix.netcom.com
