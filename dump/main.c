@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.78 2002/12/12 11:49:35 stelian Exp $";
+	"$Id: main.c,v 1.79 2003/01/10 10:31:10 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -355,7 +355,7 @@ main(int argc, char *argv[])
 
 	        case 'I':
 		        breademax =
-			  numarg ("number of errors to ignore", 1L, 0L);
+			  numarg ("number of errors to ignore", 0L, 0L);
 			break;
 
 #ifdef KERBEROS

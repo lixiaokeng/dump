@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.203 2002/12/12 11:49:35 stelian Exp $
+$Id: CHANGES,v 1.204 2003/01/10 10:31:06 stelian Exp $
 
 Changes between versions 0.4b32 and 0.4b33 (released ?????????????????)
 =======================================================================
@@ -21,6 +21,11 @@ Changes between versions 0.4b32 and 0.4b33 (released ?????????????????)
 	Thanks to Matus Uhlar <uhlar@fantomas.sk>, Elliott Mitchell
 	<ehem@m5p.com>, Greg Edwards <gedwards@users.sourceforge.net>.
 	(fixes Debian bugs #147086 and #160305, Sourceforge bug #618699)
+
+5.	Made dump's -I option accept the value '0' meaning all the
+	read errors will be ignored. This can be useful when running
+	dump from unattended sessions (like cron jobs). Thanks to
+	John I Wang <jiwang@users.sourceforge.net> for the suggestion.
 
 Changes between versions 0.4b31 and 0.4b32 (released November 15, 2002)
 =======================================================================

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.52 2002/12/09 10:53:59 stelian Exp $";
+	"$Id: traverse.c,v 1.53 2003/01/10 10:31:10 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1346,7 +1346,7 @@ loop:
 	else
 		msg("short read error from %s: [block %d, ext2blk %d]: count=%d, got=%d\n",
 			disk, blkno, dbtofsb(sblock, blkno), size, cnt);
-	if (++breaderrors > breademax) {
+	if (breademax && ++breaderrors > breademax) {
 		msg("More than %d block read errors from %d\n",
 			breademax, disk);
 		broadcast("DUMP IS AILING!\n");

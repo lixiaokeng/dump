@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.46 2002/11/12 13:05:31 stelian Exp $
+.\"	$Id: dump.8.in,v 1.47 2003/01/10 10:31:10 stelian Exp $
 .\"
 .TH DUMP 8 "version __VERSION__ of __DATE__" BSD "System management commands"
 .SH NAME
@@ -224,6 +224,8 @@ is useful when running
 .B dump
 on an active filesystem where read errors simply indicate an inconsistency 
 between the mapping and dumping passes.
+.IP
+A value of 0 means that all read errors will be ignored.
 .TP
 .BI \-j "compression level"
 Compress every block to be written on the tape using bzlib library. This option
