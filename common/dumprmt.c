@@ -41,30 +41,29 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dumprmt.c,v 1.16 2001/02/22 10:57:39 stelian Exp $";
+	"$Id: dumprmt.c,v 1.17 2001/06/18 10:58:28 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
-#ifdef __linux__
-#include <sys/types.h>
-#include <linux/types.h>
-#endif
 #include <sys/param.h>
 #include <sys/mtio.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #ifdef __linux__
+#include <sys/types.h>
+#ifdef HAVE_EXT2FS_EXT2_FS_H
+#include <ext2fs/ext2_fs.h>
+#else
 #include <linux/ext2_fs.h>
+#endif
 #include <bsdcompat.h>
 #include <signal.h>
-#else
-#ifdef sunos
+#elif defined sunos
 #include <sys/vnode.h>
 
 #include <ufs/inode.h>
 #else
 #include <ufs/ufs/dinode.h>
-#endif
 #endif
 
 #include <netinet/in.h>

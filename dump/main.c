@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.48 2001/04/27 15:22:47 stelian Exp $";
+	"$Id: main.c,v 1.49 2001/06/18 10:58:28 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -59,7 +59,11 @@ static const char rcsid[] =
 #include <sys/param.h>
 #include <sys/time.h>
 #ifdef __linux__
+#ifdef HAVE_EXT2FS_EXT2_FS_H
+#include <ext2fs/ext2_fs.h>
+#else
 #include <linux/ext2_fs.h>
+#endif
 #include <ext2fs/ext2fs.h>
 #include <time.h>
 #include <sys/stat.h>

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.46 2001/05/12 11:36:12 stelian Exp $";
+	"$Id: tape.c,v 1.47 2001/06/18 10:58:28 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -63,7 +63,6 @@ int    write(), read();
 #ifdef __linux__
 #include <sys/types.h>
 #include <time.h>
-#include <linux/types.h>
 #endif
 #include <sys/param.h>
 #include <sys/socket.h>
@@ -71,7 +70,11 @@ int    write(), read();
 #include <sys/wait.h>
 #include <sys/mtio.h>
 #ifdef __linux__
+#ifdef HAVE_EXT2FS_EXT2_FS_H
+#include <ext2fs/ext2_fs.h>
+#else
 #include <linux/ext2_fs.h>
+#endif
 #include <ext2fs/ext2fs.h>
 #include <bsdcompat.h>
 #elif defined sunos
