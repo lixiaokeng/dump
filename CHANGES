@@ -1,10 +1,13 @@
-$Id: CHANGES,v 1.255 2004/07/13 08:17:30 stelian Exp $
+$Id: CHANGES,v 1.256 2004/07/20 15:52:58 stelian Exp $
 
 Changes between versions 0.4b37 and 0.4b38 (released ????????????)
 ==================================================================
 
 1.	Fix a couple of troff syntax bugs in the man pages.
 	Thanks to Eric Raymond <esr@thyrsus.com> for the patch.
+
+2.	Made restore use either libncurses or libtermcap, depending
+	on which one is available at configure time.
 
 Changes between versions 0.4b36 and 0.4b37 (released July 7, 2004)
 ==================================================================

@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS SET_MAKE LN_S CP MV RM AR ac_ct_AR RANLIB ac_ct_RANLIB PATCH ac_ct_PATCH CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CPP EGREP DUMPDEBUG RESTOREDEBUG STATIC RMTDIR ERMT CRYPTO OPTDEFS READLINE LD CCOPTS LDOPTS BINOWNER BINGRP BINMODE MANOWNER MANGRP MANMODE DUMPDATESPATH BLKID ZLIB BZLIB top_builddir LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS SET_MAKE LN_S CP MV RM AR ac_ct_AR RANLIB ac_ct_RANLIB PATCH ac_ct_PATCH CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CPP EGREP DUMPDEBUG RESTOREDEBUG STATIC RMTDIR ERMT CRYPTO OPTDEFS LD CCOPTS LDOPTS BINOWNER BINGRP BINMODE MANOWNER MANGRP MANMODE DUMPDATESPATH BLKID READLINE ZLIB BZLIB top_builddir LIBOBJS LTLIBOBJS'
 ac_subst_files='MCONFIG'
 
 # Initialize some variables set by options.
@@ -3537,7 +3537,7 @@ then
 	READLINE=""
 	echo "Not including readline support"
 else
-	READLINE="-lreadline -ltermcap"
+	READLINE="yes"
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_READLINE 1
@@ -3547,7 +3547,7 @@ _ACEOF
 fi
 
 else
-  READLINE="-lreadline -ltermcap"
+  READLINE="yes"
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_READLINE 1
@@ -3556,7 +3556,6 @@ _ACEOF
 echo "Including readline support by default"
 
 fi;
-
 
 # Check whether --enable-oldstylefscript or --disable-oldstylefscript was given.
 if test "${enable_oldstylefscript+set}" = set; then
@@ -4244,6 +4243,76 @@ _ACEOF
 fi
 
 
+echo "$as_me:$LINENO: checking for tgetent in -lncurses" >&5
+echo $ECHO_N "checking for tgetent in -lncurses... $ECHO_C" >&6
+if test "${ac_cv_lib_ncurses_tgetent+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lncurses  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char tgetent ();
+int
+main ()
+{
+tgetent ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_ncurses_tgetent=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_lib_ncurses_tgetent=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_ncurses_tgetent" >&5
+echo "${ECHO_T}$ac_cv_lib_ncurses_tgetent" >&6
+if test $ac_cv_lib_ncurses_tgetent = yes; then
+  ncurses_lib=yes
+else
+  ncurses_lib=no
+fi
+
 echo "$as_me:$LINENO: checking for tgetent in -ltermcap" >&5
 echo $ECHO_N "checking for tgetent in -ltermcap... $ECHO_C" >&6
 if test "${ac_cv_lib_termcap_tgetent+set}" = set; then
@@ -4314,12 +4383,18 @@ else
   termcap_lib=no
 fi
 
-if test "$termcap_lib" = no; then
-	if test "$READLINE" = "-lreadline -ltermcap"; then
-		{ { echo "$as_me:$LINENO: error: You need to install the GNU termcap library or configure without --enable-readline" >&5
-echo "$as_me: error: You need to install the GNU termcap library or configure without --enable-readline" >&2;}
+
+if test "$ncurses_lib" = no -a "$termcap_lib" = no; then
+	if test "$READLINE" = "yes"; then
+		{ { echo "$as_me:$LINENO: error: You need to install the ncurses or termcap library or configure without --enable-readline" >&5
+echo "$as_me: error: You need to install the ncurses or termcap library or configure without --enable-readline" >&2;}
    { (exit 1); exit 1; }; }
 	fi
+fi
+if test "$ncurses_lib" = yes; then
+	rdllib="-lncurses"
+elif test "$termcap_lib" = yes; then
+	rdllib="-ltermcap"
 fi
 
 echo "$as_me:$LINENO: checking for readline/readline.h" >&5
@@ -4377,7 +4452,7 @@ if test "${ac_cv_lib_readline_readline+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-lreadline "-ltermcap" $LIBS"
+LIBS="-lreadline $rdllib $LIBS"
 cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
@@ -4442,12 +4517,16 @@ else
 fi
 
 if test "$readline_h" = no -o "$readline_lib" = no; then
-	if test "$READLINE" = "-lreadline -ltermcap"; then
+	if test "$READLINE" = "yes"; then
 		{ { echo "$as_me:$LINENO: error: You need to install the GNU readline library or configure without --enable-readline" >&5
 echo "$as_me: error: You need to install the GNU readline library or configure without --enable-readline" >&2;}
    { (exit 1); exit 1; }; }
 	fi
 fi
+if test "$READLINE" = yes; then
+	READLINE="-lreadline $rdllib"
+fi
+
 
 echo "$as_me:$LINENO: checking for rl_completion_matches in -lreadline" >&5
 echo $ECHO_N "checking for rl_completion_matches in -lreadline... $ECHO_C" >&6
@@ -6126,7 +6205,6 @@ s,@RMTDIR@,$RMTDIR,;t t
 s,@ERMT@,$ERMT,;t t
 s,@CRYPTO@,$CRYPTO,;t t
 s,@OPTDEFS@,$OPTDEFS,;t t
-s,@READLINE@,$READLINE,;t t
 s,@LD@,$LD,;t t
 s,@CCOPTS@,$CCOPTS,;t t
 s,@LDOPTS@,$LDOPTS,;t t
@@ -6138,6 +6216,7 @@ s,@MANGRP@,$MANGRP,;t t
 s,@MANMODE@,$MANMODE,;t t
 s,@DUMPDATESPATH@,$DUMPDATESPATH,;t t
 s,@BLKID@,$BLKID,;t t
+s,@READLINE@,$READLINE,;t t
 s,@ZLIB@,$ZLIB,;t t
 s,@BZLIB@,$BZLIB,;t t
 s,@top_builddir@,$top_builddir,;t t

@@ -161,16 +161,15 @@ then
 	READLINE=""
 	echo "Not including readline support"
 else
-	READLINE="-lreadline -ltermcap"
+	READLINE="yes"
 	AC_DEFINE([HAVE_READLINE],1,[Define if you want to include readline support.])
 	echo "Including readline support"
 fi
 ,
-READLINE="-lreadline -ltermcap"
+READLINE="yes"
 AC_DEFINE([HAVE_READLINE],1,[Define if you want to include readline support.])
 echo "Including readline support by default"
 )
-AC_SUBST(READLINE)
 
 dnl
 dnl Handle --enable-oldsylefscript
@@ -443,25 +442,36 @@ fi
 AC_SUBST(BLKID)
 
 dnl
-dnl Check for termcap libraries
+dnl Check for ncurses or termcap libraries
 dnl
+AC_CHECK_LIB(ncurses, tgetent, [ncurses_lib=yes], [ncurses_lib=no])
 AC_CHECK_LIB(termcap, tgetent, [termcap_lib=yes], [termcap_lib=no])
-if test "$termcap_lib" = no; then
-	if test "$READLINE" = "-lreadline -ltermcap"; then
-		AC_MSG_ERROR(You need to install the GNU termcap library or configure without --enable-readline)
+
+if test "$ncurses_lib" = no -a "$termcap_lib" = no; then
+	if test "$READLINE" = "yes"; then
+		AC_MSG_ERROR(You need to install the ncurses or termcap library or configure without --enable-readline)
 	fi
+fi
+if test "$ncurses_lib" = yes; then
+	rdllib="-lncurses"
+elif test "$termcap_lib" = yes; then
+	rdllib="-ltermcap"
 fi
 
 dnl
 dnl Check for readline headers and libraries
 dnl
 AC_CHECK_HEADER(readline/readline.h, [readline_h=yes], [readline_h=no], [-])
-AC_CHECK_LIB(readline, readline, [readline_lib=yes], [readline_lib=no], "-ltermcap")
+AC_CHECK_LIB(readline, readline, [readline_lib=yes], [readline_lib=no], $rdllib)
 if test "$readline_h" = no -o "$readline_lib" = no; then
-	if test "$READLINE" = "-lreadline -ltermcap"; then
+	if test "$READLINE" = "yes"; then
 		AC_MSG_ERROR(You need to install the GNU readline library or configure without --enable-readline)
 	fi
 fi
+if test "$READLINE" = yes; then
+	READLINE="-lreadline $rdllib"
+fi
+AC_SUBST(READLINE)
 
 dnl
 dnl Check for rl_completion_matches
