@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.39 2002/06/05 13:29:15 stelian Exp $";
+	"$Id: main.c,v 1.40 2002/06/08 07:10:37 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -83,7 +83,7 @@ static const char rcsid[] =
 
 int	aflag = 0, bflag = 0, cvtflag = 0, dflag = 0, vflag = 0, yflag = 0;
 int	hflag = 1, mflag = 1, Mflag = 0, Nflag = 0, Vflag = 0, zflag = 0;
-int	uflag = 0, lflag = 0, Lflag = 0;
+int	uflag = 0, lflag = 0, Lflag = 0, oflag = 0;
 char	*Afile = NULL;
 int	dokerberos = 0;
 char	command = '\0';
@@ -166,7 +166,7 @@ main(int argc, char *argv[])
 #ifdef KERBEROS
 		"k"
 #endif
-		"lL:mMN"
+		"lL:mMNo"
 #ifdef USE_QFA
 		"P:Q:"
 #endif
@@ -257,6 +257,9 @@ main(int argc, char *argv[])
 			break;
 		case 'N':
 			Nflag = 1;
+			break;
+		case 'o':
+			oflag = 1;
 			break;
 #ifdef USE_QFA
 		case 'Q':
@@ -530,7 +533,7 @@ main(int argc, char *argv[])
 		}
 		createfiles();
 		createlinks();
-		setdirmodes(0);
+		setdirmodes(oflag ? FORCE : 0);
 		if (dflag)
 			checkrestore();
 #ifdef DEBUG_QFA
@@ -619,7 +622,7 @@ usage(void)
 		"usage:"
 		"\t%s -C [-cd" kerbflag "lMvVy] [-b blocksize] [-D filesystem] [-f file]\n"
 		"\t%s    [-F script] [-L limit] [-s fileno]\n"
-		"\t%s -i [-acdh" kerbflag "lmMuvVy] [-A file] [-b blocksize] [-f file]\n"
+		"\t%s -i [-acdh" kerbflag "lmMouvVy] [-A file] [-b blocksize] [-f file]\n"
 		"\t%s    [-F script] " qfaflag "[-s fileno]\n"
 #ifdef USE_QFA
 		"\t%s -P file [-acdh" kerbflag "lmMuvVy] [-A file] [-b blocksize]\n"
@@ -631,7 +634,7 @@ usage(void)
 		"\t%s    [-s fileno] [-T directory]\n"
 		"\t%s -t [-cdh" kerbflag "lMuvVy] [-A file] [-b blocksize] [-f file]\n"
 		"\t%s    [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]\n"
-		"\t%s -x [-acdh" kerbflag "lmMuvVy] [-A file] [-b blocksize] [-f file]\n"
+		"\t%s -x [-acdh" kerbflag "lmMouvVy] [-A file] [-b blocksize] [-f file]\n"
 		"\t%s    [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]\n",
 		__progname, white, 
 		__progname, white, 

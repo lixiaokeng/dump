@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.178 2002/06/05 13:29:12 stelian Exp $
+$Id: CHANGES,v 1.179 2002/06/08 07:10:36 stelian Exp $
 
 Changes between versions 0.4b28 and 0.4b29 (released ??????????????)
 ====================================================================
@@ -37,6 +37,11 @@ Changes between versions 0.4b28 and 0.4b29 (released ??????????????)
 7.	Added a -v (verbose) mode to dump. For now it just prints the number
 	of the inode being dumped, but this could evolve in future versions
 	to include interesting debugging output.
+
+8.	Added a -o flag to restore, which automatically restores the current
+	directory permissions in -i or -x mode, without asking the operator
+	whether to do so. Patch submitted by Tony Clayton <tonyc@e-smith.com>
+	and Peter Samuel <peters@e-smith.com>.
 
 Changes between versions 0.4b27 and 0.4b28 (released April 12, 2002)
 ====================================================================

@@ -29,7 +29,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: restore.8.in,v 1.26 2002/06/05 13:29:15 stelian Exp $
+.\"	$Id: restore.8.in,v 1.27 2002/06/08 07:10:37 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt RESTORE 8
@@ -50,7 +50,7 @@
 .Op Fl T Ar directory
 .Nm restore
 .Fl i
-.Op Fl acdhklmMNuvVy
+.Op Fl acdhklmMNouvVy
 .Op Fl A Ar file
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
@@ -99,7 +99,7 @@
 .Op file ...
 .Nm restore
 .Fl x
-.Op Fl adchklmMNuvVy
+.Op Fl adchklmMNouvVy
 .Op Fl A Ar file
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
@@ -468,6 +468,17 @@ to perform a full execution as requested by one of
 or
 .Fl x
 command without actually writing any file on disk.
+.It Fl o
+The
+.Fl o
+flag causes
+.Nm
+to automatically restore the current directory permissions
+without asking the operator whether to do so in one of
+.Fl i
+or
+.Fl x
+modes.
 .It Fl Q Ar file
 Use the file
 .Ar file

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: interactive.c,v 1.23 2002/02/25 13:54:53 stelian Exp $";
+	"$Id: interactive.c,v 1.24 2002/06/08 07:10:37 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -211,7 +211,7 @@ loop:
 			goto bad;
 		createfiles();
 		createlinks();
-		setdirmodes(0);
+		setdirmodes(oflag ? FORCE : 0);
 		if (dflag)
 			checkrestore();
 		volno = 0;

@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dirs.c,v 1.18 2002/02/04 11:18:46 stelian Exp $";
+	"$Id: dirs.c,v 1.19 2002/06/08 07:10:37 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -647,7 +647,8 @@ setdirmodes(int flags)
 				ep->e_flags &= ~NEW;
 				continue;
 			}
-			if (node.ino == ROOTINO &&
+			if ((flags & FORCE) == 0 &&
+			    node.ino == ROOTINO &&
 		   	    reply("set owner/mode for '.'") == FAIL)
 				continue;
 		}

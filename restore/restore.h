@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: restore.h,v 1.25 2002/02/04 11:18:46 stelian Exp $
+ *	$Id: restore.h,v 1.26 2002/06/08 07:10:37 stelian Exp $
  */
 
 /*
@@ -61,6 +61,7 @@ extern int	lflag;		/* assume remote filename is a regular file */
 extern int	Lflag;		/* compare errors limit */
 extern int	mflag;		/* restore by name instead of inode number */
 extern int	Mflag;		/* multi-volume restore */
+extern int	oflag;		/* do restore permissions without asking */
 extern int	Vflag;		/* multi-volume on a single device like CDROM */
 extern int	Nflag;		/* do not write the disk */
 extern int	uflag;		/* unlink symlink targets */
