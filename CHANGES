@@ -1,7 +1,7 @@
-$Id: CHANGES,v 1.152 2002/01/05 23:23:01 stelian Exp $
+$Id: CHANGES,v 1.153 2002/01/07 14:36:32 stelian Exp $
 
-Changes between versions 0.4b25 and 0.4b26 (released ?????????????????)
-=======================================================================
+Changes between versions 0.4b25 and 0.4b26 (released January 7, 2002)
+=====================================================================
 
 1.	Added a set of backup scripts from Eugenio Diaz
 	<getnito@yahoo.com> in the examples section. It features
