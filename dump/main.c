@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.21 2000/03/03 11:43:35 stelian Exp $";
+	"$Id: main.c,v 1.22 2000/03/08 10:51:29 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -664,10 +664,13 @@ main(int argc, char *argv[])
 	tnow = trewind();
 
 	if (pipeout)
-		msg("%ld tape blocks\n", spcl.c_tapea);
+		msg("%ld tape blocks (%.2fMB)\n", spcl.c_tapea,
+			((double)spcl.c_tapea * TP_BSIZE / 1048576));
 	else
-		msg("%ld tape blocks on %d volumes(s)\n",
-		    spcl.c_tapea, spcl.c_volume);
+		msg("%ld tape blocks (%.2fMB) on %d volume(s)\n",
+		    spcl.c_tapea, 
+		    ((double)spcl.c_tapea * TP_BSIZE / 1048576),
+		    spcl.c_volume);
 
 	/* report dump performance, avoid division through zero */
 	if (tend_writing - tstart_writing == 0)

@@ -1,10 +1,21 @@
-$Id: CHANGES,v 1.48 2000/03/02 13:33:00 stelian Exp $
+$Id: CHANGES,v 1.49 2000/03/08 10:51:29 stelian Exp $
 
 Changes between versions 0.4b15 and 0.4b16 (released ?????????????)
 ===================================================================
 
 1.	Fixed some several duplicate 'DUMP: DUMP:' in the
 	output of dump.
+
+2.	Corrected the estimation of blocks to dump. Note that
+	this is still wrong for large directory inodes, due
+	to the size of a BSD directory entry on the tape
+	(estimation is based on the size of the ext2 directory,
+	which is smaller because it doesn't contain the null
+	character at the end).
+
+3.	Made dump report the total number of MB written to
+	tape at the end of run. Thanks to W. Reilly Cooley
+	<wcooley@nakedape.cc> for the patch.
 
 Changes between versions 0.4b14 and 0.4b15 (released March 2, 2000)
 ===================================================================
