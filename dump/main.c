@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.75 2002/09/02 12:43:12 stelian Exp $";
+	"$Id: main.c,v 1.76 2002/10/07 19:27:36 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1241,7 +1241,7 @@ do_exclude_ino_str(char * ino) {
 	unsigned long inod;
 
 	inod = strtoul(ino, &r, 10);
-	if (*r != '\0' || inod <= ROOTINO) {
+	if (( *r != '\0' && !isspace(*r) ) || inod <= ROOTINO) {
 		msg("Invalid inode argument %s\n", ino);
 		msg("The ENTIRE dump is aborted.\n");
 		exit(X_STARTUP);
