@@ -92,7 +92,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-%doc CHANGES COPYRIGHT KNOWNBUGS MAINTAINERS README THANKS TODO dump.lsm
+%doc CHANGES COPYRIGHT KNOWNBUGS MAINTAINERS README REPORTING-BUGS THANKS TODO dump.lsm
 %attr(0664,root,disk)	%config(noreplace) /etc/dumpdates
 %attr(6755,root,tty)	/sbin/dump
 /sbin/rdump

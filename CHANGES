@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.39 2000/02/04 20:22:21 stelian Exp $
+$Id: CHANGES,v 1.40 2000/02/04 20:57:31 stelian Exp $
 
 Changes between versions 0.4b13 and 0.4b14 (released ????????????????)
 ======================================================================
@@ -20,6 +20,9 @@ Changes between versions 0.4b13 and 0.4b14 (released ????????????????)
 
 4.	Added the '-e' exclude inode option to dump. Thanks to
 	Isaac Chuang <ike@isl.stanford.edu> for contributing with the patch.
+
+5.	Added a REPORTING-BUGS file in order to provide a guide
+	on how to correctly report a bug in dump/restore.
 
 Changes between versions 0.4b12 and 0.4b13 (released January 21, 2000)
 ======================================================================

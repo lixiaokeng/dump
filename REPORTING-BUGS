@@ -1,0 +1,57 @@
+Congratulations! You just found a bug in dump/restore and want
+to know what to do next.
+
+Here are some guidelines you will want to follow before sending me
+a mail:
+
+1. Are you sure it's a bug? If you just are not sure about how
+to use a specific feature of dump, please post your question on
+the dump-users mailing list. While you are there, try to browse the
+archives of the mailing list and see if someone asked the same question 
+before.
+
+	NOTE: questions about how to use the d(ensity) (b)locksize parameters
+	enters this category!
+
+2. Always test the last version of dump/restore before submitting a
+bug report. Your problem is maybe already fixed!
+
+3. Consult the bugs using the bug system at sourceforge. Use this 
+bug system if you want to report a new bug or contribute to an
+existing bug. You may want to create an account on sourceforge for that,
+so the comments will automatically be forwarded to your email address.
+
+4. If you are using the bug system and didn't create an account on
+sourceforge, put your email address into the bug report! If I am unable
+to contact you for more information, chances are that the bug will
+never be solved!
+
+5. Please provide detailed information about your system:
+	- distribution and its version (RedHat, Debian, Suse, homemade etc.)
+	- architecture (Intel, Sparc, PalmPilot etc.)
+	- dump/restore version (0.4b13, etc)
+	- e2fsprogs version (1.17, etc)
+	- libc version (libc5, glibc2.0, gilbc2.1 etc)
+	- complete output of the dump/restore command which caused
+	  the failure (ok, you can delete the 'xx% done' lines)
+	- the device you dump into/restore from (tape drive, file etc).
+	- anything else you believe will help me to find the bug...
+
+6. In addition, if you want to report a bug on dump, provide also:
+	- details of your filesystem you want to dump: 
+		output of the command 'tune2fs -l /dev/sda1' 
+		(replace sda1 with your partition...)
+	- if your filesystem was mounted when doing the dump, try
+	  to rerun the command with the filesystem unmounted. Does
+	  the bug still occur?
+	- try to dump your filesystem using /dev/null as tape device. 
+	  This may help to know that the bug is not triggered by a
+	  buggy device or tape or remote access problems.
+
+
+Ok, here are the pointers you may want to access:
+
+Dump latest release: http://sourceforge.net/project/filelist.php?group_id=1306
+Dump mailing lists: http://sourceforge.net/mail/?group_id=1306
+Dump bug system: http://sourceforge.net/bugs/?group_id=1306
+My email: pop@cybercable.fr
