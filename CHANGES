@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.271 2005/01/25 13:33:41 stelian Exp $
+$Id: CHANGES,v 1.272 2005/03/02 08:46:54 stelian Exp $
 
 Changes between versions 0.4b39 and 0.4b40 (released ????????????????)
 ======================================================================
@@ -14,6 +14,11 @@ Changes between versions 0.4b39 and 0.4b40 (released ????????????????)
 	worked well for excluded directories but not for regular files.
 	Thanks to Kenneth Porter <shiva@sewingwitch.com> for the bug
 	report.
+
+3.	Fixed a bug in dump where the tape size was miscalculated when
+	the user used -d/-s to specify the tape characteristics. Thanks
+	to Philip Goisman <goisman@physics.arizona.edu> for reporting
+	the bug.
 
 Changes between versions 0.4b38 and 0.4b39 (released January 21, 2005)
 ======================================================================

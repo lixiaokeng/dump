@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.87 2004/11/22 10:32:32 stelian Exp $";
+	"$Id: tape.c,v 1.88 2005/03/02 08:46:55 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -420,6 +420,10 @@ flushtape(void)
 
 	int siz = (char *)nextblock - (char *)slp->req;
 
+	/* make sure returned has sane values in case we don't read 
+	 * them from the slave in this pass */
+	returned.unclen = returned.clen = writesize;
+
 	slp->req[trecno].count = 0;			/* Sentinel */
 
 	if (dump_atomic_write( slp->fd, (char *)slp->req, siz) != siz)
@@ -619,6 +623,10 @@ rollforward(void)
 #endif
 	tslp = &slaves[SLAVES];
 	ntb = (union u_spcl *)tslp->tblock[1];
+
+	/* make sure returned has sane values in case we don't read 
+	 * them from the slave in this pass */
+	returned.unclen = returned.clen = writesize;
 
 	/*
 	 * Each of the N slaves should have requests that need to
