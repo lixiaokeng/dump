@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.56 2001/08/13 16:17:52 stelian Exp $";
+	"$Id: main.c,v 1.57 2001/08/16 09:37:59 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -104,6 +104,7 @@ char	lastlevel;	/* dump level of previous dump */
 char	level;		/* dump level of this dump */
 int	uflag;		/* update flag */
 int	Mflag;		/* multi-volume flag */
+int	qflag;		/* quit on errors flag */
 char	*eot_script;	/* end of volume script fiag */
 int	diskfd;		/* disk file descriptor */
 int	tapefd;		/* tape file descriptor */
@@ -235,7 +236,7 @@ main(int argc, char *argv[])
 #ifdef KERBEROS
 			    "k"
 #endif
-			    "Mn"
+			    "Mnq"
 #ifdef USE_QFA
 			    "Q:"
 #endif
@@ -343,6 +344,10 @@ main(int argc, char *argv[])
 
 		case 'n':		/* notify operators */
 			notify = 1;
+			break;
+
+		case 'q':
+			qflag = 1;
 			break;
 
 #ifdef USE_QFA
@@ -949,7 +954,7 @@ usage(void)
 #ifdef KERBEROS
 		"k"
 #endif
-		"MnSu"
+		"MnqSu"
 		"] [-B records] [-b blocksize] [-d density]\n"
 		"\t%s [-e inode#,inode#,...] [-E file] [-f file] [-h level] "
 #ifdef USE_QFA

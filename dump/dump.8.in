@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.30 2001/07/19 09:03:44 stelian Exp $
+.\"	$Id: dump.8.in,v 1.31 2001/08/16 09:37:59 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -40,7 +40,7 @@
 .Nd ext2 filesystem backup
 .Sh SYNOPSIS
 .Nm dump
-.Op Fl 0123456789ackMnSu
+.Op Fl 0123456789ackMnqSu
 .Op Fl B Ar records
 .Op Fl b Ar blocksize
 .Op Fl d Ar density
@@ -253,6 +253,11 @@ notify all operators in the group
 .Dq operator
 by means similar to a
 .Xr wall 1 .
+.It Fl q
+Make
+.Nm
+abort immediately whenever operator attention is required,
+without prompting in case of write errors, tape changes etc.
 .It Fl Q Ar file
 Enable the Quick File Access support. Tape positions for each
 inode are stored into the file

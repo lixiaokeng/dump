@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: dump.h,v 1.30 2001/08/13 16:17:52 stelian Exp $
+ *	$Id: dump.h,v 1.31 2001/08/16 09:37:59 stelian Exp $
  */
 
 /*-
@@ -75,6 +75,7 @@ extern char	lastlevel;	/* dump level of previous dump */
 extern char	level;		/* dump level of this dump */
 extern int	uflag;		/* update flag */
 extern int	Mflag;		/* multi-volume flag */
+extern int	qflag;		/* quit on errors flag */
 extern char	*eot_script;	/* end of volume script fiag */
 extern int	diskfd;		/* disk file descriptor */
 extern int	tapefd;		/* tape file descriptor */

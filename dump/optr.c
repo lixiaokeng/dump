@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: optr.c,v 1.25 2001/07/18 09:12:05 stelian Exp $";
+	"$Id: optr.c,v 1.26 2001/08/16 09:37:59 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -105,6 +105,12 @@ query(const char *question)
 	int	back, errcount;
 	FILE	*mytty;
 	time_t	firstprompt, when_answered;
+
+	if (qflag) {
+		msg("%s - forced abort\n", question);
+		dumpabort(0);
+		/* NOTREACHED */
+	}
 
 	firstprompt = time(NULL);
 
