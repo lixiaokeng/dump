@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.65 2002/11/15 09:25:42 stelian Exp $";
+	"$Id: tape.c,v 1.66 2002/11/28 08:54:00 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -134,6 +134,8 @@ static int	 checksum __P((int *));
 static void	 findinode __P((struct s_spcl *));
 static void	 findtapeblksize __P((void));
 static int	 gethead __P((struct s_spcl *));
+static int	 converthead __P((struct s_spcl *));
+static void	 converttapebuf __P((struct tapebuf *));
 static void	 readtape __P((char *));
 static void	 setdumpnum __P((void));
 static u_int	 swabi __P((u_int));
@@ -1607,6 +1609,7 @@ readtape_comprfile(char *buf)
 
 	/* read the block prefix */
 	ret = read_a_block(mt, tapebuf, PREFIXSIZE, &rl);
+	converttapebuf(tpb);
 
 	if (Vflag && (ret == 0 || rl < (int)PREFIXSIZE  ||  tpb->length == 0))
 		ret = 0;
@@ -1699,6 +1702,7 @@ readtape_comprtape(char *buf)
 	if (ret <= 0)
 		goto readerr;
 
+	converttapebuf(tpb);
 	tbufptr = decompress_tapebuf(tpb, rl);
 	if (tbufptr == NULL) {
 		msg_read_error("Tape decompression error while");
@@ -1909,7 +1913,7 @@ findtapeblksize(void)
 	long i;
 	size_t len;
 	struct tapebuf *tpb = (struct tapebuf *) tapebuf;
-	struct s_spcl *spclpt = (struct s_spcl *) tapebuf;
+	struct s_spcl spclpt;
 
 	for (i = 0; i < ntrec; i++)
 		((struct s_spcl *)&tapebuf[i * TP_BSIZE])->c_magic = 0;
@@ -1924,6 +1928,17 @@ findtapeblksize(void)
 	if (read_a_block(mt, tapebuf, len, &i) <= 0)
 		errx(1, "Tape read error on first record");
 
+	memcpy(&spclpt, tapebuf, TP_BSIZE);
+	if (converthead(&spclpt) == FAIL) {
+		cvtflag++;
+		if (converthead(&spclpt) == FAIL) {
+			/* Special case for old compressed tapes with prefix */
+			if (magtapein && (i % TP_BSIZE != 0)) 
+				goto oldformat;
+			errx(1, "Tape is not a dump tape");
+		}
+		fprintf(stderr, "Converting to new file system format.\n");
+	}
 	/*
 	 * If the input is from a file or a pipe, we read TP_BSIZE
 	 * bytes looking for a dump header. If the dump is compressed
@@ -1932,14 +1947,14 @@ findtapeblksize(void)
 	 * dump is not compressed and does not have a prefix.
 	 */
 	if (!magtapein) {
-		if (spclpt->c_type == TS_TAPE
-		    && spclpt->c_flags & DR_COMPRESSED) {
+		if (spclpt.c_type == TS_TAPE
+		    && spclpt.c_flags & DR_COMPRESSED) {
 			/* It's a compressed dump file, read in the */
-			/* rest of the block based on spclpt->c_ntrec. */
-			if (spclpt->c_ntrec > ntrec)
+			/* rest of the block based on spclpt.c_ntrec. */
+			if (spclpt.c_ntrec > ntrec)
 				errx(1, "Tape blocksize is too large, use "
-				     "\'-b %d\' ", spclpt->c_ntrec);
-			ntrec = spclpt->c_ntrec;
+				     "\'-b %d\' ", spclpt.c_ntrec);
+			ntrec = spclpt.c_ntrec;
 			len = (ntrec - 1) * TP_BSIZE;
 			zflag = 1;   
 		}
@@ -1962,14 +1977,21 @@ findtapeblksize(void)
 	 * what we asked for; adjust the value of ntrec and test for 
 	 * a compressed dump tape.
 	 */
-
 	if (i % TP_BSIZE != 0) {
+oldformat:
 		/* may be old format compressed dump tape with a prefix */
-		spclpt = (struct s_spcl *) tpb->buf;
+		memcpy(&spclpt, tpb->buf, TP_BSIZE);
+		cvtflag = 0;
+		if (converthead(&spclpt) == FAIL) {
+			cvtflag++;
+			if (converthead(&spclpt) == FAIL)
+				errx(1, "Tape is not a dump tape");
+			fprintf(stderr, "Converting to new file system format.\n");
+		}
 		if (i % TP_BSIZE == PREFIXSIZE
 		    && tpb->compressed == 0
-		    && spclpt->c_type == TS_TAPE
-		    && spclpt->c_flags & DR_COMPRESSED) {
+		    && spclpt.c_type == TS_TAPE
+		    && spclpt.c_flags & DR_COMPRESSED) {
 			zflag = 1;
 			tbufptr = tpb->buf;
 			if (tpb->length > bufsize)
@@ -1981,12 +2003,12 @@ findtapeblksize(void)
 				i, TP_BSIZE);
 	}
 	ntrec = i / TP_BSIZE;
-	if (spclpt->c_type == TS_TAPE) {
-		if (spclpt->c_flags & DR_COMPRESSED)
+	if (spclpt.c_type == TS_TAPE) {
+		if (spclpt.c_flags & DR_COMPRESSED)
 			zflag = 1;
-		if (spclpt->c_ntrec > ntrec)
+		if (spclpt.c_ntrec > ntrec)
 			errx(1, "Tape blocksize is too large, use "
-				"\'-b %d\' ", spclpt->c_ntrec);
+				"\'-b %d\' ", spclpt.c_ntrec);
 	}
 	numtrec = ntrec;
 	Vprintf(stdout, "Tape block size is %ld\n", ntrec);
@@ -2064,6 +2086,13 @@ setmagtapein(void) {
 static int
 gethead(struct s_spcl *buf)
 {
+	readtape((char *)buf);
+	return converthead(buf);
+}
+
+static int
+converthead(struct s_spcl *buf)
+{
 	int32_t i;
 	union {
 		quad_t	qval;
@@ -2098,7 +2127,6 @@ gethead(struct s_spcl *buf)
 	} u_ospcl;
 
 	if (!cvtflag) {
-		readtape((char *)buf);
 		if (buf->c_magic != NFS_MAGIC) {
 			if (swabi(buf->c_magic) != NFS_MAGIC)
 				return (FAIL);
@@ -2110,10 +2138,10 @@ gethead(struct s_spcl *buf)
 		if (checksum((int *)buf) == FAIL)
 			return (FAIL);
 		if (Bcvt)
-			swabst((u_char *)"8i4s31i528bi192b2i", (u_char *)buf);
+			swabst((u_char *)"8i4s31i528bi192b3i", (u_char *)buf);
 		goto good;
 	}
-	readtape((char *)(&u_ospcl.s_ospcl));
+	memcpy(&u_ospcl.s_ospcl, buf, TP_BSIZE);
 	memset((char *)buf, 0, (long)TP_BSIZE);
 	buf->c_type = u_ospcl.s_ospcl.c_type;
 	buf->c_date = u_ospcl.s_ospcl.c_date;
@@ -2211,6 +2239,23 @@ good:
 	if (dflag)
 		accthdr(buf);
 	return(GOOD);
+}
+
+static void
+converttapebuf(struct tapebuf *tpb)
+{
+	if (Bcvt) {
+		struct tb {
+			unsigned int    length:28;
+			unsigned int    flags:3;
+			unsigned int    compressed:1;
+		} tb;
+		swabst((u_char *)"i", (u_char *)tpb);
+		memcpy(&tb, tpb, 4);	
+		tpb->length = tb.length;
+		tpb->flags = tb.flags;
+		tpb->compressed = tb.compressed;
+	}
 }
 
 /*
