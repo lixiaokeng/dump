@@ -1,7 +1,7 @@
-$Id: CHANGES,v 1.253 2004/07/05 15:12:44 stelian Exp $
+$Id: CHANGES,v 1.254 2004/07/07 13:34:06 stelian Exp $
 
-Changes between versions 0.4b36 and 0.4b37 (released ??????????????)
-====================================================================
+Changes between versions 0.4b36 and 0.4b37 (released July 7, 2004)
+==================================================================
 
 1.	Added the --enable-staticz configure option which enables
 	dump and restore to be linked with static versions of
