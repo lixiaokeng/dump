@@ -61,7 +61,7 @@ mv restore/restore restore/restore.static
 
 make distclean
 
-./configure --prefix=/usr --with-binmode=6755 --with-manowner=root --with-mangrp=root --with-manmode=0644 --enable-rmt
+./configure --prefix=/usr --with-binmode=6755 --with-manowner=root --with-mangrp=root --with-manmode=0644 --enable-rmt --enable-readline
 
 make OPT="$RPM_OPT_FLAGS -Wall -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wno-char-subscripts"
 

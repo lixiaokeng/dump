@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: interactive.c,v 1.10 2000/05/28 17:50:27 stelian Exp $";
+	"$Id: interactive.c,v 1.11 2000/05/29 14:17:37 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -70,6 +70,17 @@ extern char * __progname;
 
 #include "restore.h"
 #include "extern.h"
+
+#if HAVE_READLINE
+#include <readline/readline.h>
+#include <readline/history.h>
+
+static char *rl_gets (char *prompt);
+static void initialize_readline(void);
+static char **restore_completion (char *text, int start, int end);
+static char *command_generator(char *text, int state);
+static char *filename_generator(char *text, int state);
+#endif
 
 #define round(a, b) (((a) + (b) - 1) / (b) * (b))
 
@@ -119,6 +130,9 @@ runcmdshell(void)
 	char name[MAXPATHLEN];
 	char cmd[BUFSIZ];
 
+#if HAVE_READLINE
+	initialize_readline();
+#endif
 	arglist.freeglob = 0;
 	arglist.argcnt = 0;
 	arglist.glob.gl_flags = GLOB_ALTDIRFUNC;
@@ -351,6 +365,9 @@ getcmd(char *curdir, char *cmd, char *name, int size, struct arglist *ap)
 	/*
 	 * Read a command line and trim off trailing white space.
 	 */
+#if HAVE_READLINE
+	snprintf(input, BUFSIZ, "%s\n", rl_gets(curdir));
+#else
 	do	{
 		if (pflag)
 			fprintf(stderr, "%s:%s:%s > ", 
@@ -366,6 +383,7 @@ getcmd(char *curdir, char *cmd, char *name, int size, struct arglist *ap)
 		(void) strcpy(cmd, "quit");
 		return;
 	}
+#endif
 	for (cp = &input[strlen(input) - 2]; *cp == ' ' || *cp == '\t'; cp--)
 		/* trim off trailing white space and newline */;
 	*++cp = '\0';
@@ -807,3 +825,197 @@ onintr(int signo)
 		exit(1);
 	errno = save_errno;
 }
+
+
+#if HAVE_READLINE
+
+/* A static variable for holding the line. */
+static char *line_read = NULL;
+
+static char completion_curdir[MAXPATHLEN];
+
+static char *commands[] = { 
+	"add ", "cd ", "delete ", "extract ", "help ", 
+	"? ", "ls ", "pwd ", "prompt ", "quit ", "xit ", 
+	"verbose ", "setmodes ", "what ", "Debug ",
+	NULL };
+
+static char *files = NULL;
+
+static char *
+rl_gets (char *dir)
+{
+	char *prompt;
+	int sz;
+
+	snprintf(completion_curdir, MAXPATHLEN, "%s", dir);
+	completion_curdir[MAXPATHLEN - 1] = '\0';
+
+	if (pflag) {
+		sz = 6 + strlen(__progname) + strlen(spcl.c_filesys) + strlen((completion_curdir + 1 ? completion_curdir + 1 : "/"));
+		prompt = (char *)malloc(sz);
+		if (!prompt)
+			return NULL;
+		snprintf(prompt, sz, "%s:%s:%s > ", 
+			__progname,
+			spcl.c_filesys, 
+			(completion_curdir + 1 ? completion_curdir + 1 : "/"));
+	}
+	else {
+		sz = 4 + strlen(__progname);
+		prompt = (char *)malloc(sz);
+		if (!prompt)
+			return NULL;
+		snprintf(prompt, sz, "%s > ", __progname);
+	}
+	prompt[sz - 1] = '\0';
+
+	if (line_read) {
+		free (line_read);
+		line_read = (char *)NULL;
+	}
+
+	do {
+		line_read = readline (prompt);
+	} while (line_read && !*line_read);
+
+	free(prompt);
+
+	if (!line_read) {
+		printf("\n");
+		return strdup("quit");
+	}
+
+	add_history (line_read);
+
+	return (line_read);
+}
+
+static void 
+initialize_readline(void) 
+{
+	rl_attempted_completion_function = restore_completion;
+	rl_completion_entry_function = (Function *)NULL;
+	rl_completion_append_character = '\0';
+}
+
+static char **
+restore_completion (char *text, int start, int end)
+{
+	char **matches;
+
+	if (start == 0)
+		matches = completion_matches (text, command_generator);
+	else
+		matches = completion_matches (text, filename_generator);
+
+	return (matches);
+}
+
+static char *
+command_generator(char *text, int state)
+{
+	static int list_index, len;
+	char *name;
+
+	if (!state) {
+		list_index = 0;
+		len = strlen(text);
+	}
+
+	while ( (name = commands[list_index]) != NULL) {
+
+		list_index ++;
+
+		if (strncmp(name, text, len) == 0)
+			return strdup(name);
+	}
+
+	return NULL;
+}
+
+static char *
+filename_generator(char *text, int state)
+{
+	static int list_index;
+	char *name;
+	RST_DIR *dirp;
+	struct direct *dp;
+	static int entries;
+	char pname[MAXPATHLEN];
+	char fname[MAXPATHLEN];
+	char *slash;
+	char ppname[MAXPATHLEN];
+
+	if (!state) {
+		list_index = 0;
+
+		if (files != NULL) {
+			free(files);
+			entries = 0;
+			files = NULL;
+		}
+		if ((slash = strrchr(text, '/')) != NULL) {
+			int idx = slash - text;
+			if (idx > MAXPATHLEN - 2)
+				idx = MAXPATHLEN - 2;
+			strncpy(ppname, text, MAXPATHLEN);
+			ppname[MAXPATHLEN - 1] = '\0';
+			ppname[idx] = '\0';
+			if (text[0] == '/')
+				snprintf(pname, MAXPATHLEN, ".%s", ppname);
+			else
+				snprintf(pname, MAXPATHLEN, "%s/%s", completion_curdir, ppname);
+			strncpy(fname, ppname + idx + 1, MAXPATHLEN);
+			ppname[idx] = '/';
+			ppname[idx + 1] = '\0';
+		}
+		else {
+			strncpy(pname, completion_curdir, MAXPATHLEN);
+			strncpy(fname, text, MAXPATHLEN);
+			ppname[0] = '\0';
+		}
+		pname[MAXPATHLEN - 1] = '\0';
+		fname[MAXPATHLEN - 1] = '\0';
+		if ((dirp = rst_opendir(pname)) == NULL)
+			return NULL;
+		entries = 0;
+		while ((dp = rst_readdir(dirp)))
+			entries++;
+		rst_closedir(dirp);
+		files = (char *)malloc(entries * MAXPATHLEN);
+		if (files == NULL) {
+			fprintf(stderr, "Out of memory\n");
+			entries = 0;
+			return NULL;
+		}
+		if ((dirp = rst_opendir(pname)) == NULL)
+			panic("directory reopen failed\n");
+		entries = 0;
+		while ((dp = rst_readdir(dirp))) {
+                        if (TSTINO(dp->d_ino, dumpmap) == 0)
+                                continue;
+			if (strcmp(dp->d_name, ".") == 0 ||
+			    strcmp(dp->d_name, "..") == 0)
+			    	continue;
+			if (strncmp(dp->d_name, fname, strlen(fname)) == 0) {
+				if (inodetype(dp->d_ino) == NODE)
+					snprintf(files + entries * MAXPATHLEN, MAXPATHLEN, "%s%s/", ppname, dp->d_name);
+				else
+					snprintf(files + entries * MAXPATHLEN, MAXPATHLEN, "%s%s ", ppname, dp->d_name);
+				*(files + (entries + 1) * MAXPATHLEN - 1) = '\0';
+				++entries;
+			}
+                 }
+                 rst_closedir(dirp);
+	}
+
+	if (list_index >= entries)
+		return NULL;
+
+	name = strdup(files + list_index * MAXPATHLEN);
+	list_index ++;
+
+	return name;
+}
+#endif /* HAVE_READLINE */

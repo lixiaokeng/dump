@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.58 2000/05/28 18:16:42 stelian Exp $
+$Id: CHANGES,v 1.59 2000/05/29 14:17:37 stelian Exp $
 
 Changes between versions 0.4b16 and 0.4b17 (released ??????????????)
 ====================================================================
@@ -20,6 +20,9 @@ Changes between versions 0.4b16 and 0.4b17 (released ??????????????)
 
 5.	Small fixes in order to allow dump to compile with a 
 	really old e2fsprogs version.
+
+6.	Add GNU readline capabilities to interactive restore.
+	Use configure's --enable-readline flag to enable this feature.
 
 Changes between versions 0.4b15 and 0.4b16 (released March 11, 2000)
 ====================================================================

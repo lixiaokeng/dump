@@ -41,3 +41,6 @@
 
 /* Define if you have the lchown function.  */
 #undef HAVE_LCHOWN
+
+/* Define if you want to include readline support.  */
+#undef HAVE_READLINE

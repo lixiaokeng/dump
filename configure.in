@@ -92,6 +92,24 @@ echo "Not compiling kerberos extensions by default"
 AC_SUBST(OPTDEFS)
 
 dnl
+dnl Handle --enable-readline
+dnl
+AC_ARG_ENABLE([readline],
+[  --enable-readline       enable readline support in restore],
+if test "$enableval" = "no"
+then
+	READLINE=""
+else
+	READLINE="-lreadline"
+	AC_DEFINE(HAVE_READLINE)
+fi
+,
+READLINE=""
+echo "Not including readline support by default"
+)
+AC_SUBST(READLINE)
+
+dnl
 dnl set $(CC) from --with-cc=value
 dnl
 AC_ARG_WITH([cc],
@@ -227,6 +245,17 @@ AC_CHECK_HEADER(ext2fs/ext2fs.h, [ext2fs_h=yes], [ext2fs_h=no])
 AC_CHECK_LIB(ext2fs, ext2fs_open, [ext2fs_lib=yes], [ext2fs_lib=no], [-lcom_err])
 if test "$ext2fs_h" = no -o "$ext2fs_lib" = no; then
 	AC_MSG_ERROR(You need to install the Ext2fs libraries from the E2fsprogs distribution first - hint: make install-libs)
+fi
+
+dnl
+dnl Check for readline headers and libraries
+dnl
+AC_CHECK_HEADER(readline/readline.h, [readline_h=yes], [readline_h=no])
+AC_CHECK_LIB(readline, readline, [readline_lib=yes], [readline_lib=no])
+if test "$readline_h" = no -o "$readline_lib" = no; then
+	if test "$READLINE" = "-lreadline"; then
+		AC_MSG_ERROR(You need to install the GNU readline libraries first)
+	fi
 fi
 
 dnl
