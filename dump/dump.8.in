@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.24 2001/03/28 12:59:48 stelian Exp $
+.\"	$Id: dump.8.in,v 1.25 2001/04/10 12:46:53 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -49,6 +49,7 @@
 .Op Fl F Ar script
 .Op Fl h Ar level
 .Op Fl L Ar label
+.Op Fl Q Ar file
 .Op Fl s Ar feet
 .Op Fl T Ar date
 .Op Fl z Ar compression level
@@ -239,6 +240,14 @@ notify all operators in the group
 .Dq operator
 by means similar to a
 .Xr wall 1 .
+.It Fl Q Ar file
+Enable the Quick File Access support. Tape positions for each
+inode are stored into the file
+.Ar file
+which is used by restore (if called with parameter Q and the filename)
+to directly position the tape at the file restore is currently working
+on.  This saves hours when restoring single files from large backups,
+saves the tapes and the drive's head.
 .It Fl s Ar feet
 Attempt to calculate the amount of tape needed at a particular density.
 If this amount is exceeded,

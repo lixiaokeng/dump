@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.41 2001/03/28 12:59:48 stelian Exp $";
+	"$Id: main.c,v 1.42 2001/04/10 12:46:53 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -89,6 +89,9 @@ int	tapeno = 0;	/* current tape number */
 int	density = 0;	/* density in bytes/0.1" " <- this is for hilit19 */
 int	ntrec = NTREC;	/* # tape blocks in each tape record */
 int	cartridge = 0;	/* Assume non-cartridge tape */
+#ifdef USE_QFA
+int	tapepos = 0; 	/* assume no QFA tapeposition needed by user */
+#endif /* USA_QFA */
 int	dokerberos = 0;	/* Use Kerberos authentication */
 long	dev_bsize = 1;	/* recalculated below */
 long	blocksperfile;	/* output blocks per file */
@@ -153,17 +156,24 @@ main(int argc, char *argv[])
 
 	obsolete(&argc, &argv);
 
+#ifdef USE_QFA
+	gTapeposfd = -1;
+#endif /* USA_QFA */
+
 	while ((ch = getopt(argc, argv,
 			    "0123456789aB:b:cd:e:f:F:h:L:"
 #ifdef KERBEROS
 			    "k"
 #endif
-			    "Mns:ST:uWw"
+			    "Mn"
+#ifdef USE_QFA
+			    "Q:"
+#endif
+			    "s:ST:uWw"
 #ifdef HAVE_ZLIB
 			    "z::"
 #endif
 			    )) != -1)
-#undef optstring
 		switch (ch) {
 		/* dump level */
 		case '0': case '1': case '2': case '3': case '4':
@@ -262,6 +272,13 @@ main(int argc, char *argv[])
 			notify = 1;
 			break;
 
+#ifdef USE_QFA
+		case 'Q':		/* create tapeposfile */
+			gTapeposfile = optarg;
+			tapepos = 1;
+			break;
+#endif /* USA_QFA */
+			
 		case 's':		/* tape size, feet */
 			unlimited = 0;
 			tsize = numarg("tape size", 1L, 0L) * 12 * 10;
@@ -646,6 +663,21 @@ main(int argc, char *argv[])
 		    tapesize, fetapes);
 	}
 
+#ifdef USE_QFA
+	if (tapepos) {
+		msg("writing QFA positions to %s\n", gTapeposfile);
+		if ((gTapeposfd = open(gTapeposfile, O_RDWR|O_CREAT)) < 0)
+			quit("can't open tapeposfile\n");
+		/* print QFA-file header */
+		sprintf(gTps, "%s\n%s\n%ld\n\n", QFA_MAGIC, QFA_VERSION, (unsigned long)spcl.c_date);
+		if (write(gTapeposfd, gTps, strlen(gTps)) != strlen(gTps))
+			quit("can't write tapeposfile\n");
+		sprintf(gTps, "ino\ttapeno\ttapepos\n");
+		if (write(gTapeposfd, gTps, strlen(gTps)) != strlen(gTps))
+			quit("can't write tapeposfile\n");
+	}
+#endif /* USE_QFA */
+
 	/*
 	 * Allocate tape buffer.
 	 */
@@ -778,8 +810,12 @@ usage(void)
 		"k"
 #endif
 		"MnSu"
-		"] [-B records] [-b blocksize]\n"
-		"\t%s [-d density] [-e inode#] [-f file] [-h level] [-s feet]\n"
+		"] [-B records] [-b blocksize] [-d density]\n"
+		"\t%s [-e inode#] [-f file] [-h level] "
+#ifdef USE_QFA
+		"[-Q file] "
+#endif
+		"[-s feet]\n"
 		"\t%s [-T date] "
 #ifdef HAVE_ZLIB
 		"[-z zlevel] "
@@ -891,6 +927,7 @@ obsolete(int *argcp, char **argvp[])
 		case 'F':
 		case 'h':
 		case 'L':
+		case 'Q':
 		case 's':
 		case 'T':
 			if (*argv == NULL) {

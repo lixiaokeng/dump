@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.40 2001/03/28 12:59:48 stelian Exp $";
+	"$Id: tape.c,v 1.41 2001/04/10 12:46:53 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -68,6 +68,7 @@ int    write(), read();
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/wait.h>
+#include <sys/mtio.h>
 #ifdef __linux__
 #include <linux/ext2_fs.h>
 #include <ext2fs/ext2fs.h>
@@ -158,6 +159,9 @@ static int ready;	/* have we reached the lock point without having */
 			/* received the SIGUSR2 signal from the prev slave? */
 static sigjmp_buf jmpbuf;	/* where to jump to if we are ready when the */
 			/* SIGUSR2 arrives from the previous slave */
+#ifdef USE_QFA
+static int gtperr = 0;
+#endif
 
 int
 alloctape(void)
@@ -860,7 +864,7 @@ restore_check_point:
 			open(tape, O_WRONLY|O_CREAT, 0666))) < 0)
 #else
 		while ((tapefd = (pipeout ? fileno(stdout) :
-				  open(tape, O_WRONLY|O_CREAT, 0666))) < 0)
+				  open(tape, O_RDWR|O_CREAT, 0666))) < 0)
 #endif
 		    {
 			msg("Cannot open output \"%s\".\n", tape);
@@ -1046,6 +1050,11 @@ doslave(int cmd, int slave_number)
 #ifdef	__linux__
 	errcode_t retval;
 #endif
+#ifdef USE_QFA
+	long curtapepos;
+	union u_spcl *uspclptr;
+	struct s_spcl *spclptr;
+#endif /* USA_QFA */
 
 	/*
 	 * Need our own seek pointer.
@@ -1097,6 +1106,29 @@ doslave(int cmd, int slave_number)
 			}
 		}
 
+#ifdef USE_QFA
+		if (gTapeposfd >= 0) {
+			uspclptr = (union u_spcl *)&slp->tblock[0];
+			spclptr = &uspclptr->s_spcl;
+			if ((spclptr->c_magic == NFS_MAGIC) && 
+			    (spclptr->c_type == TS_INODE)) {
+				/* if an error occured previously don't
+				 * try again */
+				if (gtperr == 0) {
+					if ((gtperr = GetTapePos(&curtapepos)) == 0) {
+#ifdef DEBUG_QFA
+						msg("inode %ld at tapepos %ld\n", spclptr->c_inumber, curtapepos);
+#endif
+						sprintf(gTps, "%ld\t%d\t%ld\n", (unsigned long)spclptr->c_inumber, tapeno, curtapepos);
+						if (write(gTapeposfd, gTps, strlen(gTps)) != strlen(gTps)) {
+				       			quit("error writing tapepos file.\n");
+						}
+					}
+				}
+			}
+		}
+#endif /* USE_QFA */
+						
 		/* Try to write the data... */
 		wrote = 0;
 		eot_count = 0;
@@ -1240,3 +1272,24 @@ atomic_write(int fd, const void *buf, size_t count)
 	} while (got == -1 && errno == EINTR);
 	return (got < 0 ? got : count - need);
 }
+
+
+#ifdef USE_QFA
+/*
+ * read the current tape position
+ */
+int
+GetTapePos(long *pos)
+{
+	int err = 0;
+
+	*pos = 0;
+	if (ioctl(tapefd, MTIOCPOS, pos) == -1) {
+		err = errno;
+		msg("[%ld] error: %d (getting tapepos: %ld)\n", getpid(), 
+			err, *pos);
+		return err;
+	}
+	return err;
+}
+#endif /* USE_QFA */

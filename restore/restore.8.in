@@ -29,7 +29,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: restore.8.in,v 1.12 2001/03/23 14:40:12 stelian Exp $
+.\"	$Id: restore.8.in,v 1.13 2001/04/10 12:46:53 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt RESTORE 8
@@ -44,6 +44,7 @@
 .Op Fl b Ar blocksize
 .Op Fl D Ar filesystem
 .Op Fl f Ar file
+.Op Fl Q Ar file
 .Op Fl s Ar fileno
 .Op Fl T Ar directory
 .Nm restore
@@ -51,6 +52,7 @@
 .Op Fl chkmMNuvy
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
+.Op Fl Q Ar file
 .Op Fl s Ar fileno
 .Op Fl T Ar directory
 .Nm restore
@@ -58,6 +60,7 @@
 .Op Fl ckMNuvy
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
+.Op Fl Q Ar file
 .Op Fl s Ar fileno
 .Op Fl T Ar directory
 .Nm restore
@@ -65,6 +68,7 @@
 .Op Fl ckMNuvy
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
+.Op Fl Q Ar file
 .Op Fl s Ar fileno
 .Op Fl T Ar directory
 .Nm restore
@@ -72,6 +76,7 @@
 .Op Fl chkMNuvy
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
+.Op Fl Q Ar file
 .Op Fl s Ar fileno
 .Op Fl T Ar directory
 .Op Fl X Ar filelist
@@ -81,6 +86,7 @@
 .Op Fl chkmMNuvy
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
+.Op Fl Q Ar file
 .Op Fl s Ar fileno
 .Op Fl T Ar directory
 .Op Fl X Ar filelist
@@ -364,6 +370,11 @@ The
 flag causes
 .Nm
 to only print file names. Files are not extracted.
+.It Fl Q Ar file
+Use the file
+.Ar file
+in order to read tape position as stored using the dump Quick File
+Access mode.
 .It Fl s Ar fileno
 Read from the specified
 .Ar fileno

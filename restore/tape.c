@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.31 2001/03/27 08:09:21 stelian Exp $";
+	"$Id: tape.c,v 1.32 2001/04/10 12:46:53 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -82,6 +82,9 @@ static const char rcsid[] =
 #include "extern.h"
 #include "pathnames.h"
 
+#ifdef USE_QFA
+int		noresyncmesg = 0;
+#endif /* USE_QFA */
 static long	fssize = MAXBSIZE;
 static int	mt = -1;
 static int	pipein = 0;
@@ -2095,8 +2098,11 @@ findinode(struct s_spcl *header)
 		}
 	} while (header->c_type == TS_ADDR);
 	if (skipcnt > 0)
-		fprintf(stderr, "resync restore, skipped %ld blocks\n",
-		    skipcnt);
+#ifdef USE_QFA
+		if (!noresyncmesg)
+#endif
+			fprintf(stderr, "resync restore, skipped %ld blocks\n",
+		    		skipcnt);
 	skipcnt = 0;
 }
 
@@ -2250,3 +2256,72 @@ swabl(u_long x)
 	return (x);
 }
 #endif
+
+#ifdef USE_QFA
+/*
+ * get the current position of the tape
+ */
+int
+GetTapePos(long *pos)
+{
+	int err = 0;
+
+	*pos = 0;
+	if (ioctl(mt, MTIOCPOS, pos) == -1) {
+		err = errno;
+		fprintf(stdout, "[%ld] error: %d (getting tapepos: %ld)\n", 
+			(unsigned long)getpid(), err, *pos);
+		return err;
+	}
+	return err;
+}
+
+typedef struct mt_pos {
+	short	 mt_op;
+	int	 mt_count;
+} MTPosRec, *MTPosPtr;
+
+/*
+ * go to specified position on tape
+ */
+int
+GotoTapePos(long pos)
+{
+	int err = 0;
+	struct mt_pos buf;
+
+	buf.mt_op = MTSEEK;
+	buf.mt_count = pos;
+	if (ioctl(mt, MTIOCTOP, &buf) == -1) {
+		err = errno;
+		fprintf(stdout, "[%ld] error: %d (setting tapepos: %ld)\n", 
+			(unsigned long)getpid(), err, pos);
+		return err;
+	}
+	return err;
+}
+
+/*
+ * read next data from tape to re-sync
+ */
+void
+ReReadFromTape(void)
+{
+	FLUSHTAPEBUF();
+	noresyncmesg = 1;
+	if (gethead(&spcl) == FAIL) {
+#ifdef DEBUG_QFA
+		fprintf(stdout, "DEBUG 1 gethead failed\n");
+#endif
+	}
+	findinode(&spcl);
+	noresyncmesg = 0;
+}
+
+void
+RequestVol(long tnum)
+{
+	FLUSHTAPEBUF();
+	getvol(tnum);
+}
+#endif /* USE_QFA */

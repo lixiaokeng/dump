@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: restore.c,v 1.14 2001/03/20 10:02:48 stelian Exp $";
+	"$Id: restore.c,v 1.15 2001/04/10 12:46:53 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -76,11 +76,23 @@ long
 listfile(char *name, dump_ino_t ino, int type)
 {
 	long descend = hflag ? GOOD : FAIL;
+#ifdef USE_QFA
+	long tnum;
+	long tpos;
+#endif
 
 	if (TSTINO(ino, dumpmap) == 0)
 		return (descend);
 	Vprintf(stdout, "%s", type == LEAF ? "leaf" : "dir ");
-	fprintf(stdout, "%10lu\t%s\n", (unsigned long)ino, name);
+#ifdef USE_QFA
+	if (tapeposflag) {	/* add QFA positions to output */
+		(void)Inode2Tapepos(ino, &tnum, &tpos, 1);
+		fprintf(stdout, "%10lu\t%ld\t%ld\t%s\n", (unsigned long)ino, 
+			tnum, tpos, name);
+	}
+	else
+#endif
+		fprintf(stdout, "%10lu\t%s\n", (unsigned long)ino, name);
 	return (descend);
 }
 
@@ -782,6 +794,10 @@ createfiles(void)
 	register dump_ino_t first, next, last;
 	register struct entry *ep;
 	long curvol;
+#ifdef USE_QFA
+	long tnum, tpos, curtpos, tmpcnt;
+	time_t tistart, tiend, titaken;
+#endif
 
 	Vprintf(stdout, "Extract requested files\n");
 	curfile.action = SKIP;
@@ -791,6 +807,9 @@ createfiles(void)
 	first = lowerbnd(ROOTINO);
 	last = upperbnd(maxino - 1);
 	for (;;) {
+#ifdef USE_QFA
+		tmpcnt = 1;
+#endif
 		first = lowerbnd(first);
 		last = upperbnd(last);
 		/*
@@ -814,13 +833,64 @@ createfiles(void)
 		 * or an out of order volume change is encountered
 		 */
 		next = lowerbnd(curfile.ino);
+#ifdef USE_QFA
+		tistart = time(NULL);
+		if (tapeposflag) {
+			/* get tape position for inode (position directly) */
+			(void)Inode2Tapepos(next, &tnum, &tpos, 1);
+			if (tpos == 0)
+				/* get tape position for last available inode
+				 * (position before) */
+				(void)Inode2Tapepos(next, &tnum, &tpos, 0);
+			if (tpos != 0) {
+				if (tnum != volno)
+					(void)RequestVol(tnum);
+				if (GetTapePos(&curtpos) == 0) {
+					/*  curtpos +1000 ???, some drives 
+					 *  might be too slow */
+					if (tpos > curtpos) {
+#ifdef DEBUG_QFA
+						msg("positioning tape %ld from %ld to %ld for inode %10lu ...\n", volno, curtpos, tpos, (unsigned long)next);
+#endif
+						if (GotoTapePos(tpos) == 0) {
+#ifdef DEBUG_QFA
+							if (GetTapePos(&curtpos) == 0)
+								msg("before resnyc at tape position %ld\n", curtpos);
+#endif
+							(void)ReReadFromTape();
+#ifdef DEBUG_QFA
+							if (GetTapePos(&curtpos) == 0)
+								msg("after resync at tape position %ld\n", curtpos);
+#endif
+						}
+					}
+				}
+			}
+		}
+#endif /* USA_QFA */
+
 		do	{
 			curvol = volno;
-			while (next > curfile.ino && volno == curvol)
+			while (next > curfile.ino && volno == curvol) {
+#ifdef USE_QFA
+				++tmpcnt;
+#endif
 				skipfile();
+			}
 			skipmaps();
 			skipdirs();
 		} while (volno == curvol + 1);
+#ifdef USE_QFA
+		tiend = time(NULL);
+		titaken = tiend - tistart;
+#ifdef DEBUG_QFA
+		if (titaken / 60 > 0)
+			msg("%ld reads took %d:%02d:%02d\n", 
+				tmpcnt, titaken / 3600, 
+				(titaken % 3600) / 60, titaken % 60);
+#endif
+#endif /* USE_QFA */
+
 		/*
 		 * If volume change out of order occurred the
 		 * current state must be recalculated

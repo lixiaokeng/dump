@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.19 2001/03/23 14:40:12 stelian Exp $";
+	"$Id: main.c,v 1.20 2001/04/10 12:46:53 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -115,6 +115,10 @@ main(int argc, char *argv[])
 	char *p, name[MAXPATHLEN];
 	FILE *filelist = NULL;
 	char fname[MAXPATHLEN];
+#ifdef USE_QFA
+	time_t tistart, tiend, titaken;
+	tapeposflag = 0;
+#endif
 
 	/* Temp files should *not* be readable.  We set permissions later. */
 	(void) umask(077);
@@ -135,12 +139,16 @@ main(int argc, char *argv[])
 	for (p = tmpdir + strlen(tmpdir) - 1; p >= tmpdir && *p == '/'; p--)
 		;                                                               
 	obsolete(&argc, &argv);
+	while ((ch = getopt(argc, argv, 
+		"b:CcdD:f:hi"
 #ifdef KERBEROS
-#define	optlist "b:CcdD:f:hikmMNRrs:tT:uvxX:y"
-#else
-#define	optlist "b:CcdD:f:himMNRrs:tT:uvxX:y"
+		"k"
 #endif
-	while ((ch = getopt(argc, argv, optlist)) != -1)
+		"mMN"
+#ifdef USE_QFA
+		"Q:"
+#endif
+		"Rrs:tT:uvxX:y")) != -1)
 		switch(ch) {
 		case 'b':
 			/* Change default tape blocksize. */
@@ -198,6 +206,12 @@ main(int argc, char *argv[])
 		case 'N':
 			Nflag = 1;
 			break;
+#ifdef USE_QFA
+		case 'Q':
+			gTapeposfile = optarg;
+			tapeposflag = 1;
+			break;
+#endif
 		case 's':
 			/* Dumpnum (skip to) for multifile dump tapes. */
 			dumpnum = strtol(optarg, &p, 10);
@@ -247,6 +261,45 @@ main(int argc, char *argv[])
 		argc = 1;
 		*--argv = ".";
 	}
+
+#ifdef USE_QFA
+	if (tapeposflag) {
+		msg("reading QFA positions from %s\n", gTapeposfile);
+		if ((gTapeposfp = fopen(gTapeposfile, "r")) == NULL)
+			errx(1, "can't open file for reading -- %s",
+				gTapeposfile);
+		/* start reading header info */
+		if (fgets(gTps, sizeof(gTps), gTapeposfp) == NULL)
+			errx(1, "not requested format of -- %s", gTapeposfile);
+		gTps[strlen(gTps) - 1] = 0;     /* delete end of line */
+		if (strcmp(gTps, QFA_MAGIC) != 0)
+			errx(1, "not requested format of -- %s", gTapeposfile);
+		if (fgets(gTps, sizeof(gTps), gTapeposfp) == NULL)
+			errx(1, "not requested format of -- %s", gTapeposfile);
+		gTps[strlen(gTps) - 1] = 0;
+		if (strcmp(gTps, QFA_VERSION) != 0)
+			errx(1, "not requested format of -- %s", gTapeposfile);
+		/* read dumpdate */
+		if (fgets(gTps, sizeof(gTps), gTapeposfp) == NULL)
+			errx(1, "not requested format of -- %s", gTapeposfile);
+		gTps[strlen(gTps) - 1] = 0;
+		/* TODO: check dumpdate from QFA file with current dump file's
+		 * dump date */
+		/* if not equal either output warning and continue without QFA
+		 * or abort */
+		/* read empty line */
+		if (fgets(gTps, sizeof(gTps), gTapeposfp) == NULL)
+			errx(1, "not requested format of -- %s", gTapeposfile);
+		gTps[strlen(gTps) - 1] = 0;
+		/* read table header line */
+		if (fgets(gTps, sizeof(gTps), gTapeposfp) == NULL)
+			errx(1, "not requested format of -- %s", gTapeposfile);
+		gTps[strlen(gTps) - 1] = 0;
+		/* end reading header info */
+		/* tape position table starts here */
+		gSeekstart = ftell(gTapeposfp); /* remember for later use */
+}
+#endif /* USE_QFA */
 
 	switch (command) {
 	/*
@@ -375,6 +428,9 @@ main(int argc, char *argv[])
 	 * Batch extraction of tape contents.
 	 */
 	case 'x':
+#ifdef USE_QFA
+		tistart = time(NULL);
+#endif
 		setup();
 		extractdirs(1);
 		initsymtable((char *)0);
@@ -395,6 +451,14 @@ main(int argc, char *argv[])
 		setdirmodes(0);
 		if (dflag)
 			checkrestore();
+#ifdef USE_QFA
+		tiend = time(NULL);
+		titaken = tiend - tistart;
+#ifdef USE_QFA
+		msg("restore took %d:%02d:%02d\n", titaken / 3600, 
+			(titaken % 3600) / 60, titaken % 60);
+#endif
+#endif
 		break;
 	}
 	exit(0);
@@ -464,6 +528,7 @@ obsolete(int *argcp, char **argvp[])
 		case 'b':
 		case 'D':
 		case 'f':
+		case 'Q':
 		case 's':
 		case 'T':
 		case 'X':

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: utilities.c,v 1.13 2001/03/20 10:02:48 stelian Exp $";
+	"$Id: utilities.c,v 1.14 2001/04/10 12:46:53 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -465,3 +465,76 @@ panic(fmt, va_alist)
 		exit(1);
 	}
 }
+
+#ifdef USE_QFA
+/*
+ * search for ino in QFA file
+ *
+ * if exactmatch:
+ * if ino found return tape number and tape position
+ * if ino not found return tnum=0 and tpos=0
+ *
+ * if not exactmatch:
+ * if ino found return tape number and tape position
+ * if ino not found return tape number and tape position of last smaller ino
+ * if no smaller inode found return tnum=0 and tpos=0
+ */
+int
+Inode2Tapepos(dump_ino_t ino, long *tnum, long *tpos, int exactmatch)
+{
+	char *p, *pp;
+	char numbuff[32];
+	unsigned long tmpino;
+	long tmptnum;
+	long tmptpos;
+
+	*tpos = 0;
+	*tnum = 0;
+	if (fseek(gTapeposfp, gSeekstart, SEEK_SET) == -1)
+		return errno;
+	while (fgets(gTps, sizeof(gTps), gTapeposfp) != NULL) {
+		gTps[strlen(gTps) - 1] = 0;	/* delete end of line */
+		p = gTps;
+		bzero(numbuff, sizeof(numbuff));
+		pp = numbuff;
+		/* read inode */
+		while ((*p != 0) && (*p != '\t'))
+			*pp++ = *p++;
+		tmpino = atol(numbuff);
+		if (*p == 0)
+			return 1;	/* may NOT happen */    
+		p++;
+		bzero(numbuff, sizeof(numbuff));
+		pp = numbuff;
+		/* read tapenum */
+		while ((*p != 0) && (*p != '\t'))
+			*pp++ = *p++;
+		if (*p == 0)
+			return 1;	/* may NOT happen */    
+		tmptnum = atol(numbuff);
+		p++;
+		bzero(numbuff, sizeof(numbuff));
+		pp = numbuff;
+		/* read tapepos */
+		while ((*p != 0) && (*p != '\t'))
+			*pp++ = *p++;
+		tmptpos = atol(numbuff);
+
+		if (exactmatch) {
+			if (tmpino == ino)  {
+				*tnum = tmptnum;
+				*tpos = tmptpos;
+				return 0;
+			}
+		} else {
+			if (tmpino > ino)  {
+				return 0;
+			} else {
+				*tnum = tmptnum;
+				*tpos = tmptpos;
+			}
+		}
+	}
+	return 0;
+}
+#endif /* USE_QFA */

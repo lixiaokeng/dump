@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: extern.h,v 1.12 2001/03/20 10:02:48 stelian Exp $
+ *	$Id: extern.h,v 1.13 2001/04/10 12:46:53 stelian Exp $
  */
 
 /*-
@@ -125,3 +125,11 @@ int		rmtseek __P((int, int));
 int fsetflags __P((const char *, unsigned long));
 int fgetflags __P((const char *, unsigned long *));
 int setflags __P((int, unsigned long));
+
+#ifdef USE_QFA
+int	Inode2Tapepos __P((dump_ino_t, long *, long *, int));
+int	GetTapePos __P((long *));
+int	GotoTapePos __P((long));
+void	ReReadFromTape __P((void));
+void	RequestVol __P((long));
+#endif

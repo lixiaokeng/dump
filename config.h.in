@@ -59,3 +59,9 @@
 
 /* Define this if you have zlib compression library */
 #undef HAVE_ZLIB
+
+/* Define this if you want Quick File Access support */
+#undef USE_QFA
+
+/* Define this if you want to include Quick File Access debugging code */
+#undef DEBUG_QFA

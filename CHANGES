@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.108 2001/04/06 10:09:39 stelian Exp $
+$Id: CHANGES,v 1.109 2001/04/10 12:46:53 stelian Exp $
 
 Changes between versions 0.4b21 and 0.4b22 (released ????????????????)
 ======================================================================
@@ -32,6 +32,15 @@ Changes between versions 0.4b21 and 0.4b22 (released ????????????????)
 
 6.	Made --prefix option work in configure. All the install path
 	are now based on the configure parameters.
+
+7.	Added the Quick File Access mode in dump/restore, contributed
+	by Uwe Gohlke <uwe@ugsoft.de>. In this mode, dump stores in
+	a file tape position for each inode, and this file is used by 
+	restore (if called with parameter Q and the filename)
+	to directly position the tape at the file restore is currently 
+	working on.  This saves hours when restoring single files from
+	large backups, saves the tapes and the drive's head. Use
+	--enable-qfa option of configure to compile in the QFA support.
 
 Changes between versions 0.4b20 and 0.4b21 (released January 13, 2001)
 ======================================================================

@@ -136,6 +136,32 @@ echo "Not enabling Large File System support"
 )
 
 dnl
+dnl Handle --enable-qfa
+dnl
+AC_ARG_ENABLE([qfa],
+[  --enable-qfa               enable Quick File Access support],
+if test "$enableval" = "yes"
+then
+	AC_DEFINE(USE_QFA)
+fi
+,
+echo "Not enabling Quick File Access support"
+)
+
+dnl
+dnl Handle --enable-qfadebug
+dnl
+AC_ARG_ENABLE([qfadebug],
+[  --enable-qfadebug          include Quick File Access debugging code],
+if test "$enableval" = "yes"
+then
+	AC_DEFINE(DEBUG_QFA)
+fi
+,
+echo "Not including Quick File Access debugging code"
+)
+
+dnl
 dnl set $(CC) from --with-cc=value
 dnl
 AC_ARG_WITH([cc],

@@ -5,7 +5,7 @@
  *	Stelian Pop <pop@noos.fr>, 1999-2000
  *	Stelian Pop <pop@noos.fr> - Alcôve <www.alcove.fr>, 2000
  *
- *	$Id: dump.h,v 1.22 2001/03/20 10:02:48 stelian Exp $
+ *	$Id: dump.h,v 1.23 2001/04/10 12:46:53 stelian Exp $
  */
 
 /*-
@@ -106,6 +106,15 @@ long	xferrate;       /* averaged transfer rate of all volumes */
 long	dev_bsize;	/* block size of underlying disk device */
 int	dev_bshift;	/* log2(dev_bsize) */
 int	tp_bshift;	/* log2(TP_BSIZE) */
+
+#ifdef USE_QFA
+#define	QFA_MAGIC	"495115637697"
+#define QFA_VERSION	"1.0"
+int	gTapeposfd;
+char	*gTapeposfile;
+char	gTps[255];
+int	GetTapePos __P((long *pos));
+#endif /* USE_QFA */
 
 #ifndef __P
 #include <sys/cdefs.h>
