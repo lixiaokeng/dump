@@ -61,7 +61,7 @@ mv restore/restore restore/restore.static
 
 make distclean
 
-configure --with-binmode=6755 --with-manowner=root --with-mangrp=root --with-manmode=0644 --enable-rmt
+%configure --with-binmode=6755 --with-manowner=root --with-mangrp=root --with-manmode=0644 --enable-rmt
 
 make OPT="$RPM_OPT_FLAGS -Wall -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wno-char-subscripts"
 
