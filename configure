@@ -1939,13 +1939,47 @@ rm -f conftest*
 	fi
 fi
 
-echo $ac_n "checking for ANSI C header files""... $ac_c" 1>&6
-echo "configure:1944: checking for ANSI C header files" >&5
-if eval "test \"`echo '$''{'ac_cv_header_stdc'+set}'`\" = set"; then
+echo $ac_n "checking whether struct sigaction has a sa_sigaction field""... $ac_c" 1>&6
+echo "configure:1944: checking whether struct sigaction has a sa_sigaction field" >&5
+if eval "test \"`echo '$''{'dump_cv_struct_sa_sigaction'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
 #line 1949 "configure"
+#include "confdefs.h"
+#include <stdio.h>
+#include <signal.h>
+int main() {
+struct sigaction action; action.sa_sigaction = NULL;
+; return 0; }
+EOF
+if { (eval echo configure:1957: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  dump_cv_struct_sa_sigaction=yes
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  dump_cv_struct_sa_sigaction=no
+fi
+rm -f conftest*
+fi
+
+echo "$ac_t""$dump_cv_struct_sa_sigaction" 1>&6
+if test "$dump_cv_struct_sa_sigaction" = yes; then
+  cat >> confdefs.h <<\EOF
+#define HAVE_SIGACTION_SA_SIGACTION 1
+EOF
+
+fi
+
+echo $ac_n "checking for ANSI C header files""... $ac_c" 1>&6
+echo "configure:1978: checking for ANSI C header files" >&5
+if eval "test \"`echo '$''{'ac_cv_header_stdc'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 1983 "configure"
 #include "confdefs.h"
 #include <stdlib.h>
 #include <stdarg.h>
@@ -1953,7 +1987,7 @@ else
 #include <float.h>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1957: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1991: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -1970,7 +2004,7 @@ rm -f conftest*
 if test $ac_cv_header_stdc = yes; then
   # SunOS 4.x string.h does not declare mem*, contrary to ANSI.
 cat > conftest.$ac_ext <<EOF
-#line 1974 "configure"
+#line 2008 "configure"
 #include "confdefs.h"
 #include <string.h>
 EOF
@@ -1988,7 +2022,7 @@ fi
 if test $ac_cv_header_stdc = yes; then
   # ISC 2.0.2 stdlib.h does not declare free, contrary to ANSI.
 cat > conftest.$ac_ext <<EOF
-#line 1992 "configure"
+#line 2026 "configure"
 #include "confdefs.h"
 #include <stdlib.h>
 EOF
@@ -2009,7 +2043,7 @@ if test "$cross_compiling" = yes; then
   :
 else
   cat > conftest.$ac_ext <<EOF
-#line 2013 "configure"
+#line 2047 "configure"
 #include "confdefs.h"
 #include <ctype.h>
 #define ISLOWER(c) ('a' <= (c) && (c) <= 'z')
@@ -2020,7 +2054,7 @@ if (XOR (islower (i), ISLOWER (i)) || toupper (i) != TOUPPER (i)) exit(2);
 exit (0); }
 
 EOF
-if { (eval echo configure:2024: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:2058: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   :
 else
@@ -2044,12 +2078,12 @@ EOF
 fi
 
 echo $ac_n "checking for quad_t""... $ac_c" 1>&6
-echo "configure:2048: checking for quad_t" >&5
+echo "configure:2082: checking for quad_t" >&5
 if eval "test \"`echo '$''{'ac_cv_type_quad_t'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2053 "configure"
+#line 2087 "configure"
 #include "confdefs.h"
 #include <sys/types.h>
 #if STDC_HEADERS
@@ -2077,12 +2111,12 @@ EOF
 fi
 
 echo $ac_n "checking for u_quad_t""... $ac_c" 1>&6
-echo "configure:2081: checking for u_quad_t" >&5
+echo "configure:2115: checking for u_quad_t" >&5
 if eval "test \"`echo '$''{'ac_cv_type_u_quad_t'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2086 "configure"
+#line 2120 "configure"
 #include "confdefs.h"
 #include <sys/types.h>
 #if STDC_HEADERS

@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.21 2000/08/19 22:06:03 stelian Exp $";
+	"$Id: tape.c,v 1.22 2000/08/21 10:45:40 stelian Exp $";
 #endif /* not lint */
 
 #ifdef __linux__
@@ -895,7 +895,9 @@ enslave(void)
 	master = getpid();
 
     {	struct sigaction sa;
+#if	HAVE_SIGACTION_SA_SIGACTION
 	sa.sa_sigaction = NULL;
+#endif
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = 0;
 	sa.sa_handler = dumpabort;

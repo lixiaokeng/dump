@@ -1,4 +1,19 @@
-$Id: CHANGES,v 1.78 2000/08/20 19:45:38 stelian Exp $
+$Id: CHANGES,v 1.79 2000/08/21 10:45:39 stelian Exp $
+
+Changes between versions 0.4b19 and 0.4b20 (released ???????????????)
+=====================================================================
+
+1.	Added a configure option to search for sa_sigaction member
+	of the struct sigaction. This should fix the compile on
+	libc5. Thanks to Gunther Schlegel <schlegel@riege.de>
+        for reporting the bug.
+
+2.	Modified the label and uuid analysis in order to be 
+	self-contained (independant of kernel/libc headers). This 
+        should fix the compile with older kernel/libc headers and
+	will preserve the functionality. Thanks to Bernhard Erdmann
+	<bernhard.erdmann@gmx.de> for reporting the bug.
+
 
 Changes between versions 0.4b18 and 0.4b19 (released August 20, 2000)
 =====================================================================
@@ -32,6 +47,7 @@ Changes between versions 0.4b18 and 0.4b19 (released August 20, 2000)
 
 7.	Updated the RPM spec file to the latest RedHat version,
 	providing FHS packaging and other cosmetic changes.
+	You will need RPM version >= 3.0.5 in order to build the RPM.
 
 8.	Updated the configure script to check for libtermcap
 	before checking for libreadline, because we need this

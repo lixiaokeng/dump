@@ -17,12 +17,21 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <linux/ext2_fs.h>
-#include <ext2fs/ext2fs.h>
+#include <malloc.h>
 #include "bylabel.h"
 
 #define PROC_PARTITIONS "/proc/partitions"
 #define DEVLABELDIR	"/dev"
+
+#define EXT2_SUPER_MAGIC 0xEF53
+struct ext2_super_block {
+	unsigned char	s_dummy1[56];
+	unsigned char	s_magic[2];
+	unsigned char	s_dummy2[46];
+	unsigned char	s_uuid[16];
+	unsigned char	s_volume_name[16];
+};
+#define ext2magic(s)	((unsigned int) s.s_magic[0] + (((unsigned int) s.s_magic[1]) << 8))
 
 void msg __P((const char *fmt, ...));
 
@@ -48,7 +57,7 @@ get_label_uuid(const char *device, char **label, char *uuid) {
 
 	if (lseek(fd, 1024, SEEK_SET) != 1024
 	    || read(fd, (char *) &e2sb, sizeof(e2sb)) != sizeof(e2sb)
-	    || (e2sb.s_magic != EXT2_SUPER_MAGIC)) {
+	    || (ext2magic(e2sb) != EXT2_SUPER_MAGIC)) {
 		close(fd);
 		return 1;
 	}
@@ -67,10 +76,10 @@ uuidcache_addentry(char *device, char *label, char *uuid) {
 	struct uuidCache_s *last;
 
 	if (!uuidCache) {
-		last = uuidCache = malloc(sizeof(*uuidCache));
+		last = uuidCache = (struct uuidCache_s *)malloc(sizeof(*uuidCache));
 	} else {
 		for (last = uuidCache; last->next; last = last->next) ;
-		last->next = malloc(sizeof(*uuidCache));
+		last->next = (struct uuidCache_s *)malloc(sizeof(*uuidCache));
 		last = last->next;
 	}
 	last->next = NULL;

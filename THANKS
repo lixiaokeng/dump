@@ -1,4 +1,4 @@
-$Id: THANKS,v 1.34 2000/08/20 19:53:49 stelian Exp $
+$Id: THANKS,v 1.35 2000/08/21 10:45:39 stelian Exp $
 
 Dump and restore were written by the people of the CSRG at the University
 of California, Berkeley.
@@ -58,6 +58,7 @@ Kenneth Porter		shiva@well.com
 Bernhard Sadlowski	sadlowsk@Mathematik.Uni-Bielefeld.DE
 Jan Sanislo		oystr@cs.washington.edu
 Patrik Schindler	poc@pocnet.net
+Gunther Schlegel	schlegel@riege.de
 Chris Siebenmann	cks@utcc.utoronto.ca
 Bob Snyder		rsnyder@janet.advsys.com
 Matti Taskinen		mkt@rni.helsinki.fi
