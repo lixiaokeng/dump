@@ -25,7 +25,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: restore.8.in,v 1.30 2003/03/30 15:40:39 stelian Exp $
+.\"	$Id: restore.8.in,v 1.31 2003/06/11 13:01:36 stelian Exp $
 .\"
 .TH RESTORE 8 "version __VERSION__ of __DATE__" BSD "System management commands"
 .SH NAME
@@ -728,6 +728,16 @@ inode. Although this behaviour is not really a bug, it has proven itself
 to be confusing for many users, so it is recommended to answer 'no', 
 unless you're performing a full restore and you do want to restore the
 permissions on '/'.
+.PP
+It should be underlined that because it runs in user code,
+.B restore
+, when run with the
+.B \-C
+option, sees the files as the kernel presents them, whereas
+.B dump
+sees all the files on a given filesystem. In particular, this 
+can cause some confusion when comparing a dumped filesystem a part
+of which is hidden by a filesystem mounted on top of it.
 .SH AUTHOR
 The
 .B dump/restore
