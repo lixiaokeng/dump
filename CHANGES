@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.175 2002/05/16 21:22:36 stelian Exp $
+$Id: CHANGES,v 1.176 2002/05/17 08:10:43 stelian Exp $
 
 Changes between versions 0.4b28 and 0.4b29 (released ??????????????)
 ====================================================================
@@ -23,6 +23,10 @@ Changes between versions 0.4b28 and 0.4b29 (released ??????????????)
 	of dump: http://www.FreeBSD.org/cgi/query-pr.cgi?pr=32414
 	Thanks to Ted Grzesik <tedgyz@roostme.com> for reporting the bug and 
 	help testing the patch.
+
+4.	Added some example scripts from Gerd Bavendiek <bav@epost.de>
+	which makes one able to pipe the output of dump, by the net, to
+	a remote CD-burner server.
 	
 Changes between versions 0.4b27 and 0.4b28 (released April 12, 2002)
 ====================================================================
