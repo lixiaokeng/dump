@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.5 1999/11/22 19:08:50 tiniou Exp $
+.\"	$Id: dump.8.in,v 1.6 1999/12/05 18:54:23 tiniou Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -40,7 +40,7 @@
 .Nd ext2 filesystem backup
 .Sh SYNOPSIS
 .Nm dump
-.Op Fl 0123456789acknSu
+.Op Fl 0123456789ackMnSu
 .Op Fl B Ar records
 .Op Fl b Ar blocksize
 .Op Fl d Ar density
@@ -51,7 +51,7 @@
 .Op Fl T Ar date
 .Ar filesystem
 .Nm dump
-.Op Fl 0123456789acknSu
+.Op Fl 0123456789ackMnSu
 .Op Fl B Ar records
 .Op Fl b Ar blocksize
 .Op Fl d Ar density
@@ -201,6 +201,14 @@ Note that this label is limited
 to be at most LBLSIZE (currently 16) characters, which must include
 the terminating
 .Ql \e0 .
+.It Fl M
+Enable the multi-volume feature. The name specified with 
+.Fl f 
+is treated as a prefix and 
+.Nm
+writes in sequence to <prefix>001, <prefix>002 etc. This can be
+useful when dumping to files on an ext2 partition, in order to bypass
+the 2GB file size limitation.
 .It Fl n
 Whenever
 .Nm

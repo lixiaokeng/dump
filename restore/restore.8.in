@@ -29,7 +29,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: restore.8.in,v 1.4 1999/10/30 22:55:51 tiniou Exp $
+.\"	$Id: restore.8.in,v 1.5 1999/12/05 18:54:25 tiniou Exp $
 .\"
 .Dd __DATE__
 .Dt RESTORE 8
@@ -40,7 +40,7 @@
 .Sh SYNOPSIS
 .Nm restore
 .Fl C
-.Op Fl ckvy
+.Op Fl ckMvy
 .Op Fl b Ar blocksize
 .Op Fl D Ar filesystem
 .Op Fl f Ar file
@@ -48,28 +48,28 @@
 .Op Fl T Ar directory
 .Nm restore
 .Fl i
-.Op Fl chkmNuvy
+.Op Fl chkmMNuvy
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
 .Op Fl s Ar fileno
 .Op Fl T Ar directory
 .Nm restore
 .Fl R
-.Op Fl ckNuvy
+.Op Fl ckMNuvy
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
 .Op Fl s Ar fileno
 .Op Fl T Ar directory
 .Nm restore
 .Fl r
-.Op Fl ckNuvy
+.Op Fl ckMNuvy
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
 .Op Fl s Ar fileno
 .Op Fl T Ar directory
 .Nm restore
 .Fl t
-.Op Fl chkNuvy
+.Op Fl chkMNuvy
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
 .Op Fl s Ar fileno
@@ -77,7 +77,7 @@
 .Op file ...
 .Nm restore
 .Fl x
-.Op Fl chkmNuvy
+.Op Fl chkmMNuvy
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
 .Op Fl s Ar fileno
@@ -341,11 +341,21 @@ Extract by inode numbers rather than by file name.
 This is useful if only a few files are being extracted,
 and one wants to avoid regenerating the complete pathname
 to the file.
+.It Fl M
+Enables the multi-volume feature (for reading dumps made using
+the 
+.Fl M
+option of dump). The name specified with
+.Fl f
+is treated as a prefix and
+.Nm
+tries to read in sequence from <prefix>001, <prefix>002 etc. 
 .It Fl N
 The
 .Fl N
 flag causes
-.Nm restore to only print file names. Files are not extracted.
+.Nm
+to only print file names. Files are not extracted.
 .It Fl s Ar fileno
 Read from the specified
 .Ar fileno
