@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: optr.c,v 1.36 2003/03/30 15:40:36 stelian Exp $";
+	"$Id: optr.c,v 1.37 2003/04/10 07:59:05 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -460,6 +460,12 @@ allocfsent(struct mntent *fs)
 			quit("Cannot access %s\n", tabfs->mnt_fsname);
 		if (tabbuf.st_rdev == buf.st_rdev) {
 			free(new);
+			/* Copy passno and freq from /etc/fstab because 
+			 * /etc/mtab does always have them as 0 0 */
+			if (!tabfs->mnt_passno)
+				tabfs->mnt_passno = fs->mnt_passno;
+			if (!tabfs->mnt_freq)
+				tabfs->mnt_freq = fs->mnt_freq;
 			return NULL;
 		}
 	}
