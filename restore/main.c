@@ -41,11 +41,12 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.37 2002/01/25 14:59:53 stelian Exp $";
+	"$Id: main.c,v 1.38 2002/02/04 11:18:46 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
 #include <compatlfs.h>
+#include <fcntl.h>
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <errno.h>
@@ -109,9 +110,13 @@ char	*gTapeposfile;
 char	gTps[255];
 long	gSeekstart;
 int	tapeposflag;
+int	gTapeposfd;
+int	createtapeposflag;
+unsigned long qfadumpdate;
+long long curtapepos;
 #endif /* USE_QFA */
 
-#ifdef	__linux__
+#if defined(__linux__) || defined(sunos)
 char	*__progname;
 #endif
 
@@ -129,17 +134,18 @@ main(int argc, char *argv[])
 	char *p, name[MAXPATHLEN];
 	FILE *filelist = NULL;
 	char fname[MAXPATHLEN];
-#ifdef USE_QFA
-	tapeposflag = 0;
-#endif
-#ifdef USE_QFADEBUG
+#ifdef DEBUG_QFA
 	time_t tistart, tiend, titaken;
 #endif
+#ifdef USE_QFA
+	tapeposflag = 0;
+	createtapeposflag = 0;
+#endif /* USE_QFA */
 
 	/* Temp files should *not* be readable.  We set permissions later. */
 	(void) umask(077);
 	filesys[0] = '\0';
-#ifdef	__linux__
+#if defined(__linux__) || defined(sunos)
 	__progname = argv[0];
 #endif
 
@@ -162,7 +168,7 @@ main(int argc, char *argv[])
 #endif
 		"lL:mMN"
 #ifdef USE_QFA
-		"Q:"
+		"P:Q:"
 #endif
 		"Rrs:tT:uvVxX:y")) != -1)
 		switch(ch) {
@@ -213,6 +219,9 @@ main(int argc, char *argv[])
 #endif
 		case 'C':
 		case 'i':
+#ifdef USE_QFA
+		case 'P':
+#endif
 		case 'R':
 		case 'r':
 		case 't':
@@ -222,6 +231,13 @@ main(int argc, char *argv[])
 				    "%c and %c options are mutually exclusive",
 				    ch, command);
 			command = ch;
+#ifdef USE_QFA
+			if (ch == 'P') {
+				gTapeposfile = optarg;
+				createtapeposflag = 1;
+			}
+#endif
+
 			break;
 		case 'l':
 			lflag = 1;
@@ -349,10 +365,7 @@ main(int argc, char *argv[])
 		if (fgets(gTps, sizeof(gTps), gTapeposfp) == NULL)
 			errx(1, "not requested format of -- %s", gTapeposfile);
 		gTps[strlen(gTps) - 1] = 0;
-		/* TODO: check dumpdate from QFA file with current dump file's
-		 * dump date */
-		/* if not equal either output warning and continue without QFA
-		 * or abort */
+		qfadumpdate = atol(gTps);
 		/* read empty line */
 		if (fgets(gTps, sizeof(gTps), gTapeposfp) == NULL)
 			errx(1, "not requested format of -- %s", gTapeposfile);
@@ -364,7 +377,7 @@ main(int argc, char *argv[])
 		/* end reading header info */
 		/* tape position table starts here */
 		gSeekstart = ftell(gTapeposfp); /* remember for later use */
-}
+	}
 #endif /* USE_QFA */
 
 	switch (command) {
@@ -497,7 +510,7 @@ main(int argc, char *argv[])
 	 * Batch extraction of tape contents.
 	 */
 	case 'x':
-#ifdef USE_QFADEBUG
+#ifdef DEBUG_QFA
 		tistart = time(NULL);
 #endif
 		setup();
@@ -520,13 +533,53 @@ main(int argc, char *argv[])
 		setdirmodes(0);
 		if (dflag)
 			checkrestore();
-#ifdef USE_QFADEBUG
+#ifdef DEBUG_QFA
 		tiend = time(NULL);
 		titaken = tiend - tistart;
 		msg("restore took %d:%02d:%02d\n", titaken / 3600, 
 			(titaken % 3600) / 60, titaken % 60);
-#endif /* USE_QFADEBUG */
+#endif /* DEBUG_QFA */
 		break;
+#ifdef USE_QFA
+	case 'P':
+#ifdef DEBUG_QFA
+		tistart = time(NULL);
+#endif
+		setup();
+		msg("writing QFA positions to %s\n", gTapeposfile);
+		if ((gTapeposfd = open(gTapeposfile, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR)) < 0)
+			errx(1, "can't create tapeposfile\n");
+		/* print QFA-file header */
+		sprintf(gTps, "%s\n%s\n%ld\n\n", QFA_MAGIC, QFA_VERSION,(unsigned long)spcl.c_date);
+		if (write(gTapeposfd, gTps, strlen(gTps)) != strlen(gTps))
+			errx(1, "can't write tapeposfile\n");
+		sprintf(gTps, "ino\ttapeno\ttapepos\n");
+		if (write(gTapeposfd, gTps, strlen(gTps)) != strlen(gTps))
+			errx(1, "can't write tapeposfile\n");
+
+		extractdirs(1);
+		initsymtable((char *)0);
+		for (;;) {
+			NEXTFILE(p);
+			if (!p)
+				break;
+			canon(p, name, sizeof(name));
+			ino = dirlookup(name);
+			if (ino == 0)
+				continue;
+			if (mflag)
+				pathcheck(name);
+			treescan(name, ino, addfile);
+		}
+		createfiles();
+#ifdef DEBUG_QFA
+		tiend = time(NULL);
+		titaken = tiend - tistart;
+		msg("writing QFA positions took %d:%02d:%02d\n", titaken / 3600,
+			(titaken % 3600) / 60, titaken % 60);
+#endif /* DEBUG_QFA */
+		break;
+#endif /* USE_QFA */
 	}
 	exit(0);
 	/* NOTREACHED */
@@ -568,6 +621,10 @@ usage(void)
 		"\t%s    [-F script] [-L limit] [-s fileno]\n"
 		"\t%s -i [-ach" kerbflag "lmMuvVy] [-A file] [-b blocksize] [-f file]\n"
 		"\t%s    [-F script] " qfaflag "[-s fileno]\n"
+#ifdef USE_QFA
+		"\t%s -P file [-ach" kerbflag "lmMuvVy] [-A file] [-b blocksize]\n"
+		"\t%s    [-f file] [-F script] [-s fileno] [-X filelist] [file ...]\n"
+#endif
 		"\t%s -r [-c" kerbflag "lMuvVy] [-b blocksize] [-f file] [-F script]\n"
 		"\t%s    [-s fileno] [-T directory]\n"
 		"\t%s -R [-c" kerbflag "lMuvVy] [-b blocksize] [-f file] [-F script]\n"
@@ -578,6 +635,9 @@ usage(void)
 		"\t%s    [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]\n",
 		__progname, white, 
 		__progname, white, 
+#ifdef USE_QFA
+		__progname, white, 
+#endif
 		__progname, white,
 		__progname, white, 
 		__progname, white, 

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.42 2002/01/25 15:08:59 stelian Exp $";
+	"$Id: traverse.c,v 1.43 2002/02/04 11:18:46 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -143,15 +143,14 @@ int dump_fs_open(const char *disk, ext2_filsys *fs)
 		dump_ino_t journal_ino = ext2_journal_ino(es);
 
 		if (es->s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV){
-			fprintf(stderr, "This an journal, not a filesystem!\n");
+			msg("This is a journal, not a filesystem!\n");
 			retval = EXT2_ET_UNSUPP_FEATURE;
 			ext2fs_close(*fs);
 		}
 		else if ((retval = es->s_feature_incompat &
 					~(EXT2_LIB_FEATURE_INCOMPAT_SUPP |
 					  EXT3_FEATURE_INCOMPAT_RECOVER))) {
-			fprintf(stderr,
-				"Unsupported feature(s) 0x%x in filesystem\n",
+			msg("Unsupported feature(s) 0x%x in filesystem\n",
 				retval);
 			retval = EXT2_ET_UNSUPP_FEATURE;
 			ext2fs_close(*fs);

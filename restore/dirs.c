@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dirs.c,v 1.17 2002/01/25 15:08:59 stelian Exp $";
+	"$Id: dirs.c,v 1.18 2002/02/04 11:18:46 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -140,7 +140,7 @@ struct odirect {
 	char	d_name[ODIRSIZ];
 };
 
-#ifdef	__linux__
+#if defined(__linux__) || defined(sunos)
 static struct inotab	*allocinotab __P((dump_ino_t, struct new_bsd_inode *, long));
 #else
 static struct inotab	*allocinotab __P((dump_ino_t, struct dinode *, long));
@@ -165,7 +165,7 @@ void
 extractdirs(int genmode)
 {
 	int i;
-#ifdef	__linux__
+#if defined(__linux__) || defined(sunos)
 	struct new_bsd_inode *ip;
 #else
 	struct dinode *ip;
@@ -325,7 +325,11 @@ pathsearch(const char *pathname)
 	while (*path == '/')
 		path++;
 	dp = NULL;
+#ifdef __linux__
 	while ((name = strsep(&path, "/")) != NULL && *name /* != NULL */) {
+#else
+	while ((name = strtok_r(NULL, "/", &path)) != NULL && *name /* != NULL */) {
+#endif
 		if ((dp = searchdir(ino, name)) == NULL)
 			return (NULL);
 		ino = dp->d_ino;
@@ -431,9 +435,9 @@ putdir(char *buf, size_t size)
 /*
  * These variables are "local" to the following two functions.
  */
-char dirbuf[DIRBLKSIZ];
-long dirloc = 0;
-long prev = 0;
+static char dirbuf[DIRBLKSIZ];
+static long dirloc = 0;
+static long prev = 0;
 
 /*
  * add a new directory entry to a file.

@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: extern.h,v 1.15 2002/01/25 14:59:53 stelian Exp $
+ *	$Id: extern.h,v 1.16 2002/02/04 11:18:46 stelian Exp $
  */
 
 /*-
@@ -132,5 +132,6 @@ int	Inode2Tapepos __P((dump_ino_t, long *, long long *, int));
 int	GetTapePos __P((long long *));
 int	GotoTapePos __P((long long));
 void	ReReadFromTape __P((void));
+void	ReReadInodeFromTape __P((dump_ino_t));
 #endif
 void	RequestVol __P((long));

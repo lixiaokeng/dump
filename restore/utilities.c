@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: utilities.c,v 1.19 2002/01/25 15:09:00 stelian Exp $";
+	"$Id: utilities.c,v 1.20 2002/02/04 11:18:46 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -236,7 +236,7 @@ linkit(char *existing, char *new, int type)
 
 		if (!Nflag && (ret = link(existing, new)) < 0) {
 
-#ifndef __linux__
+#if !defined(__linux__) && !defined(sunos)
 			struct stat s;
 
 			/*
@@ -276,7 +276,7 @@ linkit(char *existing, char *new, int type)
 	return (GOOD);
 }
 
-#ifndef	__linux__
+#if !defined(__linux__) && !defined(sunos)
 /*
  * Create a whiteout.
  */

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: restore.c,v 1.26 2002/01/25 15:08:59 stelian Exp $";
+	"$Id: restore.c,v 1.27 2002/02/04 11:18:46 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -60,9 +60,12 @@ static const char rcsid[] =
 #else	/* __linux__ */
 #include <ufs/ufs/dinode.h>
 #endif	/* __linux__ */
+#include <protocols/dumprestore.h>
 
+#include <compaterr.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #ifdef	__linux__
 #include <ext2fs/ext2fs.h>
@@ -140,7 +143,11 @@ addfile(char *name, dump_ino_t ino, int type)
 			}
 	}
 	ep = addentry(name, ino, type);
+#ifdef USE_QFA
+	if ((type == NODE) && (!createtapeposflag))
+#else
 	if (type == NODE)
+#endif
 		newnode(ep);
 	ep->e_flags |= NEW;
 	return (descend);
@@ -915,22 +922,31 @@ createfiles(void)
 				if (GetTapePos(&curtpos) == 0) {
 					/*  curtpos +1000 ???, some drives 
 					 *  might be too slow */
-					if (tpos > curtpos) {
+					if (tpos != curtpos) {
 #ifdef DEBUG_QFA
 						msg("positioning tape %ld from %lld to %lld for inode %10lu ...\n", volno, curtpos, tpos, (unsigned long)next);
 #endif
 						if (GotoTapePos(tpos) == 0) {
 #ifdef DEBUG_QFA
 							if (GetTapePos(&curtpos) == 0)
-								msg("before resnyc at tape position %ld\n", curtpos);
+								msg("before resync at tape position %lld (%ld, %ld, %s)\n", curtpos, next, curfile.ino, curfile.name);
 #endif
-							(void)ReReadFromTape();
+msg("bobo1\n");
+							ReReadInodeFromTape(next);
 #ifdef DEBUG_QFA
-							if (GetTapePos(&curtpos) == 0)
-								msg("after resync at tape position %ld\n", curtpos);
+msg("bobo2\n");
+							if (GetTapePos(&curtpos) == 0) {
+msg("bobo3\n");
+								msg("after resync at tape position %lld (%ld, %ld, %s)\n", curtpos, next, curfile.ino, curfile.name);
+msg("bobo4\n");
+							}
 #endif
 						}
 					}
+#ifdef DEBUG_QFA
+					else
+						msg("already at tape %ld position %ld for inode %10lu ...\n", volno, tpos, (unsigned long)next);
+#endif
 				}
 			}
 		}
@@ -989,8 +1005,11 @@ createfiles(void)
 			ep = lookupino(next);
 			if (ep == NULL)
 				panic("corrupted symbol table\n");
-			fprintf(stderr, "%s: (inode %lu) not found on tape\n", 
-				myname(ep), (unsigned long)next);
+#ifdef USE_QFA
+			if (!createtapeposflag)
+				fprintf(stderr, "%s: (inode %lu) not found on tape\n", 
+					myname(ep), (unsigned long)next);
+#endif
 			ep->e_flags &= ~NEW;
 			next = lowerbnd(next);
 		}
@@ -1002,7 +1021,23 @@ createfiles(void)
 			ep = lookupino(next);
 			if (ep == NULL)
 				panic("corrupted symbol table\n");
-			(void) extractfile(myname(ep));
+#ifdef USE_QFA
+			if (createtapeposflag) {
+#ifdef DEBUG_QFA
+				msg("inode %ld at tapepos %ld\n", curfile.ino, curtapepos);
+#endif
+				sprintf(gTps, "%ld\t%ld\t%lld\n", (unsigned long)curfile.ino, volno, curtapepos);
+				if (write(gTapeposfd, gTps, strlen(gTps)) != strlen(gTps))
+					warn("error writing tapepos file.\n");
+				skipfile();
+			}
+			else {
+				msg("restoring %s\n", myname(ep));
+#endif /* USE_QFA */
+				(void) extractfile(myname(ep));
+#ifdef USE_QFA
+			}
+#endif /* USE_QFA */
 			ep->e_flags &= ~NEW;
 			if (volno != curvol)
 				skipmaps();

@@ -29,7 +29,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: restore.8.in,v 1.24 2002/01/25 14:59:53 stelian Exp $
+.\"	$Id: restore.8.in,v 1.25 2002/02/04 11:18:46 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt RESTORE 8
@@ -58,6 +58,17 @@
 .Op Fl Q Ar file
 .Op Fl s Ar fileno
 .Op Fl T Ar directory
+.Nm restore
+.Fl P Ar file
+.Op Fl achklmMNuvVy
+.Op Fl A Ar file
+.Op Fl b Ar blocksize
+.Op Fl f Ar file
+.Op Fl F Ar script
+.Op Fl s Ar fileno
+.Op Fl T Ar directory
+.Op Fl X Ar filelist
+.Op file ...
 .Nm restore
 .Fl R
 .Op Fl cklMNuvVy
@@ -212,6 +223,11 @@ It also causes
 .Nm restore
 to print out information about each file as it is extracted.
 .El
+.It Fl P Ar file
+.Nm Restore
+creates a new Quick File Access file 
+.Ar file
+from an existing dump file without restoring its contents.
 .It Fl R
 .Nm Restore
 requests a particular tape of a multi-volume set on which to restart

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: optr.c,v 1.30 2002/01/25 15:08:59 stelian Exp $";
+	"$Id: optr.c,v 1.31 2002/02/04 11:18:45 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -469,6 +469,7 @@ getfstab(void)
 		    strcmp(fs->fs_type, FSTAB_RQ))
 			continue;
 		fs = allocfsent(fs);
+		fs->fs_passno = 0;
 		if ((pf = (struct pfstab *)malloc(sizeof (*pf))) == NULL)
 			quit("%s\n", strerror(errno));
 		pf->pf_fstab = fs;

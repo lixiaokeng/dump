@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: restore.h,v 1.24 2002/01/25 14:59:53 stelian Exp $
+ *	$Id: restore.h,v 1.25 2002/02/04 11:18:46 stelian Exp $
  */
 
 /*
@@ -135,7 +135,7 @@ struct entry {
 struct context {
 	char	*name;		/* name of file */
 	dump_ino_t ino;		/* inumber of file */
-#ifdef	__linux__
+#if defined(__linux__) || defined(sunos)
 	struct	new_bsd_inode *dip;	/* pointer to inode */
 #else
 	struct	dinode *dip;	/* pointer to inode */
@@ -179,6 +179,10 @@ extern char	*gTapeposfile;
 extern char	gTps[255];
 extern long	gSeekstart;
 extern int	tapeposflag;
+extern int	gTapeposfd;
+extern int	createtapeposflag;
+extern unsigned long qfadumpdate;
+extern long long curtapepos;
 #endif /* USE_QFA */
 
 #define do_compare_error \

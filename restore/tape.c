@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.57 2002/01/31 10:25:55 stelian Exp $";
+	"$Id: tape.c,v 1.58 2002/02/04 11:18:46 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -332,6 +332,10 @@ setup(void)
 	}
 	if (vflag || command == 't' || command == 'C')
 		printdumpinfo();
+#ifdef USE_QFA
+	if (tapeposflag && spcl.c_date != qfadumpdate)
+		errx(1, "different QFA/dumpdates detected\n");
+#endif
 	if (filesys[0] == '\0') {
 		char *dirptr;
 		strncpy(filesys, spcl.c_filesys, NAMELEN);
@@ -416,6 +420,10 @@ getvol(long nextvol)
 	}
 	saved_blksread = blksread;
 	saved_tpblksread = tpblksread;
+#if defined(USE_QFA) && defined(sunos)
+	if (createtapeposflag || tapeposflag) 
+		close(fdsmtc);
+#endif
 again:
 	if (pipein)
 		exit(1); /* pipes do not get a second chance */
@@ -429,7 +437,7 @@ again:
 	while (newvol <= 0) {
 		if (tapesread == 0) {
 			fprintf(stderr, "%s%s%s%s%s",
-			    "You have not read any tapes yet.\n",
+			    "You have not read any volumes yet.\n",
 			    "Unless you know which volume your",
 			    " file(s) are on you should start\n",
 			    "with the last volume and work",
@@ -463,6 +471,15 @@ again:
 	}
 	if (newvol == volno) {
 		tapesread |= 1 << volno;
+#if defined(USE_QFA) && defined(sunos)
+		if (createtapeposflag || tapeposflag) {
+			if (OpenSMTCmt(magtape) < 0) {
+				volno = -1;
+				haderror = 1;
+				goto again;
+			}
+		}
+#endif
 		return;
 	}
 	closemt();
@@ -480,9 +497,9 @@ again:
 	}
 	if (haderror || (bot_code && !Mflag)) {
 		haderror = 0;
-		fprintf(stderr, "Mount tape volume %ld\n", (long)newvol);
-		fprintf(stderr, "Enter ``none'' if there are no more tapes\n");
-		fprintf(stderr, "otherwise enter tape name (default: %s) ", magtape);
+		fprintf(stderr, "Mount volume %ld\n", (long)newvol);
+		fprintf(stderr, "Enter ``none'' if there are no more volumes\n");
+		fprintf(stderr, "otherwise enter volume name (default: %s) ", magtape);
 		(void) fflush(stderr);
 		(void) fgets(buf, TP_BSIZE, terminal);
 		if (feof(terminal))
@@ -672,6 +689,13 @@ printvolinfo(void)
 	}
 }
 
+#ifdef sunos
+struct timeval
+	time_t		tv_sec;		/* seconds */
+	suseconds_t	tv_usec;	/* and microseconds */
+};
+#endif
+
 int
 extractfile(char *name)
 {
@@ -682,12 +706,12 @@ extractfile(char *name)
 
 	curfile.name = name;
 	curfile.action = USING;
-#ifdef	__linux__
+#if defined(__linux__) || defined(sunos)
 	timep[0].tv_sec = curfile.dip->di_atime.tv_sec;
 	timep[0].tv_usec = curfile.dip->di_atime.tv_usec;
 	timep[1].tv_sec = curfile.dip->di_mtime.tv_sec;
 	timep[1].tv_usec = curfile.dip->di_mtime.tv_usec;
-#else	/* __linux__ */
+#else	/* __linux__ || sunos */
 	timep[0].tv_sec = curfile.dip->di_atime;
 	timep[0].tv_usec = curfile.dip->di_atimensec / 1000;
 	timep[1].tv_sec = curfile.dip->di_mtime;
@@ -907,7 +931,7 @@ loop:
 			curfile.name, (long)blksread);
 	}
 	if (curblk > 0) {
-		(*fill)((char *)buf, (size_t)(curblk * TP_BSIZE) + size);
+		(*fill)((char *)buf, (size_t)((curblk * TP_BSIZE) + size));
 		last_write_was_hole = 0;
 	}
 	if (size > 0) {
@@ -1400,6 +1424,10 @@ readtape(char *buf)
 		numtrec = ntrec;
 	cnt = ntrec * TP_BSIZE;
 	rd = 0;
+#ifdef USE_QFA
+	if (createtapeposflag)
+		(void)GetTapePos(&curtapepos);
+#endif
 getmore:
 #ifdef RRESTORE
 	if (host)
@@ -2052,15 +2080,15 @@ gethead(struct s_spcl *buf)
 	buf->c_dinode.di_gid = u_ospcl.s_ospcl.c_dinode.odi_gid;
 	buf->c_dinode.di_size = u_ospcl.s_ospcl.c_dinode.odi_size;
 	buf->c_dinode.di_rdev = u_ospcl.s_ospcl.c_dinode.odi_rdev;
-#ifdef	__linux__
+#if defined(__linux__) || defined(sunos)
 	buf->c_dinode.di_atime.tv_sec = u_ospcl.s_ospcl.c_dinode.odi_atime;
 	buf->c_dinode.di_mtime.tv_sec = u_ospcl.s_ospcl.c_dinode.odi_mtime;
 	buf->c_dinode.di_ctime.tv_sec = u_ospcl.s_ospcl.c_dinode.odi_ctime;
-#else	/* __linux__ */
+#else	/* __linux__ || sunos */
 	buf->c_dinode.di_atime = u_ospcl.s_ospcl.c_dinode.odi_atime;
 	buf->c_dinode.di_mtime = u_ospcl.s_ospcl.c_dinode.odi_mtime;
 	buf->c_dinode.di_ctime = u_ospcl.s_ospcl.c_dinode.odi_ctime;
-#endif	/* __linux__ */
+#endif	/* __linux__ || sunos */
 	buf->c_count = u_ospcl.s_ospcl.c_count;
 	memmove(buf->c_addr, u_ospcl.s_ospcl.c_fill, (long)256);
 	if (u_ospcl.s_ospcl.c_magic != OFS_MAGIC ||
@@ -2073,7 +2101,7 @@ good:
 	    (buf->c_dinode.di_mode & IFMT) == IFDIR && Qcvt == 0) {
 		qcvt.qval = buf->c_dinode.di_size;
 		if (qcvt.val[0] || qcvt.val[1]) {
-			printf("Note: Doing Quad swapping\n");
+			Vprintf(stdout, "Note: Doing Quad swapping\n");
 			Qcvt = 1;
 		}
 	}
@@ -2504,6 +2532,29 @@ ReReadFromTape(void)
 		fprintf(stdout, "DEBUG 1 gethead failed\n");
 #endif
 	}
+	findinode(&spcl);
+	noresyncmesg = 0;
+}
+
+void
+ReReadInodeFromTape(dump_ino_t theino)
+{
+	long cntloop = 0;
+
+	FLUSHTAPEBUF();
+	noresyncmesg = 1;
+	do {
+		cntloop++;
+		gethead(&spcl);
+	} while (!(spcl.c_inumber == theino && spcl.c_type == TS_INODE && spcl.c_date == dumpdate) && (cntloop < 32));
+#ifdef DEBUG_QFA
+	fprintf(stderr, "%ld reads\n", cntloop);
+	if (cntloop == 32) {
+		fprintf(stderr, "DEBUG: bufsize %d\n", bufsize);
+		fprintf(stderr, "DEBUG: ntrec %ld\n", ntrec);
+		fprintf(stderr, "DEBUG: %ld reads\n", cntloop);
+	}
+#endif
 	findinode(&spcl);
 	noresyncmesg = 0;
 }
