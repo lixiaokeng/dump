@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: restore.c,v 1.18 2001/06/18 10:58:28 stelian Exp $";
+	"$Id: restore.c,v 1.19 2001/12/24 12:31:12 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -708,6 +708,25 @@ compareleaves(void)
 			curvol = volno;
 		}
 	}
+	/*
+	 * If we encounter the end of the tape and the next available
+	 * file is not the one which we expect then we have missed one
+	 * or more files. Since we do not request files that were not 
+	 * on the tape, the lost files must have been due to a tape 
+	 * read error, or a file that was removed while the dump was
+	 * in progress.
+	 */
+	first = lowerbnd(first);
+	while (first < curfile.ino) {
+		ep = lookupino(first);
+		if (ep == NULL)
+			panic("%d: bad first\n", first);
+		fprintf(stderr, "%s: (inode %lu) not found on tape\n", 
+			myname(ep), (unsigned long)first);
+		compare_errors = 1;
+		ep->e_flags &= ~(NEW|EXTRACT);
+		first = lowerbnd(first);
+	}
 }
 
 /*
@@ -742,7 +761,8 @@ createleaves(char *symtabfile)
 			ep = lookupino(first);
 			if (ep == NULL)
 				panic("%d: bad first\n", first);
-			fprintf(stderr, "%s: not found on tape\n", myname(ep));
+			fprintf(stderr, "%s: (inode %lu) not found on tape\n", 
+				myname(ep), (unsigned long)first);
 			ep->e_flags &= ~(NEW|EXTRACT);
 			first = lowerbnd(first);
 		}
@@ -787,6 +807,25 @@ createleaves(char *symtabfile)
 			curvol = volno;
 		}
 	}
+	/*
+	 * If we encounter the end of the tape and the next available
+	 * file is not the one which we expect then we have missed one
+	 * or more files. Since we do not request files that were not 
+	 * on the tape, the lost files must have been due to a tape 
+	 * read error, or a file that was removed while the dump was
+	 * in progress.
+	 */
+	first = lowerbnd(first);
+	while (first < curfile.ino) {
+		ep = lookupino(first);
+		if (ep == NULL)
+			panic("%d: bad first\n", first);
+		fprintf(stderr, "%s: (inode %lu) not found on tape\n", 
+			myname(ep), (unsigned long)first);
+		compare_errors = 1;
+		ep->e_flags &= ~(NEW|EXTRACT);
+		first = lowerbnd(first);
+	}
 }
 
 /*
@@ -829,6 +868,19 @@ createfiles(void)
 		while (curfile.ino > last) {
 			curfile.action = SKIP;
 			getvol((long)0);
+			if (curfile.ino == maxino) {
+				next = lowerbnd(next);
+				while (next < curfile.ino) {
+					ep = lookupino(next);
+					if (ep == NULL)
+						panic("corrupted symbol table\n");
+					fprintf(stderr, "%s: (inode %lu) not found on tape\n", 
+						myname(ep), (unsigned long)next);
+					ep->e_flags &= ~NEW;
+					next = lowerbnd(next);
+				}
+				return;
+			}
 			skipmaps();
 			skipdirs();
 		}
@@ -916,7 +968,8 @@ createfiles(void)
 			ep = lookupino(next);
 			if (ep == NULL)
 				panic("corrupted symbol table\n");
-			fprintf(stderr, "%s: not found on tape\n", myname(ep));
+			fprintf(stderr, "%s: (inode %lu) not found on tape\n", 
+				myname(ep), (unsigned long)next);
 			ep->e_flags &= ~NEW;
 			next = lowerbnd(next);
 		}
