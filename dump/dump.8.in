@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.47 2003/01/10 10:31:10 stelian Exp $
+.\"	$Id: dump.8.in,v 1.48 2003/01/21 10:42:27 stelian Exp $
 .\"
 .TH DUMP 8 "version __VERSION__ of __DATE__" BSD "System management commands"
 .SH NAME
@@ -42,6 +42,7 @@ dump \- ext2/3 filesystem backup
 [\fB\-B \fIrecords\fR]
 [\fB\-b \fIblocksize\fR]
 [\fB\-d \fIdensity\fR]
+[\fB\-D \fIfile\fR]
 [\fB\-e \fIinode numbers\fR]
 [\fB\-E \fIfile\fR]
 [\fB\-f \fIfile\fR]
@@ -145,6 +146,11 @@ Set tape density to
 .IR density .
 The default is 1600BPI. Specifying a tape density overrides the end-of-media
 detection.
+.TP
+.BI \-D " file"
+Set the path name of the file storing the information about the previous 
+full and incremental dumps. The default location is
+.IR __DUMPDATES__ .
 .TP
 .BI \-e " inodes"
 Exclude 

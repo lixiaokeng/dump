@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: optr.c,v 1.33 2002/12/12 11:49:35 stelian Exp $";
+	"$Id: optr.c,v 1.34 2003/01/21 10:42:27 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -637,7 +637,7 @@ lastdump(char arg) /* w ==> just what to do; W ==> most recent dumps */
 	initdumptimes(0);	/* dumpdates input */
 	if (ddatev == NULL && table == NULL) {
 		(void) printf("No %s or %s file found\n",
-			      _PATH_MNTTAB, _PATH_DUMPDATES);
+			      _PATH_MNTTAB, dumpdates);
 		return;
 	}
 

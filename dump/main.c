@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.80 2003/01/10 10:52:48 stelian Exp $";
+	"$Id: main.c,v 1.81 2003/01/21 10:42:27 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -244,7 +244,7 @@ main(int argc, char *argv[])
 #endif /* USE_QFA */
 
 	while ((ch = getopt(argc, argv,
-			    "0123456789A:aB:b:cd:e:E:f:F:h:I:"
+			    "0123456789A:aB:b:cd:D:e:E:f:F:h:I:"
 #ifdef HAVE_BZLIB
 			    "j::"
 #endif
@@ -313,6 +313,10 @@ main(int argc, char *argv[])
 			density = numarg("density", 10L, 327670L) / 10;
 			if (density >= 625 && !bflag)
 				ntrec = HIGHDENSITYTREC;
+			break;
+
+		case 'D':		/* path of dumpdates file */
+			dumpdates = optarg;
 			break;
 			
 			                /* 04-Feb-00 ILC */
@@ -1040,8 +1044,8 @@ usage(void)
 #endif
 		"mMnqSuv"
 		"] [-A file] [-B records] [-b blocksize]\n"
-		"\t%s [-d density] [-e inode#,inode#,...] [-E file] [-f file]\n"
-		"\t%s [-h level] [-I nr errors] "
+		"\t%s [-d density] [-D file] [-e inode#,inode#,...] [-E file]\n"
+		"\t%s [-f file] [-h level] [-I nr errors] "
 #ifdef HAVE_BZLIB
 		"[-j zlevel] "
 #endif
@@ -1156,6 +1160,7 @@ obsolete(int *argcp, char **argvp[])
 		case 'B':
 		case 'b':
 		case 'd':
+		case 'D':
 		case 'e':
 		case 'E':
 		case 'f':
