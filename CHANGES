@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.32 2000/01/09 23:40:10 tiniou Exp $
+$Id: CHANGES,v 1.33 2000/01/09 23:47:29 tiniou Exp $
 
 Changes between versions 0.4b12 and 0.4b13 (released ???????????????)
 =====================================================================
@@ -9,6 +9,11 @@ Changes between versions 0.4b12 and 0.4b13 (released ???????????????)
 2.	Removed the requirement to build the RPM as root from the
 	spec file. Thanks to Christian Weisgerber 
 	<naddy@mips.rhein-neckar.de> for submitting this.
+
+3.	Fix a bug in dump related to the 'filetype' feature of ext2fs,
+	causing dump to block when dumping really huge filesystems.
+	Many thanks to Patrik Schindler <poc@pocnet.net> for 
+	helping me find this bug.
 
 Changes between versions 0.4b11 and 0.4b12 (released January 8, 2000)
 =====================================================================

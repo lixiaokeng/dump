@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.11 1999/12/05 18:21:23 tiniou Exp $";
+	"$Id: traverse.c,v 1.12 2000/01/09 23:47:33 tiniou Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -283,9 +283,9 @@ mapfilesindir(struct ext2_dir_entry *dirent, int offset, int blocksize, char *bu
 	dp = getino(dirent->inode);
 	mode = dp->di_mode & IFMT;
 	if (mode == IFDIR && dp->di_nlink != 0 && dp->di_dtime == 0) {
-		if ((dirent->name[0] != '.' || dirent->name_len != 1) &&
+		if ((dirent->name[0] != '.' || ( dirent->name_len & 0xFF ) != 1) &&
 		    (dirent->name[0] != '.' || dirent->name[1] != '.' ||
-		     dirent->name_len != 2)) {
+		     ( dirent->name_len & 0xFF ) != 2)) {
 		retval = ext2fs_dir_iterate(fs, ino, 0, NULL,
 					    mapfilesindir, private);
 		if (retval)
@@ -516,9 +516,9 @@ searchdir(struct ext2_dir_entry *dp, int offset, int blocksize, char *buf, void 
 	if (dp->inode == 0)
 		return 0;
 	if (dp->name[0] == '.') {
-		if (dp->name_len == 1)
+		if (( dp->name_len & 0xFF ) == 1)
 			return 0;
-		if (dp->name[1] == '.' && dp->name_len == 2)
+		if (dp->name[1] == '.' && ( dp->name_len & 0xFF ) == 2)
 			return 0;
 	}
 	if (mdc->nodump) {
