@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.8 1999/11/21 02:24:47 tiniou Exp $";
+	"$Id: tape.c,v 1.9 1999/11/21 16:01:47 tiniou Exp $";
 #endif /* not lint */
 
 #ifdef __linux__
@@ -458,7 +458,7 @@ close_rewind(void)
 {
 	trewind();
 	(void)do_stats();
-	if (nexttape)
+	if (nexttape || Mflag)
 		return;
 	if (!nogripe) {
 		msg("Change Volumes: Mount volume #%d\n", tapeno+1);
@@ -712,14 +712,21 @@ restore_check_point:
 		 * the remaining names for subsequent volumes.
 		 */
 		tapeno++;               /* current tape sequence */
-		if (nexttape || strchr(tape, ',')) {
+		if (Mflag) {
+			snprintf(tape, NAME_MAX, "%s%03d", tapeprefix, tapeno);
+			tape[NAME_MAX - 1] = '\0';
+			msg("Dumping volume %d on %s\n", tapeno, tape);
+		}
+		else if (nexttape || strchr(tapeprefix, ',')) {
 			if (nexttape && *nexttape)
-				tape = nexttape;
-			if ((p = strchr(tape, ',')) != NULL) {
+				tapeprefix = nexttape;
+			if ((p = strchr(tapeprefix, ',')) != NULL) {
 				*p = '\0';
 				nexttape = p + 1;
 			} else
 				nexttape = NULL;
+			strncpy(tape, tapeprefix, NAME_MAX);
+			tape[NAME_MAX - 1] = '\0';
 			msg("Dumping volume %d on %s\n", tapeno, tape);
 		}
 #ifdef RDUMP

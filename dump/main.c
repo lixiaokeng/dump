@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.7 1999/11/21 02:24:47 tiniou Exp $";
+	"$Id: main.c,v 1.8 1999/11/21 16:01:47 tiniou Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -137,8 +137,8 @@ main(int argc, char *argv[])
 #endif
 
 	tsize = 0;	/* Default later, based on 'c' option for cart tapes */
-	if ((tape = getenv("TAPE")) == NULL)
-		tape = _PATH_DEFTAPE;
+	if ((tapeprefix = getenv("TAPE")) == NULL)
+		tapeprefix = _PATH_DEFTAPE;
 	dumpdates = _PATH_DUMPDATES;
 	temp = _PATH_DTMP;
 	strcpy(labelstr, "none");	/* XXX safe strcpy. */
@@ -151,9 +151,9 @@ main(int argc, char *argv[])
 
 	obsolete(&argc, &argv);
 #ifdef KERBEROS
-#define optstring "0123456789aB:b:cd:f:h:kL:ns:T:uWw"
+#define optstring "0123456789aB:b:cd:f:h:kL:Mns:T:uWw"
 #else
-#define optstring "0123456789aB:b:cd:f:h:L:ns:T:uWw"
+#define optstring "0123456789aB:b:cd:f:h:L:Mns:T:uWw"
 #endif
 	while ((ch = getopt(argc, argv, optstring)) != -1)
 #undef optstring
@@ -195,7 +195,7 @@ main(int argc, char *argv[])
 			break;
 
 		case 'f':		/* output file */
-			tape = optarg;
+			tapeprefix = optarg;
 			break;
 
 		case 'h':
@@ -223,6 +223,10 @@ main(int argc, char *argv[])
 				msg("WARNING: Using truncated label `%s'.\n",
 				    labelstr);
 			}
+			break;
+
+		case 'M':		/* multi-volume flag */
+			Mflag = 1;
 			break;
 
 		case 'n':		/* notify operators */
@@ -277,9 +281,9 @@ main(int argc, char *argv[])
 		    "You cannot use the T and u flags together.\n");
 		exit(X_STARTUP);
 	}
-	if (strcmp(tape, "-") == 0) {
+	if (strcmp(tapeprefix, "-") == 0) {
 		pipeout++;
-		tape = "standard output";
+		tapeprefix = "standard output";
 	}
 
 	if (blocksperfile)
@@ -301,12 +305,12 @@ main(int argc, char *argv[])
 			tsize = cartridge ? 1700L*120L : 2300L*120L;
 	}
 
-	if (strchr(tape, ':')) {
-		host = tape;
-		tape = strchr(host, ':');
-		*tape++ = '\0';
+	if (strchr(tapeprefix, ':')) {
+		host = tapeprefix;
+		tapeprefix = strchr(host, ':');
+		*tapeprefix++ = '\0';
 #ifdef RDUMP
-		if (index(tape, '\n')) {
+		if (index(tapeprefix, '\n')) {
 		    (void)fprintf(stderr, "invalid characters in tape\n");
 		    exit(X_STARTUP);
 		}
@@ -391,6 +395,12 @@ main(int argc, char *argv[])
 		level = '0';
 		spcl.c_level = 0;
 	}
+
+	if (Mflag)
+		snprintf(tape, NAME_MAX, "%s%03d", tapeprefix, tapeno + 1);
+	else
+		strncpy(tape, tapeprefix, NAME_MAX);
+	tape[NAME_MAX - 1] = '\0';
 
 	msg("Date of this level %c dump: %s", level,
 #ifdef	__linux__
@@ -656,7 +666,7 @@ usage(void)
 #ifdef KERBEROS
 		"k"
 #endif
-		"nu] [-B records] [-b blocksize] [-d density]\n"
+		"Mnu] [-B records] [-b blocksize] [-d density]\n"
 		"\t%s [-f file] [-h level] [-s feet] [-T date] filesystem\n"
 		"\t%s [-W | -w]\n", __progname, white, __progname);
 	exit(X_STARTUP);

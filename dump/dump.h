@@ -4,7 +4,7 @@
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *	Stelian Pop <pop@cybercable.fr>, 1999
  *
- *	$Id: dump.h,v 1.7 1999/11/21 02:24:47 tiniou Exp $
+ *	$Id: dump.h,v 1.8 1999/11/21 16:01:47 tiniou Exp $
  */
 
 /*-
@@ -43,6 +43,10 @@
 #define MAXINOPB	(MAXBSIZE / sizeof(struct dinode))
 #define MAXNINDIR	(MAXBSIZE / sizeof(daddr_t))
 
+#ifndef NAME_MAX
+#define NAME_MAX 255
+#endif
+
 /*
  * Dump maps used to describe what is to be dumped.
  */
@@ -64,12 +68,14 @@ char	*dumpinomap;	/* map of files to be dumped */
  *	All calculations done in 0.1" units!
  */
 char	*disk;		/* name of the disk file */
-char	*tape;		/* name of the tape file */
+char	tape[NAME_MAX];	/* name of the tape file */
+char	*tapeprefix;	/* prefix of the tape file */
 char	*dumpdates;	/* name of the file containing dump date information*/
 char	*temp;		/* name of the file for doing rewrite of dumpdates */
 char	lastlevel;	/* dump level of previous dump */
 char	level;		/* dump level of this dump */
 int	uflag;		/* update flag */
+int	Mflag;		/* multi-volume flag */
 int	diskfd;		/* disk file descriptor */
 int	tapefd;		/* tape file descriptor */
 int	pipeout;	/* true => output to standard output */
@@ -184,10 +190,6 @@ void	interrupt __P((int signo));	/* in case operator bangs on console */
 struct	fstab *fstabsearch __P((const char *key));	/* search fs_file and fs_spec */
 #ifdef	__linux__
 struct	fstab *fstabsearchdir __P((const char *key, char *dir));	/* search fs_file and fs_spec */
-#endif
-
-#ifndef NAME_MAX
-#define NAME_MAX 255
 #endif
 
 /*
