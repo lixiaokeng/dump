@@ -46,7 +46,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.70 2003/02/12 11:02:30 stelian Exp $";
+	"$Id: tape.c,v 1.71 2003/02/17 10:31:45 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -2657,7 +2657,7 @@ ReReadInodeFromTape(dump_ino_t theino)
 	} while (!(spcl.c_inumber == theino && spcl.c_type == TS_INODE && spcl.c_date == dumpdate) && (cntloop < 32));
 #ifdef DEBUG_QFA
 	fprintf(stderr, "%ld reads\n", cntloop);
-	if (cntloop == 32) {
+	if (cntloop == 1024) {
 		fprintf(stderr, "DEBUG: bufsize %d\n", bufsize);
 		fprintf(stderr, "DEBUG: ntrec %ld\n", ntrec);
 		fprintf(stderr, "DEBUG: %ld reads\n", cntloop);
