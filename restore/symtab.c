@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: symtab.c,v 1.8 2000/03/01 10:16:05 stelian Exp $";
+	"$Id: symtab.c,v 1.9 2000/06/25 18:42:39 stelian Exp $";
 #endif /* not lint */
 
 /*
@@ -245,7 +245,7 @@ addentry(char *name, ino_t inum, int type)
 	} else {
 		np = (struct entry *)calloc(1, sizeof(struct entry));
 		if (np == NULL)
-			panic("no memory to extend symbol table\n");
+			errx(1, "no memory to extend symbol table");
 	}
 	np->e_type = type & ~LINK;
 	ep = lookupparent(name);
@@ -414,7 +414,7 @@ savename(char *name)
 	} else {
 		cp = malloc((unsigned)allocsize(len));
 		if (cp == NULL)
-			panic("no space for string table\n");
+			errx(1, "no space for string table");
 	}
 	(void) strcpy(cp, name);
 	return (cp);
@@ -554,27 +554,27 @@ initsymtable(char *filename)
 		entry = (struct entry **)
 			calloc((unsigned)entrytblsize, sizeof(struct entry *));
 		if (entry == (struct entry **)NULL)
-			panic("no memory for entry table\n");
+			errx(1, "no memory for entry table");
 		ep = addentry(".", ROOTINO, NODE);
 		ep->e_flags |= NEW;
 		return;
 	}
 	if ((fd = open(filename, O_RDONLY, 0)) < 0) {
 		warn("open");
-		panic("cannot open symbol table file %s\n", filename);
+		errx(1, "cannot open symbol table file %s", filename);
 	}
 	if (fstat(fd, &stbuf) < 0) {
 		warn("stat");
-		panic("cannot stat symbol table file %s\n", filename);
+		errx(1, "cannot stat symbol table file %s", filename);
 	}
 	tblsize = stbuf.st_size - sizeof(struct symtableheader);
 	base = calloc(sizeof(char), (unsigned)tblsize);
 	if (base == NULL)
-		panic("cannot allocate space for symbol table\n");
+		errx(1, "cannot allocate space for symbol table");
 	if (read(fd, base, (int)tblsize) < 0 ||
 	    read(fd, (char *)&hdr, sizeof(struct symtableheader)) < 0) {
 		warn("read");
-		panic("cannot read symbol table file %s\n", filename);
+		errx(1, "cannot read symbol table file %s", filename);
 	}
 	switch (command) {
 	case 'r':

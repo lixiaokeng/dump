@@ -45,7 +45,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.17 2000/06/03 22:24:18 stelian Exp $";
+	"$Id: tape.c,v 1.18 2000/06/25 18:42:39 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -279,7 +279,7 @@ setup(void)
 	Dprintf(stdout, "maxino = %ld\n", (long)maxino);
 	map = calloc((unsigned)1, (unsigned)howmany(maxino, NBBY));
 	if (map == NULL)
-		panic("no memory for active inode map\n");
+		errx(1, "no memory for active inode map");
 	usedinomap = map;
 	curfile.action = USING;
 	getfile(xtrmap, xtrmapskip);
@@ -287,7 +287,7 @@ setup(void)
 		errx(1, "Cannot find file dump list");
 	map = calloc((unsigned)1, (unsigned)howmany(maxino, NBBY));
 	if (map == (char *)NULL)
-		panic("no memory for file dump list\n");
+		errx(1, "no memory for file dump list");
 	dumpmap = map;
 	curfile.action = USING;
 	getfile(xtrmap, xtrmapskip);
