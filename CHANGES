@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.63 2000/06/03 22:24:17 stelian Exp $
+$Id: CHANGES,v 1.64 2000/06/11 17:26:04 stelian Exp $
 
 Changes between versions 0.4b17 and 0.4b18 (released ??????????????)
 ====================================================================
@@ -6,6 +6,11 @@ Changes between versions 0.4b17 and 0.4b18 (released ??????????????)
 1.	Fixed a potential buffer overflow in restore. Thanks
 	to Stan Bubrouski <satan@fastdial.net> for reporting 
 	the bug.
+
+2.	Fixed a readline-related bug which prevented
+	'cat DUMPFILE | restore -i -f -' from working. Thanks
+	to Charles Karney <karney@users.sourceforge.net>
+	for the bug report.
 
 Changes between versions 0.4b16 and 0.4b17 (released June 1st, 2000)
 ====================================================================

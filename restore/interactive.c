@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: interactive.c,v 1.11 2000/05/29 14:17:37 stelian Exp $";
+	"$Id: interactive.c,v 1.12 2000/06/11 17:26:04 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -897,6 +897,7 @@ initialize_readline(void)
 	rl_attempted_completion_function = restore_completion;
 	rl_completion_entry_function = (Function *)NULL;
 	rl_completion_append_character = '\0';
+	rl_instream = terminal;
 }
 
 static char **
