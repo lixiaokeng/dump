@@ -29,7 +29,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: restore.8.in,v 1.28 2002/07/24 14:12:00 stelian Exp $
+.\"	$Id: restore.8.in,v 1.29 2002/11/19 13:39:36 stelian Exp $
 .\"
 .TH RESTORE 8 "version __VERSION__ of __DATE__" BSD "System management commands"
 .SH NAME
@@ -714,6 +714,24 @@ and
 .B restore
 is written to be setuid root, but we are not certain all bugs are gone from the
 code - run setuid at your own risk.)
+.PP
+At the end of restores in
+.B \-i
+or
+.B \-x
+modes (unless
+.B \-o
+option is in use),
+.B restore
+will ask the operator whether to set the permissions on the current
+directory. If the operator confirms this action, the permissions 
+on the directory from where 
+.B restore
+was launched will be replaced by the permissions on the dumped root
+inode. Although this behaviour is not really a bug, it has proven itself
+to be confusing for many users, so it is recommended to answer 'no', 
+unless you're performing a full restore and you do want to restore the
+permissions on '/'.
 .SH AUTHOR
 The
 .B dump/restore
