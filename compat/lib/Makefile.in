@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.8 2003/01/24 11:01:48 stelian Exp $
+# $Id: Makefile.in,v 1.9 2003/03/31 09:42:57 stelian Exp $
 
 top_srcdir=	@top_srcdir@
 srcdir=		@srcdir@
@@ -8,8 +8,8 @@ top_builddir=	../..
 
 INC=		-I$(top_srcdir)/compat/include
 CFLAGS=	       	@CCOPTS@ -pipe $(OPT) $(GINC) $(INC) $(DEFS)
-SRCS=		compaterr.c compatglob.c bylabel.c system.c rmtflags.c
-OBJS=		compaterr.o compatglob.o bylabel.o system.o rmtflags.o
+SRCS=		compaterr.c compatglob.c bylabel.c system.c rmtflags.c minilzo.c
+OBJS=		compaterr.o compatglob.o bylabel.o system.o rmtflags.o minilzo.o
 LIB=		libcompat.a
 
 all::		$(LIB)

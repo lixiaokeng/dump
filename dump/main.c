@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.84 2003/03/30 15:40:36 stelian Exp $";
+	"$Id: main.c,v 1.85 2003/03/31 09:42:58 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -101,7 +101,7 @@ char	*tapeprefix;	/* prefix of the tape file */
 char	*dumpdates;	/* name of the file containing dump date information*/
 char	lastlevel;	/* dump level of previous dump */
 char	level;		/* dump level of this dump */
-int	bzipflag;	/* compression is done using bzlib */
+int	zipflag;	/* which compression method */
 int	Afile = -1;	/* archive file descriptor */
 int	AfileActive = 1;/* Afile flag */
 int	uflag;		/* update flag */
@@ -254,6 +254,9 @@ main(int argc, char *argv[])
 			    "Q:"
 #endif
 			    "s:ST:uvWw"
+#ifdef HAVE_LZO
+			    "y"
+#endif
 #ifdef HAVE_ZLIB
 			    "z::"
 #endif
@@ -340,7 +343,7 @@ main(int argc, char *argv[])
 #ifdef HAVE_BZLIB
 		case 'j':
 			compressed = 2;
-			bzipflag = 1;
+			zipflag = COMPRESS_BZLIB;
 			if (optarg)
 				compressed = numarg("compress level", 1L, 9L);
 			break;
@@ -429,9 +432,17 @@ main(int argc, char *argv[])
 		case 'w':
 			lastdump(ch);
 			exit(X_FINOK);	/* do nothing else */
+#ifdef HAVE_LZO
+		case 'y':
+                	compressed = 2;
+			zipflag = COMPRESS_LZO;
+			break;
+#endif /* HAVE_LZO */
+
 #ifdef HAVE_ZLIB
 		case 'z':
 			compressed = 2;
+			zipflag = COMPRESS_ZLIB;
 			if (optarg)
 				compressed = numarg("compress level", 1L, 9L);
 			break;
@@ -754,9 +765,13 @@ main(int argc, char *argv[])
 		
 		msg("Writing %d Kilobyte records\n", ntrec);
 
-		if (compressed)
-			msg("Compressing output at compression level %d (%s)\n", 
-			    compressed, bzipflag ? "bzlib" : "zlib");
+		if (compressed) {
+			if (zipflag == COMPRESS_LZO) 
+				msg("Compressing output (lzo)\n");
+			else
+				msg("Compressing output at compression level %d (%s)\n", 
+					compressed, zipflag == COMPRESS_ZLIB ? "zlib" : "bzlib");
+		}
 	}
 
 #if defined(SIGINFO)
@@ -1050,10 +1065,13 @@ usage(void)
 		"[-j zlevel] "
 #endif
 #ifdef USE_QFA
-		"[-Q file] "
+		"[-Q file]\n"
 #endif
-		"[-s feet]\n"
-		"\t%s [-T date] "
+		"\t%s [-s feet] "
+		"[-T date] "
+#ifdef HAVE_LZO
+		"[-y] "
+#endif
 #ifdef HAVE_ZLIB
 		"[-z zlevel] "
 #endif

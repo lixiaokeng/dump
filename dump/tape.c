@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.74 2003/03/30 15:40:37 stelian Exp $";
+	"$Id: tape.c,v 1.75 2003/03/31 09:42:58 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -94,6 +94,10 @@ int    write(), read();
 #ifdef HAVE_BZLIB
 #include <bzlib.h>
 #endif /* HAVE_BZLIB */
+
+#ifdef HAVE_LZO
+#include <minilzo.h>
+#endif /* HAVE_LZO */
 
 #include "dump.h"
 
@@ -1072,7 +1076,7 @@ doslave(int cmd,
 	int nextslave;
 	volatile int wrote = 0, size, eot_count, bufsize;
 	char * volatile buffer;
-#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
+#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB) || defined(HAVE_LZO)
 	struct tapebuf * volatile comp_buf = NULL;
 	int compresult;
 	volatile int do_compress = !first;
@@ -1080,7 +1084,10 @@ doslave(int cmd,
 #ifdef HAVE_BZLIB
 	unsigned int worklen2;
 #endif
-#endif /* HAVE_ZLIB || HAVE_BZLIB */
+#ifdef HAVE_LZO
+	lzo_align_t __LZO_MMODEL *LZO_WorkMem;
+#endif
+#endif /* HAVE_ZLIB || HAVE_BZLIB || HAVE_LZO */
 	struct slave_results returns;
 #ifdef	__linux__
 	errcode_t retval;
@@ -1121,18 +1128,34 @@ doslave(int cmd,
 		quit("master/slave protocol botched - didn't get pid of next slave.\n");
 	}
 
-#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
+#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB) || defined(HAVE_LZO)
 	/* if we're doing a compressed dump, allocate the compress buffer */
 	if (compressed) {
-		comp_buf = malloc(sizeof(struct tapebuf) + TP_BSIZE + writesize);
+		int bsiz = sizeof(struct tapebuf) + writesize;
+		/* Add extra space to deal with compression enlarging the buffer */
+		if (TP_BSIZE > writesize/64 + 19)
+			bsiz += TP_BSIZE;
+		else
+			bsiz += writesize/64 + 19;
+		comp_buf = malloc(bsiz);
 		if (comp_buf == NULL)
 			quit("couldn't allocate a compress buffer.\n");
-		if (bzipflag)
-			comp_buf->flags = COMPRESS_BZLIB;
-		else
+		if (zipflag == COMPRESS_ZLIB)
 			comp_buf->flags = COMPRESS_ZLIB;
+		else if (zipflag == COMPRESS_BZLIB)
+			comp_buf->flags = COMPRESS_BZLIB;
+                else if (zipflag == COMPRESS_LZO) {
+			comp_buf->flags = COMPRESS_LZO;
+			if (lzo_init() != LZO_E_OK) quit("lzo_init failed\n");
+                } else 
+			quit("internal error - unknown compression method: %d\n", zipflag);
 	}
-#endif /* HAVE_ZLIB || HAVE_BZLIB */
+#ifdef HAVE_LZO
+	LZO_WorkMem = malloc(LZO1X_1_MEM_COMPRESS);
+	if (!LZO_WorkMem)
+		quit("couldn't allocate a compress buffer.\n");
+#endif
+#endif /* HAVE_ZLIB || HAVE_BZLIB || HAVE_LZO */
 
 	/*
 	 * Get list of blocks to dump, read the blocks into tape buffer
@@ -1161,7 +1184,7 @@ doslave(int cmd,
 		bufsize = writesize;			/* length to write */
 		returns.clen = returns.unclen = bufsize;
 
-#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
+#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB) || defined(HAVE_LZO)
 		/* 
 		 * When writing a compressed dump, each block except
 		 * the first one on each tape is written
@@ -1180,7 +1203,7 @@ doslave(int cmd,
 			worklen = TP_BSIZE + writesize;
 			compresult = 1;
 #ifdef HAVE_ZLIB
-			if (!bzipflag) {
+			if (zipflag == COMPRESS_ZLIB) {
 				compresult = compress2(comp_buf->buf, 
 						       &worklen,
 						       (char *)slp->tblock[0],
@@ -1193,7 +1216,7 @@ doslave(int cmd,
 			}
 #endif /* HAVE_ZLIB */
 #ifdef HAVE_BZLIB
-			if (bzipflag) {
+			if (zipflag == COMPRESS_BZLIB) {
 				worklen2 = worklen;
 				compresult = BZ2_bzBuffToBuffCompress(
 						       comp_buf->buf,
@@ -1210,6 +1233,18 @@ doslave(int cmd,
 			}
 
 #endif /* HAVE_BZLIB */
+#ifdef HAVE_LZO
+			if (zipflag == COMPRESS_LZO) {
+				compresult = lzo1x_1_compress((char *)slp->tblock[0],writesize,
+                                                              comp_buf->buf,
+							      (lzo_uintp)&worklen,
+                                                              LZO_WorkMem);
+				if (compresult == LZO_E_OK)
+					compresult = 1;
+				else
+					compresult = 0;
+			}
+#endif /* HAVE_LZO */
 			if (compresult && worklen <= ((unsigned long)writesize - 16)) {
 				/* write the compressed buffer */
 				comp_buf->length = worklen;
@@ -1229,7 +1264,7 @@ doslave(int cmd,
 		}
 		/* compress the remaining blocks if we're compressing */
 		do_compress = compressed;
-#endif /* HAVE_ZLIB  || HAVE_BZLIB */
+#endif /* HAVE_ZLIB  || HAVE_BZLIB || HAVE_LZO */
 
 		if (sigsetjmp(jmpbuf, 1) == 0) {
 			ready = 1;

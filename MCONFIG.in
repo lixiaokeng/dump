@@ -45,7 +45,7 @@ GLIBS=		$(GLIBDIR) -L../compat/lib -lcompat -lext2fs -lcom_err
 #
 # Definitions (don't change them unless you know what you are doing)
 #
-DEFS=		-DRDUMP -DRRESTORE -D_BSD_SOURCE -D_USE_BSD_SIGNAL -DLINUX_FORK_BUG -D_PATH_DUMPDATES=\"$(DUMPDATESPATH)\" -D_DUMP_VERSION=\"$(VERSION)\" @OPTDEFS@  
+DEFS=		-DRDUMP -DRRESTORE -D_BSD_SOURCE -D_USE_BSD_SIGNAL -DLINUX_FORK_BUG -DHAVE_LZO -D_PATH_DUMPDATES=\"$(DUMPDATESPATH)\" -D_DUMP_VERSION=\"$(VERSION)\" @OPTDEFS@  
 
 all::
 

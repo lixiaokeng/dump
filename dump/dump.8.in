@@ -26,7 +26,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.51 2003/03/30 15:40:35 stelian Exp $
+.\"	$Id: dump.8.in,v 1.52 2003/03/31 09:42:57 stelian Exp $
 .\"
 .TH DUMP 8 "version __VERSION__ of __DATE__" BSD "System management commands"
 .SH NAME
@@ -50,6 +50,7 @@ dump \- ext2/3 filesystem backup
 [\fB\-Q \fIfile\fR]
 [\fB\-s \fIfeet\fR]
 [\fB\-T \fIdate\fR]
+[\fB\-y\fR]
 [\fB\-z\fIcompression level\fR]
 .I files-to-dump
 .PP
@@ -435,6 +436,16 @@ but prints only recognized filesystems in
 and
 .I /etc/fstab
 which need to be dumped.
+.TP
+.BI \-y
+Compress every block to be written to the tape using the lzo library.
+This doesn't compress as well as the zlib library but it's much faster.
+This option will work only when dumping to a file or pipe or, when dumping to
+a tape drive, if the tape drive is capable of writing variable length blocks.
+You will need at least the 0.4b34 version of
+.B restore
+in order to extract compressed tapes. Tapes written using compression will not
+be compatible with the BSD tape format.
 .TP
 .BI \-z "compression level"
 Compress every block to be written on the tape using zlib library. This option

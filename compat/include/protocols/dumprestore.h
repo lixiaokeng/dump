@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: dumprestore.h,v 1.18 2003/03/30 15:40:34 stelian Exp $
+ *	$Id: dumprestore.h,v 1.19 2003/03/31 09:42:57 stelian Exp $
  */
 
 /*
@@ -137,6 +137,7 @@ union u_spcl {
  */
 #define COMPRESS_ZLIB	0
 #define COMPRESS_BZLIB	1
+#define COMPRESS_LZO	2
 
 /* used for compressed dump tapes */
 struct tapebuf {

@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.73 2003/03/30 15:40:40 stelian Exp $";
+	"$Id: tape.c,v 1.74 2003/03/31 09:42:59 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -84,6 +84,10 @@ static const char rcsid[] =
 #include <bzlib.h>
 #endif /* HAVE_BZLIB */
 
+#ifdef HAVE_LZO
+#include <minilzo.h>
+#endif /* HAVE_LZO */
+
 #include "restore.h"
 #include "extern.h"
 #include "pathnames.h"
@@ -102,7 +106,7 @@ static int	numtrec;
 static char	*tapebuf;		/* input buffer for read */
 static int	bufsize;		/* buffer size without prefix */
 static char	*tbufptr = NULL;	/* active tape buffer */
-#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
+#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB) || defined(HAVE_LZO)
 static char	*comprbuf;		/* uncompress work buf */
 static size_t	comprlen;		/* size including prefix */
 #endif
@@ -150,7 +154,7 @@ static void	 xtrmapskip __P((char *, size_t));
 static void	 xtrskip __P((char *, size_t));
 static void	 setmagtapein __P((void));
 
-#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
+#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB) || defined(HAVE_LZO)
 static void	newcomprbuf __P((int));
 static void	(*readtape_func) __P((char *));
 static void	readtape_set __P((char *));
@@ -239,7 +243,7 @@ newtapebuf(long size)
 	tapebufsize = size;
 }
 
-#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
+#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB) || defined(HAVE_LZO)
 static void
 newcomprbuf(int size)
 {
@@ -253,7 +257,7 @@ newcomprbuf(int size)
 	if (comprbuf == NULL)
 		errx(1, "Cannot allocate space for decompress buffer");
 }
-#endif /* HAVE_ZLIB || HAVE_BZLIB */
+#endif /* HAVE_ZLIB || HAVE_BZLIB || HAVE_LZO */
 
 /*
  * Verify that the tape drive can be accessed and
@@ -297,8 +301,14 @@ setup(void)
 		setmagtapein();
 		setdumpnum();
 	}
-#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
+#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB) || defined(HAVE_LZO)
 	readtape_func = readtape_set;
+#if defined(HAVE_LZO)
+	if (lzo_init() != LZO_E_OK) {
+	  msg("internal error - lzo_init failed \n");
+	  exit(1);
+        }
+#endif
 #endif
 	FLUSHTAPEBUF();
 	findtapeblksize();
@@ -314,7 +324,7 @@ setup(void)
 
 	if (zflag) {
 		fprintf(stderr, "Dump tape is compressed.\n");
-#if !defined(HAVE_ZLIB) && !defined(HAVE_BZLIB)
+#if !defined(HAVE_ZLIB) && !defined(HAVE_BZLIB) && !defined(HAVE_LZO)
 		errx(1,"This restore version doesn't support decompression");
 #endif /* !HAVE_ZLIB && !HAVE_BZLIB */
 	}
@@ -553,7 +563,7 @@ again:
 	}
 gethdr:
 	setmagtapein();
-#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
+#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB) || defined(HAVE_LZO)
 	readtape_func = readtape_set;
 #endif
 	volno = newvol;
@@ -597,7 +607,7 @@ gethdr:
  	 */
 	if (zflag) {
 		fprintf(stderr, "Dump tape is compressed.\n");
-#if !defined(HAVE_ZLIB) && !defined(HAVE_BZLIB)
+#if !defined(HAVE_ZLIB) && !defined(HAVE_BZLIB) && !defined(HAVE_LZO)
 		errx(1,"This restore version doesn't support decompression");
 #endif /* !HAVE_ZLIB && !HAVE_BZLIB */
 	}
@@ -1421,7 +1431,7 @@ comparefile(char *name)
 	/* NOTREACHED */
 }
 
-#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
+#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB) || defined(HAVE_LZO)
 static void (*readtape_func)(char *) = readtape_set;
 
 /*
@@ -1454,7 +1464,7 @@ readtape_set(char *buf)
 	readtape(buf);
 }
 
-#endif /* HAVE_ZLIB || HAVE_BZLIB */
+#endif /* HAVE_ZLIB || HAVE_BZLIB || HAVE_LZO */
 
 /*
  * This is the original readtape(), it's used for reading uncompressed input.
@@ -1462,7 +1472,7 @@ readtape_set(char *buf)
  * Handle read errors, and end of media.
  */
 static void
-#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
+#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB) || defined(HAVE_LZO)
 readtape_uncompr(char *buf)
 #else
 readtape(char *buf)
@@ -1590,7 +1600,7 @@ getmore:
 	tpblksread++;
 }
 
-#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
+#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB) || defined(HAVE_LZO)
 
 /*
  * Read a compressed format block from a file or pipe and uncompress it.
@@ -1859,6 +1869,29 @@ decompress_tapebuf(struct tapebuf *tpbin, int readsize)
 				cresult = 0;
 #endif /* HAVE_BZLIB */
 		}
+		if (tpbin->flags == COMPRESS_LZO) {
+#ifndef HAVE_LZO
+			errx(1,"This restore version doesn't support lzo decompression");
+#else
+			cresult = lzo1x_decompress(tpbin->buf, blocklen,
+                                                   comprbuf, (lzo_uintp) &worklen,NULL);
+			output = comprbuf;
+			switch (cresult) {
+				case LZO_E_OK:
+					break;
+                                case LZO_E_ERROR:
+                                case LZO_E_EOF_NOT_FOUND:
+                                	reason = "data error";
+					break;
+				default:
+					reason = "unknown";
+			}
+			if (cresult == LZO_E_OK)
+				cresult = 1;
+			else
+				cresult = 0;
+#endif /* HAVE_LZO */
+		}
 	}
 	else {
 		output = tpbin->buf;
@@ -1904,7 +1937,7 @@ msg_read_error(char *m)
 			break;
 	}
 }
-#endif /* HAVE_ZLIB || HAVE_BZLIB */
+#endif /* HAVE_ZLIB || HAVE_BZLIB || HAVE_LZO */
 
 /*
  * Read the first block and get the blocksize from it. Test
