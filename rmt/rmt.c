@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: rmt.c,v 1.17 2002/04/12 13:02:16 stelian Exp $";
+	"$Id: rmt.c,v 1.18 2002/04/15 11:57:29 stelian Exp $";
 #endif /* not linux */
 
 /*
@@ -62,18 +62,18 @@ static const char rcsid[] =
 #include <string.h>
 #include <unistd.h>
 
-int	tape = -1;
+static int	tape = -1;
 
-char	*record;
-int	maxrecsize = -1;
+static char	*record;
+static int	maxrecsize = -1;
 
 #define	SSIZE	64
-char	device[SSIZE];
-char	count[SSIZE], filemode[SSIZE], pos[SSIZE], op[SSIZE];
+static char	device[SSIZE];
+static char	count[SSIZE], filemode[SSIZE], pos[SSIZE], op[SSIZE];
 
-char	resp[BUFSIZ];
+static char	resp[BUFSIZ];
 
-FILE	*debug;
+static FILE	*debug;
 #define	DEBUG(f)	if (debug) fprintf(debug, f)
 #define	DEBUG1(f,a)	if (debug) fprintf(debug, f, a)
 #define	DEBUG2(f,a1,a2)	if (debug) fprintf(debug, f, a1, a2)
@@ -82,27 +82,37 @@ FILE	*debug;
  * Support for Sun's extended RMT protocol
  * 	code originally written by Jörg Schilling <schilling@fokus.gmd.de>
  * 	and relicensed by his permission from GPL to BSD for use in dump.
+ *
+ * 	rmt_version is 0 for regular clients (Linux included)
+ * 	rmt_version is 1 for extended clients (Sun especially). In this cas
+ * 		we support some extended commands (see below) and we remap
+ * 		the ioctl commands to the UNIX "standard", as per:
+ * 			ftp://ftp.fokus.gmd.de/pub/unix/star/README.mtio
+ *
+ * 	In order to use rmt version 1, a client must send "I-1\n0\n" 
+ * 	before issuing the other I commands.
  */
-#define RMTI_VERSION    -1
-#define RMT_VERSION 1
+static int	rmt_version = 0;
+#define RMTI_VERSION	-1
+#define RMT_VERSION 	1
  
 /* Extended 'i' commands */
-#define RMTI_CACHE  0
-#define RMTI_NOCACHE    1
-#define RMTI_RETEN  2
-#define RMTI_ERASE  3
-#define RMTI_EOM    4
-#define RMTI_NBSF   5
+#define RMTI_CACHE	0
+#define RMTI_NOCACHE	1
+#define RMTI_RETEN	2
+#define RMTI_ERASE	3
+#define RMTI_EOM	4
+#define RMTI_NBSF	5
  
 /* Extended 's' comands */
-#define MTS_TYPE    'T'
-#define MTS_DSREG   'D'
-#define MTS_ERREG   'E'
-#define MTS_RESID   'R'
-#define MTS_FILENO  'F'
-#define MTS_BLKNO   'B'
-#define MTS_FLAGS   'f'
-#define MTS_BF      'b'
+#define MTS_TYPE	'T'
+#define MTS_DSREG	'D'
+#define MTS_ERREG	'E'
+#define MTS_RESID	'R'
+#define MTS_FILENO	'F'
+#define MTS_BLKNO	'B'
+#define MTS_FLAGS	'f'
+#define MTS_BF		'b'
 
 char	*checkbuf __P((char *, int));
 void	 error __P((int));
@@ -203,13 +213,68 @@ top:
 		DEBUG2("rmtd: I %s %s\n", op, count);
 		if (atoi(op) == RMTI_VERSION) {
 			rval = RMT_VERSION;
-		} else { 
-		  struct mtop mtop;
-		  mtop.mt_op = atoi(op);
-		  mtop.mt_count = atoi(count);
-		  if (ioctl(tape, MTIOCTOP, (char *)&mtop) < 0)
-			goto ioerror;
-		  rval = mtop.mt_count;
+			rmt_version = 1;
+		} 
+		else { 
+			struct mtop mtop;
+			mtop.mt_op = -1;
+			if (rmt_version) {
+				/* rmt version 1, assume UNIX client */
+				switch (atoi(op)) {
+#ifdef  MTWEOF
+					case 0:
+						mtop.mt_op = MTWEOF;
+						break;
+#endif
+#ifdef  MTFSF
+					case 1:
+						mtop.mt_op = MTFSF;
+						break;
+#endif
+#ifdef  MTBSF
+					case 2:
+						mtop.mt_op = MTBSF;
+						break;
+#endif
+#ifdef  MTFSR
+					case 3:
+						mtop.mt_op = MTFSR;
+						break;
+#endif
+#ifdef  MTBSR
+					case 4:
+						mtop.mt_op = MTBSR;
+						break;
+#endif
+#ifdef  MTREW
+					case 5:
+						mtop.mt_op = MTREW;
+						break;
+#endif
+#ifdef  MTOFFL
+					case 6:
+						mtop.mt_op = MTOFFL;
+						break;
+#endif
+#ifdef  MTNOP
+					case 7:
+						mtop.mt_op = MTNOP;
+						break;
+#endif
+				}
+				if (mtop.mt_op == -1) {
+					errno = EINVAL;
+					goto ioerror;
+				}
+			}
+			else {
+				/* rmt version 0, assume linux client */
+				mtop.mt_op = atoi(op);
+			}
+			mtop.mt_count = atoi(count);
+			if (ioctl(tape, MTIOCTOP, (char *)&mtop) < 0)
+				goto ioerror;
+			rval = mtop.mt_count;
 		}
 		goto respond;
 

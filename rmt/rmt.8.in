@@ -29,7 +29,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"     $Id: rmt.8.in,v 1.7 2002/01/16 09:32:14 stelian Exp $
+.\"     $Id: rmt.8.in,v 1.8 2002/04/15 11:57:29 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt RMT 8
@@ -40,11 +40,15 @@
 .Sh SYNOPSIS
 .Nm rmt
 .Sh DESCRIPTION
-.Nm Rmt
-is a program used by the remote dump and restore programs
-in manipulating a magnetic tape drive through an interprocess
+.Nm rmt
+is a program used by the remote 
+.Nm dump,
+.Nm restore 
+or
+.Nm tar
+programs in manipulating a magnetic tape drive through an interprocess
 communication connection.
-.Nm Rmt
+.Nm rmt
 is normally started up with an
 .Xr rexec 3
 or
@@ -53,12 +57,12 @@ call.
 .Pp
 The 
 .Nm
-program accepts requests specific to the manipulation of
-magnetic tapes, performs the commands, then responds with
-a status indication.  All responses are in
+program accepts requests specific to the manipulation of magnetic tapes, 
+performs the commands, then responds with a status indication.  
+All responses are in
 .Tn ASCII
-and in
-one of two forms. 
+and in one of the following two forms.
+.Pp
 Successful commands have responses of:
 .Bd -filled -offset indent
 .Sm off
@@ -66,10 +70,12 @@ Successful commands have responses of:
 .Sm on
 .Ed
 .Pp
-.Ar Number
+where
+.Ar number
 is an
 .Tn ASCII
 representation of a decimal number.
+.Pp
 Unsuccessful commands are responded to with:
 .Bd -filled -offset indent
 .Sm off
@@ -80,15 +86,15 @@ Unsuccessful commands are responded to with:
 .Sm on
 .Ed
 .Pp
-.Ar Error-number
-is one of the possible error
-numbers described in
+where
+.Ar error-number
+is one of the possible error numbers described in
 .Xr intro 2
 and
 .Ar error-message
-is the corresponding error string as printed
-from a call to
+is the corresponding error string as printed from a call to
 .Xr perror 3 .
+.Pp
 The protocol is comprised of the
 following commands, which are sent as indicated - no spaces are supplied
 between the command and its arguments, or between its arguments, and
@@ -99,6 +105,7 @@ indicates that a newline should be supplied:
 .It Xo Sy \&O Ar device
 .No \en Ar mode No \en
 .Xc
+.Sm on
 Open the specified 
 .Ar device
 using the indicated
@@ -108,16 +115,18 @@ is a full pathname and
 .Ar mode
 is an
 .Tn ASCII
-representation of a decimal
-number suitable for passing to
+representation of a decimal number suitable for passing to
 .Xr open 2 .
-If a device had already been opened, it is
-closed before a new open is performed.
+If a device had already been opened, it is closed before a 
+new open is performed.
+.Sm off
 .It Xo Sy C Ar device No \en
 .Xc
+.Sm on
 Close the currently open device.  The
 .Ar device
 specified is ignored.
+.Sm off
 .It Xo Sy L
 .Ar whence No \en
 .Ar offset No \en
@@ -133,13 +142,11 @@ call.
 .It Sy W Ar count No \en
 .Sm on
 Write data onto the open device.
-.Nm Rmt
+.Nm rmt
 reads
 .Ar count
-bytes from the connection, aborting if
-a premature end-of-file is encountered.
-The response value is that returned from
-the
+bytes from the connection, aborting if a premature end-of-file is encountered.
+The response value is that returned from the
 .Xr write 2
 call.
 .Sm off
@@ -152,17 +159,15 @@ If
 .Ar count
 exceeds the size of the data buffer (10 kilobytes), it is
 truncated to the data buffer size.
-.Nm Rmt
+.Nm rmt
 then performs the requested 
 .Xr read 2
 and responds with 
 .Sm off
 .Sy A Ar count-read No \en
 .Sm on
-if the read was
-successful; otherwise an error in the
-standard format is returned.  If the read
-was successful, the data read is then sent.
+if the read was successful; otherwise an error in the standard format 
+is returned.  If the read was successful, the data read is then sent.
 .Sm off
 .It Xo Sy I Ar operation
 .No \en Ar count No \en
@@ -171,11 +176,9 @@ was successful, the data read is then sent.
 Perform a
 .Dv MTIOCOP
 .Xr ioctl 2
-command using the specified parameters.
-The parameters are interpreted as the
+command using the specified parameters.  The parameters are interpreted as the
 .Tn ASCII
-representations of the decimal values
-to place in the 
+representations of the decimal values to place in the 
 .Ar mt_op
 and
 .Ar mt_count
@@ -184,8 +187,88 @@ fields of the structure used in the
 call.  The return value is the
 .Ar count
 parameter when the operation is successful.
+.Pp
+By issuing the
+.Ql I-1\en0\en
+command, a client will specify that he is using the VERSION 1 protocol.
+.Pp
+For a VERSION 0 client, the
+.Ar operation
+parameter is the platform 
+.Ar mt_op
+value (could be different if the client and the
+.Nm
+server are on two different platforms). For a VERSION 1 client,
+the 
+.Ar operation
+parameter is standardized as below:
+.Bl -tag -width Fl
+.It Ic 0
+Issue a MTWEOF command (write
+.Ar count
+end-of-file records).
+.It Ic 1
+Issue a MTFSF command (forward space over
+.Ar count
+file marks).
+.It Ic 2
+Issue a MTBSF command (backward space over
+.Ar count
+file marks).
+.It Ic 3
+Issue a MTFSR command (forward space
+.Ar count
+inter-record gaps).
+.It Ic 4
+Issue a MTBSR command (backward space
+.Ar count
+inter-record gaps).
+.It Ic 5
+Issue a MTREW command (rewind).
+.It Ic 6
+Issue a MTOFFL command (rewind and put the drive offline).
+.It Ic 7
+Issue a MTNOP command (no operation, set status only).
+.El
+.Sm off
+.It Xo Sy i Ar operation
+.No \en Ar count No \en
+.Xc
+.Sm on
+Perform an extended
+.Dv MTIOCOP
+.Xr ioctl 2
+command using the specified parameters.
+The parameters are interpreted as the
+.Tn ASCII
+representations of the decimal values to place in the 
+.Ar mt_op
+and
+.Ar mt_count
+fields of the structure used in the
+.Xr ioctl
+call.  The return value is the
+.Ar count
+parameter when the operation is successful.
+The possible operations are:
+.Bl -tag -width Fl
+.It Ic 0
+Issue a MTCACHE command (switch cache on).
+.It Ic 1
+Issue a MTNOCACHE command (switch cache off).
+.It Ic 2
+Issue a MTRETEN command (retension the tape).
+.It Ic 3
+Issue a MTERASE command (erase the entire tape).
+.It Ic 4
+Issue a MTEOM command (position to end of media).
+.It Ic 5
+Issue a MTNBSF command (backward space count files to BOF).
+.El
 .ne 1i
+.Sm off
 .It Sy S
+.Sm on
 Return the status of the open device, as
 obtained with a
 .Dv MTIOCGET
@@ -193,7 +276,57 @@ obtained with a
 call.  If the operation was successful,
 an ``ack'' is sent with the size of the
 status buffer, then the status buffer is
-sent (in binary).
+sent (in binary, which is non-portable between different platforms).
+.Sm off
+.It Xo Sy s Ar sub-command
+.Xc
+.Sm on
+This is a replacement for the previous S command, portable across different
+platforms. If the open device is a magnetic tape, return members of the 
+magnetic tape status structure, as obtained with a
+.Dv MTIOCGET 
+ioctl call. If the open device is not a magnetic tape, an error is returned.
+If the 
+.Dv MTIOCGET
+operation was successful, the numerical value of the structure member is 
+returned in decimal. The following sub commands are supported:
+.Bl -tag -width Fl
+.It Ic T
+return the content of the structure member
+.Ar mt_type
+which contains the type of the magnetic tape device.
+.It Ic D
+return the content of the structure member
+.Ar mt_dsreg
+which contains the "drive status register".
+.It Ic E
+return the content of the structure member
+.Ar mt_erreg
+which contains the "error register". This structure member must be retrieved
+first because it is cleared after each
+.Dv MTIOCGET
+ioctl call.
+.It Ic R
+return the content of the structure member
+.Ar mt_resid
+which contains the residual count of the last I/O.
+.It Ic F
+return the content of the structure member
+.Ar mt_fileno
+which contains the file number of the current tape position.
+.It Ic B
+return the content of the structure member
+.Ar mt_blkno
+which contains the block number of the current tape position.
+.It Ic f
+return the content of the structure member
+.Ar mt_flags
+which contains MTF_ flags from the driver.
+.It Ic b
+return the content of the structure member
+.Ar mt_bf
+which contains the optimum blocking factor.
+.El
 .El
 .Sm on
 .Pp
@@ -205,7 +338,7 @@ All responses are of the form described above.
 .Sh SEE ALSO
 .Xr rcmd 3 ,
 .Xr rexec 3 ,
-.Xr mtio 4 ,
+.Xr /usr/include/sys/mtio.h ,
 .Xr rdump 8 ,
 .Xr rrestore 8
 .Sh BUGS

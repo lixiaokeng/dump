@@ -1,5 +1,16 @@
-$Id: CHANGES,v 1.172 2002/04/12 12:45:50 stelian Exp $
+$Id: CHANGES,v 1.173 2002/04/15 11:57:27 stelian Exp $
 
+Changes between versions 0.4b28 and 0.4b29 (released ??????????????)
+====================================================================
+
+1.	Fixed a problem in the rmt ioctl command, where ioctl's issued from
+	non Linux clients were misinterpreted. The description of the problem
+	(incompatible numbering in Linux mtio opcodes) is documented at
+	ftp://ftp.fokus.gmd.de/pub/unix/star/README.mtio . Thanks to
+	Jörg Schilling <schilling@fokus.gmd.de> for reporting this bug and
+	providing an excellent, cross-platform replacement for rmt in his
+	star package.
+	
 Changes between versions 0.4b27 and 0.4b28 (released April 12, 2002)
 ====================================================================
 
