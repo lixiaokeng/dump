@@ -29,7 +29,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: restore.8.in,v 1.25 2002/02/04 11:18:46 stelian Exp $
+.\"	$Id: restore.8.in,v 1.26 2002/06/05 13:29:15 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt RESTORE 8
@@ -40,7 +40,7 @@
 .Sh SYNOPSIS
 .Nm restore
 .Fl C
-.Op Fl cklMvVy
+.Op Fl cdklMvVy
 .Op Fl b Ar blocksize
 .Op Fl D Ar filesystem
 .Op Fl f Ar file
@@ -50,7 +50,7 @@
 .Op Fl T Ar directory
 .Nm restore
 .Fl i
-.Op Fl achklmMNuvVy
+.Op Fl acdhklmMNuvVy
 .Op Fl A Ar file
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
@@ -60,7 +60,7 @@
 .Op Fl T Ar directory
 .Nm restore
 .Fl P Ar file
-.Op Fl achklmMNuvVy
+.Op Fl acdhklmMNuvVy
 .Op Fl A Ar file
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
@@ -71,7 +71,7 @@
 .Op file ...
 .Nm restore
 .Fl R
-.Op Fl cklMNuvVy
+.Op Fl cdklMNuvVy
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
 .Op Fl F Ar script
@@ -79,7 +79,7 @@
 .Op Fl T Ar directory
 .Nm restore
 .Fl r
-.Op Fl cklMNuvVy
+.Op Fl cdklMNuvVy
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
 .Op Fl F Ar script
@@ -87,7 +87,7 @@
 .Op Fl T Ar directory
 .Nm restore
 .Fl t
-.Op Fl chklMNuvVy
+.Op Fl cdhklMNuvVy
 .Op Fl A Ar file
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
@@ -99,7 +99,7 @@
 .Op file ...
 .Nm restore
 .Fl x
-.Op Fl achklmMNuvVy
+.Op Fl adchklmMNuvVy
 .Op Fl A Ar file
 .Op Fl b Ar blocksize
 .Op Fl f Ar file
@@ -360,6 +360,13 @@ old (pre-4.4) or new format file system.  The
 .Fl c
 flag disables this check, and only allows reading a dump in the old
 format.
+.It Fl d
+The
+.Fl d
+(debug)
+flag causes
+.Nm restore
+to print debug information.
 .It Fl D Ar filesystem
 The
 .Fl D

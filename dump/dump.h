@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: dump.h,v 1.38 2002/05/21 15:48:46 stelian Exp $
+ *	$Id: dump.h,v 1.39 2002/06/05 13:29:15 stelian Exp $
  */
 
 /*-
@@ -82,6 +82,7 @@ extern int	uflag;		/* update flag */
 extern int	mflag;		/* dump metadata only if possible flag */
 extern int	Mflag;		/* multi-volume flag */
 extern int	qflag;		/* quit on errors flag */
+extern int	vflag;		/* verbose flag */
 extern int      breademax;      /* maximum number of bread errors before we quit */
 extern char	*eot_script;	/* end of volume script fiag */
 extern int	diskfd;		/* disk file descriptor */

@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.40 2002/04/04 08:20:23 stelian Exp $
+.\"	$Id: dump.8.in,v 1.41 2002/06/05 13:29:15 stelian Exp $
 .\"
 .Dd __DATE__
 .Dt DUMP 8
@@ -40,7 +40,7 @@
 .Nd ext2 filesystem backup
 .Sh SYNOPSIS
 .Nm dump
-.Op Fl 0123456789ackMnqSu
+.Op Fl 0123456789ackMnqSuv
 .Op Fl A Ar file
 .Op Fl B Ar records
 .Op Fl b Ar blocksize
@@ -379,6 +379,12 @@ The file
 .Pa __DUMPDATES__
 may be edited to change any of the fields,
 if necessary.
+.It Fl v
+The
+.Fl v
+(verbose) makes
+.Nm dump
+to print extra information which could be helpful in debug sessions.
 .It Fl W
 .Nm Dump
 tells the operator what file systems need to be dumped.

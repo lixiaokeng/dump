@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.71 2002/04/04 08:20:23 stelian Exp $";
+	"$Id: main.c,v 1.72 2002/06/05 13:29:15 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -111,6 +111,7 @@ int	uflag;		/* update flag */
 int	mflag;		/* dump metadata only if possible */
 int	Mflag;		/* multi-volume flag */
 int	qflag;		/* quit on errors flag */
+int	vflag;		/* verbose flag */
 int     breademax = 32; /* maximum number of bread errors before we quit */
 char	*eot_script;	/* end of volume script fiag */
 int	diskfd;		/* disk file descriptor */
@@ -255,7 +256,7 @@ main(int argc, char *argv[])
 #ifdef USE_QFA
 			    "Q:"
 #endif
-			    "s:ST:uWw"
+			    "s:ST:uvWw"
 #ifdef HAVE_ZLIB
 			    "z::"
 #endif
@@ -425,6 +426,10 @@ main(int argc, char *argv[])
 
 		case 'u':		/* update dumpdates */
 			uflag = 1;
+			break;
+
+		case 'v':		/* verbose */
+			vflag = 1;
 			break;
 
 		case 'W':		/* what to do */
@@ -916,6 +921,8 @@ main(int argc, char *argv[])
 		 */
 		if (dp->di_nlink == 0 || dp->di_dtime != 0)
 			continue;
+		if (vflag)
+			msg("dumping directory inode %lu\n", ino);
 		(void)dumpdirino(dp, ino);
 #else
 		(void)dumpino(dp, ino);
@@ -942,6 +949,12 @@ main(int argc, char *argv[])
 		 * inodes since this is done in dumpino().
 		 */
 #endif
+		if (vflag) {
+			if (mflag && TSTINO(ino, metainomap))
+				msg("dumping regular inode %lu (meta only)\n", ino);
+			else
+				msg("dumping regular inode %lu\n", ino);
+		}
 		(void)dumpino(dp, ino, mflag && TSTINO(ino, metainomap));
 	}
 
@@ -1025,7 +1038,7 @@ usage(void)
 #ifdef KERBEROS
 		"k"
 #endif
-		"mMnqSu"
+		"mMnqSuv"
 		"] [-A file] [-B records] [-b blocksize]\n"
 		"\t%s [-d density] [-e inode#,inode#,...] [-E file] [-f file]\n"
 		"\t%s [-h level] [-I nr errors] "

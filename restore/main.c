@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.38 2002/02/04 11:18:46 stelian Exp $";
+	"$Id: main.c,v 1.39 2002/06/05 13:29:15 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -617,21 +617,21 @@ usage(void)
 
 	fprintf(stderr,
 		"usage:"
-		"\t%s -C [-c" kerbflag "lMvVy] [-b blocksize] [-D filesystem] [-f file]\n"
+		"\t%s -C [-cd" kerbflag "lMvVy] [-b blocksize] [-D filesystem] [-f file]\n"
 		"\t%s    [-F script] [-L limit] [-s fileno]\n"
-		"\t%s -i [-ach" kerbflag "lmMuvVy] [-A file] [-b blocksize] [-f file]\n"
+		"\t%s -i [-acdh" kerbflag "lmMuvVy] [-A file] [-b blocksize] [-f file]\n"
 		"\t%s    [-F script] " qfaflag "[-s fileno]\n"
 #ifdef USE_QFA
-		"\t%s -P file [-ach" kerbflag "lmMuvVy] [-A file] [-b blocksize]\n"
+		"\t%s -P file [-acdh" kerbflag "lmMuvVy] [-A file] [-b blocksize]\n"
 		"\t%s    [-f file] [-F script] [-s fileno] [-X filelist] [file ...]\n"
 #endif
-		"\t%s -r [-c" kerbflag "lMuvVy] [-b blocksize] [-f file] [-F script]\n"
+		"\t%s -r [-cd" kerbflag "lMuvVy] [-b blocksize] [-f file] [-F script]\n"
 		"\t%s    [-s fileno] [-T directory]\n"
-		"\t%s -R [-c" kerbflag "lMuvVy] [-b blocksize] [-f file] [-F script]\n"
+		"\t%s -R [-cd" kerbflag "lMuvVy] [-b blocksize] [-f file] [-F script]\n"
 		"\t%s    [-s fileno] [-T directory]\n"
-		"\t%s -t [-ch" kerbflag "lMuvVy] [-A file] [-b blocksize] [-f file]\n"
+		"\t%s -t [-cdh" kerbflag "lMuvVy] [-A file] [-b blocksize] [-f file]\n"
 		"\t%s    [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]\n"
-		"\t%s -x [-ach" kerbflag "lmMuvVy] [-A file] [-b blocksize] [-f file]\n"
+		"\t%s -x [-acdh" kerbflag "lmMuvVy] [-A file] [-b blocksize] [-f file]\n"
 		"\t%s    [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]\n",
 		__progname, white, 
 		__progname, white, 
