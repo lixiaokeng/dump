@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.17 2000/03/03 11:43:35 stelian Exp $";
+	"$Id: traverse.c,v 1.18 2000/05/28 18:16:42 stelian Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -112,6 +112,7 @@ int dump_fs_open(const char *disk, ext2_filsys *fs)
 #else
 	retval = ext2fs_open(disk, 0, 0, 0, unix_io_manager, fs);
 #endif
+#if defined(EXT2_LIB_FEATURE_COMPAT_SUPP) && defined(EXT2_LIB_FEATURE_INCOMPAT_SUPP) && defined(EXT2_LIB_FEATURE_RO_COMPAT_SUPP) && defined(EXT2_ET_UNSUPP_FEATURE) && defined(EXT2_ET_RO_UNSUPP_FEATURE)
 	if (!retval) {
 		s = (struct ext2fs_sb *) (*fs)->super;
 		if ((s->s_feature_compat & ~EXT2_LIB_FEATURE_COMPAT_SUPP) ||
@@ -126,6 +127,7 @@ int dump_fs_open(const char *disk, ext2_filsys *fs)
 			retval = EXT2_ET_RO_UNSUPP_FEATURE;
 		}
 	}
+#endif /* defined && defined && defined... */
 	return retval;
 }
 
