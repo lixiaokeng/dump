@@ -4,7 +4,7 @@
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *	Stelian Pop <pop@cybercable.fr>, 1999 
  *
- *	$Id: restore.h,v 1.5 1999/10/13 09:57:21 stelian Exp $
+ *	$Id: restore.h,v 1.6 1999/11/22 21:39:42 tiniou Exp $
  */
 
 /*
@@ -53,6 +53,7 @@ extern int	bflag;		/* set input block size */
 extern int	dflag;		/* print out debugging info */
 extern int	hflag;		/* restore heirarchies */
 extern int	mflag;		/* restore by name instead of inode number */
+extern int	Mflag;		/* multi-volume restore */
 extern int	Nflag;		/* do not write the disk */
 extern int	uflag;		/* unlink symlink targets */
 extern int	vflag;		/* print out actions taken */

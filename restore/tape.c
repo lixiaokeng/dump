@@ -45,7 +45,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.8 1999/11/11 16:14:01 tiniou Exp $";
+	"$Id: tape.c,v 1.9 1999/11/22 21:39:42 tiniou Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -81,7 +81,8 @@ static const char rcsid[] =
 static long	fssize = MAXBSIZE;
 static int	mt = -1;
 static int	pipein = 0;
-static char	*magtape;
+static char	magtape[NAME_MAX];
+static char	magtapeprefix[NAME_MAX];
 static int	blkcnt;
 static int	numtrec;
 static char	*tapebuf;
@@ -163,9 +164,14 @@ setinput(char *source)
 		pipein++;
 	}
 	setuid(getuid());	/* no longer need or want root privileges */
-	magtape = strdup(source);
-	if (magtape == NULL)
-		errx(1, "Cannot allocate space for magtape buffer");
+	if (Mflag) {
+		strncpy(magtapeprefix, source, NAME_MAX);
+		magtapeprefix[NAME_MAX-1] = '\0';
+		snprintf(magtape, NAME_MAX, "%s%03d", source, 1);
+	}
+	else
+		strncpy(magtape, source, NAME_MAX);
+	magtape[NAME_MAX - 1] = '\0';
 }
 
 void
@@ -294,6 +300,7 @@ getvol(long nextvol)
 	union u_spcl tmpspcl;
 #	define tmpbuf tmpspcl.s_spcl
 	char buf[TP_BSIZE];
+	int haderror = 0;
 
 	if (nextvol == 1) {
 		tapesread = 0;
@@ -353,20 +360,27 @@ again:
 		return;
 	}
 	closemt();
-	fprintf(stderr, "Mount tape volume %ld\n", (long)newvol);
-	fprintf(stderr, "Enter ``none'' if there are no more tapes\n");
-	fprintf(stderr, "otherwise enter tape name (default: %s) ", magtape);
-	(void) fflush(stderr);
-	(void) fgets(buf, BUFSIZ, terminal);
-	if (feof(terminal))
-		exit(1);
-	if (!strcmp(buf, "none\n")) {
-		terminateinput();
-		return;
+	if (Mflag) {
+		snprintf(magtape, NAME_MAX, "%s%03ld", magtapeprefix, newvol);
+		magtape[NAME_MAX - 1] = '\0';
 	}
-	if (buf[0] != '\n') {
-		(void) strcpy(magtape, buf);
-		magtape[strlen(magtape) - 1] = '\0';
+	if (!Mflag || haderror) {
+		haderror = 0;
+		fprintf(stderr, "Mount tape volume %ld\n", (long)newvol);
+		fprintf(stderr, "Enter ``none'' if there are no more tapes\n");
+		fprintf(stderr, "otherwise enter tape name (default: %s) ", magtape);
+		(void) fflush(stderr);
+		(void) fgets(buf, BUFSIZ, terminal);
+		if (feof(terminal))
+			exit(1);
+		if (!strcmp(buf, "none\n")) {
+			terminateinput();
+			return;
+		}
+		if (buf[0] != '\n') {
+			(void) strcpy(magtape, buf);
+			magtape[strlen(magtape) - 1] = '\0';
+		}
 	}
 #ifdef RRESTORE
 	if (host)
@@ -378,6 +392,7 @@ again:
 	if (mt == -1) {
 		fprintf(stderr, "Cannot open %s\n", magtape);
 		volno = -1;
+		haderror = 1;
 		goto again;
 	}
 gethdr:
@@ -388,11 +403,13 @@ gethdr:
 		Dprintf(stdout, "header read failed at %ld blocks\n", (long)blksread);
 		fprintf(stderr, "tape is not dump tape\n");
 		volno = 0;
+		haderror = 1;
 		goto again;
 	}
 	if (tmpbuf.c_volume != volno) {
 		fprintf(stderr, "Wrong volume (%d)\n", tmpbuf.c_volume);
 		volno = 0;
+		haderror = 1;
 		goto again;
 	}
 	if (tmpbuf.c_date != dumpdate || tmpbuf.c_ddate != dumptime) {
@@ -406,6 +423,7 @@ gethdr:
 		fprintf(stderr, "\twanted: %s", ctime(&dumpdate));
 #endif
 		volno = 0;
+		haderror = 1;
 		goto again;
 	}
 	tapesread |= 1 << volno;

@@ -40,7 +40,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.6 1999/10/13 09:57:21 stelian Exp $";
+	"$Id: main.c,v 1.7 1999/11/22 21:39:42 tiniou Exp $";
 #endif /* not lint */
 
 #include <sys/param.h>
@@ -125,9 +125,9 @@ main(int argc, char *argv[])
 		;                                                               
 	obsolete(&argc, &argv);
 #ifdef KERBEROS
-#define	optlist "b:CcdD:f:hikmNRrs:tT:uvxy"
+#define	optlist "b:CcdD:f:hikmMNRrs:tT:uvxy"
 #else
-#define	optlist "b:CcdD:f:himNRrs:tT:uvxy"
+#define	optlist "b:CcdD:f:himMNRrs:tT:uvxy"
 #endif
 	while ((ch = getopt(argc, argv, optlist)) != -1)
 		switch(ch) {
@@ -177,6 +177,9 @@ main(int argc, char *argv[])
 			break;
 		case 'm':
 			mflag = 0;
+			break;
+		case 'M':
+			Mflag = 1;
 			break;
 		case 'N':
 			Nflag = 1;
@@ -360,11 +363,11 @@ usage(void)
 	  "%s %s\n", __progname, _DUMP_VERSION);
 	(void)fprintf(stderr,
 	  "usage:\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n\t%s%s\n",
-	  __progname, " -i [-ch" kerbflag "muvy] [-b blocksize] [-f file] [-s fileno]",
-	  __progname, " -r [-c" kerbflag "uvy] [-b blocksize] [-f file] [-s fileno]",
-	  __progname, " -R [-c" kerbflag "uvy] [-b blocksize] [-f file] [-s fileno]",
-	  __progname, " -x [-ch" kerbflag "muvy] [-b blocksize] [-f file] [-s fileno] [file ...]",
-	  __progname, " -t [-ch" kerbflag "kuvy] [-b blocksize] [-f file] [-s fileno] [file ...]");
+	  __progname, " -i [-ch" kerbflag "mMuvy] [-b blocksize] [-f file] [-s fileno]",
+	  __progname, " -r [-c" kerbflag "Muvy] [-b blocksize] [-f file] [-s fileno]",
+	  __progname, " -R [-c" kerbflag "Muvy] [-b blocksize] [-f file] [-s fileno]",
+	  __progname, " -x [-ch" kerbflag "mMuvy] [-b blocksize] [-f file] [-s fileno] [file ...]",
+	  __progname, " -t [-ch" kerbflag "Muvy] [-b blocksize] [-f file] [-s fileno] [file ...]");
 	exit(1);
 }
 
