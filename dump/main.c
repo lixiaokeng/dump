@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.38 2001/03/20 20:15:43 stelian Exp $";
+	"$Id: main.c,v 1.39 2001/03/20 20:46:08 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -774,12 +774,13 @@ usage(void)
 		"k"
 #endif
 		"MnSu"
-#ifdef HAVE_ZLIB
-		"z"
-#endif
 		"] [-B records] [-b blocksize]\n"
 		"\t%s [-d density] [-e inode#] [-f file] [-h level] [-s feet]\n"
-		"\t%s [-T date] [-z zlevel] filesystem\n"
+		"\t%s [-T date] "
+#ifdef HAVE_ZLIB
+		"[-z zlevel] "
+#endif
+		"filesystem\n"
 		"\t%s [-W | -w]\n", 
 		__progname, white, white, __progname);
 	exit(X_STARTUP);
