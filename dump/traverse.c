@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.63 2004/12/14 11:21:48 stelian Exp $";
+	"$Id: traverse.c,v 1.64 2004/12/15 09:31:49 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1247,6 +1247,7 @@ dumpmap(char *map, int type, dump_ino_t ino)
 
 	spcl.c_type = type;
 	spcl.c_count = howmany(mapsize * sizeof(char), TP_BSIZE);
+	spcl.c_dinode.di_size = mapsize;
 	writeheader(ino);
 	for (i = 0, cp = map; i < spcl.c_count; i++, cp += TP_BSIZE)
 		writerec(cp, 0);
