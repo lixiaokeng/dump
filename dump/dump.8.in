@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.49 2003/02/04 12:24:40 stelian Exp $
+.\"	$Id: dump.8.in,v 1.50 2003/03/06 14:35:51 stelian Exp $
 .\"
 .TH DUMP 8 "version __VERSION__ of __DATE__" BSD "System management commands"
 .SH NAME
@@ -367,7 +367,15 @@ determined from looking in
 The format of
 .I date
 is the same as that of
-.BR ctime (3).
+.BR ctime (3)
+followed by an rfc822 timezone specification: either a plus or minus sign
+followed by two digits for the number of hours and two digits for the minutes.
+For example, -0800 for eight hours west of Greenwich or +0230 for two hours
+and a half east of Greenwich. This timezone offset takes into account
+daylight savings time (if applicable to the timezone): UTC offsets
+when daylight savings time is in effect will be different than offsets
+when daylight savings time is not in effect. For backward
+compatibility, if no timezone is specified, a local time is assumed.
 This option is useful for automated dump scripts that wish to dump over a 
 specific period of time. The
 .B \-T
@@ -383,8 +391,12 @@ after a successful dump. The format of
 is readable by people, consisting of one free format record per line:
 filesystem name, increment level and
 .BR ctime (3)
-format dump date. There may be only one entry per filesystem at each level. The
-file
+format dump date followed by a rfc822 timezone specification (see the
+.B \-u
+option for details). If no timezone offset is specified, times are interpreted 
+as local. Whenever the file is written, all dates in the file are converted 
+to the local time zone, without changing the UTC times. There
+may be only one entry per filesystem at each level. The file
 .I __DUMPDATES__
 may be edited to change any of the fields, if necessary.
 .TP
@@ -551,6 +563,15 @@ to find group
 .BR rmt (8)
 .SH DIAGNOSTICS
 Many, and verbose.
+.SH COMPATIBILITY
+The format of the
+.I __DUMPDATES__
+file has changed in release 0.4b34, however, the file will be read
+correctly with either pre-0.4b34 or 0.4b34 and later versions of
+.B dump
+provided that the machine on which
+.B dump
+is run did not change timezones (which should be a fairly rare occurence).
 .SH EXIT STATUS
 .B Dump
 exits with zero status on success. Startup errors are indicated with an exit

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: unctime.c,v 1.14 2002/01/25 15:08:59 stelian Exp $";
+	"$Id: unctime.c,v 1.15 2003/03/06 14:35:51 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -84,6 +84,7 @@ static const char rcsid[] =
 #define	E_MINUTE	14
 #define	E_SECOND	17
 #define	E_YEAR		20
+#define E_TZOFFSET      25
 
 static	int lookup __P((const char *));
 
@@ -92,7 +93,9 @@ time_t
 unctime(const char *str)
 {
 	struct tm then;
-	char dbuf[26];
+	char dbuf[32];
+	time_t rtime;
+	int tzoffset;
 
 	(void) strncpy(dbuf, str, sizeof(dbuf) - 1);
 	dbuf[sizeof(dbuf) - 1] = '\0';
@@ -105,7 +108,15 @@ unctime(const char *str)
 	then.tm_sec = atoi(&dbuf[E_SECOND]);
 	then.tm_year = atoi(&dbuf[E_YEAR]) - 1900;
 	then.tm_isdst = -1;
-	return(mktime(&then));
+	if (strlen(str) >= E_TZOFFSET+5) {
+		rtime = timegm(&then);
+		/* add timezone offset */
+		tzoffset = atoi(&dbuf[E_TZOFFSET]);
+		rtime -= (tzoffset / 100 * 3600) + (tzoffset % 100) * 60;
+	} else {
+		rtime = timelocal(&then);
+	}
+	return(rtime);
 }
 
 static char months[] =

@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: itime.c,v 1.23 2002/08/01 10:23:26 stelian Exp $";
+	"$Id: itime.c,v 1.24 2003/03/06 14:35:51 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -259,11 +259,21 @@ putdumptime(void)
 static void
 dumprecout(FILE *file, struct dumpdates *what)
 {
+	char buf[26];
+	struct tm *tms;
 
-	if (fprintf(file, "%s %c %s",
+	tms = localtime(&what->dd_ddate);
+	strncpy(buf, asctime(tms), sizeof(buf));
+	if (buf[24] != '\n' || buf[25] != '\0')
+		quit("asctime returned an unexpected string\n");
+	buf[24] = 0;
+	if (fprintf(file, "%s %c %s %c%2.2d%2.2d\n",
 		    what->dd_name,
 		    what->dd_level,
-		    ctime(&what->dd_ddate)) < 0)
+		    buf,
+		    (tms->tm_gmtoff < 0 ? '-' : '+'),
+		    abs(tms->tm_gmtoff) / 3600,
+		    abs(tms->tm_gmtoff) % 3600 / 60) < 0)
 		quit("%s: %s\n", dumpdates, strerror(errno));
 }
 
