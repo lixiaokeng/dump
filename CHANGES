@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.266 2005/01/14 13:01:32 stelian Exp $
+$Id: CHANGES,v 1.267 2005/01/14 13:04:07 stelian Exp $
 
 Changes between versions 0.4b38 and 0.4b39 (released ???????????????)
 =====================================================================
@@ -16,6 +16,13 @@ Changes between versions 0.4b38 and 0.4b39 (released ???????????????)
 
 3.	Silenced the failure to call fgetflags() when comparing an
 	entry which has no ext2 attributes (as in lsattr()).
+
+4.	Fix a brown paper bug in restore -C which broke restore and
+	caused modifications on the filesystem being compared
+	(directories containing a file with the same name as the
+	directory get renamed to RSTTMP...). Thanks to Kenneth Porter
+	<shiva@sewingwitch.com> for finding the bug and helping me
+	reproduce it.
 
 Changes between versions 0.4b37 and 0.4b38 (released January 7, 2005)
 =====================================================================

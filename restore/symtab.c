@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: symtab.c,v 1.23 2004/12/14 14:07:58 stelian Exp $";
+	"$Id: symtab.c,v 1.24 2005/01/14 13:04:07 stelian Exp $";
 #endif /* not lint */
 
 /*
@@ -189,9 +189,16 @@ lookupname(char *name)
 	char *np, *cp;
 	char buf[MAXPATHLEN];
 
-	cp = name;
-
 	ep = lookupino(ROOTINO);
+
+	cp = name;
+	if (*cp == '.')
+		++cp;
+	if (*cp == '/')
+		++cp;
+	if (*cp == '\0')
+		return ep;
+
 	while (ep != NULL) {
 		for (np = buf; *cp != '/' && *cp != '\0' &&
 				np < &buf[sizeof(buf)]; )
@@ -202,8 +209,7 @@ lookupname(char *name)
 
 		oldep = ep;
 
-		if (strcmp(ep->e_name, buf) != 0 &&
-		    ep->e_entries != NULL) {
+		if (ep->e_entries != NULL) {
 
 			ep = ep->e_entries[dir_hash(buf)];
 			for ( ; ep != NULL; ep = ep->e_sibling)
