@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.37 2001/07/19 09:49:35 stelian Exp $";
+	"$Id: traverse.c,v 1.38 2001/08/17 09:55:09 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -898,8 +898,8 @@ dumpino(struct dinode *dp, dump_ino_t ino)
 
 	ext2fs_block_iterate2(fs, (ext2_ino_t)ino, 0, NULL, dumponeblock, (void *)&bc);
 	/* deal with holes at the end of the inode */
-	if (i_size > bc.next_block*sblock->fs_fsize) {
-		remaining = i_size - bc.next_block*sblock->fs_fsize;
+	if (i_size > ((u_quad_t)bc.next_block) * sblock->fs_fsize) {
+		remaining = i_size - ((u_quad_t)bc.next_block) * sblock->fs_fsize;
 		for (i = 0; i < howmany(remaining, sblock->fs_fsize); i++) {
 			bc.buf[bc.cnt++] = 0;
 			if (bc.cnt == bc.max) {
