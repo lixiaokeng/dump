@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.56 2003/10/26 16:05:47 stelian Exp $";
+	"$Id: traverse.c,v 1.57 2004/03/01 15:38:13 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -202,9 +202,9 @@ blockest(struct dinode const *dp)
 	 *	dump blocks (sizeest vs. blkest in the indirect block
 	 *	calculation).
 	 */
-	blkest = howmany((u_quad_t)dp->di_blocks * 512, TP_BSIZE);
+	blkest = howmany((u_quad_t)dp->di_blocks * 512, fs->blocksize) * (fs->blocksize / TP_BSIZE);
 	i_size = dp->di_size + ((u_quad_t) dp->di_size_high << 32);
-	sizeest = howmany(i_size, TP_BSIZE);
+	sizeest = howmany(i_size, fs->blocksize) * (fs->blocksize / TP_BSIZE);
 	if (blkest > sizeest)
 		blkest = sizeest;
 #ifdef	__linux__
@@ -212,7 +212,7 @@ blockest(struct dinode const *dp)
 		/* calculate the number of indirect blocks on the dump tape */
 		blkest +=
 			howmany(sizeest - NDADDR * fs->blocksize / TP_BSIZE,
-			NINDIR(sblock) * EXT2_FRAGS_PER_BLOCK(fs->super));
+			TP_NINDIR);
 	}
 #else
 	if (i_size > sblock->fs_bsize * NDADDR) {
