@@ -41,7 +41,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.74 2002/07/19 14:57:39 stelian Exp $";
+	"$Id: main.c,v 1.75 2002/09/02 12:43:12 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -181,7 +181,7 @@ long	uncomprblks = 0;/* uncompressed blocks written */
 char	*__progname;
 #endif
 
-int 	maxbsize = 64*1024;     /* XXX MAXBSIZE from sys/param.h */
+int 	maxbsize = 1024*1024;     /* XXX MAXBSIZE from sys/param.h */
 static long numarg __P((const char *, long, long));
 static void obsolete __P((int *, char **[]));
 static void usage __P((void));
@@ -293,7 +293,7 @@ main(int argc, char *argv[])
 
 		case 'b':		/* blocks per tape write */
 			ntrec = numarg("number of blocks per write",
-			    1L, 1000L);
+			    1L, 1048576L);
 			if (ntrec > maxbsize/1024) {
 				msg("Please choose a blocksize <= %dkB\n",
 					maxbsize/1024);

@@ -30,7 +30,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.44 2002/07/24 14:12:00 stelian Exp $
+.\"	$Id: dump.8.in,v 1.45 2002/09/02 12:43:12 stelian Exp $
 .\"
 .TH DUMP 8 "version __VERSION__ of __DATE__" BSD "System management commands"
 .SH NAME
@@ -115,17 +115,16 @@ to be used by
 to determine whether a file is in the dump file that is being restored.
 .TP
 .BI \-b " blocksize"
-The number of kilobytes per dump record. Since the IO system slices all
-requests into chunks of 
+The number of kilobytes per dump record. The default blocksize is 10
+and the maximal value is 1024.
+Note however that, since the IO system slices all requests into chunks
+of 
 .B MAXBSIZE
-(typically 64kB), it is not possible to use a larger blocksize without having 
-problems later with
-.BR restore (8).
-Therefore
-.B dump
-will constrain writes to 
-.B MAXBSIZE.
-The default blocksize is 10.
+(which can be as low as 64kB), you can experience problems with
+.BR dump (8)
+and
+.BR restore (8)
+when using a higher value, depending on your kernel and/or libC versions.
 .TP
 .BI \-B " records"
 The number of 1 kB blocks per volume. Not normally required, as
