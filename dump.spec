@@ -29,12 +29,39 @@ The rmt utility provides remote access to tape devices for programs
 like dump (a filesystem backup program), restore (a program for
 restoring files from a backup) and tar (an archiving program).
 
+%package -n dump-static
+Summary: Programs for backing up and restoring filesystems.
+Group: Applications/Archiving
+
+%description -n dump-static
+The dump package contains both dump and restore.  Dump examines files in
+a filesystem, determines which ones need to be backed up, and copies
+those files to a specified disk, tape or other storage medium.  The
+restore command performs the inverse function of dump; it can restore a
+full backup of a filesystem.  Subsequent incremental backups can then be
+layered on top of the full backup.  Single files and directory subtrees
+may also be restored from full or partial backups.
+
+Install dump if you need a system for both backing up filesystems and
+restoring filesystems after backups.
+
+This packages contains statically linked versions of dump and restore.
+
 %prep
 %setup -q
 
 %build
 
-%configure --with-binmode=6755 --with-manowner=root --with-mangrp=root --with-manmode=0644 --enable-rmt
+%configure --with-binmode=6755 --with-manowner=root --with-mangrp=root --with-manmode=0644 --enable-static
+
+make OPT="$RPM_OPT_FLAGS -Wall -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wno-char-subscripts"
+
+mv dump/dump dump/dump.static
+mv restore/restore restore/restore.static
+
+make distclean
+
+configure --with-binmode=6755 --with-manowner=root --with-mangrp=root --with-manmode=0644 --enable-rmt
 
 make OPT="$RPM_OPT_FLAGS -Wall -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wno-char-subscripts"
 
@@ -45,10 +72,15 @@ mkdir -p ${RPM_BUILD_ROOT}%{_prefix}/man/man8
 
 make install BINDIR=$RPM_BUILD_ROOT/sbin MANDIR=${RPM_BUILD_ROOT}%{_prefix}/man/man8
 
+cp dump/dump.static $RPM_BUILD_ROOT/sbin
+cp restore/restore.static $RPM_BUILD_ROOT/sbin
+
 { cd $RPM_BUILD_ROOT
   strip ./sbin/* || :
   ln -sf dump ./sbin/rdump
+  ln -sf dump.static ./sbin/rdump.static
   ln -sf restore ./sbin/rrestore
+  ln -sf restore.static ./sbin/rrestore.static
   chmod ug-s ./sbin/rmt
   mkdir -p ./etc
   > ./etc/dumpdates
@@ -77,7 +109,17 @@ rm -rf $RPM_BUILD_ROOT
 /etc/rmt
 %{_prefix}/man/man8/rmt.8 
 
+%files -n dump-static
+%defattr(-,root,root)
+%attr(6755,root,tty)	/sbin/dump.static
+/sbin/rdump.static
+%attr(6755,root,tty)	/sbin/restore.static
+/sbin/rrestore.static
+
 %changelog
+* Thu Nov 11 1999 Stelian Pop <pop@cybercable.fr>
+- make static versions also for rescue purposes.
+
 * Wed Nov 5 1999 Stelian Pop <pop@cybercable.fr>
 - dump 0.4b9 released, first packaging.
 
