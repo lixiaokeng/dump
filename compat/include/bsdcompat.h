@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: bsdcompat.h,v 1.23 2004/07/01 09:14:48 stelian Exp $
+ *	$Id: bsdcompat.h,v 1.24 2005/05/02 15:10:45 stelian Exp $
  */
 
 #include <config.h>
@@ -130,6 +130,8 @@ struct dinode {
 	__u16	di_uidhigh;
 	__u16	di_gidhigh;
 	__u32	di_spare;
+	__u16	di_extraisize;
+	__u16	di_pad2;
 };
 
 #define di_rdev		di_db[0]

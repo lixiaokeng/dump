@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.88 2005/02/25 13:44:32 stelian Exp $";
+	"$Id: tape.c,v 1.89 2005/05/02 15:10:46 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -167,6 +167,7 @@ static void	 xtrlnkskip __P((char *, size_t));
 static void	 xtrmap __P((char *, size_t));
 static void	 xtrmapskip __P((char *, size_t));
 static void	 xtrskip __P((char *, size_t));
+static void	 xtrxattr __P((char *, size_t));
 static void	 setmagtapein __P((void));
 static int	 extractattr __P((char *));
 static void	 compareattr __P((char *));
@@ -195,6 +196,9 @@ static void	xtrcmpskip __P((char *, size_t));
 
 static int readmapflag;
 static int readingmaps;		/* set to 1 while reading the maps */
+
+static char xattrbuf[XATTR_MAXSIZE];
+static int xattrlen;
 
 #ifdef DUMP_MACOSX
 static DumpFinderInfo	gFndrInfo;
@@ -1029,10 +1033,14 @@ extractattr(char *path)
 			skipfile();
 #endif
 			break;
-		case EXT_XATTR:
-			msg("EA/ACLs not supported in this version, skipping\n");
-			skipfile();
-			break;
+		case EXT_XATTR: {
+			char xattr[XATTR_MAXSIZE];
+			
+			if (readxattr(xattr) == GOOD) {
+				xattr_extract(path, xattr);
+				break;
+			}
+		}
 		default:
 			msg("unexpected inode extension %ld, skipping\n", spcl.c_extattributes);
 			skipfile();
@@ -1212,6 +1220,29 @@ extractresourceufs(char *name)
 	/* NOTREACHED */
 }
 #endif /* DUMP_MACOSX */
+
+int
+readxattr(char *buffer)
+{
+	if (dflag)
+		msg("reading EA data for inode %lu\n", curfile.ino);
+
+	curfile.name = "EA block";
+	if (curfile.dip->di_size > XATTR_MAXSIZE) {
+		fprintf(stderr, "EA size too big (%ld)", (long)curfile.dip->di_size);
+		skipfile();
+		return (FAIL);
+	}
+	
+	memset(xattrbuf, 0, XATTR_MAXSIZE);
+	xattrlen = 0;
+
+	getfile(xtrxattr, xtrnull);
+
+	memcpy(buffer, xattrbuf, XATTR_MAXSIZE);
+
+	return (GOOD);
+}
 
 /*
  * skip over bit maps on the tape
@@ -1480,6 +1511,17 @@ xtrcmpskip(UNUSED(char *buf), size_t size)
 }
 #endif /* COMPARE_ONTHEFLY */
 
+static void
+xtrxattr(char *buf, size_t size)
+{
+	if (xattrlen + size > XATTR_MAXSIZE) {
+		fprintf(stderr, "EA size too big (%ld)", (long)xattrlen + size);
+		return;
+	}
+	memcpy(xattrbuf + xattrlen, buf, size);
+	xattrlen += size;
+}
+
 #if !COMPARE_ONTHEFLY
 static int
 do_cmpfiles(int fd_tape, int fd_disk, OFF_T size)
@@ -1595,6 +1637,8 @@ cmpfiles(char *tapefile, char *diskfile, struct STAT *sbuf_disk)
 static void
 compareattr(char *name)
 {
+	int xattr_done = 0;
+	
 	while (spcl.c_flags & DR_EXTATTRIBUTES) {
 		switch (spcl.c_extattributes) {
 		case EXT_MACOSFNDRINFO:
@@ -1605,16 +1649,26 @@ compareattr(char *name)
 			msg("MacOSX not supported for comparision in this version, skipping\n");
 			skipfile();
 			break;
-		case EXT_XATTR:
-			msg("EA/ACLs not supported for comparision in this version, skipping\n");
-			skipxattr();
+		case EXT_XATTR: {
+			char xattr[XATTR_MAXSIZE];
+
+			if (readxattr(xattr) == GOOD) {
+				if (xattr_compare(name, xattr) == FAIL)
+					do_compare_error;
+				xattr_done = 1;
+			}
+			else
+				do_compare_error;
 			break;
+		}
 		default:
 			msg("unexpected inode extension %ld, skipping\n", spcl.c_extattributes);
 			skipfile();
 			break;
 		}
 	}
+	if (!xattr_done && xattr_compare(name, NULL) == FAIL)
+		do_compare_error;
 }
 
 #if !COMPARE_ONTHEFLY

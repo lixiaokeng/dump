@@ -394,6 +394,14 @@ if test "$ext2fs_h" = no -o "$ext2fs_lib" = no; then
 fi
 
 dnl
+dnl Check for ext2fs_read_inode_full
+dnl
+AC_CHECK_LIB(ext2fs, ext2fs_read_inode_full, [rif=yes], [rif=no], [-lcom_err])
+if test "$rif" = yes; then
+	AC_DEFINE([HAVE_EXT2FS_READ_INODE_FULL],1,[Define this if your ext2fs libs have the ext2fs_read_inode_full function.])
+fi
+
+dnl
 dnl Try to use ext2_fs.h header from libext2fs instead of from the kernel
 dnl
 AC_CHECK_HEADERS(ext2fs/ext2_fs.h, [], [], [-])

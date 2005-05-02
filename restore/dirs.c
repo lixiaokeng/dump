@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dirs.c,v 1.31 2005/01/24 10:32:14 stelian Exp $";
+	"$Id: dirs.c,v 1.32 2005/05/02 15:10:46 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -114,6 +114,7 @@ struct modeinfo {
 	uid_t uid;
 	gid_t gid;
 	unsigned int flags;
+	char xattr;
 };
 
 /*
@@ -149,10 +150,10 @@ struct odirect {
 
 #if defined(__linux__) || defined(sunos)
 static struct inotab	*allocinotab __P((dump_ino_t, OFF_T));
-static void		 savemodeinfo __P((dump_ino_t, struct new_bsd_inode *));
+static void		savemodeinfo __P((dump_ino_t, struct new_bsd_inode *, char *));
 #else
 static struct inotab	*allocinotab __P((dump_ino_t, OFF_T));
-static void		 savemodeinfo __P((dump_ino_t, struct dinode *));
+static void		savemodeinfo __P((dump_ino_t, struct dinode *, char *));
 #endif
 static void		 dcvt __P((struct odirect *, struct direct *));
 static void		 flushent __P((void));
@@ -186,6 +187,8 @@ extractdirs(int genmode)
 	struct inotab *itp;
 	struct direct nulldir;
 	int fd;
+	char xattr[XATTR_MAXSIZE];
+	int xattr_found = 0;
 	dump_ino_t ino;
 
 	Vprintf(stdout, "Extract directories from tape\n");
@@ -242,6 +245,7 @@ extractdirs(int genmode)
 		memcpy(&ip, curfile.dip, sizeof(ip));
 		itp = allocinotab(ino, seekpt);
 		getfile(putdir, xtrnull);
+		xattr_found = 0;
 		while (spcl.c_flags & DR_EXTATTRIBUTES) {
 			switch (spcl.c_extattributes) {
 			case EXT_MACOSFNDRINFO:
@@ -253,12 +257,15 @@ extractdirs(int genmode)
 				skipfile();
 				break;
 			case EXT_XATTR:
-				msg("EA/ACLs attributes not supported, skipping\n");
-				skipfile();
+				if (readxattr(xattr) == GOOD)
+					xattr_found = 1;
 				break;
 			}
 		}
-		savemodeinfo(ino, &ip);
+		if (xattr_found)
+			savemodeinfo(ino, &ip, xattr);
+		else
+			savemodeinfo(ino, &ip, NULL);
 		putent(&nulldir);
 		flushent();
 		itp->t_size = seekpt - itp->t_seekpt;
@@ -675,9 +682,15 @@ setdirmodes(int flags)
 	}
 	clearerr(mf);
 	for (;;) {
+		char xattr[XATTR_MAXSIZE];
 		(void) fread((char *)&node, 1, sizeof(struct modeinfo), mf);
 		if (feof(mf))
 			break;
+		if (node.xattr) {
+			(void) fread(xattr, 1, XATTR_MAXSIZE, mf);
+			if (feof(mf))
+				break;
+		}
 		ep = lookupino(node.ino);
 		if (command == 'i' || command == 'x') {
 			if (ep == NULL)
@@ -707,6 +720,8 @@ setdirmodes(int flags)
 #endif
 #endif
 			utimes(cp, node.timep);
+			if (node.xattr)
+				xattr_extract(cp, xattr);
 			ep->e_flags &= ~NEW;
 		}
 	}
@@ -741,9 +756,15 @@ comparedirmodes(void)
 	}
 	clearerr(mf);
 	for (;;) {
+		char xattr[XATTR_MAXSIZE];
 		(void) fread((char *)&node, 1, sizeof(struct modeinfo), mf);
 		if (feof(mf))
 			break;
+		if (node.xattr) {
+			(void) fread(xattr, 1, XATTR_MAXSIZE, mf);
+			if (feof(mf))
+				break;
+		}
 		ep = lookupino(node.ino);
 		if (ep == NULL) {
 			panic("cannot find directory inode %d\n", node.ino);
@@ -790,6 +811,14 @@ comparedirmodes(void)
 				}
 			}
 #endif
+			if (node.xattr) {
+				if (xattr_compare(cp, xattr) == FAIL)
+					do_compare_error;
+			}
+			else {
+				if (xattr_compare(cp, NULL) == FAIL)
+					do_compare_error;
+			}
 			ep->e_flags &= ~NEW;
 		}
 	}
@@ -874,9 +903,9 @@ allocinotab(dump_ino_t ino, OFF_T seekpt)
 
 static void
 #if defined(__linux__) || defined(sunos)
-savemodeinfo(dump_ino_t ino, struct new_bsd_inode *dip) {
+savemodeinfo(dump_ino_t ino, struct new_bsd_inode *dip, char *xattr) {
 #else
-savemodeinfo(dump_ino_t ino, struct dinode *dip) {
+savemodeinfo(dump_ino_t ino, struct dinode *dip, char *xattr) {
 #endif
 	struct modeinfo node;
 
@@ -898,8 +927,12 @@ savemodeinfo(dump_ino_t ino, struct dinode *dip) {
 	node.flags = dip->di_flags;
 	node.uid = dip->di_uid;
 	node.gid = dip->di_gid;
+	node.xattr = xattr ? 1 : 0;
 	if ( fwrite((char *)&node, 1, sizeof(struct modeinfo), mf) != sizeof(struct modeinfo) )
 		err(1,"cannot write to file %s", modefile);
+	if (xattr)
+		if ( fwrite(xattr, 1, XATTR_MAXSIZE, mf) != XATTR_MAXSIZE)
+			err(1,"cannot write to file %s", modefile);
 }
 
 /*

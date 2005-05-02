@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.12 2003/05/08 21:11:39 stelian Exp $
+# $Id: Makefile.in,v 1.13 2005/05/02 15:10:46 stelian Exp $
 
 top_srcdir=	@top_srcdir@
 srcdir=		@srcdir@
@@ -16,9 +16,9 @@ PROG=		restore
 RPROG=		rrestore
 LINKS=		${SBINDIR}/restore ${SBINDIR}/rrestore
 SRCS=		dirs.c interactive.c main.c restore.c symtab.c tape.c \
-		utilities.c
+		utilities.c xattr.c
 OBJS=		dirs.o interactive.o main.o restore.o symtab.o tape.o \
-		utilities.o ../common/dumprmt.o
+		utilities.o xattr.o ../common/dumprmt.o
 MAN8=		restore.8
 RMAN8=		rrestore.8
 

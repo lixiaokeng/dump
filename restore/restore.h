@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: restore.h,v 1.31 2005/01/13 15:41:07 stelian Exp $
+ *	$Id: restore.h,v 1.32 2005/05/02 15:10:46 stelian Exp $
  */
 
 /*
@@ -197,3 +197,4 @@ char	smtcpath[2048];
 		exit(2); \
 	}
 
+#define XATTR_MAXSIZE	4096

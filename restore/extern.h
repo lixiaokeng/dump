@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: extern.h,v 1.24 2004/12/15 11:00:01 stelian Exp $
+ *	$Id: extern.h,v 1.25 2005/05/02 15:10:46 stelian Exp $
  */
 
 /*-
@@ -157,3 +157,6 @@ int	CreateAppleDoubleFileRes __P((char *, FndrFileInfo *, mode_t, int, struct ti
 #endif
 
 void	skipxattr __P((void));
+int	readxattr __P((char *));
+int	xattr_compare __P((char *, char *));
+int	xattr_extract __P((char *, char *));

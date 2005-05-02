@@ -21,6 +21,10 @@
 /* Define to 1 if you have the <ext2fs/ext2_fs.h> header file. */
 #undef HAVE_EXT2FS_EXT2_FS_H
 
+/* Define this if your ext2fs libs have the ext2fs_read_inode_full function.
+   */
+#undef HAVE_EXT2FS_READ_INODE_FULL
+
 /* Define if we have the ext2_ino_t type (from e2fsprogs 1.20+). */
 #undef HAVE_EXT2_INO_T
 

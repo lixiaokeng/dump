@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.65 2005/01/25 13:33:44 stelian Exp $";
+	"$Id: traverse.c,v 1.66 2005/05/02 15:10:46 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -100,6 +100,7 @@ static	void dmpindir __P((dump_ino_t ino, daddr_t blk, int level, fsizeT *size))
 static	int searchdir __P((dump_ino_t ino, daddr_t blkno, long size, long filesize));
 #endif
 static	void mapfileino __P((dump_ino_t ino, struct dinode const *dp, long *tapesize, int *dirskipped));
+static void dump_xattr __P((dump_ino_t ino, struct dinode *dp));
 
 #ifdef HAVE_EXT2_JOURNAL_INUM
 #define ext2_journal_ino(sb) (sb->s_journal_inum)
@@ -796,6 +797,68 @@ dumponeblock(UNUSED(ext2_filsys fs), blk_t *blocknr, e2_blkcnt_t blockcnt,
 }
 #endif
 
+static void
+dump_xattr(dump_ino_t ino, struct dinode *dp) {
+
+	if (dp->di_extraisize != 0) {
+#ifdef HAVE_EXT2FS_READ_INODE_FULL
+		char inode[EXT2_INODE_SIZE(fs->super)];
+		errcode_t err;
+		u_int32_t *magic;
+
+		memset(inode, 0, EXT2_INODE_SIZE(fs->super));
+		err = ext2fs_read_inode_full(fs, (ext2_ino_t)ino,
+					     (struct ext2_inode *) inode,
+					     EXT2_INODE_SIZE(fs->super));
+		if (err) {
+			com_err(disk, err, "while reading inode #%ld\n", (long)ino);
+			exit(X_ABORT);
+		}
+
+		magic = (void *)inode + EXT2_GOOD_OLD_INODE_SIZE + dp->di_extraisize;
+		if (*magic == EXT2_XATTR_MAGIC) {
+			char xattr[EXT2_INODE_SIZE(fs->super)];
+			int i;
+			char *cp;
+
+			if (vflag)
+				msg("dumping EA (inode) in inode #%ld\n", (long)ino);
+			memset(xattr, 0, EXT2_INODE_SIZE(fs->super));
+			memcpy(xattr, (void *)magic,
+			       EXT2_INODE_SIZE(fs->super) - 
+			       (EXT2_GOOD_OLD_INODE_SIZE + dp->di_extraisize));
+			magic = (u_int32_t *)xattr;
+			*magic = EXT2_XATTR_MAGIC2;
+
+			spcl.c_type = TS_INODE;
+			spcl.c_dinode.di_size = EXT2_INODE_SIZE(fs->super);
+			spcl.c_flags |= DR_EXTATTRIBUTES;
+			spcl.c_extattributes = EXT_XATTR;
+			spcl.c_count = howmany(EXT2_INODE_SIZE(fs->super), TP_BSIZE);
+			writeheader(ino);
+			for (i = 0, cp = xattr; i < spcl.c_count; i++, cp += TP_BSIZE)
+				writerec(cp, 0);
+			spcl.c_flags &= ~DR_EXTATTRIBUTES;
+			spcl.c_extattributes = 0;
+		}
+#endif
+	}
+
+	if (dp->di_file_acl) {
+
+		if (vflag)
+			msg("dumping EA (block) in inode #%ld\n", (long)ino);
+
+		spcl.c_type = TS_INODE;
+		spcl.c_dinode.di_size = sblock->fs_bsize;
+		spcl.c_flags |= DR_EXTATTRIBUTES;
+		spcl.c_extattributes = EXT_XATTR;
+		blksout(&dp->di_file_acl, EXT2_FRAGS_PER_BLOCK(fs->super), ino);
+		spcl.c_flags &= ~DR_EXTATTRIBUTES;
+		spcl.c_extattributes = 0;
+	}
+}
+
 /*
  * Dump passes 3 and 4.
  *
@@ -842,8 +905,6 @@ dumpino(struct dinode *dp, dump_ino_t ino, int metaonly)
 	nbi.di_gen = dp->di_gen;
 	nbi.di_uid = (((int32_t)dp->di_uidhigh) << 16) | dp->di_uid;
 	nbi.di_gid = (((int32_t)dp->di_gidhigh) << 16) | dp->di_gid;
-	if (dp->di_file_acl)
-		msg("ACLs in inode #%ld won't be dumped\n", (long)ino);
 	memmove(&spcl.c_dinode, &nbi, sizeof(nbi));
 #else	/* __linux__ */
 	spcl.c_dinode = *dp;
@@ -856,6 +917,7 @@ dumpino(struct dinode *dp, dump_ino_t ino, int metaonly)
 		spcl.c_count = 0;
 		writeheader(ino);
 		spcl.c_flags &= ~DR_METAONLY;
+		dump_xattr(ino, dp);
 		return;
 	}
 
@@ -886,6 +948,7 @@ dumpino(struct dinode *dp, dump_ino_t ino, int metaonly)
 			memmove(buf, dp->di_db, (u_long)dp->di_size);
 			buf[dp->di_size] = '\0';
 			writerec(buf, 0);
+			dump_xattr(ino, dp);
 			return;
 		}
 #endif	/* __linux__ */
@@ -916,6 +979,7 @@ dumpino(struct dinode *dp, dump_ino_t ino, int metaonly)
 	case S_IFCHR:
 	case S_IFBLK:
 		writeheader(ino);
+		dump_xattr(ino, dp);
 		return;
 
 	default:
@@ -931,8 +995,10 @@ dumpino(struct dinode *dp, dump_ino_t ino, int metaonly)
 	else
 		cnt = howmany(i_size, sblock->fs_fsize);
 	blksout(&dp->di_db[0], cnt, ino);
-	if ((quad_t) (size = i_size - NDADDR * sblock->fs_bsize) <= 0)
+	if ((quad_t) (size = i_size - NDADDR * sblock->fs_bsize) <= 0) {
+		dump_xattr(ino, dp);
 		return;
+	}
 #ifdef	__linux__
 	bc.max = NINDIR(sblock) * EXT2_FRAGS_PER_BLOCK(fs->super);
 	bc.buf = (int *)malloc (bc.max * sizeof (int));
@@ -956,6 +1022,7 @@ dumpino(struct dinode *dp, dump_ino_t ino, int metaonly)
 		blksout (bc.buf, bc.cnt, bc.ino);
 	}
 	free(bc.buf);
+	dump_xattr(ino, dp);
 #else
 	for (ind_level = 0; ind_level < NIADDR; ind_level++) {
 		dmpindir(ino, dp->di_ib[ind_level], ind_level, &size);
@@ -1104,8 +1171,6 @@ dumpdirino(struct dinode *dp, dump_ino_t ino)
 	nbi.di_gen = dp->di_gen;
 	nbi.di_uid = (((int32_t)dp->di_uidhigh) << 16) | dp->di_uid;
 	nbi.di_gid = (((int32_t)dp->di_gidhigh) << 16) | dp->di_gid;
-	if (dp->di_file_acl)
-		msg("ACLs in inode #%ld won't be dumped\n", (long)ino);
 	memmove(&spcl.c_dinode, &nbi, sizeof(nbi));
 #else	/* __linux__ */
 	spcl.c_dinode = *dp;
@@ -1142,6 +1207,7 @@ dumpdirino(struct dinode *dp, dump_ino_t ino)
 	}
 
 	(void)free(cdc.buf);
+	dump_xattr(ino, dp);
 }
 #endif	/* __linux__ */
 
@@ -1299,7 +1365,11 @@ getino(dump_ino_t inum)
 	errcode_t err;
 
 	curino = inum;
+#ifdef HAVE_EXT2FS_READ_INODE_FULL
+	err = ext2fs_read_inode_full(fs, (ext2_ino_t)inum, (struct ext2_inode *) &dinode, sizeof(struct dinode));
+#else
 	err = ext2fs_read_inode(fs, (ext2_ino_t)inum, (struct ext2_inode *) &dinode);
+#endif
 	if (err) {
 		com_err(disk, err, "while reading inode #%ld\n", (long)inum);
 		exit(X_ABORT);

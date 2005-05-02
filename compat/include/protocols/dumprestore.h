@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: dumprestore.h,v 1.23 2004/12/15 11:00:01 stelian Exp $
+ *	$Id: dumprestore.h,v 1.24 2005/05/02 15:10:46 stelian Exp $
  */
 
 /*
@@ -152,7 +152,6 @@ union u_spcl {
 #define EXT_MACOSRESFORK	2
 #define EXT_XATTR		3
 
-
 /*
  * compression flags for the tapebuf header.
  */
@@ -171,5 +170,10 @@ struct tapebuf {
 	char		buf[0];	/* the data */
 #endif
 };
+
+/* used for EA on tape */
+#define EXT2_GOOD_OLD_INODE_SIZE	128
+#define EXT2_XATTR_MAGIC		0xEA020000	/* block EA */
+#define EXT2_XATTR_MAGIC2		0xEA020001	/* in inode EA */
 
 #endif /* !_DUMPRESTORE_H_ */

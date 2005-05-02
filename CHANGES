@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.273 2005/03/18 22:12:54 stelian Exp $
+$Id: CHANGES,v 1.274 2005/05/02 15:10:43 stelian Exp $
 
 Changes between versions 0.4b39 and 0.4b40 (released ????????????????)
 ======================================================================
@@ -23,6 +23,10 @@ Changes between versions 0.4b39 and 0.4b40 (released ????????????????)
 4.	Fixed another bug introduced in restore with the hashtree
 	implementation. This one caused restore to stop saying
 	"removenode: non-empty directory" in some cases.
+
+5.	Added support for dumping and restoring ext2/3 extended
+	attributes (EA), like the access control lists (ACL) or
+	the security labels used by SELinux.
 
 Changes between versions 0.4b38 and 0.4b39 (released January 21, 2005)
 ======================================================================
