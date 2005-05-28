@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dirs.c,v 1.32 2005/05/02 15:10:46 stelian Exp $";
+	"$Id: dirs.c,v 1.33 2005/05/28 18:34:47 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -769,10 +769,10 @@ comparedirmodes(void)
 		if (ep == NULL) {
 			panic("cannot find directory inode %d\n", node.ino);
 		} else {
-			cp = myname(ep);
 			struct STAT sb;
 			unsigned long newflags;
 
+			cp = myname(ep);
 			if (LSTAT(cp, &sb) < 0) {
 				warn("unable to stat %s", cp);
 				do_compare_error;
