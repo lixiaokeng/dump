@@ -29,7 +29,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: xattr.c,v 1.1 2005/05/02 15:10:47 stelian Exp $";
+	"$Id: xattr.c,v 1.2 2005/06/08 09:34:40 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -220,6 +220,180 @@ llistxattr(const char *path, char *list, size_t size)
 	return SYSCALL(__NR_llistxattr, path, list, size);
 }
 
+#define POSIX_ACL_XATTR_VERSION 0x0002
+
+#define ACL_UNDEFINED_ID        (-1)
+
+#define ACL_USER_OBJ            (0x01)
+#define ACL_USER                (0x02)
+#define ACL_GROUP_OBJ           (0x04)
+#define ACL_GROUP               (0x08)
+#define ACL_MASK                (0x10)
+#define ACL_OTHER               (0x20)
+
+typedef struct {
+	u_int16_t	e_tag;
+	u_int16_t	e_perm;
+	u_int32_t	e_id;
+} posix_acl_xattr_entry;
+
+typedef struct {
+	u_int32_t		a_version;
+	posix_acl_xattr_entry	a_entries[0];
+} posix_acl_xattr_header;
+
+static inline size_t
+posix_acl_xattr_size(int count)
+{
+	return (sizeof(posix_acl_xattr_header) +
+		(count * sizeof(posix_acl_xattr_entry)));
+}
+
+struct posix_acl_entry {
+	short		e_tag;
+	unsigned short	e_perm;
+	unsigned int	e_id;
+};
+
+struct posix_acl {
+	unsigned int		a_count;
+	struct posix_acl_entry	a_entries[0];
+};
+
+#define EXT3_ACL_VERSION        0x0001
+
+typedef struct {
+	u_int16_t	e_tag;
+	u_int16_t	e_perm;
+	u_int32_t	e_id;
+} ext3_acl_entry;
+
+typedef struct {
+	u_int16_t	e_tag;
+	u_int16_t	e_perm;
+} ext3_acl_entry_short;
+
+typedef struct {
+	u_int32_t	a_version;
+} ext3_acl_header;
+
+static inline int ext3_acl_count(size_t size)
+{
+	ssize_t s;
+	size -= sizeof(ext3_acl_header);
+	s = size - 4 * sizeof(ext3_acl_entry_short);
+	if (s < 0) {
+		if (size % sizeof(ext3_acl_entry_short))
+			return -1;
+		return size / sizeof(ext3_acl_entry_short);
+	} else {
+		if (s % sizeof(ext3_acl_entry))
+			return -1;
+		return s / sizeof(ext3_acl_entry) + 4;
+	}
+}
+
+int
+posix_acl_to_xattr(const struct posix_acl *acl, void *buffer, size_t size) {
+	posix_acl_xattr_header *ext_acl = (posix_acl_xattr_header *)buffer;
+	posix_acl_xattr_entry *ext_entry = ext_acl->a_entries;
+	int real_size, n;
+
+	real_size = posix_acl_xattr_size(acl->a_count);
+	if (!buffer)
+		return real_size;
+	if (real_size > size) {
+		fprintf(stderr, "ACL: not enough space to convert (%d %d)\n", real_size, size);
+		return -1;
+	}
+
+	ext_acl->a_version = POSIX_ACL_XATTR_VERSION;
+	if (Bcvt) 
+		swabst("1i", (u_char *)ext_acl);
+
+	for (n=0; n < acl->a_count; n++, ext_entry++) {
+		ext_entry->e_tag  = acl->a_entries[n].e_tag;
+		ext_entry->e_perm = acl->a_entries[n].e_perm;
+		ext_entry->e_id   = acl->a_entries[n].e_id;
+		if (Bcvt)
+			swabst("2s1i", (u_char *)ext_entry);
+	}
+	return real_size;
+}
+
+static struct posix_acl *
+ext3_acl_from_disk(const void *value, size_t size)
+{
+	const char *end = (char *)value + size;
+	int n, count;
+	struct posix_acl *acl;
+
+	if (!value)
+		return NULL;
+	if (size < sizeof(ext3_acl_header)) {
+		fprintf(stderr, "ACL size too little\n");
+		return NULL;
+	}
+	if (Bcvt) 
+		swabst("1i", (u_char *)value);
+	if (((ext3_acl_header *)value)->a_version != EXT3_ACL_VERSION) {
+		fprintf(stderr, "ACL version unknown\n");
+		return NULL;
+	}
+	value = (char *)value + sizeof(ext3_acl_header);
+	count = ext3_acl_count(size);
+	if (count < 0) {
+		fprintf(stderr, "ACL bad count\n");
+		return NULL;
+	}
+	if (count == 0)
+		return NULL;
+	acl = malloc(sizeof(struct posix_acl) + count * sizeof(struct posix_acl_entry));
+	if (!acl) {
+		fprintf(stderr, "ACL malloc failed\n");
+		return NULL;
+	}
+	acl->a_count = count;
+
+	for (n=0; n < count; n++) {
+		if (Bcvt)
+			swabst("2s1i", (u_char *)value);
+		ext3_acl_entry *entry = (ext3_acl_entry *)value;
+		if ((char *)value + sizeof(ext3_acl_entry_short) > end)
+			goto fail;
+		acl->a_entries[n].e_tag  = entry->e_tag;
+		acl->a_entries[n].e_perm = entry->e_perm;
+		switch(acl->a_entries[n].e_tag) {
+		case ACL_USER_OBJ:
+		case ACL_GROUP_OBJ:
+		case ACL_MASK:
+		case ACL_OTHER:
+			value = (char *)value + sizeof(ext3_acl_entry_short);
+			acl->a_entries[n].e_id = ACL_UNDEFINED_ID;
+			break;
+
+		case ACL_USER:
+		case ACL_GROUP:
+			value = (char *)value + sizeof(ext3_acl_entry);
+			if ((char *)value > end)
+				goto fail;
+			acl->a_entries[n].e_id = entry->e_id;
+			break;
+
+		default:
+			goto fail;
+		}
+	}
+	if (value != end)
+		goto fail;
+	return acl;
+
+fail:
+	fprintf(stderr, "ACL bad entry\n");
+	free(acl);
+	return NULL;
+}
+
 /*
  * Dump code starts here :)
  */
@@ -333,14 +507,19 @@ xattr_walk(char *buffer, int (*xattr_cb)(char *, char *, int, void *), void *pri
 	     entry = EXT2_XATTR_NEXT(entry)) {
 	     	char name[XATTR_MAXSIZE], value[XATTR_MAXSIZE];
 		int off;
+		int convertacl = 0;
 
 		switch (entry->e_name_index) {
 		case EXT2_XATTR_INDEX_USER:
 			strcpy(name, "user.");
 			break;
 		case EXT2_XATTR_INDEX_POSIX_ACL_ACCESS:
+			strcpy(name, "system.posix_acl_access");
+			convertacl = 1;
+			break;
 		case EXT2_XATTR_INDEX_POSIX_ACL_DEFAULT:
-			strcpy(name, "system.");
+			strcpy(name, "system.posix_acl_default");
+			convertacl = 1;
 			break;
 		case EXT2_XATTR_INDEX_TRUSTED:
 			strcpy(name, "trusted.");
@@ -360,8 +539,21 @@ xattr_walk(char *buffer, int (*xattr_cb)(char *, char *, int, void *), void *pri
 		memcpy(name + off, entry->e_name, entry->e_name_len);
 		name[off + entry->e_name_len] = '\0';
 
-
 		memcpy(value, buffer + VALUE_OFFSET(buffer, entry), entry->e_value_size);
+
+		if (convertacl) {
+			struct posix_acl *acl;
+			int size;
+
+			acl = ext3_acl_from_disk(value, entry->e_value_size);
+			if (!acl)
+				return FAIL;
+			size = posix_acl_to_xattr(acl, value, XATTR_MAXSIZE);
+			if (size < 0)
+				return FAIL;
+			entry->e_value_size = size;
+			free(acl);
+		}
 
 		if (xattr_cb(name, value, entry->e_value_size, private) != GOOD)
 			return FAIL;
