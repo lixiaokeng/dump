@@ -29,7 +29,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: xattr.c,v 1.2 2005/06/08 09:34:40 stelian Exp $";
+	"$Id: xattr.c,v 1.3 2005/06/08 13:24:12 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -308,15 +308,17 @@ posix_acl_to_xattr(const struct posix_acl *acl, void *buffer, size_t size) {
 	}
 
 	ext_acl->a_version = POSIX_ACL_XATTR_VERSION;
-	if (Bcvt) 
-		swabst("1i", (u_char *)ext_acl);
+#if BYTE_ORDER == BIG_ENDIAN
+	swabst("1i", (u_char *)ext_acl);
+#endif
 
 	for (n=0; n < acl->a_count; n++, ext_entry++) {
 		ext_entry->e_tag  = acl->a_entries[n].e_tag;
 		ext_entry->e_perm = acl->a_entries[n].e_perm;
 		ext_entry->e_id   = acl->a_entries[n].e_id;
-		if (Bcvt)
-			swabst("2s1i", (u_char *)ext_entry);
+#if BYTE_ORDER == BIG_ENDIAN
+		swabst("2s1i", (u_char *)ext_entry);
+#endif
 	}
 	return real_size;
 }
@@ -334,8 +336,9 @@ ext3_acl_from_disk(const void *value, size_t size)
 		fprintf(stderr, "ACL size too little\n");
 		return NULL;
 	}
-	if (Bcvt) 
-		swabst("1i", (u_char *)value);
+#if BYTE_ORDER == BIG_ENDIAN
+	swabst("1i", (u_char *)value);
+#endif
 	if (((ext3_acl_header *)value)->a_version != EXT3_ACL_VERSION) {
 		fprintf(stderr, "ACL version unknown\n");
 		return NULL;
@@ -356,9 +359,10 @@ ext3_acl_from_disk(const void *value, size_t size)
 	acl->a_count = count;
 
 	for (n=0; n < count; n++) {
-		if (Bcvt)
-			swabst("2s1i", (u_char *)value);
 		ext3_acl_entry *entry = (ext3_acl_entry *)value;
+#if BYTE_ORDER == BIG_ENDIAN
+		swabst("2s", (u_char *)entry);
+#endif
 		if ((char *)value + sizeof(ext3_acl_entry_short) > end)
 			goto fail;
 		acl->a_entries[n].e_tag  = entry->e_tag;
@@ -374,6 +378,9 @@ ext3_acl_from_disk(const void *value, size_t size)
 
 		case ACL_USER:
 		case ACL_GROUP:
+#if BYTE_ORDER == BIG_ENDIAN
+			swabst("4b1i", (u_char *)entry);
+#endif
 			value = (char *)value + sizeof(ext3_acl_entry);
 			if ((char *)value > end)
 				goto fail;
@@ -453,8 +460,9 @@ xattr_verify(char *buffer)
 
 	end = buffer + XATTR_MAXSIZE;
 
-	if (Bcvt)
-		swabst("4i", (u_char *)buffer);
+#if BYTE_ORDER == BIG_ENDIAN
+	swabst("4i", (u_char *)buffer);
+#endif
 
 	if (HDR(buffer)->h_magic != EXT2_XATTR_MAGIC &&
 	    HDR(buffer)->h_magic != EXT2_XATTR_MAGIC2) {
@@ -466,8 +474,9 @@ xattr_verify(char *buffer)
 
 	/* check the on-disk data structure */
 	entry = FIRST_ENTRY(buffer);
-	if (Bcvt) 
-		swabst("2b1s3i", (u_char *)entry);
+#if BYTE_ORDER == BIG_ENDIAN
+	swabst("2b1s3i", (u_char *)entry);
+#endif
 	while (!IS_LAST_ENTRY(entry)) {
 		struct ext2_xattr_entry *next = EXT2_XATTR_NEXT(entry);
 
@@ -476,8 +485,9 @@ xattr_verify(char *buffer)
 			return FAIL;
 		}
 		entry = next;
-		if (Bcvt) 
-			swabst("2b1s3i", (u_char *)entry);
+#if BYTE_ORDER == BIG_ENDIAN
+		swabst("2b1s3i", (u_char *)entry);
+#endif
 	}
 	return GOOD;
 }

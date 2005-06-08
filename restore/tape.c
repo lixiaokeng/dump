@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.89 2005/05/02 15:10:46 stelian Exp $";
+	"$Id: tape.c,v 1.90 2005/06/08 13:24:11 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -346,6 +346,7 @@ setup(void)
 #endif
 	FLUSHTAPEBUF();
 	findtapeblksize();
+	cvtflag = 0;
 	if (gethead(&spcl) == FAIL) {
 		blkcnt--; /* push back this block */
 		blksread--;
@@ -2412,6 +2413,7 @@ findtapeblksize(void)
 		errx(1, "Tape read error on first record");
 
 	memcpy(&spclpt, tapebuf, TP_BSIZE);
+	cvtflag = 0;
 	if (converthead(&spclpt) == FAIL) {
 		cvtflag++;
 		if (converthead(&spclpt) == FAIL) {
@@ -2622,7 +2624,7 @@ converthead(struct s_spcl *buf)
 		if (checksum((int *)buf) == FAIL)
 			return (FAIL);
 		if (Bcvt)
-			swabst((u_char *)"8i4s31i528bi192b3i", (u_char *)buf);
+			swabst((u_char *)"8i4s1l29i528bi192b4i", (u_char *)buf);
 		goto good;
 	}
 	memcpy(&u_ospcl.s_ospcl, buf, TP_BSIZE);

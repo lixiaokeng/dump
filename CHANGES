@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.276 2005/06/08 09:34:33 stelian Exp $
+$Id: CHANGES,v 1.277 2005/06/08 13:24:08 stelian Exp $
 
 Changes between versions 0.4b40 and 0.4b41 (released ???????????)
 =================================================================
@@ -6,6 +6,9 @@ Changes between versions 0.4b40 and 0.4b41 (released ???????????)
 1.	Fix restore of dumped Access Control Lists. The previous
 	code for EA works fine, but ACLs needed conversion from the
 	ext2/3 disk format to posix_acl format before restoring.
+
+2.	Fix some issues with restoration of EA on big endian
+	platforms.
 
 Changes between versions 0.4b39 and 0.4b40 (released May 2, 2005)
 =================================================================
