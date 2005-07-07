@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: symtab.c,v 1.25 2005/03/30 13:34:00 stelian Exp $";
+	"$Id: symtab.c,v 1.26 2005/07/07 08:47:16 stelian Exp $";
 #endif /* not lint */
 
 /*
@@ -50,6 +50,7 @@ static const char rcsid[] =
  */
 
 #include <config.h>
+#include <compatlfs.h>
 #include <sys/param.h>
 #include <sys/stat.h>
 
@@ -554,7 +555,7 @@ dumpsymtable(char *filename, long checkpt)
 	Vprintf(stdout, "Check pointing the restore\n");
 	if (Nflag)
 		return;
-	if ((fd = fopen(filename, "w")) == NULL) {
+	if ((fd = FOPEN(filename, "w")) == NULL) {
 		warn("fopen");
 		panic("cannot create save file %s for symbol table\n",
 			filename);
@@ -654,7 +655,7 @@ initsymtable(char *filename)
 	struct entry *ep;
 	struct entry *baseep, *lep;
 	struct symtableheader hdr;
-	struct stat stbuf;
+	struct STAT stbuf;
 	long i;
 	int fd;
 
@@ -669,11 +670,11 @@ initsymtable(char *filename)
 		ep->e_flags |= NEW;
 		return;
 	}
-	if ((fd = open(filename, O_RDONLY, 0)) < 0) {
+	if ((fd = OPEN(filename, O_RDONLY, 0)) < 0) {
 		warn("open");
 		errx(1, "cannot open symbol table file %s", filename);
 	}
-	if (fstat(fd, &stbuf) < 0) {
+	if (FSTAT(fd, &stbuf) < 0) {
 		warn("stat");
 		errx(1, "cannot stat symbol table file %s", filename);
 	}
