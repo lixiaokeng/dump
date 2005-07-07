@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: symtab.c,v 1.26 2005/07/07 08:47:16 stelian Exp $";
+	"$Id: symtab.c,v 1.27 2005/07/07 09:16:08 stelian Exp $";
 #endif /* not lint */
 
 /*
@@ -118,7 +118,7 @@ dir_hash(char *name)
 		hash1 = hash0;
 		hash0 = hash; 
 	}       
-	return hash0 % DIRHASH_SIZE;
+	return hash0 % dirhash_size;
 }
 
 /*
@@ -220,7 +220,7 @@ lookupname(char *name)
 			/* search all hash lists for renamed inodes */
 			if (ep == NULL) {
 				int j;
-				for (j = 0; j < DIRHASH_SIZE; j++) {
+				for (j = 0; j < dirhash_size; j++) {
 					ep = oldep->e_entries[j];
 					for ( ; ep != NULL; ep = ep->e_sibling)
 						if (strcmp(ep->e_name, buf) == 0)
@@ -307,7 +307,7 @@ addentry(char *name, dump_ino_t inum, int type)
 	}
 	np->e_type = type & ~LINK;
 	if (type & NODE) {
-		np->e_entries = calloc(1, DIRHASH_SIZE * sizeof(struct entry *));
+		np->e_entries = calloc(1, dirhash_size * sizeof(struct entry *));
 		if (np->e_entries == NULL)
 			panic("unable to allocate directory entries\n");
 	}
@@ -357,7 +357,7 @@ freeentry(struct entry *ep)
 			badentry(ep, "freeing referenced directory");
 		if (ep->e_entries != NULL) {
 			int i;
-			for (i = 0; i < DIRHASH_SIZE; i++) {
+			for (i = 0; i < dirhash_size; i++) {
 				if (ep->e_entries[i] != NULL) 
 					badentry(ep, "freeing non-empty directory");
 			}
@@ -439,7 +439,7 @@ removeentry(struct entry *ep)
 
 			/* search all hash lists for renamed inodes */
 			int j;
-			for (j = 0; j < DIRHASH_SIZE; j++) {
+			for (j = 0; j < dirhash_size; j++) {
 				np = ep->e_parent;
 				entry = np->e_entries[j];
 				if (entry == ep) {
@@ -550,7 +550,7 @@ dumpsymtable(char *filename, long checkpt)
 	long mynum = 1, stroff = 0, hashoff = 0;
 	FILE *fd;
 	struct symtableheader hdr;
-	struct entry *temphash[DIRHASH_SIZE];
+	struct entry **temphash;
 
 	Vprintf(stdout, "Check pointing the restore\n");
 	if (Nflag)
@@ -575,19 +575,24 @@ dumpsymtable(char *filename, long checkpt)
 	/*
 	 * Write out e_entries tables
 	 */
+	temphash = calloc(1, dirhash_size * sizeof(struct entry *));
+	if (temphash == NULL)
+		errx(1, "no memory for saving hashtable");
 	for (i = WINO; i <= maxino; i++) {
 		for (ep = lookupino(i); ep != NULL; ep = ep->e_links) {
 			if (ep->e_entries != NULL) {
 				int j;
-				memcpy(temphash, ep->e_entries, DIRHASH_SIZE * sizeof(struct entry *));
-				for (j = 0; j < DIRHASH_SIZE; j++) {
+				memcpy(temphash, ep->e_entries, dirhash_size * sizeof(struct entry *));
+				for (j = 0; j < dirhash_size; j++) {
 					if (temphash[j])
 						temphash[j] = (struct entry *)ep->e_entries[j]->e_index;
 				}
-				fwrite(temphash, DIRHASH_SIZE, sizeof(struct entry *), fd);
+				fwrite(temphash, dirhash_size, sizeof(struct entry *), fd);
 			}
 		}
 	}
+	free(temphash);
+
 	/*
 	 * Convert pointers to indexes, and output
 	 */
@@ -608,7 +613,7 @@ dumpsymtable(char *filename, long checkpt)
 					(struct entry *)ep->e_sibling->e_index;
 			if (ep->e_entries != NULL) {
 				tep->e_entries = (struct entry **)hashoff;
-				hashoff += DIRHASH_SIZE * sizeof(struct entry *);
+				hashoff += dirhash_size * sizeof(struct entry *);
 			}
 			if (ep->e_next != NULL)
 				tep->e_next =
@@ -737,7 +742,7 @@ initsymtable(char *filename)
 		if (ep->e_type == NODE) {
 			int i;
 			ep->e_entries = (struct entry **)(base + hdr.stringsize + (long)ep->e_entries);
-			for (i = 0; i < DIRHASH_SIZE; i++) {
+			for (i = 0; i < dirhash_size; i++) {
 				if (ep->e_entries[i])
 					ep->e_entries[i] = &baseep[(long)ep->e_entries[i]];
 			}

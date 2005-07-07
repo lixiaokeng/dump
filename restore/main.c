@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.49 2005/01/14 13:04:56 stelian Exp $";
+	"$Id: main.c,v 1.50 2005/07/07 09:16:08 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -113,6 +113,7 @@ static const char *stdin_opt = NULL;
 char	*bot_script = NULL;
 dump_ino_t volinfo[TP_NINOS];
 int	wdfd;
+int	dirhash_size = 1;
 
 #ifdef USE_QFA
 FILE	*gTapeposfp;
@@ -177,7 +178,7 @@ main(int argc, char *argv[])
 		;                                                               
 	obsolete(&argc, &argv);
 	while ((ch = getopt(argc, argv, 
-		"aA:b:CcdD:f:F:hi"
+		"aA:b:CcdD:f:F:hH:i"
 #ifdef KERBEROS
 		"k"
 #endif
@@ -226,6 +227,13 @@ main(int argc, char *argv[])
 			break;
 		case 'h':
 			hflag = 0;
+			break;
+		case 'H':
+			dirhash_size = strtol(optarg, &p, 10);
+			if (*p)
+				errx(1, "illegal hash size -- %s", optarg);
+			if (dirhash_size < 1)
+				errx(1, "hash size must be greater than 0");
 			break;
 #ifdef KERBEROS
 		case 'k':
@@ -679,21 +687,21 @@ usage(void)
 
 	fprintf(stderr,
 		"usage:"
-		"\t%s -C [-cd" kerbflag "lMvVy] [-b blocksize] [-D filesystem] [-f file]\n"
+		"\t%s -C [-cdH" kerbflag "lMvVy] [-b blocksize] [-D filesystem] [-f file]\n"
 		"\t%s    [-F script] [-L limit] [-s fileno]\n"
-		"\t%s -i [-acdh" kerbflag "lmMouvVy] [-A file] [-b blocksize] [-f file]\n"
+		"\t%s -i [-acdhH" kerbflag "lmMouvVy] [-A file] [-b blocksize] [-f file]\n"
 		"\t%s    [-F script] " qfaflag "[-s fileno]\n"
 #ifdef USE_QFA
-		"\t%s -P file [-acdh" kerbflag "lmMuvVy] [-A file] [-b blocksize]\n"
+		"\t%s -P file [-acdhH" kerbflag "lmMuvVy] [-A file] [-b blocksize]\n"
 		"\t%s    [-f file] [-F script] [-s fileno] [-X filelist] [file ...]\n"
 #endif
-		"\t%s -r [-cd" kerbflag "lMuvVy] [-b blocksize] [-f file] [-F script]\n"
+		"\t%s -r [-cdH" kerbflag "lMuvVy] [-b blocksize] [-f file] [-F script]\n"
 		"\t%s    [-s fileno] [-T directory]\n"
-		"\t%s -R [-cd" kerbflag "lMuvVy] [-b blocksize] [-f file] [-F script]\n"
+		"\t%s -R [-cdH" kerbflag "lMuvVy] [-b blocksize] [-f file] [-F script]\n"
 		"\t%s    [-s fileno] [-T directory]\n"
-		"\t%s -t [-cdh" kerbflag "lMuvVy] [-A file] [-b blocksize] [-f file]\n"
+		"\t%s -t [-cdhH" kerbflag "lMuvVy] [-A file] [-b blocksize] [-f file]\n"
 		"\t%s    [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]\n"
-		"\t%s -x [-acdh" kerbflag "lmMouvVy] [-A file] [-b blocksize] [-f file]\n"
+		"\t%s -x [-acdhH" kerbflag "lmMouvVy] [-A file] [-b blocksize] [-f file]\n"
 		"\t%s    [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]\n",
 		__progname, white, 
 		__progname, white, 
@@ -742,6 +750,7 @@ obsolete(int *argcp, char **argvp[])
 		case 'D':
 		case 'f':
 		case 'F':
+		case 'H':
 		case 'L':
 		case 'Q':
 		case 's':

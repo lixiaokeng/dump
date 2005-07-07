@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: restore.c,v 1.36 2005/03/18 22:12:55 stelian Exp $";
+	"$Id: restore.c,v 1.37 2005/07/07 09:16:08 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -581,7 +581,7 @@ findunreflinks(void)
 			continue;
 		if (ep->e_entries == NULL)
 			continue;
-		for (j = 0; j < DIRHASH_SIZE; j++) {
+		for (j = 0; j < dirhash_size; j++) {
 			for (np = ep->e_entries[j]; np != NULL; np = np->e_sibling) {
 				if (np->e_flags == 0) {
 					Dprintf(stdout,
@@ -599,7 +599,7 @@ findunreflinks(void)
 	for (ep = removelist; ep != NULL; ep = ep->e_next) {
 		if (ep->e_entries == NULL)
 			continue;
-		for (j = 0; j < DIRHASH_SIZE; j++) {
+		for (j = 0; j < dirhash_size; j++) {
 			for (np = ep->e_entries[j]; np != NULL; np = np->e_sibling) {
 				if (np->e_type == LEAF) {
 					if (np->e_flags != 0)
@@ -638,7 +638,7 @@ removeoldnodes(void)
 			int docont = 0;
 			if (ep->e_entries != NULL) {
 				int i;
-				for (i = 0; i < DIRHASH_SIZE; i++) {
+				for (i = 0; i < dirhash_size; i++) {
 					if (ep->e_entries[i] != NULL) {
 						prev = &ep->e_next;
 						docont = 1;

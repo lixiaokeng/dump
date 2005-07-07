@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: restore.h,v 1.32 2005/05/02 15:10:46 stelian Exp $
+ *	$Id: restore.h,v 1.33 2005/07/07 09:16:08 stelian Exp $
  */
 
 /*
@@ -92,8 +92,7 @@ extern int	compare_errors;	/* did we encounter any compare errors? */
 extern char	filesys[NAMELEN];/* name of dumped filesystem */
 extern dump_ino_t volinfo[];	/* which inode on which volume archive info */
 extern int	wdfd;		/* original working directory */
-
-#define DIRHASH_SIZE 1024
+extern int	dirhash_size;	/* size of the directory hash table */
 
 /*
  * Each file in the file system is described by one of these entries

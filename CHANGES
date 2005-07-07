@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.278 2005/07/07 08:47:13 stelian Exp $
+$Id: CHANGES,v 1.279 2005/07/07 09:16:03 stelian Exp $
 
 Changes between versions 0.4b40 and 0.4b41 (released ???????????)
 =================================================================
@@ -11,6 +11,10 @@ Changes between versions 0.4b40 and 0.4b41 (released ???????????)
 	platforms.
 
 3.	Fix restore when the symtab is over 2GB in size.
+
+4.	Made the directory hash indexing an optional feature,
+	accessible by the '-H' option of restore, and disable it
+	by default.
 
 Changes between versions 0.4b39 and 0.4b40 (released May 2, 2005)
 =================================================================

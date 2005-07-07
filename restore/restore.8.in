@@ -25,14 +25,14 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: restore.8.in,v 1.32 2004/07/13 08:17:32 stelian Exp $
+.\"	$Id: restore.8.in,v 1.33 2005/07/07 09:16:08 stelian Exp $
 .\"
 .TH RESTORE 8 "version __VERSION__ of __DATE__" BSD "System management commands"
 .SH NAME
 restore \- restore files or file systems from backups made with dump
 .SH SYNOPSIS
 .B restore \-C 
-[\fB\-cdklMvVy\fR]
+[\fB\-cdHklMvVy\fR]
 [\fB\-b \fIblocksize\fR]
 [\fB\-D \fIfilesystem\fR]
 [\fB\-f \fIfile\fR]
@@ -42,7 +42,7 @@ restore \- restore files or file systems from backups made with dump
 [\fB\-T \fIdirectory\fR]
 .PP
 .B restore \-i
-[\fB\-acdhklmMNouvVy\fR]
+[\fB\-acdhHklmMNouvVy\fR]
 [\fB\-A \fIfile\fR]
 [\fB\-b \fIblocksize\fR]
 [\fB\-f \fIfile\fR]
@@ -53,7 +53,7 @@ restore \- restore files or file systems from backups made with dump
 .PP
 .B restore \-P 
 .I file
-[\fB\-acdhklmMNuvVy\fR]
+[\fB\-acdhHklmMNuvVy\fR]
 [\fB\-A \fIfile\fR]
 [\fB\-b \fIblocksize\fR]
 [\fB\-f \fIfile\fR]
@@ -64,7 +64,7 @@ restore \- restore files or file systems from backups made with dump
 [ \fIfile ... \fR]
 .PP
 .B restore \-R
-[\fB\-cdklMNuvVy\fR]
+[\fB\-cdHklMNuvVy\fR]
 [\fB\-b \fIblocksize\fR]
 [\fB\-f \fIfile\fR]
 [\fB\-F \fIscript\fR]
@@ -72,7 +72,7 @@ restore \- restore files or file systems from backups made with dump
 [\fB\-T \fIdirectory\fR]
 .PP
 .B restore \-r 
-[\fB\-cdklMNuvVy\fR]
+[\fB\-cdHklMNuvVy\fR]
 [\fB\-b \fIblocksize\fR]
 [\fB\-f \fIfile\fR]
 [\fB\-F \fIscript\fR]
@@ -80,7 +80,7 @@ restore \- restore files or file systems from backups made with dump
 [\fB\-T \fIdirectory\fR]
 .PP
 .B restore \-t
-[\fB\-cdhklMNuvVy\fR]
+[\fB\-cdhHklMNuvVy\fR]
 [\fB\-A \fIfile\fR]
 [\fB\-b \fIblocksize\fR]
 [\fB\-f \fIfile\fR]
@@ -92,7 +92,7 @@ restore \- restore files or file systems from backups made with dump
 [ \fIfile ... \fR]
 .PP
 .B restore \-x 
-[\fB\-adchklmMNouvVy\fR]
+[\fB\-adchHklmMNouvVy\fR]
 [\fB\-A \fIfile\fR]
 [\fB\-b \fIblocksize\fR]
 [\fB\-f \fIfile\fR]
@@ -374,6 +374,14 @@ script.
 .B \-h
 Extract the actual directory, rather than the files that it references. This 
 prevents hierarchical restoration of complete subtrees from the dump.
+.TP
+.BI \-H " hash_size"
+Use a hashtable having the specified number of entries for storing the
+directories entries instead of a linked list. This hashtable will
+considerably speed up inode lookups (visible especialy in interactive
+mode when adding/removing files from the restore list), but at the
+price of much more memory usage. The default value is 1, meaning no
+hashtable is used.
 .TP
 .B \-k
 Use Kerberos authentication when contacting the remote tape server. (Only 

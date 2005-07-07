@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: utilities.c,v 1.28 2005/03/30 13:21:45 stelian Exp $";
+	"$Id: utilities.c,v 1.29 2005/07/07 09:16:08 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -189,7 +189,7 @@ removenode(struct entry *ep)
 		badentry(ep, "removenode: not a node");
 	if (ep->e_entries != NULL) {
 		int i;
-		for (i = 0; i < DIRHASH_SIZE; i++) {
+		for (i = 0; i < dirhash_size; i++) {
 			if (ep->e_entries[i] != NULL)
 				badentry(ep, "removenode: non-empty directory");
 		}
@@ -378,7 +378,7 @@ badentry(struct entry *ep, const char *msg)
 		fprintf(stderr, "sibling name: %s\n", myname(ep->e_sibling));
 	if (ep->e_entries != NULL) {
 		int i;
-		for (i = 0; i < DIRHASH_SIZE; i++) {
+		for (i = 0; i < dirhash_size; i++) {
 			if (ep->e_entries[i] != NULL) {
 				fprintf(stderr, "next entry name: %s\n", myname(ep->e_entries[i]));
 				break;
