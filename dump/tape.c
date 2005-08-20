@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.88 2005/03/02 08:46:55 stelian Exp $";
+	"$Id: tape.c,v 1.89 2005/08/20 21:00:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -246,7 +246,7 @@ writerec(const void *dp, int isspcl)
 	/* Need to write it to the archive file */
 	if (! AfileActive && isspcl && (spcl.c_type == TS_END))
 		AfileActive = 1;
-	if (AfileActive && Afile >= 0) {
+	if (AfileActive && Afile >= 0 && !(spcl.c_flags & DR_EXTATTRIBUTES)) {
 		/* When we dump an inode which is not a directory,
 		 * it means we ended the archive contents */
 		if (isspcl && (spcl.c_type == TS_INODE) &&
