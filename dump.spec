@@ -136,6 +136,9 @@ rm -rf %{buildroot}
 %{_sbindir}/rrestore.static
 
 %changelog
+* Mon Jan  2 2006 Stelian Pop <stelian@popies.net>
+- dump 0.4b41 released, first packaging.
+
 * Fri Jan 21 2005 Stelian Pop <stelian@popies.net>
 - dump 0.4b39 released, first packaging.
 
