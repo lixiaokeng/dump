@@ -1,7 +1,7 @@
-$Id: CHANGES,v 1.280 2005/08/20 21:00:47 stelian Exp $
+$Id: CHANGES,v 1.281 2006/01/02 15:13:29 stelian Exp $
 
-Changes between versions 0.4b40 and 0.4b41 (released ???????????)
-=================================================================
+Changes between versions 0.4b40 and 0.4b41 (released January 2, 2005)
+=====================================================================
 
 1.	Fix restore of dumped Access Control Lists. The previous
 	code for EA works fine, but ACLs needed conversion from the
