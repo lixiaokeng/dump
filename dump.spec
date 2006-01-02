@@ -11,7 +11,7 @@ URL: http://dump.sourceforge.net
 Group: Applications/Archiving
 Source: dump-%{version}.tar.gz
 BuildPrereq: e2fsprogs-devel >= 1.18
-BuildPrereq: libtermcap-devel, readline-devel
+BuildPrereq: libtermcap-devel, readline-devel, ncurses-devel
 BuildPrereq: zlib-devel, bzip2-devel
 Requires: rmt
 BuildRoot: %{_tmppath}/%{name}-root
