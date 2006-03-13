@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dumprmt.c,v 1.28 2003/10/26 16:05:45 stelian Exp $";
+	"$Id: dumprmt.c,v 1.29 2006/03/13 10:33:44 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -268,7 +268,7 @@ rmtgetconn(void)
 			perror("TCP_NODELAY setsockopt");
 		fromrmtape = tormtape;
 	}
-	(void)fprintf(stdout, "Connection to %s established.\n", rmtpeer);
+	(void)fprintf(stderr, "Connection to %s established.\n", rmtpeer);
 	return 1;
 }
 
