@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: optr.c,v 1.39 2004/07/05 15:12:45 stelian Exp $";
+	"$Id: optr.c,v 1.40 2006/03/14 11:09:51 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -466,6 +466,9 @@ allocfsent(struct mntent *fs)
 				tabfs->mnt_passno = fs->mnt_passno;
 			if (!tabfs->mnt_freq)
 				tabfs->mnt_freq = fs->mnt_freq;
+			if (tabfs->mnt_freq > 3659)
+				quit("Dump frequency in fstab/mtab for %s is too big: %d > 3659\n",
+		     		     tabfs->mnt_fsname, tabfs->mnt_freq);
 			return NULL;
 		}
 	}
@@ -479,6 +482,9 @@ allocfsent(struct mntent *fs)
 		quit("%s\n", strerror(errno));
 	new->mnt_passno = fs->mnt_passno;
 	new->mnt_freq = fs->mnt_freq;
+	if (new->mnt_freq > 3659)
+		quit("Dump frequency in fstab/mtab for %s %s is too big: %d > 3659\n",
+		     new->mnt_dir, new->mnt_fsname, new->mnt_freq);
 	return (new);
 }
 
@@ -614,7 +620,7 @@ print_wmsg(char arg, int dumpme, const char *dev, int level,
 	 * Check ddate > 365 to avoid issues with fs in stab but not dumpdates.
 	 * Not a problem, because ddate is in seconds since the epoch anyways.
 	 */
-	if (ddate > 365) {
+	if (level >= 0 && ddate > 365) {
 		char *date, *d;
 
 		date = (char *)ctime(&ddate);
@@ -669,13 +675,25 @@ lastdump(char arg) /* w ==> just what to do; W ==> most recent dumps */
 				 * change struct fstab format.
 				 * A positive fs_freq means this
 				 * filesystem needs to be dumped.
+				 *
+				 * UGLY HACK: values in 0-3659 range indicate
+				 * original value from /etc/fstab (maximum
+				 * 10 years...)
+				 *
+				 * Values bigger than 3659 indicate that
+				 * the fs is to be dumped, and the latest
+				 * dump level was x-3660
+				 *
+				 * Negative values indicate that the fs is
+				 * not to be dumped, and the latest dump 
+				 * level was -x-1
 				 */
 				dt->mnt_passno = dtwalk->dd_ddate;
 				if (dt->mnt_freq > 0 && (dtwalk->dd_ddate <
 				    tnow - (dt->mnt_freq * 86400)))
-					dt->mnt_freq = dtwalk->dd_level;
+					dt->mnt_freq = 3660 + dtwalk->dd_level;
 				else
-					dt->mnt_freq = -dtwalk->dd_level;
+					dt->mnt_freq = -dtwalk->dd_level - 1;
 #ifdef FDEBUG
 				printf("%s fs_freq set to %d\n", lastname,
 					dt->mnt_freq);
@@ -695,8 +713,9 @@ lastdump(char arg) /* w ==> just what to do; W ==> most recent dumps */
 				const char *disk = get_device_name(dt->mnt_fsname);
 				print_wmsg(arg, dt->mnt_freq > 0,
 					   disk ? disk : dt->mnt_fsname,
-					   dt->mnt_freq < 0 ? -dt->mnt_freq :
-							      dt->mnt_freq,
+					   (dt->mnt_freq < 0 ? -dt->mnt_freq - 1 :
+					    dt->mnt_freq < 3660 ? -1 :
+					    dt->mnt_freq - 3660),
 					   dt->mnt_dir,
 					   dt->mnt_passno);
 			}

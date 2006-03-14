@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.283 2006/03/13 10:33:44 stelian Exp $
+$Id: CHANGES,v 1.284 2006/03/14 11:09:50 stelian Exp $
 
 Changes between versions 0.4b41 and 0.4b42 (released xxxxxxxxxxxxxxx)
 =====================================================================
@@ -6,6 +6,10 @@ Changes between versions 0.4b41 and 0.4b42 (released xxxxxxxxxxxxxxx)
 1.	Fix printout of the 'Connection to' message in dump/restore.
 	Thanks to Dale Wiles <dwiles@users.sourceforge.net> for the
 	bug report and its fix.
+
+2.	Fix dump -w/-W output for filesystems having the last backup
+	level equal to 0. Thanks to Pascal Bouchareine
+	<kalou@users.sourceforge.net> for reporting the bug.
 
 Changes between versions 0.4b40 and 0.4b41 (released January 2, 2006)
 =====================================================================
