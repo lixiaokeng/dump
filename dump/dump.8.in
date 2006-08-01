@@ -26,7 +26,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.58 2005/06/01 13:44:35 stelian Exp $
+.\"	$Id: dump.8.in,v 1.59 2006/08/01 10:22:44 stelian Exp $
 .\"
 .TH DUMP 8 "version __VERSION__ of __DATE__" BSD "System management commands"
 .SH NAME
@@ -87,8 +87,9 @@ The following options are supported by
 .B dump:
 .TP
 .BI \-level#
-The dump level (any integer). A level 0, full backup, guarantees the
-entire file system is copied (but see also the
+The dump level (any integer). A level 0, full backup, specified by
+.B \-0
+guarantees the entire file system is copied (but see also the
 .B \-h
 option below). A level number above 0, incremental backup, tells
 .B dump
