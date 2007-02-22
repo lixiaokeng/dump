@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.90 2005/06/08 13:24:11 stelian Exp $";
+	"$Id: tape.c,v 1.91 2007/02/22 20:12:50 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -570,6 +570,8 @@ again:
 	}
 	if (haderror || (bot_code && !Mflag)) {
 		haderror = 0;
+		if (compare_errors)
+			fprintf(stderr, "%d compare errors so far\n", compare_errors);
 #ifdef sunos
 		fprintf(stderr, "Mount volume %ld\n", (long)newvol);
 #else

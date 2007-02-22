@@ -29,7 +29,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: xattr.c,v 1.3 2005/06/08 13:24:12 stelian Exp $";
+	"$Id: xattr.c,v 1.4 2007/02/22 20:12:50 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -43,6 +43,9 @@ static const char rcsid[] =
 #include <errno.h>
 #include <bsdcompat.h>
 #include <protocols/dumprestore.h>
+#ifdef TRANSSELINUX			/*GAN6May06 SELinux MLS */
+# include <selinux/selinux.h>
+#endif
 #include "restore.h"
 #include "extern.h"
 #include "pathnames.h"
@@ -195,12 +198,12 @@ struct ext2_xattr_entry {
 static int lsetxattr __P((const char *, const char *, void *, size_t, int));
 static ssize_t lgetxattr __P((const char *, const char *, void *, size_t));
 static ssize_t llistxattr __P((const char *, char *, size_t));
-static int xattr_cb_list __P((char *, char *, int, void *));
-static int xattr_cb_set __P((char *, char *, int, void *));
-static int xattr_cb_compare __P((char *, char *, int, void *));
+static int xattr_cb_list __P((char *, char *, int, int, void *));
+static int xattr_cb_set __P((char *, char *, int, int, void *));
+static int xattr_cb_compare __P((char *, char *, int, int, void *));
 static int xattr_verify __P((char *));
 static int xattr_count __P((char *, int *));
-static int xattr_walk __P((char *, int (*)(char *, char *, int, void *), void *));
+static int xattr_walk __P((char *, int (*)(char *, char *, int, int, void *), void *));
 
 static int
 lsetxattr(const char *path, const char *name, void *value, size_t size, int flags)
@@ -406,8 +409,9 @@ fail:
  */
 
 static int
-xattr_cb_list(char *name, char *value, int valuelen, void *private)
+xattr_cb_list(char *name, char *value, int valuelen, int isSELinux, void *private)
 {
+	isSELinux;
 	value[valuelen] = '\0';
 	printf("EA: %s:%s\n", name, value);
 
@@ -415,37 +419,64 @@ xattr_cb_list(char *name, char *value, int valuelen, void *private)
 }
 
 static int
-xattr_cb_set(char *name, char *value, int valuelen, void *private)
+xattr_cb_set(char *name, char *value, int valuelen, int isSELinux, void *private)
 {
 	char *path = (char *)private;
-
-	if (lsetxattr(path, name, value, valuelen, 0) < 0) {
-		warn("lsetxattr %s failed", path);
+	int err;
+	
+	isSELinux;
+#ifdef TRANSSELINUX			/*GAN6May06 SELinux MLS */
+	if (isSELinux)
+		err = lsetfilecon(path, value);
+	else
+#endif
+		err = lsetxattr(path, name, value, valuelen, 0);
+	
+	if (err) {
+		warn("%s: EA set %s:%s failed", path, name, value);
 		return FAIL;
 	}
+	
 	return GOOD;
 }
 
 static int
-xattr_cb_compare(char *name, char *value, int valuelen, void *private)
+xattr_cb_compare(char *name, char *value, int valuelen, int isSELinux, void *private)
 {
 	char *path = (char *)private;
 	char valuef[XATTR_MAXSIZE];
 	int valuesz;
-
-	valuesz = lgetxattr(path, name, valuef, XATTR_MAXSIZE);
-	if (valuesz < 0) {
-		warn("%s: lgetxattr failed\n", path);
-		return FAIL;
+	
+	isSELinux;
+#ifdef TRANSSELINUX			/*GAN6May06 SELinux MLS */
+	if (isSELinux)
+	{
+		security_context_t con = NULL;
+		
+		if (lgetfilecon(path, &con) < 0) {
+			warn("%s: EA compare lgetfilecon failed\n", path);
+			return FAIL;
+		}
+		
+		valuesz = strlen(con) + 1;
+		valuef[0] = 0;
+		strncat(valuef, con, sizeof valuef);
+		freecon(con);
 	}
-
-	if (valuesz != valuelen) {
-		fprintf(stderr, "%s: EA %s value changed\n", path, value);
-		return FAIL;
+	else {
+#endif
+		valuesz = lgetxattr(path, name, valuef, XATTR_MAXSIZE);
+		if (valuesz < 0) {
+			warn("%s: EA compare lgetxattr failed\n", path);
+			return FAIL;
+		}
+#ifdef TRANSSELINUX			/*GAN6May06 SELinux MLS */
 	}
-
-	if (memcmp(value, valuef, valuelen)) {
-		fprintf(stderr, "%s: EA %s value changed\n", path, value);
+#endif
+	
+	if (valuesz != valuelen || memcmp(value, valuef, valuelen)) {
+		/* GAN24May06: show name and new value for user to compare */
+		fprintf(stderr, "%s: EA %s:%s value changed to %s\n", path, name, value, valuef);
 		return FAIL;
 	}
 
@@ -508,7 +539,7 @@ xattr_count(char *buffer, int *count)
 }
 
 static int
-xattr_walk(char *buffer, int (*xattr_cb)(char *, char *, int, void *), void *private)
+xattr_walk(char *buffer, int (*xattr_cb)(char *, char *, int, int, void *), void *private)
 {
 	struct ext2_xattr_entry *entry;
 
@@ -518,6 +549,7 @@ xattr_walk(char *buffer, int (*xattr_cb)(char *, char *, int, void *), void *pri
 	     	char name[XATTR_MAXSIZE], value[XATTR_MAXSIZE];
 		int off;
 		int convertacl = 0;
+		int convertcon = 0;
 
 		switch (entry->e_name_index) {
 		case EXT2_XATTR_INDEX_USER:
@@ -539,6 +571,9 @@ xattr_walk(char *buffer, int (*xattr_cb)(char *, char *, int, void *), void *pri
 			break;
 		case EXT2_XATTR_INDEX_SECURITY:
 			strcpy(name, "security.");
+#ifdef TRANSSELINUX			/*GAN6May06 SELinux MLS */
+			convertcon = transselinuxflag;
+#endif
 			break;
 		default:
 			fprintf(stderr, "Unknown EA index\n");
@@ -564,8 +599,36 @@ xattr_walk(char *buffer, int (*xattr_cb)(char *, char *, int, void *), void *pri
 			entry->e_value_size = size;
 			free(acl);
 		}
+		
+#ifdef TRANSSELINUX			/*GAN6May06 SELinux MLS */
+		if (convertcon  &&  strcmp(name, "security.selinux"))
+			convertcon = 0;	/*GAN24May06 only for selinux */
+		
+		if (convertcon)
+		{
+			security_context_t con = NULL;
+			int err;
+			
+			if (!transselinuxarg)
+				err = security_canonicalize_context(value, &con);
+			else {
+				strncat(value, transselinuxarg, sizeof value);
+				err = security_canonicalize_context_raw(value, &con);
+			}
+			
+			if (err < 0) {
+				warn("%s: EA canonicalize failed\n", value);
+				return FAIL;
+			}
 
-		if (xattr_cb(name, value, entry->e_value_size, private) != GOOD)
+			entry->e_value_size = strlen(con) + 1;
+			value[0] = 0;
+			strncat(value, con, sizeof value);
+			freecon(con);
+		}
+#endif
+
+		if (xattr_cb(name, value, entry->e_value_size, convertcon, private) != GOOD)
 			return FAIL;
 	}
 

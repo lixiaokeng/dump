@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: restore.h,v 1.33 2005/07/07 09:16:08 stelian Exp $
+ *	$Id: restore.h,v 1.34 2007/02/22 20:12:50 stelian Exp $
  */
 
 /*
@@ -189,6 +189,11 @@ long	scsiid;
 char	smtcpath[2048];
 #endif
 #endif /* USE_QFA */
+
+#ifdef TRANSSELINUX			/*GAN6May06 SELinux MLS */
+extern int	transselinuxflag;
+extern char	*transselinuxarg;
+#endif
 
 #define do_compare_error \
 	if (++compare_errors >= Lflag && Lflag) { \

@@ -253,6 +253,29 @@ fi
 echo "Not including Mac OSX restore compatibility code by default"
 )
 
+dnl
+dnl Handle --enable-transselinux
+dnl
+AC_ARG_ENABLE([transselinux],
+[  --enable-transselinux      restore can translate SELinux EAs (default is YES)],
+if test "$enableval" = "yes"
+then
+	LTRANSSELINUX="-lselinux"
+	CCTRANSSELINUX="-DTRANSSELINUX"
+	echo "restore can translate SELinux EAs"
+else
+	LTRANSSELINUX=""
+	CCTRANSSELINUX=""
+	echo "restore can not translate SELinux EAs"
+fi
+,
+LTRANSSELINUX="-lselinux"
+CCTRANSSELINUX="-DTRANSSELINUX"
+echo "restore can translate SELinux EAs by default"
+)
+AC_SUBST(LTRANSSELINUX)
+AC_SUBST(CCTRANSSELINUX)
+
 
 dnl
 dnl set $(CC) from --with-cc=value

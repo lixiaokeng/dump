@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.50 2005/07/07 09:16:08 stelian Exp $";
+	"$Id: main.c,v 1.51 2007/02/22 20:12:50 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -127,6 +127,11 @@ unsigned long qfadumpdate;
 long long curtapepos;
 #endif /* USE_QFA */
 
+#ifdef TRANSSELINUX			/*GAN6May06 SELinux MLS */
+int	transselinuxflag = 0;
+char	*transselinuxarg = NULL;
+#endif
+
 long smtc_errno;
 
 #if defined(__linux__) || defined(sunos)
@@ -157,6 +162,9 @@ main(int argc, char *argv[])
 	tapeposflag = 0;
 	createtapeposflag = 0;
 #endif /* USE_QFA */
+#ifdef TRANSSELINUX			/*GAN6May06 SELinux MLS */
+	char transselinuxopt;
+#endif
 
 	/* Temp files should *not* be readable.  We set permissions later. */
 	orig_umask = umask(FORCED_UMASK);
@@ -178,7 +186,11 @@ main(int argc, char *argv[])
 		;                                                               
 	obsolete(&argc, &argv);
 	while ((ch = getopt(argc, argv, 
-		"aA:b:CcdD:f:F:hH:i"
+		"aA:b:CcdD:"
+#ifdef TRANSSELINUX			/*GAN6May06 SELinux MLS */
+		"eE:"
+#endif
+		"f:F:hH:i"
 #ifdef KERBEROS
 		"k"
 #endif
@@ -211,6 +223,17 @@ main(int argc, char *argv[])
 			strncpy(filesys, optarg, NAMELEN);
 			filesys[NAMELEN - 1] = '\0';
 			break;
+#ifdef TRANSSELINUX			/*GAN6May06 SELinux MLS */
+		case 'e':
+			transselinuxflag = 1;
+			transselinuxopt = ch;
+			break;
+		case 'E':
+			transselinuxflag = 1;
+			transselinuxarg = optarg;
+			transselinuxopt = ch;
+			break;
+#endif
 		case 'T':
 			tmpdir = optarg;
 			break;
@@ -340,6 +363,11 @@ main(int argc, char *argv[])
 	if (Afile && command != 'i' && command != 'x' && command != 't')
 		errx(1, "A option is not valid for %c command", command);
 
+#ifdef TRANSSELINUX			/*GAN6May06 SELinux MLS */
+	if (transselinuxflag && !strchr("CirRx", command))
+		errx(1, "%c option is not valid for %c command", transselinuxopt, command);
+#endif
+
 	if (signal(SIGINT, onintr) == SIG_IGN)
 		(void) signal(SIGINT, SIG_IGN);
 	if (signal(SIGTERM, onintr) == SIG_IGN)
@@ -447,7 +475,7 @@ main(int argc, char *argv[])
 		comparedirmodes();
 		checkrestore();
 		if (compare_errors) {
-			printf("Some files were modified!\n");
+			printf("Some files were modified!  %d compare errors\n", compare_errors);
 			exit(2);
 		}
 		break;
@@ -685,24 +713,31 @@ usage(void)
 #define qfaflag
 #endif
 
+#ifdef TRANSSELINUX			/*GAN6May06 SELinux MLS */
+# define tseflag "e"
+# define tsEflag "[-E mls] "
+#else
+# define tseflag
+# define tsEflag
+#endif
 	fprintf(stderr,
 		"usage:"
-		"\t%s -C [-cdH" kerbflag "lMvVy] [-b blocksize] [-D filesystem] [-f file]\n"
-		"\t%s    [-F script] [-L limit] [-s fileno]\n"
-		"\t%s -i [-acdhH" kerbflag "lmMouvVy] [-A file] [-b blocksize] [-f file]\n"
-		"\t%s    [-F script] " qfaflag "[-s fileno]\n"
+		"\t%s -C [-cd" tseflag "H" kerbflag "lMvVy] [-b blocksize] [-D filesystem] " tsEflag"\n"
+		"\t%s    [-f file] [-F script] [-L limit] [-s fileno]\n"
+		"\t%s -i [-acd" tseflag "hH" kerbflag "lmMouvVy] [-A file] [-b blocksize] " tsEflag"\n"
+		"\t%s    [-f file] [-F script] " qfaflag "[-s fileno]\n"
 #ifdef USE_QFA
 		"\t%s -P file [-acdhH" kerbflag "lmMuvVy] [-A file] [-b blocksize]\n"
 		"\t%s    [-f file] [-F script] [-s fileno] [-X filelist] [file ...]\n"
 #endif
-		"\t%s -r [-cdH" kerbflag "lMuvVy] [-b blocksize] [-f file] [-F script]\n"
-		"\t%s    [-s fileno] [-T directory]\n"
-		"\t%s -R [-cdH" kerbflag "lMuvVy] [-b blocksize] [-f file] [-F script]\n"
-		"\t%s    [-s fileno] [-T directory]\n"
-		"\t%s -t [-cdhH" kerbflag "lMuvVy] [-A file] [-b blocksize] [-f file]\n"
-		"\t%s    [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]\n"
-		"\t%s -x [-acdhH" kerbflag "lmMouvVy] [-A file] [-b blocksize] [-f file]\n"
-		"\t%s    [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]\n",
+		"\t%s -r [-cd" tseflag "H" kerbflag "lMuvVy] [-b blocksize] " tsEflag"\n"
+		"\t%s    [-f file] [-F script] [-s fileno] [-T directory]\n"
+		"\t%s -R [-cd" tseflag "H" kerbflag "lMuvVy] [-b blocksize] " tsEflag"\n"
+		"\t%s    [-f file] [-F script] [-s fileno] [-T directory]\n"
+		"\t%s -t [-cdhH" kerbflag "lMuvVy] [-A file] [-b blocksize]\n"
+		"\t%s    [-f file] [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]\n"
+		"\t%s -x [-acd" tseflag "hH" kerbflag "lmMouvVy] [-A file] [-b blocksize] " tsEflag"\n"
+		"\t%s    [-f file] [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]\n",
 		__progname, white, 
 		__progname, white, 
 #ifdef USE_QFA

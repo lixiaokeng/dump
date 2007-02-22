@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.284 2006/03/14 11:09:50 stelian Exp $
+$Id: CHANGES,v 1.285 2007/02/22 20:12:50 stelian Exp $
 
 Changes between versions 0.4b41 and 0.4b42 (released xxxxxxxxxxxxxxx)
 =====================================================================
@@ -10,6 +10,12 @@ Changes between versions 0.4b41 and 0.4b42 (released xxxxxxxxxxxxxxx)
 2.	Fix dump -w/-W output for filesystems having the last backup
 	level equal to 0. Thanks to Pascal Bouchareine
 	<kalou@users.sourceforge.net> for reporting the bug.
+
+3.	Enable restore to handle restoring onto a different SELinux
+	policy from the dump. Thanks to Tony Nelson 
+	<tony_nelson@users.sourceforge.net> for the patch.
+	(see http://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=189845
+	for details)
 
 Changes between versions 0.4b40 and 0.4b41 (released January 2, 2006)
 =====================================================================
