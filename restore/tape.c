@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.91 2007/02/22 20:12:50 stelian Exp $";
+	"$Id: tape.c,v 1.92 2007/02/22 20:16:23 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -908,6 +908,8 @@ extractfile(struct entry *ep, int doremove)
 		}
 		(void) chown(name, curfile.dip->di_uid, curfile.dip->di_gid);
 		(void) chmod(name, mode);
+		extractattr(name);
+		utimes(name, timep);
 		if (flags)
 #ifdef  __linux__
 			(void) lsetflags(name, flags);
@@ -922,8 +924,6 @@ extractfile(struct entry *ep, int doremove)
 #endif
 #endif
 		skipfile();
-		extractattr(name);
-		utimes(name, timep);
 		return (GOOD);
 
 	case IFCHR:
@@ -944,6 +944,8 @@ extractfile(struct entry *ep, int doremove)
 		}
 		(void) chown(name, curfile.dip->di_uid, curfile.dip->di_gid);
 		(void) chmod(name, mode);
+		extractattr(name);
+		utimes(name, timep);
 		if (flags)
 #ifdef	__linux__
 			{
@@ -964,8 +966,6 @@ extractfile(struct entry *ep, int doremove)
 #endif
 #endif
 		skipfile();
-		extractattr(name);
-		utimes(name, timep);
 		return (GOOD);
 
 	case IFREG:
@@ -994,6 +994,8 @@ extractfile(struct entry *ep, int doremove)
 			skipfile();
 		(void) chown(name, luid, lgid);
 		(void) chmod(name, mode);
+		extractattr(name);
+		utimes(name, timep);
 		if (flags)
 #ifdef	__linux__
 			(void) lsetflags(name, flags);
@@ -1007,8 +1009,6 @@ extractfile(struct entry *ep, int doremove)
 			(void) chflags(name, flags);
 #endif
 #endif
-		extractattr(name);
-		utimes(name, timep);
 		return (GOOD);
 	}
 	}
@@ -1216,8 +1216,8 @@ extractresourceufs(char *name)
 		(void) fchown(ofile, uid, gid);
 		(void) fchmod(ofile, mode);
 		(void) close(ofile);
-		(void) lsetflags(oFileRsrc, flags);
 		utimes(oFileRsrc, timep);
+		(void) lsetflags(oFileRsrc, flags);
 		return (GOOD);
 	}
 	/* NOTREACHED */

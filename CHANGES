@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.285 2007/02/22 20:12:50 stelian Exp $
+$Id: CHANGES,v 1.286 2007/02/22 20:16:23 stelian Exp $
 
 Changes between versions 0.4b41 and 0.4b42 (released xxxxxxxxxxxxxxx)
 =====================================================================
@@ -16,6 +16,9 @@ Changes between versions 0.4b41 and 0.4b42 (released xxxxxxxxxxxxxxx)
 	<tony_nelson@users.sourceforge.net> for the patch.
 	(see http://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=189845
 	for details)
+
+4.	Fix EA set failures when restoring immutable files. Thanks
+	to Andrew Kroeger for the patch.
 
 Changes between versions 0.4b40 and 0.4b41 (released January 2, 2006)
 =====================================================================

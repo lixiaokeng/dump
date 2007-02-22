@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dirs.c,v 1.33 2005/05/28 18:34:47 stelian Exp $";
+	"$Id: dirs.c,v 1.34 2007/02/22 20:16:23 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -710,6 +710,10 @@ setdirmodes(int flags)
 			cp = myname(ep);
 			(void) chown(cp, node.uid, node.gid);
 			(void) chmod(cp, node.mode);
+			utimes(cp, node.timep);
+			if (node.xattr)
+				xattr_extract(cp, xattr);
+			ep->e_flags &= ~NEW;
 			if (node.flags)
 #ifdef	__linux__
 				(void) lsetflags(cp, node.flags);
@@ -719,10 +723,6 @@ setdirmodes(int flags)
 				(void) chflags(cp, node.flags);
 #endif
 #endif
-			utimes(cp, node.timep);
-			if (node.xattr)
-				xattr_extract(cp, xattr);
-			ep->e_flags &= ~NEW;
 		}
 	}
 	if (ferror(mf))
