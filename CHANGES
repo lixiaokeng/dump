@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.288 2008/04/17 15:19:12 stelian Exp $
+$Id: CHANGES,v 1.289 2008/04/17 15:22:56 stelian Exp $
 
 Changes between versions 0.4b41 and 0.4b42 (released xxxxxxxxxxxxxxx)
 =====================================================================
@@ -27,6 +27,11 @@ Changes between versions 0.4b41 and 0.4b42 (released xxxxxxxxxxxxxxx)
 6.	Add the ability to link against libtinfo library if present,
 	instead of libtermcap or libncurses libraries. Thanks to
 	Adam Tkac <atkac@redhat.com> for the patch.
+
+7.	When comparing a backup, do not consider to be an error the fact
+	that we encounter files created while dump was in progress.
+	Thanks to Kenneth Porter <shiva@sewingwitch.com> for the bug
+	report.
 
 Changes between versions 0.4b40 and 0.4b41 (released January 2, 2006)
 =====================================================================

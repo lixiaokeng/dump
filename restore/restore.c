@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: restore.c,v 1.37 2005/07/07 09:16:08 stelian Exp $";
+	"$Id: restore.c,v 1.38 2008/04/17 15:22:56 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -716,7 +716,6 @@ compareleaves(void)
 		if (first != curfile.ino) {
 			fprintf(stderr, "expected next file %ld, got %lu\n",
 				(long)first, (unsigned long)curfile.ino);
-			do_compare_error;
 			skipfile();
 			goto next;
 		}
