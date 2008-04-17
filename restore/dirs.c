@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dirs.c,v 1.34 2007/02/22 20:16:23 stelian Exp $";
+	"$Id: dirs.c,v 1.35 2008/04/17 15:16:47 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -673,7 +673,7 @@ setdirmodes(int flags)
 		fprintf(stderr, "directory mode, owner, and times not set\n");
 		return;
 	}
-	mf = fopen(modefile, "r");
+	mf = FOPEN(modefile, "r");
 	if (mf == NULL) {
 		warn("fopen");
 		fprintf(stderr, "cannot open mode file %s\n", modefile);
@@ -747,7 +747,7 @@ comparedirmodes(void)
 		fprintf(stderr, "directory mode, owner, and times not set\n");
 		return;
 	}
-	mf = fopen(modefile, "r");
+	mf = FOPEN(modefile, "r");
 	if (mf == NULL) {
 		warn("fopen");
 		fprintf(stderr, "cannot open mode file %s\n", modefile);
