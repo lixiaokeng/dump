@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.290 2008/04/17 15:26:46 stelian Exp $
+$Id: CHANGES,v 1.291 2008/04/17 15:29:47 stelian Exp $
 
 Changes between versions 0.4b41 and 0.4b42 (released xxxxxxxxxxxxxxx)
 =====================================================================
@@ -36,6 +36,10 @@ Changes between versions 0.4b41 and 0.4b42 (released xxxxxxxxxxxxxxx)
 8.	Force '-a' to be the default value when running 'restore -C'.
 	Thanks to Kenneth Porter <shiva@sewingwitch.com> for the bug
 	report.
+
+9.	Cleanup the output of the 'cron_dump_to_disk' example.
+	Thanks to Aaron S. Hawley <ashawley@users.sourceforge.net> for
+	the patch.
 
 Changes between versions 0.4b40 and 0.4b41 (released January 2, 2006)
 =====================================================================
