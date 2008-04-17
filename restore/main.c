@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.51 2007/02/22 20:12:50 stelian Exp $";
+	"$Id: main.c,v 1.52 2008/04/17 15:26:46 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -461,6 +461,7 @@ main(int argc, char *argv[])
 		compare_ignore_not_found = 0;
 		compare_errors = 0;
 		Nflag = 1;
+		aflag = 1;
 		setup();
 		printf("filesys = %s\n", filesys);
 		if (STAT(filesys, &stbuf) < 0)
