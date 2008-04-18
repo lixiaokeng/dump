@@ -16,9 +16,11 @@ fi
 if [ "$1" = "full" ]; then
    DLEVEL="0"
    BTYPE="full"
+   BACKUP="Full"
 elif [ "$1" = "inc" ]; then
    DLEVEL="1"
    BTYPE="inc"
+   BACKUP="Incremental"
 else
    echo "Usage: $0 full|inc [nodumpdate]" 
    exit 1
@@ -42,16 +44,16 @@ DUMPFILESOWN="root.root"
 
 echo
 echo "#####################################################################"
-echo "Starting backup."
+echo "Starting ${BACKUP} backup."
 echo "#####################################################################"
 echo
 
 
 #
-#  Make full system backup
+#  Make system backup
 #
 
-echo "### Full System Dump Backup ###"
+echo "### ${BACKUP} System Dump Backup ###"
 echo "Using backup partition: $BACKUPPART"
 echo "Filesystems to dump: $FSTODUMP"
 
@@ -61,8 +63,8 @@ if ( mount $BACKUPPART -o remount,rw &> /dev/null ) then
 else
    echo "failure!"
    echo " There were problems remounting $BACKUPPART in read-write mode!"
-   echo "Aborting Full System Dump Backup."
-   echo "Aborted, done."
+   echo "Aborting ${BACKUP} System Dump Backup."
+   echo "Aborted."
    echo "-------------------------------------------------------------------------------"
    exit 1
 fi
@@ -90,13 +92,13 @@ if [ -d $BACKUPPART/$BACKUPDIR -a -w $BACKUPPART/$BACKUPDIR ]; then
       else
          echo "failure!"
          echo " There were problems remounting $BACKUPPART in read-only mode!"
-         echo "Aborting Full System Dump Backup."
-         echo "Aborted, done."
+         echo "Aborting ${BACKUP} System Dump Backup."
+         echo "Aborted."
          echo "-------------------------------------------------------------------------------"
          exit 1
       fi
-      echo "Aborting Full System Dump Backup."
-      echo "Aborted, done."
+      echo "Aborting ${BACKUP} System Dump Backup."
+      echo "Aborted."
       echo "-------------------------------------------------------------------------------"
       exit 1
    fi
@@ -151,13 +153,13 @@ else
    else
       echo "failure!"
       echo " There were problems remounting $BACKUPPART in read-only mode!"
-      echo "Aborting Full System Dump Backup."
-      echo "Aborted, done."
+      echo "Aborting ${BACKUP} System Dump Backup."
+      echo "Aborted."
       echo "-------------------------------------------------------------------------------"
       exit 1
    fi
-   echo "Aborting Full System Dump Backup."
-   echo "Aborted, done."
+   echo "Aborting ${BACKUP} System Dump Backup."
+   echo "Aborted."
    echo "-------------------------------------------------------------------------------"
    exit 1
 fi
@@ -168,12 +170,12 @@ if ( mount $BACKUPPART -o remount,ro &> /dev/null ) then
 else
    echo "failure!"
    echo " There were problems remounting $BACKUPPART in read-only mode!"
-   echo "Aborting Full System Dump Backup."
-   echo "Aborted, done."
+   echo "Aborting ${BACKUP} System Dump Backup."
+   echo "Aborted."
    echo "-------------------------------------------------------------------------------"
    exit 1
 fi
 
-echo "End of Full System Dump Backup."
+echo "End of ${BACKUP} System Dump Backup."
 echo "Done."
 echo "-------------------------------------------------------------------------------"
