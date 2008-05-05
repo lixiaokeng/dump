@@ -31,10 +31,10 @@ fi
 # Configuration Parameters
 #
 
-BACKUPPART="/backup"
-BACKUPDIR="current"
+BACKUPPART=${BACKUPPART:-"/backup"}
+BACKUPDIR=${BACKUPDIR:-"current"}
 DUMPLOGARCH="$BACKUPPART/backup.dump.log.gz"
-FSTODUMP="/ /var /home /mnt/hdb1 /usr"
+FSTODUMP=${FSTODUMP:-/ /var /home /mnt/hdb1 /usr}
 DUMPFILESMODE="0644"
 DUMPFILESOWN="root.root"
 
@@ -81,17 +81,17 @@ if [ -d $BACKUPPART/$BACKUPDIR -a -w $BACKUPPART/$BACKUPDIR ]; then
 
    if [ `expr $SAVAIL - $SREQ` -gt "0" ]; then
       echo "done."
-      echo " Available: $SAVAIL MB Required: $SREQ MB."
+      echo "Available: $SAVAIL MB Required: $SREQ MB."
    else
       echo "no enough space!"
-      echo " There is not enough space left in $BACKUPPART for the backup!"
-      echo " Available: $SAVAIL MB Required: $SREQ MB."
+      echo "There is not enough space left in $BACKUPPART for the backup!"
+      echo "Available: $SAVAIL MB Required: $SREQ MB."
       echo -n "Remounting backup partition read-only ... "
       if ( mount $BACKUPPART -o remount,ro &> /dev/null ) then
          echo "done."
       else
          echo "failure!"
-         echo " There were problems remounting $BACKUPPART in read-only mode!"
+         echo "There were problems remounting $BACKUPPART in read-only mode!"
          echo "Aborting ${BACKUP} System Dump Backup."
          echo "Aborted."
          echo "-------------------------------------------------------------------------------"
@@ -120,14 +120,14 @@ if [ -d $BACKUPPART/$BACKUPDIR -a -w $BACKUPPART/$BACKUPDIR ]; then
          FSNAME=`echo $FS|tr / _|cut -b 2-`
       fi
       sync
-      echo -n " Starting dump of $FSNAME ( $FS ) ... "
+      echo -n "Starting dump of $FSNAME ( $FS ) ... "
       if ( dump -$DLEVEL $UPDATEDDATE -z -M -s 27306 -f $BACKUPPART/$BACKUPDIR/$FSNAME.$BTYPE. $FS &> $BACKUPPART/$BACKUPDIR/$FSNAME.log ) then
          echo "done."
       else
          echo "problems!"
-         echo " There where problems with the dump of $FSNAME ( $FS )."
-         echo " Check logfile $BACKUPPART/$BACKUPDIR/$FSNAME.log for more info"
-         echo " Also check log archive file $DUMPLOGARCH."
+         echo "There where problems with the dump of $FSNAME ( $FS )."
+         echo "Check logfile $BACKUPPART/$BACKUPDIR/$FSNAME.log for more info"
+         echo "Also check log archive file $DUMPLOGARCH."
       fi
       cat $BACKUPPART/$BACKUPDIR/$FSNAME.log |gzip >> $DUMPLOGARCH
       echo "-------------------------------------------------------------------------------" |gzip >> $DUMPLOGARCH
@@ -145,14 +145,14 @@ if [ -d $BACKUPPART/$BACKUPDIR -a -w $BACKUPPART/$BACKUPDIR ]; then
 
 else
    echo "problems!"
-   echo " There are problems with the directory structure."
-   echo " Check dirs: $BACKUPPART/$BACKUPDIR"
+   echo "There are problems with the directory structure."
+   echo "Check dirs: $BACKUPPART/$BACKUPDIR"
    echo -n "Remounting backup partition read-only ... "
    if ( mount $BACKUPPART -o remount,ro &> /dev/null ) then
       echo "done."
    else
       echo "failure!"
-      echo " There were problems remounting $BACKUPPART in read-only mode!"
+      echo "There were problems remounting $BACKUPPART in read-only mode!"
       echo "Aborting ${BACKUP} System Dump Backup."
       echo "Aborted."
       echo "-------------------------------------------------------------------------------"
@@ -169,13 +169,13 @@ if ( mount $BACKUPPART -o remount,ro &> /dev/null ) then
    echo "done."
 else
    echo "failure!"
-   echo " There were problems remounting $BACKUPPART in read-only mode!"
+   echo "There were problems remounting $BACKUPPART in read-only mode!"
    echo "Aborting ${BACKUP} System Dump Backup."
    echo "Aborted."
    echo "-------------------------------------------------------------------------------"
    exit 1
 fi
 
-echo "End of ${BACKUP} System Dump Backup."
+echo "### End of ${BACKUP} System Dump Backup ###"
 echo "Done."
 echo "-------------------------------------------------------------------------------"

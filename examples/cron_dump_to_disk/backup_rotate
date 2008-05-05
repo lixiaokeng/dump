@@ -3,7 +3,7 @@
 # This script will redirect the backup directory to implement desired backup
 # schedules.
 #
-# Currently we will use just a seven day format were we just move a link
+# We will use just a seven day format where we just move a link
 # that represents the backup directory, to point to the day of the week.
 #
 
@@ -17,8 +17,8 @@ else
    REALDIR=`date +%A`
 fi
 
-BACKUPPART="/backup"
-BACKUPDIR="current"
+BACKUPPART=${BACKUPPART:-"/backup"}
+BACKUPDIR=${BACKUPDIR:-"current"}
 
 echo "### Start of Backup Rotation ###"
 echo "Using backup partition: $BACKUPPART"
