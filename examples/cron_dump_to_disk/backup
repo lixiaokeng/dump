@@ -60,6 +60,8 @@ echo "Filesystems to dump: $FSTODUMP"
 echo -n "Remounting backup partition read-write ... "
 if ( mount $BACKUPPART -o remount,rw &> /dev/null ) then
    echo "done."
+elif ( mount $BACKUPPART -o rw &> /dev/null ) then
+   echo "done."
 else
    echo "failure!"
    echo " There were problems remounting $BACKUPPART in read-write mode!"
@@ -74,20 +76,22 @@ if [ -d $BACKUPPART/$BACKUPDIR -a -w $BACKUPPART/$BACKUPDIR ]; then
    echo "done."
 
    echo -n "Checking backup partition for available space ... "
-   SREQ=`for i in $FSTODUMP;do dump -$DLEVEL -S $i 2> /dev/null;done|awk '{x=x+$1/1048576} END {printf "%6.0f\n", x}'`
-   SAVAILFREE=`df --block-size=1048576 |grep -Ew $BACKUPPART|awk '{printf "%6.0f\n", $4}'`
-   SAVAILDEL=`du -s --block-size=1048576 $BACKUPPART/$BACKUPDIR/. |awk '{printf "%6.0f\n", $1}'`
+   SREQ=`for i in $FSTODUMP; do dump -$DLEVEL -S $i 2> /dev/null; done | awk '{x=x+$1/1048576} END {printf "%6.0f\n", x}'`
+   SAVAILFREE=`df --block-size=1048576 | grep -Fe $BACKUPPART | awk '{printf "%6.0f\n", $4}'`
+   SAVAILDEL=`du -s --block-size=1048576 $BACKUPPART/$BACKUPDIR/. | awk '{printf "%6.0f\n", $1}'`
    SAVAIL=`expr $SAVAILFREE + $SAVAILDEL`
 
    if [ `expr $SAVAIL - $SREQ` -gt "0" ]; then
       echo "done."
       echo "Available: $SAVAIL MB Required: $SREQ MB."
    else
-      echo "no enough space!"
+      echo "not enough space!"
       echo "There is not enough space left in $BACKUPPART for the backup!"
       echo "Available: $SAVAIL MB Required: $SREQ MB."
       echo -n "Remounting backup partition read-only ... "
       if ( mount $BACKUPPART -o remount,ro &> /dev/null ) then
+         echo "done."
+      elif ( mount $BACKUPPART -o ro &> /dev/null ) then
          echo "done."
       else
          echo "failure!"
@@ -104,7 +108,7 @@ if [ -d $BACKUPPART/$BACKUPDIR -a -w $BACKUPPART/$BACKUPDIR ]; then
    fi
 
    echo -n "Deleting old files ... "
-   if [ `ls -la $BACKUPPART/$BACKUPDIR/|wc -l` -gt "3" ]; then
+   if [ `ls -la $BACKUPPART/$BACKUPDIR/ | wc -l` -gt "3" ]; then
       rm -f $BACKUPPART/$BACKUPDIR/* &> /dev/null
       echo "done."
    else
@@ -117,7 +121,7 @@ if [ -d $BACKUPPART/$BACKUPDIR -a -w $BACKUPPART/$BACKUPDIR ]; then
       if [ "$FS" = "/" ]; then
          FSNAME="root"
       else
-         FSNAME=`echo $FS|tr / _|cut -b 2-`
+         FSNAME=`echo $FS | tr / _ | cut -b 2-`
       fi
       sync
       echo -n "Starting dump of $FSNAME ( $FS ) ... "
@@ -125,8 +129,8 @@ if [ -d $BACKUPPART/$BACKUPDIR -a -w $BACKUPPART/$BACKUPDIR ]; then
          echo "done."
       else
          echo "problems!"
-         echo "There where problems with the dump of $FSNAME ( $FS )."
-         echo "Check logfile $BACKUPPART/$BACKUPDIR/$FSNAME.log for more info"
+         echo "There were problems with the dump of $FSNAME ( $FS )."
+         echo "Check log file at $BACKUPPART/$BACKUPDIR/$FSNAME.log.gz"
          echo "Also check log archive file $DUMPLOGARCH."
       fi
       cat $BACKUPPART/$BACKUPDIR/$FSNAME.log |gzip >> $DUMPLOGARCH
@@ -146,7 +150,7 @@ if [ -d $BACKUPPART/$BACKUPDIR -a -w $BACKUPPART/$BACKUPDIR ]; then
 else
    echo "problems!"
    echo "There are problems with the directory structure."
-   echo "Check dirs: $BACKUPPART/$BACKUPDIR"
+   echo "Check directory: $BACKUPPART/$BACKUPDIR"
    echo -n "Remounting backup partition read-only ... "
    if ( mount $BACKUPPART -o remount,ro &> /dev/null ) then
       echo "done."
