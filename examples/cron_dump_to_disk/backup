@@ -1,10 +1,20 @@
 #!/bin/bash
 #
 # This script will make a simple backup of the most critical partitions,
-# using the "dump" facility, into the backup partition. It will stop the
-# webserver, and recurse the sites directories making a tar mini-backup of
-# the database dirs. It will the restart the webserver, and start the
-# "dump" backup.
+# using the "dump" facility, into the backup partition.
+#
+# Run the following to make a complete backup:
+#
+# $ su -c "backup full"
+#
+# Run the following to make an incremental backup:
+#
+# $ su -c "backup inc"
+#
+# Add "nodumpdate" to run a backup but not effect the backup state
+# recorded in the file /var/lib/dumpdates and reported by dump -W:
+#
+# $ su -c "backup full nodumpdate"
 #
 
 if [ "$2" = "nodumpdate" ]; then
@@ -124,14 +134,26 @@ if [ -d $BACKUPPART/$BACKUPDIR -a -w $BACKUPPART/$BACKUPDIR ]; then
          FSNAME=`echo $FS | tr / _ | cut -b 2-`
       fi
       sync
+      TODAY="`date +%a%Y%m%d`"
       echo -n "Starting dump of $FSNAME ( $FS ) ... "
-      if ( dump -$DLEVEL $UPDATEDDATE -z -M -s 27306 -f $BACKUPPART/$BACKUPDIR/$FSNAME.$BTYPE. $FS &> $BACKUPPART/$BACKUPDIR/$FSNAME.log ) then
+      if ( dump -$DLEVEL $UPDATEDDATE -z -M -s 27306 -f $BACKUPPART/$BACKUPDIR/$FSNAME.$BTYPE. -Q $BACKUPPART/$BACKUPDIR/$FSNAME.$BTYPE.qfa -L ${TODAY}file $FS &> $BACKUPPART/$BACKUPDIR/$FSNAME.log ) then
          echo "done."
       else
          echo "problems!"
          echo "There were problems with the dump of $FSNAME ( $FS )."
          echo "Check log file at $BACKUPPART/$BACKUPDIR/$FSNAME.log.gz"
          echo "Also check log archive file $DUMPLOGARCH."
+      fi
+
+      echo -n "Verifying dump of $FSNAME ( $FS ) ... "
+      echo "-------------------------------------------------------------------------------" >> $BACKUPPART/$BACKUPDIR/$FSNAME.log
+      echo "Result of dump for $FSNAME ( $FS ):" >> $BACKUPPART/$BACKUPDIR/$FSNAME.log
+      if ( restore -C -M -f $BACKUPPART/$BACKUPDIR/$FSNAME.$BTYPE. >> $BACKUPPART/$BACKUPDIR/$FSNAME.log 2>&1 ) then
+         echo "done."
+      else
+         echo "problems!"
+         echo "There were problems verifying the dump of $FSNAME ( $FS )."
+         echo "Check log file $BACKUPPART/$BACKUPDIR/$FSNAME.log.gz for more info"
       fi
       cat $BACKUPPART/$BACKUPDIR/$FSNAME.log |gzip >> $DUMPLOGARCH
       echo "-------------------------------------------------------------------------------" |gzip >> $DUMPLOGARCH
@@ -183,3 +205,5 @@ fi
 echo "### End of ${BACKUP} System Dump Backup ###"
 echo "Done."
 echo "-------------------------------------------------------------------------------"
+
+## end of script
