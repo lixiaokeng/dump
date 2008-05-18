@@ -1,21 +1,54 @@
 #!/bin/bash
-#
-# This script will make a simple backup of the most critical partitions,
-# using the "dump" facility, into the backup partition.
-#
-# Run the following to make a complete backup:
-#
-# $ su -c "backup full"
-#
-# Run the following to make an incremental backup:
-#
-# $ su -c "backup inc"
-#
-# Add "nodumpdate" to run a backup but not effect the backup state
-# recorded in the file /var/lib/dumpdates and reported by dump -W:
-#
-# $ su -c "backup full nodumpdate"
-#
+
+###
+ # Copyright (C) 2001  Eugenio Diaz <getnito@yahoo.com>
+ #
+ # Redistribution and use in source and binary forms, with or without
+ # modification, are permitted provided that the following conditions
+ # are met:
+ #
+ # 1. Redistributions of source code must retain the above copyright
+ #    notice, this list of conditions and the following disclaimer.
+ # 2. Redistributions in binary form must reproduce the above
+ #    copyright notice, this list of conditions and the following
+ #    disclaimer in the documentation and/or other materials provided
+ #    with the distribution.
+ # 3. Neither the name of the University nor the names of its
+ #    contributors may be used to endorse or promote products derived
+ #    from this software without specific prior written permission.
+ #
+ # THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS''
+ # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ # TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ # PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS
+ # OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ # SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ # LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ # USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ # ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ # OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ # SUCH DAMAGE.
+ #
+ ##
+ #
+ # This script will make a simple backup of the most critical
+ # partitions, using the "dump" facility, into the backup partition.
+ #
+ # Run the following to make a complete backup:
+ #
+ # $ su -c "backup full"
+ #
+ # Run the following to make an incremental backup:
+ #
+ # $ su -c "backup inc"
+ #
+ # Add "nodumpdate" to run a backup but not effect the backup state
+ # recorded in the file /var/lib/dumpdates and reported by dump -W:
+ #
+ # $ su -c "backup full nodumpdate"
+ #
+ ##
 
 if [ "$2" = "nodumpdate" ]; then
    UPDATEDDATE=""
@@ -32,7 +65,7 @@ elif [ "$1" = "inc" ]; then
    BTYPE="inc"
    BACKUP="Incremental"
 else
-   echo "Usage: $0 full|inc [nodumpdate]" 
+   echo "Usage: $0 full|inc [nodumpdate]"
    exit 1
 fi
 
@@ -50,12 +83,12 @@ DUMPFILESOWN="root.root"
 
 #
 # Start
-# 
+#
 
 echo
-echo "#####################################################################"
-echo "Starting ${BACKUP} backup."
-echo "#####################################################################"
+echo "############################################################"
+echo "Starting ${BACKUP} backup"
+echo "############################################################"
 echo
 
 
@@ -74,24 +107,24 @@ elif ( mount $BACKUPPART -o rw &> /dev/null ) then
    echo "done."
 else
    echo "failure!"
-   echo " There were problems remounting $BACKUPPART in read-write mode!"
+   echo "There were problems remounting $BACKUPPART in read-write mode!"
    echo "Aborting ${BACKUP} System Dump Backup."
    echo "Aborted."
-   echo "-------------------------------------------------------------------------------"
+   echo "------------------------------------------------------------"
    exit 1
 fi
 
-echo -n "Checking backup partition for correct dir structure ... "
+echo -n "Checking directory structure on backup partition ... "
 if [ -d $BACKUPPART/$BACKUPDIR -a -w $BACKUPPART/$BACKUPDIR ]; then
    echo "done."
 
    echo -n "Checking backup partition for available space ... "
-   SREQ=`for i in $FSTODUMP; do dump -$DLEVEL -S $i 2> /dev/null; done | awk '{x=x+$1/1048576} END {printf "%6.0f\n", x}'`
-   SAVAILFREE=`df --block-size=1048576 | grep -Fe $BACKUPPART | awk '{printf "%6.0f\n", $4}'`
-   SAVAILDEL=`du -s --block-size=1048576 $BACKUPPART/$BACKUPDIR/. | awk '{printf "%6.0f\n", $1}'`
-   SAVAIL=`expr $SAVAILFREE + $SAVAILDEL`
+   SREQ=$(for i in $FSTODUMP; do dump -$DLEVEL -S $i 2> /dev/null; done | awk '{x=x+$1/1048576} END {printf "%6.0f\n", x}')
+   SAVAILFREE=$(df --block-size=1048576 | grep -Fe $BACKUPPART | awk '{printf "%6.0f\n", $4}')
+   SAVAILDEL=$(du -s --block-size=1048576 $BACKUPPART/$BACKUPDIR/. | awk '{printf "%6.0f\n", $1}')
+   SAVAIL=$(( $SAVAILFREE + $SAVAILDEL ))
 
-   if [ `expr $SAVAIL - $SREQ` -gt "0" ]; then
+   if [ "$(( $SAVAIL - $SREQ ))" -gt "0" ]; then
       echo "done."
       echo "Available: $SAVAIL MB Required: $SREQ MB."
    else
@@ -108,17 +141,17 @@ if [ -d $BACKUPPART/$BACKUPDIR -a -w $BACKUPPART/$BACKUPDIR ]; then
          echo "There were problems remounting $BACKUPPART in read-only mode!"
          echo "Aborting ${BACKUP} System Dump Backup."
          echo "Aborted."
-         echo "-------------------------------------------------------------------------------"
+         echo "------------------------------------------------------------"
          exit 1
       fi
       echo "Aborting ${BACKUP} System Dump Backup."
       echo "Aborted."
-      echo "-------------------------------------------------------------------------------"
+      echo "------------------------------------------------------------"
       exit 1
    fi
 
    echo -n "Deleting old files ... "
-   if [ `ls -la $BACKUPPART/$BACKUPDIR/ | wc -l` -gt "3" ]; then
+   if [ "$(ls -la $BACKUPPART/$BACKUPDIR/ | wc -l)" -gt "3" ]; then
       rm -f $BACKUPPART/$BACKUPDIR/* &> /dev/null
       echo "done."
    else
@@ -131,10 +164,10 @@ if [ -d $BACKUPPART/$BACKUPDIR -a -w $BACKUPPART/$BACKUPDIR ]; then
       if [ "$FS" = "/" ]; then
          FSNAME="root"
       else
-         FSNAME=`echo $FS | tr / _ | cut -b 2-`
+         FSNAME="$(echo $FS | tr / _ | cut -b 2-)"
       fi
       sync
-      TODAY="`date +%a%Y%m%d`"
+      TODAY="$(date +%a%Y%m%d)"
       echo -n "Starting dump of $FSNAME ( $FS ) ... "
       if ( dump -$DLEVEL $UPDATEDDATE -z -M -s 27306 -f $BACKUPPART/$BACKUPDIR/$FSNAME.$BTYPE. -Q $BACKUPPART/$BACKUPDIR/$FSNAME.$BTYPE.qfa -L ${TODAY}file $FS &> $BACKUPPART/$BACKUPDIR/$FSNAME.log ) then
          echo "done."
@@ -146,7 +179,7 @@ if [ -d $BACKUPPART/$BACKUPDIR -a -w $BACKUPPART/$BACKUPDIR ]; then
       fi
 
       echo -n "Verifying dump of $FSNAME ( $FS ) ... "
-      echo "-------------------------------------------------------------------------------" >> $BACKUPPART/$BACKUPDIR/$FSNAME.log
+      echo "------------------------------------------------------------" >> $BACKUPPART/$BACKUPDIR/$FSNAME.log
       echo "Result of dump for $FSNAME ( $FS ):" >> $BACKUPPART/$BACKUPDIR/$FSNAME.log
       if ( restore -C -M -f $BACKUPPART/$BACKUPDIR/$FSNAME.$BTYPE. >> $BACKUPPART/$BACKUPDIR/$FSNAME.log 2>&1 ) then
          echo "done."
@@ -155,8 +188,8 @@ if [ -d $BACKUPPART/$BACKUPDIR -a -w $BACKUPPART/$BACKUPDIR ]; then
          echo "There were problems verifying the dump of $FSNAME ( $FS )."
          echo "Check log file $BACKUPPART/$BACKUPDIR/$FSNAME.log.gz for more info"
       fi
-      cat $BACKUPPART/$BACKUPDIR/$FSNAME.log |gzip >> $DUMPLOGARCH
-      echo "-------------------------------------------------------------------------------" |gzip >> $DUMPLOGARCH
+      gzip < $BACKUPPART/$BACKUPDIR/$FSNAME.log >> $DUMPLOGARCH
+      echo "------------------------------------------------------------" | gzip >> $DUMPLOGARCH
    done
 
    echo -n "Setting ownership and permissions of dump files ... "
@@ -181,29 +214,29 @@ else
       echo "There were problems remounting $BACKUPPART in read-only mode!"
       echo "Aborting ${BACKUP} System Dump Backup."
       echo "Aborted."
-      echo "-------------------------------------------------------------------------------"
+      echo "------------------------------------------------------------"
       exit 1
    fi
    echo "Aborting ${BACKUP} System Dump Backup."
    echo "Aborted."
-   echo "-------------------------------------------------------------------------------"
+   echo "------------------------------------------------------------"
    exit 1
 fi
 
 echo -n "Remounting backup partition read-only ... "
-if ( mount $BACKUPPART -o remount,ro &> /dev/null ) then 
+if ( mount $BACKUPPART -o remount,ro &> /dev/null ) then
    echo "done."
 else
    echo "failure!"
    echo "There were problems remounting $BACKUPPART in read-only mode!"
    echo "Aborting ${BACKUP} System Dump Backup."
    echo "Aborted."
-   echo "-------------------------------------------------------------------------------"
+   echo "------------------------------------------------------------"
    exit 1
 fi
 
 echo "### End of ${BACKUP} System Dump Backup ###"
 echo "Done."
-echo "-------------------------------------------------------------------------------"
+echo "------------------------------------------------------------"
 
 ## end of script
