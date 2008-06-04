@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.89 2005/08/20 21:00:48 stelian Exp $";
+	"$Id: tape.c,v 1.90 2008/06/04 19:27:48 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1310,7 +1310,8 @@ doslave(int cmd,
 				if ((spclptr->c_magic == NFS_MAGIC) && 
 							(spclptr->c_type == TS_INODE) &&
 							(spclptr->c_date == gThisDumpDate) &&
-							!(spclptr->c_dinode.di_mode & S_IFDIR)
+							!(spclptr->c_dinode.di_mode & S_IFDIR) &&
+							!(spclptr->c_flags & DR_EXTATTRIBUTES)
 						) {
 					foundone = 1;
 					/* if (cntntrecs >= maxntrecs) {	 only write every maxntrecs amount of data */

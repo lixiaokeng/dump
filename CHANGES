@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.292 2008/05/05 09:25:27 stelian Exp $
+$Id: CHANGES,v 1.293 2008/06/04 19:27:47 stelian Exp $
 
 Changes between versions 0.4b41 and 0.4b42 (released xxxxxxxxxxxxxxx)
 =====================================================================
@@ -40,6 +40,13 @@ Changes between versions 0.4b41 and 0.4b42 (released xxxxxxxxxxxxxxx)
 9.	Many improvements to the 'cron_dump_to_disk' example.
 	Thanks to Aaron S. Hawley <ashawley@users.sourceforge.net> for
 	the patch.
+
+10.	Fix the QFA generation when extended attributes are backuped
+	along with the inodes. Prior to this fix, the entries for
+	some inodes may get corrupted (duplicated entries or incorrect
+	ones), making the QFA file unusable for repositionning in
+	restore. Many thanks to Kenneth Porter <shiva@sewingwitch.com>
+	for the bug report and the testing of the fix.
 
 Changes between versions 0.4b40 and 0.4b41 (released January 2, 2006)
 =====================================================================
