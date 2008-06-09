@@ -29,7 +29,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: xattr.c,v 1.4 2007/02/22 20:12:50 stelian Exp $";
+	"$Id: xattr.c,v 1.5 2008/06/09 13:25:40 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -547,6 +547,7 @@ xattr_walk(char *buffer, int (*xattr_cb)(char *, char *, int, int, void *), void
 	for (entry = FIRST_ENTRY(buffer); !IS_LAST_ENTRY(entry);
 	     entry = EXT2_XATTR_NEXT(entry)) {
 	     	char name[XATTR_MAXSIZE], value[XATTR_MAXSIZE];
+		int size;
 		int off;
 		int convertacl = 0;
 		int convertcon = 0;
@@ -583,20 +584,19 @@ xattr_walk(char *buffer, int (*xattr_cb)(char *, char *, int, int, void *), void
 		off = strlen(name);
 		memcpy(name + off, entry->e_name, entry->e_name_len);
 		name[off + entry->e_name_len] = '\0';
+		size = entry->e_value_size;
 
-		memcpy(value, buffer + VALUE_OFFSET(buffer, entry), entry->e_value_size);
+		memcpy(value, buffer + VALUE_OFFSET(buffer, entry), size);
 
 		if (convertacl) {
 			struct posix_acl *acl;
-			int size;
 
-			acl = ext3_acl_from_disk(value, entry->e_value_size);
+			acl = ext3_acl_from_disk(value, size);
 			if (!acl)
 				return FAIL;
 			size = posix_acl_to_xattr(acl, value, XATTR_MAXSIZE);
 			if (size < 0)
 				return FAIL;
-			entry->e_value_size = size;
 			free(acl);
 		}
 		
@@ -621,14 +621,14 @@ xattr_walk(char *buffer, int (*xattr_cb)(char *, char *, int, int, void *), void
 				return FAIL;
 			}
 
-			entry->e_value_size = strlen(con) + 1;
+			size = strlen(con) + 1;
 			value[0] = 0;
 			strncat(value, con, sizeof value);
 			freecon(con);
 		}
 #endif
 
-		if (xattr_cb(name, value, entry->e_value_size, convertcon, private) != GOOD)
+		if (xattr_cb(name, value, size, convertcon, private) != GOOD)
 			return FAIL;
 	}
 

@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.293 2008/06/04 19:27:47 stelian Exp $
+$Id: CHANGES,v 1.294 2008/06/09 13:25:40 stelian Exp $
 
 Changes between versions 0.4b41 and 0.4b42 (released xxxxxxxxxxxxxxx)
 =====================================================================
@@ -47,6 +47,8 @@ Changes between versions 0.4b41 and 0.4b42 (released xxxxxxxxxxxxxxx)
 	ones), making the QFA file unusable for repositionning in
 	restore. Many thanks to Kenneth Porter <shiva@sewingwitch.com>
 	for the bug report and the testing of the fix.
+
+11.	Fix EA restoration in debug mode (Sourceforge bug #1986216).
 
 Changes between versions 0.4b40 and 0.4b41 (released January 2, 2006)
 =====================================================================
