@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.294 2008/06/09 13:25:40 stelian Exp $
+$Id: CHANGES,v 1.295 2008/09/04 19:21:07 stelian Exp $
 
 Changes between versions 0.4b41 and 0.4b42 (released xxxxxxxxxxxxxxx)
 =====================================================================
@@ -49,6 +49,11 @@ Changes between versions 0.4b41 and 0.4b42 (released xxxxxxxxxxxxxxx)
 	for the bug report and the testing of the fix.
 
 11.	Fix EA restoration in debug mode (Sourceforge bug #1986216).
+
+12.	Stefan Auracher <star7@onlinehome.de> noticed that the Tower
+	of Hanoi backup strategy documented in the man page wasn't
+	actually based on the Tower of Hanoi algorithm. The man page
+	was updated accordingly.
 
 Changes between versions 0.4b40 and 0.4b41 (released January 2, 2006)
 =====================================================================
