@@ -25,7 +25,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: restore.8.in,v 1.34 2009/06/18 09:40:05 stelian Exp $
+.\"	$Id: restore.8.in,v 1.35 2009/06/18 09:42:12 stelian Exp $
 .\"
 .TH RESTORE 8 "version __VERSION__ of __DATE__" BSD "System management commands"
 .SH NAME
@@ -54,7 +54,6 @@ restore \- restore files or file systems from backups made with dump
 .B restore \-P 
 .I file
 [\fB\-acdhHklmMNuvVy\fR]
-[\fB\-A \fIfile\fR]
 [\fB\-b \fIblocksize\fR]
 [\fB\-f \fIfile\fR]
 [\fB\-F \fIscript\fR]

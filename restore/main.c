@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.52 2008/04/17 15:26:46 stelian Exp $";
+	"$Id: main.c,v 1.53 2009/06/18 09:42:12 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -728,7 +728,7 @@ usage(void)
 		"\t%s -i [-acd" tseflag "hH" kerbflag "lmMouvVy] [-A file] [-b blocksize] " tsEflag"\n"
 		"\t%s    [-f file] [-F script] " qfaflag "[-s fileno]\n"
 #ifdef USE_QFA
-		"\t%s -P file [-acdhH" kerbflag "lmMuvVy] [-A file] [-b blocksize]\n"
+		"\t%s -P file [-acdhH" kerbflag "lmMuvVy] [-b blocksize]\n"
 		"\t%s    [-f file] [-F script] [-s fileno] [-X filelist] [file ...]\n"
 #endif
 		"\t%s -r [-cd" tseflag "H" kerbflag "lMuvVy] [-b blocksize] " tsEflag"\n"
