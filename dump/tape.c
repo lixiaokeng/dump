@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.90 2008/06/04 19:27:48 stelian Exp $";
+	"$Id: tape.c,v 1.91 2009/06/18 09:50:54 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -186,6 +186,41 @@ static sigjmp_buf jmpbuf;	/* where to jump to if we are ready when the */
 #ifdef USE_QFA
 static int gtperr = 0;
 #endif
+
+/*
+ * Determine if we can use Linux' clone system call.  If so, call it
+ * with the CLONE_IO flag so that all processes will share the same I/O
+ * context, allowing the I/O schedulers to make better scheduling decisions.
+ */
+#ifdef __linux__
+/* first, pull in the header files that define sys_clone and CLONE_IO */
+#include <syscall.h>
+#define _GNU_SOURCE
+#include <sched.h>
+#include <unistd.h>
+#undef _GNU_SOURCE
+
+/* If either is not present, fall back on the fork behaviour */
+#if ! defined(SYS_clone) || ! defined (CLONE_IO)
+#define fork_clone_io fork
+#else /* SYS_clone */
+/* CLONE_IO is available, determine which version of sys_clone to use */
+#include <linux/version.h>
+/*
+ * Kernel 2.5.49 introduced two extra parameters to the clone system call.
+ * Neither is useful in our case, so this is easy to handle.
+ */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,49)
+/* clone_flags, child_stack, parent_tidptr, child_tidptr */
+#define CLONE_ARGS SIGCHLD|CLONE_IO, 0, NULL, NULL
+#else
+#define CLONE_ARGS SIGCHLD|CLONE_IO, 0
+#endif /* LINUX_VERSION_CODE */
+pid_t fork_clone_io(void);
+#endif /* SYS_clone */
+#else /* __linux__ not defined */
+#define fork_clone_io fork
+#endif /* __linux__ */
 
 int
 alloctape(void)
@@ -755,6 +790,16 @@ rollforward(void)
 #endif
 }
 
+#ifdef __linux__
+#if defined(SYS_clone) && defined(CLONE_IO)
+pid_t
+fork_clone_io(void)
+{
+	return syscall(SYS_clone, CLONE_ARGS);
+}
+#endif
+#endif
+
 /*
  * We implement taking and restoring checkpoints on the tape level.
  * When each tape is opened, a new process is created by forking; this
@@ -801,7 +846,7 @@ restore_check_point:
 	/*
 	 *	All signals are inherited...
 	 */
-	childpid = fork();
+	childpid = fork_clone_io();
 	if (childpid < 0) {
 		msg("Context save fork fails in parent %d\n", parentpid);
 		Exit(X_ABORT);
@@ -1017,7 +1062,7 @@ enslave(void)
 		}
 
 		if (socketpair(AF_UNIX, SOCK_STREAM, 0, cmd) < 0 ||
-		    (slaves[i].pid = fork()) < 0)
+		    (slaves[i].pid = fork_clone_io()) < 0)
 			quit("too many slaves, %d (recompile smaller): %s\n",
 			    i, strerror(errno));
 

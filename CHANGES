@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.299 2009/06/18 09:42:11 stelian Exp $
+$Id: CHANGES,v 1.300 2009/06/18 09:50:54 stelian Exp $
 
 Changes between versions 0.4b41 and 0.4b42 (released xxxxxxxxxxxxxxx)
 =====================================================================
@@ -69,6 +69,12 @@ Changes between versions 0.4b41 and 0.4b42 (released xxxxxxxxxxxxxxx)
 16.	Fixed restore man page and program usage which incorrectly stated
 	that -P and -A were both allowed in the same invocation (RedHat
 	bug #490627). Thanks to Adam Tkac <atkac@redhat.com> for the patch.
+
+17.	Use sys_clone under Linux to share I/O contexts between dump
+	processes, thus drastically increasing the performance of dump
+	under CFQ (which is the default I/O scheduler used in a number of
+	distributions). Thanks to Jeff Moyer <jmoyer@redhat.com> for the
+	patch.
 
 Changes between versions 0.4b40 and 0.4b41 (released January 2, 2006)
 =====================================================================
