@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.297 2009/06/18 09:36:52 stelian Exp $
+$Id: CHANGES,v 1.298 2009/06/18 09:40:03 stelian Exp $
 
 Changes between versions 0.4b41 and 0.4b42 (released xxxxxxxxxxxxxxx)
 =====================================================================
@@ -62,6 +62,9 @@ Changes between versions 0.4b41 and 0.4b42 (released xxxxxxxxxxxxxxx)
 14.	Fix the dump man page to reflect the fact that the default
 	dump level is 0 not 9 (RedHat bug #356121). Thanks to Adam Tkac
 	<atkac@redhat.com> for the patch.
+
+15.	Fixed a few spelling errors in the man pages (RedHat bug #489853).
+	Thanks to Adam Tkac <atkac@redhat.com> for the patch.
 
 Changes between versions 0.4b40 and 0.4b41 (released January 2, 2006)
 =====================================================================

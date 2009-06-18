@@ -26,7 +26,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.61 2009/06/18 09:36:52 stelian Exp $
+.\"	$Id: dump.8.in,v 1.62 2009/06/18 09:40:03 stelian Exp $
 .\"
 .TH DUMP 8 "version __VERSION__ of __DATE__" BSD "System management commands"
 .SH NAME
@@ -435,7 +435,7 @@ option causes
 .B dump
 to print out, for all file systems in
 .I __DUMPDATES__ ,
-and regognized file systems in
+and recognized file systems in
 .I /etc/mtab
 and
 .IR /etc/fstab .
@@ -605,7 +605,7 @@ correctly with either pre-0.4b34 or 0.4b34 and later versions of
 .B dump
 provided that the machine on which
 .B dump
-is run did not change timezones (which should be a fairly rare occurence).
+is run did not change timezones (which should be a fairly rare occurrence).
 .SH EXIT STATUS
 .B Dump
 exits with zero status on success. Startup errors are indicated with an exit
@@ -622,7 +622,7 @@ from dump can be parsed to look for lines that contain the text 'read error'.
 When a read error occurs,
 .B dump
 prints out the corresponding physical disk block and sector number and the
-ext2/3 logical block number. It doesn't print out the corresponing file name or
+ext2/3 logical block number. It doesn't print out the corresponding file name or
 even the inode number. The user has to use 
 .BR debugfs (8),
 commands
@@ -659,7 +659,7 @@ The
 backup suite was ported to Linux's Second Extended File System by Remy Card 
 <card@Linux.EU.Org>. He maintained the initial versions of 
 .B dump
-(up and including 0.4b4, released in january 1997).
+(up and including 0.4b4, released in January 1997).
 .PP
 Starting with 0.4b5, the new maintainer is Stelian Pop <stelian@popies.net>.
 .SH AVAILABILITY

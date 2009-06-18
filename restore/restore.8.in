@@ -25,7 +25,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: restore.8.in,v 1.33 2005/07/07 09:16:08 stelian Exp $
+.\"	$Id: restore.8.in,v 1.34 2009/06/18 09:40:05 stelian Exp $
 .\"
 .TH RESTORE 8 "version __VERSION__ of __DATE__" BSD "System management commands"
 .SH NAME
@@ -378,7 +378,7 @@ prevents hierarchical restoration of complete subtrees from the dump.
 .BI \-H " hash_size"
 Use a hashtable having the specified number of entries for storing the
 directories entries instead of a linked list. This hashtable will
-considerably speed up inode lookups (visible especialy in interactive
+considerably speed up inode lookups (visible especially in interactive
 mode when adding/removing files from the restore list), but at the
 price of much more memory usage. The default value is 1, meaning no
 hashtable is used.
@@ -752,7 +752,7 @@ The
 backup suite was ported to Linux's Second Extended File System by Remy Card 
 <card@Linux.EU.Org>. He maintained the initial versions of 
 .B dump
-(up and including 0.4b4, released in january 1997).
+(up and including 0.4b4, released in January 1997).
 .PP
 Starting with 0.4b5, the new maintainer is Stelian Pop <stelian@popies.net>.
 .SH AVAILABILITY
