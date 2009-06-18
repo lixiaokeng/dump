@@ -1,7 +1,7 @@
-$Id: CHANGES,v 1.301 2009/06/18 10:00:38 stelian Exp $
+$Id: CHANGES,v 1.302 2009/06/18 10:17:58 stelian Exp $
 
-Changes between versions 0.4b41 and 0.4b42 (released xxxxxxxxxxxxxxx)
-=====================================================================
+Changes between versions 0.4b41 and 0.4b42 (released June 18, 2009)
+===================================================================
 
 1.	Fix printout of the 'Connection to' message in dump/restore.
 	Thanks to Dale Wiles <dwiles@users.sourceforge.net> for the
