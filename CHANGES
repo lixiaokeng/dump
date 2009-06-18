@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.300 2009/06/18 09:50:54 stelian Exp $
+$Id: CHANGES,v 1.301 2009/06/18 10:00:38 stelian Exp $
 
 Changes between versions 0.4b41 and 0.4b42 (released xxxxxxxxxxxxxxx)
 =====================================================================
@@ -75,6 +75,10 @@ Changes between versions 0.4b41 and 0.4b42 (released xxxxxxxxxxxxxxx)
 	under CFQ (which is the default I/O scheduler used in a number of
 	distributions). Thanks to Jeff Moyer <jmoyer@redhat.com> for the
 	patch.
+
+18.	Add (preliminary) ext4 support - thanks to libext2fs which does
+	all the job for us. Thanks to Gertjan van Wingerde
+	<gwingerde@gmail.com> for the patch.
 
 Changes between versions 0.4b40 and 0.4b41 (released January 2, 2006)
 =====================================================================

@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.66 2005/05/02 15:10:46 stelian Exp $";
+	"$Id: traverse.c,v 1.67 2009/06/18 10:00:38 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -777,8 +777,6 @@ dumponeblock(UNUSED(ext2_filsys fs), blk_t *blocknr, e2_blkcnt_t blockcnt,
 	struct block_context *p;
 	e2_blkcnt_t i;
 
-	if (blockcnt < NDADDR)
-		return 0;
 	p = (struct block_context *)private;
 	for (i = p->next_block; i < blockcnt; i++) {
 		p->buf[p->cnt++] = 0;
@@ -986,19 +984,6 @@ dumpino(struct dinode *dp, dump_ino_t ino, int metaonly)
 		msg("Warning: undefined file type 0%o\n", dp->di_mode & IFMT);
 		return;
 	}
-	if (i_size > (u_quad_t)NDADDR * sblock->fs_bsize)
-#ifdef	__linux__
-		cnt = NDADDR * EXT2_FRAGS_PER_BLOCK(fs->super);
-#else
-		cnt = NDADDR * sblock->fs_frag;
-#endif
-	else
-		cnt = howmany(i_size, sblock->fs_fsize);
-	blksout(&dp->di_db[0], cnt, ino);
-	if ((quad_t) (size = i_size - NDADDR * sblock->fs_bsize) <= 0) {
-		dump_xattr(ino, dp);
-		return;
-	}
 #ifdef	__linux__
 	bc.max = NINDIR(sblock) * EXT2_FRAGS_PER_BLOCK(fs->super);
 	bc.buf = (int *)malloc (bc.max * sizeof (int));
@@ -1006,7 +991,7 @@ dumpino(struct dinode *dp, dump_ino_t ino, int metaonly)
 	bc.ino = ino;
 	bc.next_block = NDADDR;
 
-	ext2fs_block_iterate2(fs, (ext2_ino_t)ino, 0, NULL, dumponeblock, (void *)&bc);
+	ext2fs_block_iterate2(fs, (ext2_ino_t)ino, BLOCK_FLAG_DATA_ONLY, NULL, dumponeblock, (void *)&bc);
 	/* deal with holes at the end of the inode */
 	if (i_size > ((u_quad_t)bc.next_block) * sblock->fs_fsize) {
 		remaining = i_size - ((u_quad_t)bc.next_block) * sblock->fs_fsize;
@@ -1024,6 +1009,15 @@ dumpino(struct dinode *dp, dump_ino_t ino, int metaonly)
 	free(bc.buf);
 	dump_xattr(ino, dp);
 #else
+	if (i_size > (u_quad_t)NDADDR * sblock->fs_bsize)
+		cnt = NDADDR * sblock->fs_frag;
+	else
+		cnt = howmany(i_size, sblock->fs_fsize);
+	blksout(&dp->di_db[0], cnt, ino);
+	if ((quad_t) (size = i_size - NDADDR * sblock->fs_bsize) <= 0) {
+		dump_xattr(ino, dp);
+		return;
+	}
 	for (ind_level = 0; ind_level < NIADDR; ind_level++) {
 		dmpindir(ino, dp->di_ib[ind_level], ind_level, &size);
 		if (size <= 0)
