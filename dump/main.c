@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.94 2004/07/05 15:12:45 stelian Exp $";
+	"$Id: main.c,v 1.95 2009/06/18 09:35:14 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -239,6 +239,8 @@ main(int argc, char *argv[])
 		quit("TP_BSIZE must be a multiple of DEV_BSIZE\n");
 	memset(&lastlevel, 0, NUM_STR_SIZE);
 	memset(&level, 0, NUM_STR_SIZE);
+	/* Default dump level is zero. */
+	level[0] = '0';
 
 	if (argc < 2)
 		usage();
