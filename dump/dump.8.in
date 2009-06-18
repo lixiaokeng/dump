@@ -26,7 +26,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.\"	$Id: dump.8.in,v 1.60 2008/09/04 19:21:07 stelian Exp $
+.\"	$Id: dump.8.in,v 1.61 2009/06/18 09:36:52 stelian Exp $
 .\"
 .TH DUMP 8 "version __VERSION__ of __DATE__" BSD "System management commands"
 .SH NAME
@@ -95,7 +95,7 @@ option below). A level number above 0, incremental backup, tells
 .B dump
 to
 copy all files new or modified since the last dump of a lower level. The 
-default level is 9. Historically only levels 0 to 9 were usable in
+default level is 0. Historically only levels 0 to 9 were usable in
 dump, this version is able to understand any integer as a dump level.
 .TP
 .BI \-a 
