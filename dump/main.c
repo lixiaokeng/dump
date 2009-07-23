@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.95 2009/06/18 09:35:14 stelian Exp $";
+	"$Id: main.c,v 1.96 2009/07/23 09:34:07 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -543,7 +543,7 @@ main(int argc, char *argv[])
 	}
 
 	(void)setuid(getuid()); /* rmthost() is the only reason to be setuid */
-	if (Apath && (Afile = open(Apath, O_WRONLY|O_CREAT|O_TRUNC,
+	if (Apath && (Afile = OPEN(Apath, O_WRONLY|O_CREAT|O_TRUNC,
 				   S_IRUSR | S_IWUSR | S_IRGRP |
 				   S_IWGRP | S_IROTH | S_IWOTH)) < 0) {
 		msg("Cannot open %s for writing: %s\n",
