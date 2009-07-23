@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.92 2007/02/22 20:16:23 stelian Exp $";
+	"$Id: tape.c,v 1.93 2009/07/23 14:10:39 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -474,7 +474,6 @@ getvol(long nextvol)
 	if (nextvol == 1) {
 		tapesread = 0;
 		gettingfile = 0;
-		tpblksread = 0;
 		blksread = 0;
 	}
 	if (pipein) {
@@ -1333,7 +1332,11 @@ loop:
 			break;
 		}
 	}
-	if (gethead(&spcl) == GOOD && size > 0) {
+	while (gethead(&spcl) != GOOD) {
+		fprintf(stderr, "Incorrect block for %s at %ld blocks\n",
+			curfile.name, (long)blksread);
+	}
+	if (size > 0) {
 		if (spcl.c_type == TS_ADDR)
 			goto loop;
 		Dprintf(stdout,
