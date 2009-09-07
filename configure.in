@@ -468,7 +468,7 @@ AC_CHECK_HEADER(blkid/blkid.h, [blkid_h=yes], [blkid_h=no], [-])
 AC_CHECK_LIB(blkid, blkid_get_devname, [blkid_lib=yes], [blkid_lib=no], [-luuid])
 if test "$blkid_h" = yes -a "$blkid_lib" = yes; then
 	AC_DEFINE([HAVE_BLKID],1,[Define this if you have the blkid library.])
-	BLKID="-lblkid -luuid -ldevmapper -lselinux -lsepol"
+	BLKID="-lblkid -luuid"
 fi
 AC_SUBST(BLKID)
 
