@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.305 2009/09/07 08:51:04 stelian Exp $
+$Id: CHANGES,v 1.306 2009/12/03 12:46:29 stelian Exp $
 
 Changes between versions 0.4b42 and 0.4b43 (released ?????????????)
 ===================================================================
@@ -17,6 +17,9 @@ Changes between versions 0.4b42 and 0.4b43 (released ?????????????)
 	they shouldn't be needed if selinux is not enabled in dump
 	(this also fixes a build failure when selinux libraries are
 	not installed).
+
+4.	Fix restoration of extended attributes of fifos and device nodes.
+	Thanks to Igor Zhbanov <izh1979@gmail.com> for the bug report.
 
 Changes between versions 0.4b41 and 0.4b42 (released June 18, 2009)
 ===================================================================

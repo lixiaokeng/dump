@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.93 2009/07/23 14:10:39 stelian Exp $";
+	"$Id: tape.c,v 1.94 2009/12/03 12:46:30 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -892,16 +892,14 @@ extractfile(struct entry *ep, int doremove)
 
 	case IFIFO:
 		Vprintf(stdout, "extract fifo %s\n", name);
-		if (Nflag) {
-			skipfile();
+		skipfile();
+		if (Nflag)
 			return (GOOD);
-		}
 		if (! (spcl.c_flags & DR_METAONLY)) {
 			if (uflag && !Nflag)
 				(void)unlink(name);
 			if (mkfifo(name, mode) < 0) {
 				warn("%s: cannot create fifo", name);
-				skipfile();
 				return (FAIL);
 			}
 		}
@@ -922,22 +920,19 @@ extractfile(struct entry *ep, int doremove)
 			(void) chflags(name, flags);
 #endif
 #endif
-		skipfile();
 		return (GOOD);
 
 	case IFCHR:
 	case IFBLK:
 		Vprintf(stdout, "extract special file %s\n", name);
-		if (Nflag) {
-			skipfile();
+		skipfile();
+		if (Nflag)
 			return (GOOD);
-		}
 		if (! (spcl.c_flags & DR_METAONLY)) {
 			if (uflag)
 				(void)unlink(name);
 			if (mknod(name, mode, (int)curfile.dip->di_rdev) < 0) {
 				warn("%s: cannot create special file", name);
-				skipfile();
 				return (FAIL);
 			}
 		}
@@ -964,7 +959,6 @@ extractfile(struct entry *ep, int doremove)
 			}
 #endif
 #endif
-		skipfile();
 		return (GOOD);
 
 	case IFREG:
