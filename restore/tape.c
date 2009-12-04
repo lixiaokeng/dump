@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.94 2009/12/03 12:46:30 stelian Exp $";
+	"$Id: tape.c,v 1.95 2009/12/04 16:29:18 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -891,6 +891,10 @@ extractfile(struct entry *ep, int doremove)
 	}
 
 	case IFIFO:
+	{
+		uid_t luid = curfile.dip->di_uid;
+		gid_t lgid = curfile.dip->di_gid;
+
 		Vprintf(stdout, "extract fifo %s\n", name);
 		skipfile();
 		if (Nflag)
@@ -903,7 +907,7 @@ extractfile(struct entry *ep, int doremove)
 				return (FAIL);
 			}
 		}
-		(void) chown(name, curfile.dip->di_uid, curfile.dip->di_gid);
+		(void) chown(name, luid, lgid);
 		(void) chmod(name, mode);
 		extractattr(name);
 		utimes(name, timep);
@@ -921,9 +925,14 @@ extractfile(struct entry *ep, int doremove)
 #endif
 #endif
 		return (GOOD);
-
+	}
 	case IFCHR:
 	case IFBLK:
+	{
+		uid_t luid = curfile.dip->di_uid;
+		gid_t lgid = curfile.dip->di_gid;
+		int lrdev = (int)curfile.dip->di_rdev;
+
 		Vprintf(stdout, "extract special file %s\n", name);
 		skipfile();
 		if (Nflag)
@@ -931,12 +940,12 @@ extractfile(struct entry *ep, int doremove)
 		if (! (spcl.c_flags & DR_METAONLY)) {
 			if (uflag)
 				(void)unlink(name);
-			if (mknod(name, mode, (int)curfile.dip->di_rdev) < 0) {
+			if (mknod(name, mode, lrdev) < 0) {
 				warn("%s: cannot create special file", name);
 				return (FAIL);
 			}
 		}
-		(void) chown(name, curfile.dip->di_uid, curfile.dip->di_gid);
+		(void) chown(name, luid, lgid);
 		(void) chmod(name, mode);
 		extractattr(name);
 		utimes(name, timep);
@@ -960,7 +969,7 @@ extractfile(struct entry *ep, int doremove)
 #endif
 #endif
 		return (GOOD);
-
+	}
 	case IFREG:
 	{
 		uid_t luid = curfile.dip->di_uid;
