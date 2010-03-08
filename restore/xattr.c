@@ -29,7 +29,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: xattr.c,v 1.5 2008/06/09 13:25:40 stelian Exp $";
+	"$Id: xattr.c,v 1.6 2010/03/08 10:40:52 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -423,7 +423,10 @@ xattr_cb_set(char *name, char *value, int valuelen, int isSELinux, void *private
 {
 	char *path = (char *)private;
 	int err;
-	
+
+	if (Nflag)
+		return GOOD;
+
 	isSELinux;
 #ifdef TRANSSELINUX			/*GAN6May06 SELinux MLS */
 	if (isSELinux)
