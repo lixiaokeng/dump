@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.307 2010/03/08 10:40:52 stelian Exp $
+$Id: CHANGES,v 1.308 2010/03/08 10:57:24 stelian Exp $
 
 Changes between versions 0.4b42 and 0.4b43 (released ?????????????)
 ===================================================================
@@ -24,6 +24,8 @@ Changes between versions 0.4b42 and 0.4b43 (released ?????????????)
 5.	Don't attempt to set extended attributes on files that were not
 	extracted in 'restore -N' mode. Thanks to Jan Görig
 	<jgorig@users.sourceforge.net> for the patch.
+
+6.	Make the dump man page explicit about ext4 support.
 
 Changes between versions 0.4b41 and 0.4b42 (released June 18, 2009)
 ===================================================================
