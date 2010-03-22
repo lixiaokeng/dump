@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.95 2009/12/04 16:29:18 stelian Exp $";
+	"$Id: tape.c,v 1.96 2010/03/22 15:40:55 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -1238,11 +1238,19 @@ readxattr(char *buffer)
 		skipfile();
 		return (FAIL);
 	}
-	
+
 	memset(xattrbuf, 0, XATTR_MAXSIZE);
 	xattrlen = 0;
 
+	/*
+	 * ugly hack: cope with invalid spcl.c_addr[] records written by
+	 * old versions of dump.
+	 */
+	readmapflag = 1;
+
 	getfile(xtrxattr, xtrnull);
+
+	readmapflag = 0;
 
 	memcpy(buffer, xattrbuf, XATTR_MAXSIZE);
 

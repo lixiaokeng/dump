@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.67 2009/06/18 10:00:38 stelian Exp $";
+	"$Id: traverse.c,v 1.68 2010/03/22 15:40:55 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -833,6 +833,8 @@ dump_xattr(dump_ino_t ino, struct dinode *dp) {
 			spcl.c_flags |= DR_EXTATTRIBUTES;
 			spcl.c_extattributes = EXT_XATTR;
 			spcl.c_count = howmany(EXT2_INODE_SIZE(fs->super), TP_BSIZE);
+			for (i = 0; i < spcl.c_count; i++)
+				spcl.c_addr[i] = 1;
 			writeheader(ino);
 			for (i = 0, cp = xattr; i < spcl.c_count; i++, cp += TP_BSIZE)
 				writerec(cp, 0);
