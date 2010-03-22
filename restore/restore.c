@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: restore.c,v 1.38 2008/04/17 15:22:56 stelian Exp $";
+	"$Id: restore.c,v 1.39 2010/03/22 16:08:10 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -566,6 +566,9 @@ keyval(int key)
 
 /*
  * Find unreferenced link names.
+ *
+ * This also takes care of directories which were missed by removeoldleaves(),
+ * because their inode has been reused, but excluded from the dump.
  */
 void
 findunreflinks(void)
@@ -583,12 +586,19 @@ findunreflinks(void)
 			continue;
 		for (j = 0; j < dirhash_size; j++) {
 			for (np = ep->e_entries[j]; np != NULL; np = np->e_sibling) {
-				if (np->e_flags == 0) {
+				if ((np->e_flags & ~TMPNAME) == 0) {
 					Dprintf(stdout,
 					    "%s: remove unreferenced name\n",
 					    myname(np));
-					removeleaf(np);
-					freeentry(np);
+					if (np->e_type == LEAF) {
+						removeleaf(np);
+						freeentry(np);
+					} else {
+						np->e_flags |= TMPNAME;
+						deleteino(np->e_ino);
+						np->e_next = removelist;
+						removelist = np;
+					}
 				}
 			}
 		}
@@ -609,6 +619,17 @@ findunreflinks(void)
 					    myname(np));
 					removeleaf(np);
 					freeentry(np);
+				} else {
+					if ((np->e_flags & ~TMPNAME) != 0)
+						badentry(np, "unreferenced with flags");
+
+					if (np->e_flags == 0) {
+						Dprintf(stdout,
+						    "%s: remove unreferenced name\n",
+						    myname(np));
+						np->e_next = ep->e_next;
+						ep->e_next = np;
+					}
 				}
 			}
 		}

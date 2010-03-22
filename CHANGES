@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.309 2010/03/22 15:40:55 stelian Exp $
+$Id: CHANGES,v 1.310 2010/03/22 16:08:10 stelian Exp $
 
 Changes between versions 0.4b42 and 0.4b43 (released ?????????????)
 ===================================================================
@@ -33,6 +33,11 @@ Changes between versions 0.4b42 and 0.4b43 (released ?????????????)
 	to John Austin <jaustin1@users.sourceforge.net> for reporting
 	the bug.
 
+8.	Fix some issues when restoring a dump which was generated using
+	exclusion patterns (either via -e or via the nodump attribute)
+	(see the Debian bug #574667 for details. Thanks to Frédéric
+	Brière <fbriere@fbriere.net> for the bug report and the associated
+	patch.
 
 Changes between versions 0.4b41 and 0.4b42 (released June 18, 2009)
 ===================================================================
