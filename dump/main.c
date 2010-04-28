@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.96 2009/07/23 09:34:07 stelian Exp $";
+	"$Id: main.c,v 1.97 2010/04/28 09:29:50 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -123,7 +123,7 @@ int	fifoout;	/* true => output to fifo */
 dump_ino_t curino;	/* current inumber; used globally */
 int	newtape;	/* new tape flag */
 int	density;	/* density in 0.1" units */
-long	tapesize;	/* estimated tape size, blocks */
+long long tapesize;	/* estimated tape size, blocks */
 long	tsize;		/* tape size in 0.1" units */
 long	asize;		/* number of 0.1" units written on current tape */
 int	etapes;		/* estimated number of tapes */
@@ -869,12 +869,12 @@ main(int argc, char *argv[])
 
 	if (pipeout || unlimited) {
 		tapesize += 1 + ntrec;	/* 1 map header + trailer blocks */
-		msg("estimated %ld blocks.\n", tapesize);
+		msg("estimated %lld blocks.\n", tapesize);
 	} else {
 		double fetapes;
 
 		if (blocksperfiles) {
-			long tapesize_left;
+			long long tapesize_left;
 
 			tapesize_left = tapesize;
 			fetapes = 0;
@@ -921,7 +921,7 @@ main(int argc, char *argv[])
 		tapesize += (etapes - 1) *
 			(howmany(mapsize * sizeof(char), TP_BSIZE) + 1);
 		tapesize += etapes + ntrec;	/* headers + trailer blks */
-		msg("estimated %ld blocks on %3.2f tape(s).\n",
+		msg("estimated %lld blocks on %3.2f tape(s).\n",
 		    tapesize, fetapes);
 	}
 

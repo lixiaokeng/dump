@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: dump.h,v 1.49 2004/07/01 09:14:49 stelian Exp $
+ *	$Id: dump.h,v 1.50 2010/04/28 09:29:50 stelian Exp $
  */
 
 /*-
@@ -91,7 +91,7 @@ extern int	fifoout;	/* true => output to fifo */
 extern dump_ino_t curino;	/* current inumber; used globally */
 extern int	newtape;	/* new tape flag */
 extern int	density;	/* density in 0.1" units */
-extern long	tapesize;	/* estimated tape size, blocks */
+extern long long tapesize;	/* estimated tape size, blocks */
 extern long	tsize;		/* tape size in 0.1" units */
 extern long	asize;		/* number of 0.1" units written on current tape */
 extern int	etapes;		/* estimated number of tapes */
@@ -148,12 +148,12 @@ time_t	unctime __P((const char *str));
 /* mapping rouintes */
 struct	dinode;
 long	blockest __P((struct dinode const *dp));
-int	mapfiles __P((dump_ino_t maxino, long *tapesize));
+int	mapfiles __P((dump_ino_t maxino, long long *tapesize));
 #ifdef	__linux__
-int	mapfilesfromdir __P((dump_ino_t maxino, long *tapesize, char *directory));
-int	maponefile __P((dump_ino_t maxino, long *tapesize, char *directory));
+int	mapfilesfromdir __P((dump_ino_t maxino, long long *tapesize, char *directory));
+int	maponefile __P((dump_ino_t maxino, long long *tapesize, char *directory));
 #endif
-int	mapdirs __P((dump_ino_t maxino, long *tapesize));
+int	mapdirs __P((dump_ino_t maxino, long long *tapesize));
 
 /* file dumping routines */
 void	blksout __P((blk_t *blkp, int frags, dump_ino_t ino));

@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.68 2010/03/22 15:40:55 stelian Exp $";
+	"$Id: traverse.c,v 1.69 2010/04/28 09:29:50 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -99,7 +99,7 @@ static	int dirindir __P((dump_ino_t ino, daddr_t blkno, int level, long *size));
 static	void dmpindir __P((dump_ino_t ino, daddr_t blk, int level, fsizeT *size));
 static	int searchdir __P((dump_ino_t ino, daddr_t blkno, long size, long filesize));
 #endif
-static	void mapfileino __P((dump_ino_t ino, struct dinode const *dp, long *tapesize, int *dirskipped));
+static	void mapfileino __P((dump_ino_t ino, struct dinode const *dp, long long *tapesize, int *dirskipped));
 static void dump_xattr __P((dump_ino_t ino, struct dinode *dp));
 
 #ifdef HAVE_EXT2_JOURNAL_INUM
@@ -260,7 +260,7 @@ blockest(struct dinode const *dp)
  * copy of the given inode, or be NULL (in which case it is fetched.)
  */
 static void
-mapfileino(dump_ino_t ino, struct dinode const *dp, long *tapesize, int *dirskipped)
+mapfileino(dump_ino_t ino, struct dinode const *dp, long long *tapesize, int *dirskipped)
 {
 	int mode;
 
@@ -315,7 +315,7 @@ mapfileino(dump_ino_t ino, struct dinode const *dp, long *tapesize, int *dirskip
  */
 #ifdef __linux__
 int
-mapfiles(UNUSED(dump_ino_t maxino), long *tapesize)
+mapfiles(UNUSED(dump_ino_t maxino), long long *tapesize)
 {
 	ext2_ino_t ino;
 	int anydirskipped = 0;
@@ -359,7 +359,7 @@ mapfiles(UNUSED(dump_ino_t maxino), long *tapesize)
 }
 #else
 int
-mapfiles(dump_ino_t maxino, long *tapesize)
+mapfiles(dump_ino_t maxino, long long *tapesize)
 {
 	dump_ino_t ino;
 	int anydirskipped = 0;
@@ -378,7 +378,7 @@ mapfiles(dump_ino_t maxino, long *tapesize)
 
 #ifdef __linux__
 int
-maponefile(UNUSED(dump_ino_t maxino), long *tapesize, char *directory)
+maponefile(UNUSED(dump_ino_t maxino), long long *tapesize, char *directory)
 {
 	errcode_t retval;
 	ext2_ino_t dir_ino;
@@ -426,7 +426,7 @@ maponefile(UNUSED(dump_ino_t maxino), long *tapesize, char *directory)
 
 #ifdef	__linux__
 struct mapfile_context {
-	long *tapesize;
+	long long *tapesize;
 	int *anydirskipped;
 };
 
@@ -468,7 +468,7 @@ mapfilesindir(struct ext2_dir_entry *dirent, UNUSED(int offset),
  * the directories in the filesystem.
  */
 int
-mapfilesfromdir(UNUSED(dump_ino_t maxino), long *tapesize, char *directory)
+mapfilesfromdir(UNUSED(dump_ino_t maxino), long long *tapesize, char *directory)
 {
 	errcode_t retval;
 	struct mapfile_context mfc;
@@ -530,7 +530,7 @@ mapfilesfromdir(UNUSED(dump_ino_t maxino), long *tapesize, char *directory)
 struct mapdirs_context {
 	int *ret;
 	int nodump;
-	long *tapesize;
+	long long *tapesize;
 };
 #endif
 
@@ -547,7 +547,7 @@ struct mapdirs_context {
  * pass using this algorithm.
  */
 int
-mapdirs(dump_ino_t maxino, long *tapesize)
+mapdirs(dump_ino_t maxino, long long *tapesize)
 {
 	struct	dinode *dp;
 	int isdir;
@@ -672,7 +672,7 @@ searchdir(struct ext2_dir_entry *dp, UNUSED(int offset),
 {
 	struct mapdirs_context *mdc;
 	int *ret;
-	long *tapesize;
+	long long *tapesize;
 	struct dinode *ip;
 
 	mdc = (struct mapdirs_context *)private;
