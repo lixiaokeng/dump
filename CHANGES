@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.312 2010/06/10 12:01:30 stelian Exp $
+$Id: CHANGES,v 1.313 2010/06/10 12:17:35 stelian Exp $
 
 Changes between versions 0.4b42 and 0.4b43 (released ?????????????)
 ===================================================================
@@ -45,7 +45,14 @@ Changes between versions 0.4b42 and 0.4b43 (released ?????????????)
 
 10.	Improve level 1 dump speed by rearanging the "mapdirs" code.
 	Thanks to Andreas Kies <andikies@t-online.de> for finding the
-	bottleneck and sending a patch.
+	bottleneck and sending a patch (Sourceforge bug #2998119).
+
+11.	Use only ctime in order to compare newness instead of both
+	ctime and mtime. This should both speed up dumping time and
+	correct some side-effect bugs (like dumping files with an mtime
+	in the future in every incremental backup). Thanks to
+	Kieran Clancy <codebeard@users.sourceforge.net> for reporting the
+	bug (Sourceforge bug #2999207).
 
 Changes between versions 0.4b41 and 0.4b42 (released June 18, 2009)
 ===================================================================

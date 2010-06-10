@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.70 2010/06/10 12:01:30 stelian Exp $";
+	"$Id: traverse.c,v 1.71 2010/06/10 12:17:35 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -240,7 +240,7 @@ blockest(struct dinode const *dp)
 #define MSINCE(dp, t) \
 	((dp)->di_mtime >= (t))
 #define	CHANGEDSINCE(dp, t) \
-	(CSINCE(dp, t) || MSINCE(dp, t))
+	CSINCE(dp, t)
 
 /* The NODUMP_FLAG macro tests if a file has the nodump flag. */
 #ifdef UF_NODUMP
