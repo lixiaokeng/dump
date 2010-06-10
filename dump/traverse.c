@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.69 2010/04/28 09:29:50 stelian Exp $";
+	"$Id: traverse.c,v 1.70 2010/06/10 12:01:30 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -574,9 +574,10 @@ mapdirs(dump_ino_t maxino, long long *tapesize)
 		 * in usedinomap, but we have to go through it anyway 
 	 	 * to propagate the nodump attribute.
 		 */
+		if ((isdir & 1) == 0)
+			continue;
 		nodump = (TSTINO(ino, usedinomap) == 0);
-		if ((isdir & 1) == 0 ||
-		    (TSTINO(ino, dumpinomap) && nodump == 0))
+		if (TSTINO(ino, dumpinomap) && nodump == 0)
 			continue;
 		dp = getino(ino);
 #ifdef	__linux__
