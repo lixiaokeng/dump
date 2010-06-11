@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.97 2010/06/11 09:51:59 stelian Exp $";
+	"$Id: tape.c,v 1.98 2010/06/11 09:57:31 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -61,6 +61,8 @@ static const char rcsid[] =
 #include <sys/file.h>
 #include <sys/mtio.h>
 #include <sys/stat.h>
+#include <sys/socket.h>
+#include <sys/un.h>
 
 #ifdef	__linux__
 #include <sys/time.h>
@@ -847,19 +849,28 @@ extractfile(struct entry *ep, int doremove)
 		uid_t luid = curfile.dip->di_uid;
 		gid_t lgid = curfile.dip->di_gid;
 
-		Vprintf(stdout, "extract socket as dummy file %s\n", name);
+		Vprintf(stdout, "extract socket %s\n", name);
 		skipfile();
 		if (Nflag)
 			return (GOOD);
 		if (! (spcl.c_flags & DR_METAONLY)) {
-			int fd;
+			int sk;
+			struct sockaddr_un addr;
+
 			if (uflag)
 				(void)unlink(name);
-			if ((fd = open(name, O_WRONLY | O_CREAT | O_TRUNC, 0666)) < 0) {
-				warn("%s: cannot create dummy file", name);
+
+			if ((sk = socket(AF_UNIX, SOCK_DGRAM, 0)) < 0) {
+				warn("%s: cannot create socket", name);
 				return (FAIL);
 			}
-			close(fd);
+			addr.sun_family = AF_UNIX;
+			strcpy(addr.sun_path, name);
+			if (bind(sk, (const struct sockaddr *)&addr, sizeof(struct sockaddr_un)) < 0) {
+				warn("%s: cannot create socket", name);
+				return (FAIL);
+			}
+			close(sk);
 		}
 		(void) chown(name, luid, lgid);
 		(void) chmod(name, mode);
