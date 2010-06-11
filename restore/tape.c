@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.98 2010/06/11 09:57:31 stelian Exp $";
+	"$Id: tape.c,v 1.99 2010/06/11 11:19:17 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -522,7 +522,8 @@ again:
 		do	{
 			fprintf(stderr, "Specify next volume # (none if no more volumes): ");
 			(void) fflush(stderr);
-			(void) fgets(buf, TP_BSIZE, terminal);
+			if (!fgets(buf, TP_BSIZE, terminal))
+				break;
 		} while (!feof(terminal) && buf[0] == '\n');
 		if (feof(terminal))
 			exit(1);
@@ -585,7 +586,8 @@ again:
 		fprintf(stderr, "otherwise enter tape name (default: %s) ", magtape);
 #endif
 		(void) fflush(stderr);
-		(void) fgets(buf, TP_BSIZE, terminal);
+		if (fgets(buf, TP_BSIZE, terminal))
+			exit(1);
 		if (feof(terminal))
 			exit(1);
 		if (!strcmp(buf, "none\n")) {
@@ -872,8 +874,10 @@ extractfile(struct entry *ep, int doremove)
 			}
 			close(sk);
 		}
-		(void) chown(name, luid, lgid);
-		(void) chmod(name, mode);
+		if (chown(name, luid, lgid) < 0)
+			warn("%s: chown", name);
+		if (chmod(name, mode) < 0)
+			warn("%s: chmod", name);
 		extractattr(name);
 		utimes(name, timep);
 		if (flags)
@@ -929,7 +933,8 @@ extractfile(struct entry *ep, int doremove)
 			skipfile();
 
 #ifdef HAVE_LCHOWN
-		(void) lchown(name, luid, lgid);
+		if (lchown(name, luid, lgid) < 0)
+			warn("%s: lchown", name);
 #endif
 		extractattr(name);
 		return (GOOD);
@@ -952,8 +957,10 @@ extractfile(struct entry *ep, int doremove)
 				return (FAIL);
 			}
 		}
-		(void) chown(name, luid, lgid);
-		(void) chmod(name, mode);
+		if (chown(name, luid, lgid) < 0)
+			warn("%s: chown", name);
+		if (chmod(name, mode) < 0)
+			warn("%s: chmod", name);
 		extractattr(name);
 		utimes(name, timep);
 		if (flags)
@@ -990,8 +997,10 @@ extractfile(struct entry *ep, int doremove)
 				return (FAIL);
 			}
 		}
-		(void) chown(name, luid, lgid);
-		(void) chmod(name, mode);
+		if (chown(name, luid, lgid) < 0)
+			warn("%s: chown", name);
+		if (chmod(name, mode) < 0)
+			warn("%s: chmod", name);
 		extractattr(name);
 		utimes(name, timep);
 		if (flags)
@@ -1039,8 +1048,10 @@ extractfile(struct entry *ep, int doremove)
 		}
 		else
 			skipfile();
-		(void) chown(name, luid, lgid);
-		(void) chmod(name, mode);
+		if (chown(name, luid, lgid) < 0)
+			warn("%s: chown", name);
+		if (chmod(name, mode) < 0)
+			warn("%s: chmod", name);
 		extractattr(name);
 		utimes(name, timep);
 		if (flags)
@@ -1260,8 +1271,10 @@ extractresourceufs(char *name)
 		/* and add the resource data from tape */
 		getfile(xtrfile, xtrskip);
 
-		(void) fchown(ofile, uid, gid);
-		(void) fchmod(ofile, mode);
+		if (fchown(ofile, uid, gid) < 0)
+			warn("%s: fchown", name);
+		if (fchmod(ofile, mode) < 0)
+			warn("%s: fchmod", name);
 		(void) close(ofile);
 		utimes(oFileRsrc, timep);
 		(void) lsetflags(oFileRsrc, flags);
@@ -1413,7 +1426,8 @@ loop:
 		last_write_was_hole = 1;
 	}
 	if (last_write_was_hole) {
-		FTRUNCATE(ofile, origsize);
+		if (FTRUNCATE(ofile, origsize) < 0)
+			warn("%s: ftruncate", curfile.name);
 	}
 	if (!readingmaps) 
 		findinode(&spcl);
@@ -2407,8 +2421,8 @@ decompress_tapebuf(struct tapebuf *tpbin, int readsize)
 	}
 	if (reason) {
 		if (lengtherr)
-			fprintf(stderr, "%s compressed block: %d expected: %u\n",
-				lengtherr, readsize, tpbin->length + PREFIXSIZE);
+			fprintf(stderr, "%s compressed block: %d expected: %lu\n",
+				lengtherr, readsize, (unsigned long)tpbin->length + PREFIXSIZE);
 		fprintf(stderr, "decompression error, block %ld: %s\n",
 			tpblksread+1, reason);
 		if (!cresult)

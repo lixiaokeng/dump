@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: symtab.c,v 1.27 2005/07/07 09:16:08 stelian Exp $";
+	"$Id: symtab.c,v 1.28 2010/06/11 11:19:17 stelian Exp $";
 #endif /* not lint */
 
 /*
@@ -568,8 +568,8 @@ dumpsymtable(char *filename, long checkpt)
 	for (i = WINO; i <= maxino; i++) {
 		for (ep = lookupino(i); ep != NULL; ep = ep->e_links) {
 			ep->e_index = mynum++;
-			(void) fwrite(ep->e_name, sizeof(char),
-			       (int)allocsize(ep->e_namlen), fd);
+			(void) fwrite(ep->e_name, (int)allocsize(ep->e_namlen),
+				      sizeof(char), fd);
 		}
 	}
 	/*
@@ -587,7 +587,7 @@ dumpsymtable(char *filename, long checkpt)
 					if (temphash[j])
 						temphash[j] = (struct entry *)ep->e_entries[j]->e_index;
 				}
-				fwrite(temphash, dirhash_size, sizeof(struct entry *), fd);
+				fwrite(temphash, sizeof(struct entry *), dirhash_size, fd);
 			}
 		}
 	}

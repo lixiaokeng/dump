@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dumprmt.c,v 1.29 2006/03/13 10:33:44 stelian Exp $";
+	"$Id: dumprmt.c,v 1.30 2010/06/11 11:19:17 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -342,8 +342,10 @@ rmtwrite(const char *buf, size_t count)
 	char line[30];
 
 	(void)snprintf(line, sizeof (line), "W%ld\n", (long)count);
-	write(tormtape, line, strlen(line));
-	write(tormtape, buf, count);
+	if (write(tormtape, line, strlen(line)) != strlen(line))
+		return -1;
+	if (write(tormtape, buf, count) != count)
+		return -1;
 	return (rmtreply("write"));
 }
 

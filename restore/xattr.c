@@ -29,7 +29,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: xattr.c,v 1.6 2010/03/08 10:40:52 stelian Exp $";
+	"$Id: xattr.c,v 1.7 2010/06/11 11:19:17 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -91,9 +91,11 @@ struct ext2_xattr_entry {
 #define EXT2_XATTR_PAD_BITS		2
 #define EXT2_XATTR_PAD		(1<<EXT2_XATTR_PAD_BITS)
 #define EXT2_XATTR_ROUND		(EXT2_XATTR_PAD-1)
+#ifndef EXT2_XATTR_LEN
 #define EXT2_XATTR_LEN(name_len) \
 	(((name_len) + EXT2_XATTR_ROUND + \
 	sizeof(struct ext2_xattr_entry)) & ~EXT2_XATTR_ROUND)
+#endif
 #define EXT2_XATTR_NEXT(entry) \
 	( (struct ext2_xattr_entry *)( \
 	  (char *)(entry) + EXT2_XATTR_LEN((entry)->e_name_len)) )
@@ -306,7 +308,7 @@ posix_acl_to_xattr(const struct posix_acl *acl, void *buffer, size_t size) {
 	if (!buffer)
 		return real_size;
 	if (real_size > size) {
-		fprintf(stderr, "ACL: not enough space to convert (%d %d)\n", real_size, size);
+		fprintf(stderr, "ACL: not enough space to convert (%d %d)\n", real_size, (int)size);
 		return -1;
 	}
 
@@ -463,7 +465,7 @@ xattr_cb_compare(char *name, char *value, int valuelen, int isSELinux, void *pri
 		
 		valuesz = strlen(con) + 1;
 		valuef[0] = 0;
-		strncat(valuef, con, sizeof valuef);
+		strncat(valuef, con, sizeof(valuef) - 1);
 		freecon(con);
 	}
 	else {
@@ -615,7 +617,7 @@ xattr_walk(char *buffer, int (*xattr_cb)(char *, char *, int, int, void *), void
 			if (!transselinuxarg)
 				err = security_canonicalize_context(value, &con);
 			else {
-				strncat(value, transselinuxarg, sizeof value);
+				strncat(value, transselinuxarg, sizeof(value) - 1);
 				err = security_canonicalize_context_raw(value, &con);
 			}
 			
@@ -626,7 +628,7 @@ xattr_walk(char *buffer, int (*xattr_cb)(char *, char *, int, int, void *), void
 
 			size = strlen(con) + 1;
 			value[0] = 0;
-			strncat(value, con, sizeof value);
+			strncat(value, con, sizeof(value) - 1);
 			freecon(con);
 		}
 #endif

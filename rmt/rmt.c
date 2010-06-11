@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: rmt.c,v 1.28 2003/11/22 16:52:16 stelian Exp $";
+	"$Id: rmt.c,v 1.29 2010/06/11 11:19:18 stelian Exp $";
 #endif /* not linux */
 
 /*
@@ -310,8 +310,10 @@ top:
 		cp = record;
 #endif
 		(void)sprintf(resp, "A%lld\n", (long long)rval);
-		(void)write(1, resp, strlen(resp));
-		(void)write(1, cp, rval);
+		if (write(1, resp, strlen(resp)) != strlen(resp))
+			goto ioerror;
+		if (write(1, cp, rval) != rval)
+			goto ioerror;
 		block += n >> 10;
 		goto top;
 
@@ -475,13 +477,17 @@ top:
 			mtget.mt_fileno = swaplong(mtget.mt_fileno);
 			mtget.mt_blkno = swaplong(mtget.mt_blkno);
 			(void)sprintf(resp, "A%lld\n", (long long)rval);
-			(void)write(1, resp, strlen(resp));
-			(void)write(1, (char *)&mtget, sizeof (mtget));
+			if (write(1, resp, strlen(resp)) != strlen(resp))
+				goto ioerror;
+			if (write(1, (char *)&mtget, sizeof (mtget)) != sizeof(mtget))
+				goto ioerror;
 		  } else {
 		  	rval = sizeof (mtget);
 			(void)sprintf(resp, "A%lld\n", (long long)rval);
-			(void)write(1, resp, strlen(resp));
-			(void)write(1, (char *)&mtget, sizeof (mtget));
+			if (write(1, resp, strlen(resp)) != strlen(resp))
+				goto ioerror;
+			if (write(1, (char *)&mtget, sizeof (mtget)) != sizeof(mtget))
+				goto ioerror;
 		  }
 		  goto top;
 		}
@@ -546,7 +552,8 @@ top:
 respond:
 	DEBUG1("rmtd: A %lld\n", (long long)rval);
 	(void)sprintf(resp, "A%lld\n", (long long)rval);
-	(void)write(1, resp, strlen(resp));
+	if (write(1, resp, strlen(resp)) != strlen(resp))
+		goto ioerror;
 	goto top;
 ioerror:
 	error(errno);
@@ -593,7 +600,8 @@ error(int num)
 
 	DEBUG2("rmtd: E %d (%s)\n", num, strerror(num));
 	(void)snprintf(resp, sizeof(resp), "E%d\n%s\n", num, strerror(num));
-	(void)write(1, resp, strlen(resp));
+	if (write(1, resp, strlen(resp)) != strlen(resp))
+		DEBUG("rmtd: write error\n");
 }
 
 static unsigned long

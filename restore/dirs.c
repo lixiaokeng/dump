@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: dirs.c,v 1.35 2008/04/17 15:16:47 stelian Exp $";
+	"$Id: dirs.c,v 1.36 2010/06/11 11:19:17 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -495,7 +495,7 @@ putent(struct direct *dp)
 	if (dirloc + dp->d_reclen > DIRBLKSIZ) {
 		((struct direct *)(dirbuf + prev))->d_reclen =
 		    DIRBLKSIZ - prev;
-		if ( fwrite(dirbuf, 1, DIRBLKSIZ, df) != DIRBLKSIZ )
+		if ( fwrite(dirbuf, DIRBLKSIZ, 1, df) != 1 )
 			err(1,"cannot write to file %s", dirfile);
 		dirloc = 0;
 	}
@@ -683,13 +683,17 @@ setdirmodes(int flags)
 	clearerr(mf);
 	for (;;) {
 		char xattr[XATTR_MAXSIZE];
-		(void) fread((char *)&node, 1, sizeof(struct modeinfo), mf);
-		if (feof(mf))
-			break;
-		if (node.xattr) {
-			(void) fread(xattr, 1, XATTR_MAXSIZE, mf);
+		if (fread((char *)&node, sizeof(struct modeinfo), 1, mf) != 1) {
 			if (feof(mf))
 				break;
+			err(1, "fread");
+		}
+		if (node.xattr) {
+			if (fread(xattr, XATTR_MAXSIZE, 1, mf) != 1) {
+				if (feof(mf))
+					break;
+				err(1, "fread");
+			}
 		}
 		ep = lookupino(node.ino);
 		if (command == 'i' || command == 'x') {
@@ -708,7 +712,8 @@ setdirmodes(int flags)
 			panic("cannot find directory inode %d\n", node.ino);
 		} else {
 			cp = myname(ep);
-			(void) chown(cp, node.uid, node.gid);
+			if (chown(cp, node.uid, node.gid) < 0)
+				warn("chown");
 			(void) chmod(cp, node.mode);
 			utimes(cp, node.timep);
 			if (node.xattr)
@@ -757,13 +762,17 @@ comparedirmodes(void)
 	clearerr(mf);
 	for (;;) {
 		char xattr[XATTR_MAXSIZE];
-		(void) fread((char *)&node, 1, sizeof(struct modeinfo), mf);
-		if (feof(mf))
-			break;
-		if (node.xattr) {
-			(void) fread(xattr, 1, XATTR_MAXSIZE, mf);
+		if (fread((char *)&node, sizeof(struct modeinfo), 1, mf) != 1) {
 			if (feof(mf))
 				break;
+			err(1, "fread");
+		}
+		if (node.xattr) {
+			if (fread(xattr, XATTR_MAXSIZE, 1, mf) != 1) {
+				if (feof(mf))
+					break;
+				err(1, "fread");
+			}
 		}
 		ep = lookupino(node.ino);
 		if (ep == NULL) {
@@ -928,10 +937,10 @@ savemodeinfo(dump_ino_t ino, struct dinode *dip, char *xattr) {
 	node.uid = dip->di_uid;
 	node.gid = dip->di_gid;
 	node.xattr = xattr ? 1 : 0;
-	if ( fwrite((char *)&node, 1, sizeof(struct modeinfo), mf) != sizeof(struct modeinfo) )
+	if ( fwrite((char *)&node, sizeof(struct modeinfo), 1, mf) != 1 )
 		err(1,"cannot write to file %s", modefile);
 	if (xattr)
-		if ( fwrite(xattr, 1, XATTR_MAXSIZE, mf) != XATTR_MAXSIZE)
+		if ( fwrite(xattr, XATTR_MAXSIZE, 1, mf) != 1 )
 			err(1,"cannot write to file %s", modefile);
 }
 

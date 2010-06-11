@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: utilities.c,v 1.29 2005/07/07 09:16:08 stelian Exp $";
+	"$Id: utilities.c,v 1.30 2010/06/11 11:19:17 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -488,7 +488,8 @@ panic(fmt, va_alist)
 		return;
 	if (reply("abort") == GOOD) {
 		if (reply("dump core") == GOOD) {
-			fchdir(wdfd);
+			if (fchdir(wdfd) < 0)
+				warn("fchdir");
 			abort();
 		}
 		exit(1);

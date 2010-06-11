@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <syslog.h>
+#include <string.h>
 #include <strings.h>
 #include <errno.h>
 #include <openssl/evp.h>
@@ -51,7 +52,10 @@ cipher(char *buf, int buflen, int do_encrypt)
 			return NULL;
 		}
 		buf[0] = '\0';
-		fgets(buf, sizeof buf, fp);
+		if (!fgets(buf, sizeof buf, fp)) {
+			syslog(LOG_ERR, "Error reading key file %s: %m", keyfile);
+			return NULL;
+		}
 		fclose(fp);
 		i = strlen(buf);
 		if ((i > 0) &&
