@@ -1,6 +1,6 @@
-$Id: CHANGES,v 1.316 2010/06/11 11:19:17 stelian Exp $
+$Id: CHANGES,v 1.317 2010/06/11 11:29:27 stelian Exp $
 
-Changes between versions 0.4b42 and 0.4b43 (released ?????????????)
+Changes between versions 0.4b42 and 0.4b43 (released June 11, 2010)
 ===================================================================
 
 1.	Fix a bug in dump making impossible to handle large toc files
