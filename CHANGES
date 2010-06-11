@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.313 2010/06/10 12:17:35 stelian Exp $
+$Id: CHANGES,v 1.314 2010/06/11 09:51:59 stelian Exp $
 
 Changes between versions 0.4b42 and 0.4b43 (released ?????????????)
 ===================================================================
@@ -53,6 +53,12 @@ Changes between versions 0.4b42 and 0.4b43 (released ?????????????)
 	in the future in every incremental backup). Thanks to
 	Kieran Clancy <codebeard@users.sourceforge.net> for reporting the
 	bug (Sourceforge bug #2999207).
+
+12.	Extract dumped UNIX sockets as dummy files, instead of not
+	restoring them at all. This will correct some warnings during
+	the restoration of incrementals, if the inodes previously occupied
+	by sockets gets reused by other files. See Sourceforge bug
+	#3007216 for details.
 
 Changes between versions 0.4b41 and 0.4b42 (released June 18, 2009)
 ===================================================================

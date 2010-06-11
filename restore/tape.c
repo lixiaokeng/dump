@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.96 2010/03/22 15:40:55 stelian Exp $";
+	"$Id: tape.c,v 1.97 2010/06/11 09:51:59 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -843,9 +843,43 @@ extractfile(struct entry *ep, int doremove)
 		return (FAIL);
 
 	case IFSOCK:
-		Vprintf(stdout, "skipped socket %s\n", name);
+	{
+		uid_t luid = curfile.dip->di_uid;
+		gid_t lgid = curfile.dip->di_gid;
+
+		Vprintf(stdout, "extract socket as dummy file %s\n", name);
 		skipfile();
+		if (Nflag)
+			return (GOOD);
+		if (! (spcl.c_flags & DR_METAONLY)) {
+			int fd;
+			if (uflag)
+				(void)unlink(name);
+			if ((fd = open(name, O_WRONLY | O_CREAT | O_TRUNC, 0666)) < 0) {
+				warn("%s: cannot create dummy file", name);
+				return (FAIL);
+			}
+			close(fd);
+		}
+		(void) chown(name, luid, lgid);
+		(void) chmod(name, mode);
+		extractattr(name);
+		utimes(name, timep);
+		if (flags)
+#ifdef	__linux__
+			(void) lsetflags(name, flags);
+#else
+#ifdef sunos
+			{
+			warn("%s: cannot call chflags", name);
+			/* (void) chflags(name, flags); */
+			}
+#else
+			(void) chflags(name, flags);
+#endif
+#endif
 		return (GOOD);
+	}
 
 	case IFDIR:
 	{
