@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: optr.c,v 1.40 2006/03/14 11:09:51 stelian Exp $";
+	"$Id: optr.c,v 1.41 2010/12/06 14:13:59 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -78,7 +78,7 @@ int	datesort __P((const void *, const void *));
 static	void sendmes __P((const char *, const char *));
 
 /* List of filesystem types that we can dump (same ext2 on-disk format) */
-static char *fstypes[] = { "ext2", "ext3", "InterMezzo", NULL };
+static char *fstypes[] = { "ext2", "ext3", "ext4", "InterMezzo", NULL };
 
 /*
  *	Query the operator; This previously-fascist piece of code
