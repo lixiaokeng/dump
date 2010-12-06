@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.99 2010/06/11 11:19:17 stelian Exp $";
+	"$Id: tape.c,v 1.100 2010/12/06 14:26:51 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -3336,11 +3336,14 @@ ReReadInodeFromTape(dump_ino_t theino)
 		cntloop++;
 		gethead(&spcl);
 	} while (!(spcl.c_inumber == theino && spcl.c_type == TS_INODE && spcl.c_date == dumpdate));
+
+	tpblksread = spcl.c_tapea + spcl.c_volume;
 #ifdef DEBUG_QFA
 	fprintf(stderr, "DEBUG: %ld reads\n", cntloop);
 	fprintf(stderr, "DEBUG: bufsize %ld\n", bufsize);
 	fprintf(stderr, "DEBUG: ntrec %ld\n", ntrec);
-	fprintf(stderr, "DEBUG: %ld reads\n", cntloop);
+	fprintf(stderr, "DEBUG: tapea %d\n", spcl.c_tapea);
+	fprintf(stderr, "DEBUG: tpblksread %ld\n", tpblksread);
 #endif
 	findinode(&spcl);
 	noresyncmesg = 0;

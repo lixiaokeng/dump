@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: restore.c,v 1.39 2010/03/22 16:08:10 stelian Exp $";
+	"$Id: restore.c,v 1.40 2010/12/06 14:26:50 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -904,14 +904,15 @@ createfiles(void)
 	Vprintf(stdout, "Extract requested files\n");
 	curfile.action = SKIP;
 #ifdef USE_QFA
-	if (tapeposflag)
-		curfile.ino = 0;
-	else
+	if (!tapeposflag) {
 #endif
 		if (volinfo[1] == ROOTINO)
 			curfile.ino = 0;
 		else
 			getvol((long)1);
+#ifdef USE_QFA
+	}
+#endif
 	skipmaps();
 	skipdirs();
 	first = lowerbnd(ROOTINO);
