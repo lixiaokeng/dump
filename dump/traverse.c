@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.71 2010/06/10 12:17:35 stelian Exp $";
+	"$Id: traverse.c,v 1.72 2011/02/21 10:36:47 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -992,7 +992,7 @@ dumpino(struct dinode *dp, dump_ino_t ino, int metaonly)
 	bc.buf = (int *)malloc (bc.max * sizeof (int));
 	bc.cnt = 0;
 	bc.ino = ino;
-	bc.next_block = NDADDR;
+	bc.next_block = 0;
 
 	ext2fs_block_iterate2(fs, (ext2_ino_t)ino, BLOCK_FLAG_DATA_ONLY, NULL, dumponeblock, (void *)&bc);
 	/* deal with holes at the end of the inode */

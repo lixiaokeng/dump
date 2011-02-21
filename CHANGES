@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.319 2010/12/06 14:26:50 stelian Exp $
+$Id: CHANGES,v 1.320 2011/02/21 10:36:47 stelian Exp $
 
 
 Changes between versions 0.4b43 and 0.4b44 (released ?????????????)
@@ -13,6 +13,10 @@ Changes between versions 0.4b43 and 0.4b44 (released ?????????????)
 	restoring of files which are splitted on two or more
 	volumes and are starting on 2nd tape or later (RedHat
 	bug #507948).
+
+3.	Fix a bug in dump when dumping files with holes. This bug
+	was introduced in 0.4b42 while adding ext4 support.
+	(Sourceforge bug #3133762).
 
 Changes between versions 0.4b42 and 0.4b43 (released June 11, 2010)
 ===================================================================
