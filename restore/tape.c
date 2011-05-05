@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.100 2010/12/06 14:26:51 stelian Exp $";
+	"$Id: tape.c,v 1.101 2011/05/05 16:05:40 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -2143,6 +2143,10 @@ readtape_comprfile(char *buf)
 		((struct s_spcl *)&tapebuf[i * TP_BSIZE])->c_magic = 0;
 	numtrec = ntrec;
 	tpb = (struct tapebuf *) tapebuf;
+#ifdef USE_QFA
+	if (createtapeposflag)
+		(void)GetTapePos(&curtapepos);
+#endif
 
 	/* read the block prefix */
 	ret = read_a_block(mt, tapebuf, PREFIXSIZE, &rl);
@@ -2232,6 +2236,10 @@ readtape_comprtape(char *buf)
 		((struct s_spcl *)&tapebuf[i * TP_BSIZE])->c_magic = 0;
 	numtrec = ntrec;
 	tpb = (struct tapebuf *) tapebuf;
+#ifdef USE_QFA
+	if (createtapeposflag)
+		(void)GetTapePos(&curtapepos);
+#endif
 
 	/* read the block */
 	size = bufsize + PREFIXSIZE;
