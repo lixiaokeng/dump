@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.321 2011/05/05 16:05:40 stelian Exp $
+$Id: CHANGES,v 1.322 2011/05/20 09:48:40 stelian Exp $
 
 
 Changes between versions 0.4b43 and 0.4b44 (released ?????????????)
@@ -21,6 +21,10 @@ Changes between versions 0.4b43 and 0.4b44 (released ?????????????)
 4.	Fix a bug in restore -P where useless index files for compressed
 	dumps were created (Debian bug #583093). Thanks to
 	Mark Wooding <mdw@distorted.org.uk> for the patch.
+
+5.	Fix SYS_clone invocation on s390 architectures (Sourceforge
+	bug #3303235). Thanks to Adam Tkac <atkac@redhat.com> for
+	reporting the bug.
 
 Changes between versions 0.4b42 and 0.4b43 (released June 11, 2010)
 ===================================================================

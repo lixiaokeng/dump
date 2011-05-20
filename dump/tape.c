@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.91 2009/06/18 09:50:54 stelian Exp $";
+	"$Id: tape.c,v 1.92 2011/05/20 09:48:40 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -211,8 +211,13 @@ static int gtperr = 0;
  * Neither is useful in our case, so this is easy to handle.
  */
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,49)
+#if __s390__
+/* child_stack, clone_flags, parent_tidptr, child_tidptr */
+#define CLONE_ARGS 0, SIGCHLD|CLONE_IO, NULL, NULL
+#else
 /* clone_flags, child_stack, parent_tidptr, child_tidptr */
 #define CLONE_ARGS SIGCHLD|CLONE_IO, 0, NULL, NULL
+#endif /* __s390__ */
 #else
 #define CLONE_ARGS SIGCHLD|CLONE_IO, 0
 #endif /* LINUX_VERSION_CODE */
