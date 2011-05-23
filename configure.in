@@ -532,7 +532,7 @@ dnl
 dnl Check for zlib headers and libraries
 dnl
 AC_CHECK_HEADER(zlib.h, [zlib_h=yes], [zlib_h=no], [-])
-AC_CHECK_LIB(z, compress2, [zlib_lib=yes], [zlib_lib=no])
+AC_CHECK_LIB(z, zlibVersion, [zlib_lib=yes], [zlib_lib=no])
 if test "$zlib_h" = yes -a "$zlib_lib" = yes; then
 	if test "$STATICZ" = yes; then
 		ZLIB="-Wl,-Bstatic -lz -Wl,-Bdynamic"
