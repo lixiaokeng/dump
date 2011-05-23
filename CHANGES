@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.324 2011/05/23 08:32:23 stelian Exp $
+$Id: CHANGES,v 1.325 2011/05/23 08:34:20 stelian Exp $
 
 
 Changes between versions 0.4b43 and 0.4b44 (released ?????????????)
@@ -31,6 +31,8 @@ Changes between versions 0.4b43 and 0.4b44 (released ?????????????)
 
 7.	Fix false negatives in configure zlib test. Thanks to
 	Bear Giles <bgiles@coyotesong.com> for the patch.
+
+8.	Add quick regression script from Bear Giles <bgiles@coyotesong.com>.
 
 Changes between versions 0.4b42 and 0.4b43 (released June 11, 2010)
 ===================================================================
