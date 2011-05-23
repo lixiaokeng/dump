@@ -32,7 +32,7 @@ DUMPDATESPATH=	@DUMPDATESPATH@
 GINC=		-I$(top_builddir) -I$(top_srcdir)/compat/include
 # indicate where the ext2fs library can be found (this is not needed if you
 # have run `make install-libs' in the e2fsprogs source directory).
-#GINC+=		-I/usr/src/e2fsprogs-0.5c/lib
+GINC+=		@EXT2FS_CFLAGS@
 
 #
 # Global libraries
@@ -40,7 +40,7 @@ GINC=		-I$(top_builddir) -I$(top_srcdir)/compat/include
 # indicate where the ext2fs library can be found (this is not needed if you
 # have run `make install-libs' in the e2fsprogs source directory).
 #GLIBDIR=	-L/usr/src/e2fsprogs-0.5c/lib
-GLIBS=		$(GLIBDIR) -L../compat/lib -lcompat -lext2fs -lcom_err
+GLIBS=		$(GLIBDIR) -L../compat/lib -lcompat @EXT2FS_LIBS@
 
 #
 # Definitions (don't change them unless you know what you are doing)

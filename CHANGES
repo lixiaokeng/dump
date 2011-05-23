@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.322 2011/05/20 09:48:40 stelian Exp $
+$Id: CHANGES,v 1.323 2011/05/23 08:17:47 stelian Exp $
 
 
 Changes between versions 0.4b43 and 0.4b44 (released ?????????????)
@@ -25,6 +25,9 @@ Changes between versions 0.4b43 and 0.4b44 (released ?????????????)
 5.	Fix SYS_clone invocation on s390 architectures (Sourceforge
 	bug #3303235). Thanks to Adam Tkac <atkac@redhat.com> for
 	reporting the bug.
+
+6.	Fix static builds. Thanks Peter Volkov <pva@gentoo.org>
+	for the patches.
 
 Changes between versions 0.4b42 and 0.4b43 (released June 11, 2010)
 ===================================================================
