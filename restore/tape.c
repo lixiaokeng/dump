@@ -42,7 +42,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.101 2011/05/05 16:05:40 stelian Exp $";
+	"$Id: tape.c,v 1.102 2011/06/08 15:40:53 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -586,7 +586,7 @@ again:
 		fprintf(stderr, "otherwise enter tape name (default: %s) ", magtape);
 #endif
 		(void) fflush(stderr);
-		if (fgets(buf, TP_BSIZE, terminal))
+		if (!fgets(buf, TP_BSIZE, terminal))
 			exit(1);
 		if (feof(terminal))
 			exit(1);

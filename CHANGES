@@ -1,4 +1,4 @@
-$Id: CHANGES,v 1.325 2011/05/23 08:34:20 stelian Exp $
+$Id: CHANGES,v 1.326 2011/06/08 15:40:53 stelian Exp $
 
 
 Changes between versions 0.4b43 and 0.4b44 (released ?????????????)
@@ -33,6 +33,10 @@ Changes between versions 0.4b43 and 0.4b44 (released ?????????????)
 	Bear Giles <bgiles@coyotesong.com> for the patch.
 
 8.	Add quick regression script from Bear Giles <bgiles@coyotesong.com>.
+
+9.	Fix a bug introduced in 0.4b43 causing restore to crash when
+	asking for a new volume when doing multi-volume restores. Thanks
+	to Patrik Schindler <poc@pocnet.net> for reporting the bug.
 
 Changes between versions 0.4b42 and 0.4b43 (released June 11, 2010)
 ===================================================================
