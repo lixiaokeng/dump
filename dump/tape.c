@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.93 2011/05/20 09:52:19 stelian Exp $";
+	"$Id: tape.c,v 1.94 2011/06/10 12:41:54 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -178,10 +178,15 @@ static int tapea_volume;	/* value of spcl.c_tapea at volume start */
 
 int master;		/* pid of master, for sending error signals */
 int tenths;		/* length of tape overhead per block written */
-static int caught;	/* have we caught the signal to proceed? */
-static int ready;	/* have we reached the lock point without having */
+static int caught1;	/* have we caught the signal to proceed? */
+static int ready1;	/* have we reached the lock point without having */
 			/* received the SIGUSR2 signal from the prev slave? */
-static sigjmp_buf jmpbuf;	/* where to jump to if we are ready when the */
+static sigjmp_buf jmpbuf1;	/* where to jump to if we are ready when the */
+			/* SIGUSR1 arrives from the previous slave */
+static int caught2;	/* have we caught the signal to proceed? */
+static int ready2;	/* have we reached the lock point without having */
+			/* received the SIGUSR2 signal from the prev slave? */
+static sigjmp_buf jmpbuf2;	/* where to jump to if we are ready when the */
 			/* SIGUSR2 arrives from the previous slave */
 #ifdef USE_QFA
 static int gtperr = 0;
@@ -1029,14 +1034,25 @@ Exit(int status)
 }
 
 /*
+ * proceed - handler for SIGUSR1, used to synchronize IO between the slaves.
+ */
+static void
+proceed1(UNUSED(int signo))
+{
+	if (ready1)
+		siglongjmp(jmpbuf1, 1);
+	caught1++;
+}
+
+/*
  * proceed - handler for SIGUSR2, used to synchronize IO between the slaves.
  */
 static void
-proceed(UNUSED(int signo))
+proceed2(UNUSED(int signo))
 {
-	if (ready)
-		siglongjmp(jmpbuf, 1);
-	caught++;
+	if (ready2)
+		siglongjmp(jmpbuf2, 1);
+	caught2++;
 }
 
 void
@@ -1058,16 +1074,21 @@ enslave(void)
 	sigaction(SIGTERM, &sa, NULL); /* Slave sends SIGTERM on dumpabort() */
 	sa.sa_handler = sigpipe;
 	sigaction(SIGPIPE, &sa, NULL);
-	sa.sa_handler = proceed;
+	sa.sa_handler = proceed1;
+	sa.sa_flags = SA_RESTART;
+	sigaction(SIGUSR1, &sa, NULL); /* Slave sends SIGUSR1 to next slave */
+	sa.sa_handler = proceed2;
 	sa.sa_flags = SA_RESTART;
 	sigaction(SIGUSR2, &sa, NULL); /* Slave sends SIGUSR2 to next slave */
    }
 
 	for (i = 0; i < SLAVES; i++) {
 		if (i == slp - &slaves[0]) {
-			caught = 1;
+			caught1 = 1;
+			caught2 = 1;
 		} else {
-			caught = 0;
+			caught1 = 0;
+			caught2 = 0;
 		}
 
 		if (socketpair(AF_UNIX, SOCK_STREAM, 0, cmd) < 0 ||
@@ -1140,7 +1161,9 @@ killall(void)
  * previous process before writing to the tape, and sends SIGUSR2
  * to the next process when the tape write completes. On tape errors
  * a SIGUSR1 is sent to the master which then terminates all of the
- * slaves.
+ * slaves.  Each process sends SIGUSR1 to the next to signal that it
+ * is time to start reading from the disk, after it finishes reading
+ * and moves to the compression phase.
  */
 static void
 doslave(int cmd, 
@@ -1177,6 +1200,7 @@ doslave(int cmd,
 	sigset_t set;
 
 	sigemptyset(&set);
+	sigaddset(&set, SIGUSR1);
 	sigaddset(&set, SIGUSR2);
 	sigprocmask(SIG_BLOCK, &set, NULL);
 	sigemptyset(&set);
@@ -1240,6 +1264,15 @@ doslave(int cmd,
 	while ((nread = dump_atomic_read( cmd, (char *)slp->req, reqsiz)) == reqsiz) {
 		struct req *p = slp->req;
 
+		/* wait for previous slave to finish reading */
+		if (sigsetjmp(jmpbuf1, 1) == 0) {
+			ready1 = 1;
+			if (!caught1)
+				sigsuspend(&set);
+		}
+		ready1 = 0;
+		caught1 = 0;
+
 		for (trecno = 0; trecno < ntrec;
 		     trecno += p->count, p += p->count) {
 			if (p->dblk) {	/* read a disk block */
@@ -1252,6 +1285,8 @@ doslave(int cmd,
 				       quit("master/slave protocol botched.\n");
 			}
 		}
+		/* signal next slave to start reading */
+		(void) kill(nextslave, SIGUSR1);
 
 		/* Try to write the data... */
 		wrote = 0;
@@ -1345,13 +1380,13 @@ doslave(int cmd,
 		do_compress = compressed;
 #endif /* HAVE_ZLIB  || HAVE_BZLIB || HAVE_LZO */
 
-		if (sigsetjmp(jmpbuf, 1) == 0) {
-			ready = 1;
-			if (!caught)
+		if (sigsetjmp(jmpbuf2, 1) == 0) {
+			ready2 = 1;
+			if (!caught2)
 				sigsuspend(&set);
 		}
-		ready = 0;
-		caught = 0;
+		ready2 = 0;
+		caught2 = 0;
 
 #ifdef USE_QFA
 		if (gTapeposfd >= 0) {
