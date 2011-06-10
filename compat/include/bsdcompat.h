@@ -5,13 +5,16 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: bsdcompat.h,v 1.24 2005/05/02 15:10:45 stelian Exp $
+ *	$Id: bsdcompat.h,v 1.25 2011/06/10 12:46:41 stelian Exp $
  */
 
 #include <config.h>
 #include <sys/time.h>
 #include <dirent.h>
 #include <ext2fs/ext2fs.h>
+
+#ifndef _BSDCOMPAT_H
+#define _BSDCOMPAT_H 1
 
 #define	__dead		volatile
 #define UNUSED(x)	x __attribute__ ((unused))
@@ -292,3 +295,4 @@ struct new_bsd_inode {
 
 #define	di_ouid		di_u.oldids[0]
 #define	di_ogid		di_u.oldids[1]
+#endif /* _BSDCOMPAT_H */
