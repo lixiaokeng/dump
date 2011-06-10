@@ -9,6 +9,9 @@
 /* Define this if you have the blkid library. */
 #undef HAVE_BLKID
 
+/* Define to 1 if have block transformation (compression or encryption) */
+#undef HAVE_BLOCK_TRANSFORMATION
+
 /* Define this if you have bzlib compression library. */
 #undef HAVE_BZLIB
 
@@ -42,6 +45,9 @@
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the openssl library */
+#undef HAVE_OPENSSL
 
 /* Define if you want to include readline support. */
 #undef HAVE_READLINE
@@ -134,3 +140,9 @@
 
 /* Define to `uint64_t' if <sys/types.h> does not define. */
 #undef u_quad_t
+
+/* Define to 1 if we have any compression or encryption library. */
+#undef HAVE_BLOCK_TRANSFORMATION
+#if defined(HAVE_LZO) || defined(HAVE_ZLIB) || defined(HAVE_BZLIB)
+#define HAVE_BLOCK_TRANSFORMATION 1
+#endif

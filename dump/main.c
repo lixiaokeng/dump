@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.97 2010/04/28 09:29:50 stelian Exp $";
+	"$Id: main.c,v 1.98 2011/06/10 13:07:29 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -83,6 +83,8 @@ static const char rcsid[] =
 #include "dump.h"
 #include "pathnames.h"
 #include "bylabel.h"
+
+#include "transformation.h"
 
 #ifndef SBOFF
 #define SBOFF (SBLOCK * DEV_BSIZE)
@@ -178,6 +180,7 @@ int	sizest = 0;	/* return size estimate only */
 int	compressed = 0;	/* use zlib to compress the output, compress level 1-9 */
 long long bytes_written = 0; /* total bytes written */
 long	uncomprblks = 0;/* uncompressed blocks written */
+Transformation *transformation = &transformation_null;
 
 long smtc_errno;
 
@@ -239,6 +242,7 @@ main(int argc, char *argv[])
 		quit("TP_BSIZE must be a multiple of DEV_BSIZE\n");
 	memset(&lastlevel, 0, NUM_STR_SIZE);
 	memset(&level, 0, NUM_STR_SIZE);
+	transformation = &transformation_null;
 	/* Default dump level is zero. */
 	level[0] = '0';
 
@@ -359,6 +363,7 @@ main(int argc, char *argv[])
 		case 'j':
 			compressed = 2;
 			zipflag = COMPRESS_BZLIB;
+			transformation = transformation_bzlib_factory(1, 2);
 			if (optarg)
 				compressed = numarg("compress level", 1L, 9L);
 			break;
@@ -450,6 +455,7 @@ main(int argc, char *argv[])
 #ifdef HAVE_LZO
 		case 'y':
                 	compressed = 2;
+        			transformation = transformation_lzo_factory(1);
 			zipflag = COMPRESS_LZO;
 			break;
 #endif /* HAVE_LZO */
@@ -457,6 +463,7 @@ main(int argc, char *argv[])
 #ifdef HAVE_ZLIB
 		case 'z':
 			compressed = 2;
+			transformation = transformation_zlib_factory(1, 2);
 			zipflag = COMPRESS_ZLIB;
 			if (optarg)
 				compressed = numarg("compress level", 1L, 9L);
@@ -793,7 +800,7 @@ main(int argc, char *argv[])
 			if (zipflag == COMPRESS_LZO) 
 				msg("Compressing output (lzo)\n");
 			else
-				msg("Compressing output at compression level %d (%s)\n", 
+				msg("Compressing output at transformation level %d (%s)\n",
 					compressed, zipflag == COMPRESS_ZLIB ? "zlib" : "bzlib");
 		}
 	}

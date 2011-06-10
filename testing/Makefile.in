@@ -1,0 +1,38 @@
+# $Id: Makefile.in,v 1.1 2011/06/10 13:07:29 stelian Exp $
+
+top_srcdir=	@top_srcdir@
+srcdir=		@srcdir@
+top_builddir=	..
+
+@MCONFIG@
+
+PROG=		transform_test
+INC=		-I$(top_srcdir)/dump -I$(top_srcdir)/common
+ALL_CFLAGS=	@CPPFLAGS@ @CFLAGS@ @CCOPTS@ -pipe $(OPT) $(GINC) $(INC) $(DEFS) @DUMPDEBUG@
+ALL_LDFLAGS=	@LDFLAGS@ @LDOPTS@ @STATIC@
+LIBS=		$(GLIBS) @ZLIB@ @BZLIB@ @BLKID@ @SSLLIB@
+SRCS=		transform_test.c ../common/transformation_null.c ../common/transformation_lzo.c ../common/transformation_zlib.c ../common/transformation_bzlib.c ../common/transformation_ssl.c
+OBJS=		transform_test.o ../common/transformation_null.o ../common/transformation_lzo.o ../common/transformation_zlib.o ../common/transformation_bzlib.o ../common/transformation_ssl.o
+
+.c.o:
+	$(CC) -c $(ALL_CFLAGS) $< -o $@
+
+all::		$(PROG)
+
+$(PROG):	$(OBJS) $(DEPLIBS)
+	$(LD) $(ALL_LDFLAGS) -o $(PROG) $(OBJS) $(LIBS)
+
+install::
+
+clean::
+	$(RM) -f \#* *.s *.o *.a *~ core
+
+distclean::	clean
+	$(RM) -f Makefile Makefile.old .depend
+
+# +++ Dependency line eater +++
+# 
+# Makefile dependencies follow.  This must be the last section in
+# the Makefile.in file
+#
+

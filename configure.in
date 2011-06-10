@@ -591,24 +591,24 @@ if test "$ac_cv_func_glob" = "yes"; then
 fi
 
 dnl
-dnl Check for OpenSSL, for ermt
+dnl Check for OpenSSL, for ermt and encryption.
 dnl
-if test "$ERMT" != ""; then
-	AC_CHECK_HEADER(openssl/evp.h, [evp_h=yes], [evp_h=no])
-	AC_CHECK_LIB(crypto, EVP_CIPHER_CTX_set_padding, [crypto_lib=yes], [crypto_lib=no])
-	PKG_CHECK_EXISTS([libcrypto],
-		[
-		if test -n $STATIC ; then
-			CRYPTO=`$PKG_CONFIG --libs --static libcrypto`
-		else
-			CRYPTO=`$PKG_CONFIG --libs libcrypto`
-		fi
-		],[CRYPTO=""])
-	if test "$evp_h" = no -o "x$CRYPTO" = "x"; then
+AC_CHECK_HEADER(openssl/evp.h, [evp_h=yes], [evp_h=no])
+AC_CHECK_LIB(crypto, EVP_CIPHER_CTX_set_padding, [crypto_lib=yes], [crypto_lib=no])
+if test "$evp_h" = yes -a "$crypto_lib" = yes; then
+	if test "$STATICZ" = yes; then
+		SSLLIB="-Wl,-Bstatic -lssl -Wl,-Bdynamic"
+	else
+		SSLLIB="-lssl"
+	fi
+	AC_DEFINE([HAVE_OPENSSL],1,[Define this if you have openssl library.])
+else
+	SSLLIB=""
+	if test "$ERMT" != ""; then
 		AC_MSG_ERROR(You need to install the OpenSSL library (version 0.9.7a or later), or configure without --enable-ermt)
 	fi
 fi
-AC_SUBST(CRYPTO)
+AC_SUBST(SSLLIB)
 
 dnl
 dnl Check for types
@@ -631,4 +631,4 @@ test -d compat/lib || mkdir compat/lib
 dnl
 dnl Output files
 dnl
-AC_OUTPUT(MCONFIG Makefile common/Makefile compat/include/Makefile compat/lib/Makefile dump/Makefile restore/Makefile $RMTMAKEFILE)
+AC_OUTPUT(MCONFIG Makefile common/Makefile compat/include/Makefile compat/lib/Makefile dump/Makefile restore/Makefile testing/Makefile $RMTMAKEFILE)

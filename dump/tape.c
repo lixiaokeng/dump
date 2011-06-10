@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.94 2011/06/10 12:41:54 stelian Exp $";
+	"$Id: tape.c,v 1.95 2011/06/10 13:07:29 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -91,18 +91,6 @@ int    write(), read();
 #endif	/* __linux__ */
 
 #include <protocols/dumprestore.h>
-
-#ifdef HAVE_ZLIB
-#include <zlib.h>
-#endif /* HAVE_ZLIB */
-
-#ifdef HAVE_BZLIB
-#include <bzlib.h>
-#endif /* HAVE_BZLIB */
-
-#ifdef HAVE_LZO
-#include <minilzo.h>
-#endif /* HAVE_LZO */
 
 #include "dump.h"
 
@@ -286,7 +274,6 @@ alloctape(void)
 void
 writerec(const void *dp, int isspcl)
 {
-
 	slp->req[trecno].dblk = (ext2_loff_t)0;
 	slp->req[trecno].count = 1;
 	/* XXX post increment triggers an egcs-1.1.2-12 bug on alpha/sparc */
@@ -1003,6 +990,7 @@ restore_check_point:
 				tapeno, slp->inode);
 		if (tapeno < (int)TP_NINOS)
 			volinfo[tapeno] = slp->inode;
+		transformation->startNewTape(transformation, NULL, 0);
 	}
 }
 
@@ -1176,15 +1164,13 @@ doslave(int cmd,
 	int nextslave;
 	volatile int wrote = 0, size, eot_count, bufsize;
 	char * volatile buffer;
-#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB) || defined(HAVE_LZO)
+#if defined(HAVE_BLOCK_TRANSFORMATION)
 	struct tapebuf * volatile comp_buf = NULL;
 	int compresult;
 	volatile int do_compress = !first;
 	unsigned long worklen;
-#ifdef HAVE_LZO
-	lzo_align_t __LZO_MMODEL *LZO_WorkMem;
-#endif
-#endif /* HAVE_ZLIB || HAVE_BZLIB || HAVE_LZO */
+#endif /* HAVE_BLOCK_TRANSFORMATION */
+
 	struct slave_results returns;
 #ifdef	__linux__
 	errcode_t retval;
@@ -1204,6 +1190,10 @@ doslave(int cmd,
 	sigaddset(&set, SIGUSR2);
 	sigprocmask(SIG_BLOCK, &set, NULL);
 	sigemptyset(&set);
+
+#ifdef HAVE_BLOCK_TRANSFORMATION
+	transformation->startDiskIOProcess(transformation);
+#endif /* HAVE_BLOCK_TRANSFORMATION */
 
 	/*
 	 * Need our own seek pointer.
@@ -1229,34 +1219,29 @@ doslave(int cmd,
 		quit("master/slave protocol botched - didn't get pid of next slave.\n");
 	}
 
-#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB) || defined(HAVE_LZO)
+#if defined(HAVE_BLOCK_TRANSFORMATION)
 	/* if we're doing a compressed dump, allocate the compress buffer */
 	if (compressed) {
 		int bsiz = sizeof(struct tapebuf) + writesize;
-		/* Add extra space to deal with compression enlarging the buffer */
-		if (TP_BSIZE > writesize/16 + 67)
+		/* Add extra space to deal with compression or encryption enlarging the buffer */
+		if (TP_BSIZE > writesize/16 + 200)
 			bsiz += TP_BSIZE;
 		else
-			bsiz += writesize/16 + 67;
+			bsiz += writesize/16 + 200;
 		comp_buf = malloc(bsiz);
 		if (comp_buf == NULL)
 			quit("couldn't allocate a compress buffer.\n");
+		transformation->initialize(transformation, 1);
 		if (zipflag == COMPRESS_ZLIB)
 			comp_buf->flags = COMPRESS_ZLIB;
 		else if (zipflag == COMPRESS_BZLIB)
 			comp_buf->flags = COMPRESS_BZLIB;
-                else if (zipflag == COMPRESS_LZO) {
+        else if (zipflag == COMPRESS_LZO)
 			comp_buf->flags = COMPRESS_LZO;
-			if (lzo_init() != LZO_E_OK) quit("lzo_init failed\n");
-                } else 
+        else
 			quit("internal error - unknown compression method: %d\n", zipflag);
 	}
-#ifdef HAVE_LZO
-	LZO_WorkMem = malloc(LZO1X_1_MEM_COMPRESS);
-	if (!LZO_WorkMem)
-		quit("couldn't allocate a compress buffer.\n");
-#endif
-#endif /* HAVE_ZLIB || HAVE_BZLIB || HAVE_LZO */
+#endif /* HAVE_BLOCK_TRANSFORMATION */
 
 	/*
 	 * Get list of blocks to dump, read the blocks into tape buffer
@@ -1275,6 +1260,7 @@ doslave(int cmd,
 
 		for (trecno = 0; trecno < ntrec;
 		     trecno += p->count, p += p->count) {
+			 
 			if (p->dblk) {	/* read a disk block */
 				bread(p->dblk, slp->tblock[trecno],
 					p->count * TP_BSIZE);
@@ -1296,7 +1282,7 @@ doslave(int cmd,
 		bufsize = writesize;			/* length to write */
 		returns.clen = returns.unclen = bufsize;
 
-#if defined(HAVE_ZLIB) || defined(HAVE_BZLIB) || defined(HAVE_LZO)
+#if defined(HAVE_BLOCK_TRANSFORMATION)
 		/* 
 		 * When writing a compressed dump, each block except
 		 * the first one on each tape is written
@@ -1309,56 +1295,15 @@ doslave(int cmd,
 		 * The first block written by each slave is not compressed
 		 * and does not have a prefix.
 		 */
-
 		if (compressed && do_compress) {
 			comp_buf->length = bufsize;
 			worklen = TP_BSIZE + writesize;
 			compresult = 1;
-#ifdef HAVE_ZLIB
-			if (zipflag == COMPRESS_ZLIB) {
-				compresult = compress2(comp_buf->buf, 
-						       &worklen,
-						       (char *)slp->tblock[0],
-						       writesize, 
-						       compressed);
-				if (compresult == Z_OK)
-					compresult = 1;
-				else
-					compresult = 0;
-			}
-#endif /* HAVE_ZLIB */
-#ifdef HAVE_BZLIB
-			if (zipflag == COMPRESS_BZLIB) {
-				unsigned int worklen2 = worklen;
-				compresult = BZ2_bzBuffToBuffCompress(
-						       comp_buf->buf,
-						       &worklen2,
-						       (char *)slp->tblock[0],
-						       writesize,
-						       compressed,
-						       0, 30);
-				worklen = worklen2;
-				if (compresult == BZ_OK)
-					compresult = 1;
-				else
-					compresult = 0;
-			}
 
-#endif /* HAVE_BZLIB */
-#ifdef HAVE_LZO
-			if (zipflag == COMPRESS_LZO) {
-				lzo_uint worklen2 = worklen;
-				compresult = lzo1x_1_compress((char *)slp->tblock[0],writesize,
-                                                              comp_buf->buf,
-							      &worklen2,
-                                                              LZO_WorkMem);
-				worklen = worklen2;
-				if (compresult == LZO_E_OK)
-					compresult = 1;
-				else
-					compresult = 0;
-			}
-#endif /* HAVE_LZO */
+			// tapebuf: compressed, flags, length
+			compresult = transformation->compress(transformation, comp_buf,
+					&worklen, slp->tblock[0], writesize);
+
 			if (compresult && worklen <= ((unsigned long)writesize - 16)) {
 				/* write the compressed buffer */
 				comp_buf->length = worklen;
@@ -1378,7 +1323,7 @@ doslave(int cmd,
 		}
 		/* compress the remaining blocks if we're compressing */
 		do_compress = compressed;
-#endif /* HAVE_ZLIB  || HAVE_BZLIB || HAVE_LZO */
+#endif /* HAVE_BLOCK_TRANSFORMATION */
 
 		if (sigsetjmp(jmpbuf2, 1) == 0) {
 			ready2 = 1;
@@ -1478,6 +1423,11 @@ doslave(int cmd,
 		}
 #endif /* USE_QFA */
 	}
+
+#ifdef HAVE_BLOCK_TRANSFORMATION
+	transformation->endDiskIOProcess(transformation);
+#endif /* HAVE_BLOCK_TRANSFORMATION */
+
 	if (nread != 0)
 		quit("error reading command pipe: %s\n", strerror(errno));
 }
@@ -1541,7 +1491,7 @@ SetLogicalPos(void)
 /*
  * read the current tape position
  */
-static int
+int
 GetTapePos(long long *pos)
 {
 	int err = 0;

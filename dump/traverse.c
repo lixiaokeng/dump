@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.72 2011/02/21 10:36:47 stelian Exp $";
+	"$Id: traverse.c,v 1.73 2011/06/10 13:07:29 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -868,8 +868,9 @@ dump_xattr(dump_ino_t ino, struct dinode *dp) {
 void
 dumpino(struct dinode *dp, dump_ino_t ino, int metaonly)
 {
-	unsigned long cnt;
-	fsizeT size, remaining;
+	//unsigned long cnt;
+	//fsizeT size;
+	fsizeT remaining;
 	char buf[TP_BSIZE];
 	struct new_bsd_inode nbi;
 	int i;
@@ -1348,6 +1349,7 @@ mkchecksum(union u_spcl *tmpspcl)
 void
 writeheader(dump_ino_t ino)
 {
+	char *state; /* need to have some place to put this! */
 	spcl.c_inumber = ino;
 	spcl.c_magic = NFS_MAGIC;
 	mkchecksum((union u_spcl *)&spcl);

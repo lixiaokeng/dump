@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.12 2004/07/05 15:02:36 stelian Exp $
+# $Id: Makefile.in,v 1.13 2011/06/10 13:07:29 stelian Exp $
 
 top_srcdir=	@top_srcdir@
 srcdir=		@srcdir@
@@ -6,8 +6,8 @@ top_builddir=	..
 
 @MCONFIG@
 
-INC=		-I$(top_srcdir)/dump
-ALL_CFLAGS=	@CPPFLAGS@ @CFLAGS@ @CCOPTS@ -pipe $(OPT) $(GINC) $(INC) $(DEFS) @DUMPDEBUG@
+INC=		-I$(top_srcdir)/dump -I$(top_srcdir)/common
+ALL_CFLAGS=	@CPPFLAGS@ @CFLAGS@ @CCOPTS@ -pipe $(OPT) $(GINC) $(INC) $(DEFS) @DUMPDEBUG@ 
 ALL_LDFLAGS=	@LDFLAGS@ @LDOPTS@ @STATIC@
 LIBS=		$(GLIBS) @ZLIB@ @BZLIB@ @BLKID@
 DEPLIBS=	../compat/lib/libcompat.a
@@ -17,7 +17,8 @@ RPROG=		rdump
 LINKS=		${SBINDIR}/dump ${SBINDIR}/rdump
 SRCS=		itime.c main.c optr.c tape.c traverse.c unctime.c
 OBJS=		itime.o main.o optr.o tape.o traverse.o unctime.o \
-		../common/dumprmt.o
+		../common/dumprmt.o ../common/transformation_null.o ../common/transformation_lzo.o \
+		../common/transformation_zlib.o ../common/transformation_bzlib.o
 MAN8=		dump.8
 RMAN8=		rdump.8
 

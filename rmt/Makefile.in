@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.10 2003/05/08 21:11:39 stelian Exp $
+# $Id: Makefile.in,v 1.11 2011/06/10 13:07:29 stelian Exp $
 
 top_srcdir=	@top_srcdir@
 srcdir=		@srcdir@
@@ -25,7 +25,7 @@ $(PROG):	$(OBJS) $(DEPLIBS)
 	$(LD) $(ALL_LDFLAGS) -o $(PROG) $(OBJS) $(LIBS)
 
 ermt:	ermt.o cipher.o $(DEPLIBS)
-	$(LD) $(ALL_LDFLAGS) -o ermt ermt.o cipher.o $(LIBS) @CRYPTO@
+	$(LD) $(ALL_LDFLAGS) -o ermt ermt.o cipher.o $(LIBS)
 
 ermt.o: rmt.c
 	$(CC) -c $(ALL_CFLAGS) -DERMT -o ermt.o rmt.c

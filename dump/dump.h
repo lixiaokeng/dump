@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: dump.h,v 1.50 2010/04/28 09:29:50 stelian Exp $
+ *	$Id: dump.h,v 1.51 2011/06/10 13:07:29 stelian Exp $
  */
 
 /*-
@@ -40,6 +40,7 @@
 #include <config.h>
 #include <protocols/dumprestore.h>
 #include <compatlfs.h>
+#include "transformation.h"
 
 #define MAXINOPB	(MAXBSIZE / sizeof(struct dinode))
 #define MAXNINDIR	(MAXBSIZE / sizeof(blk_t))
@@ -116,6 +117,7 @@ extern long	dev_bsize;	/* block size of underlying disk device */
 extern int	dev_bshift;	/* log2(dev_bsize) */
 extern int	tp_bshift;	/* log2(TP_BSIZE) */
 extern dump_ino_t volinfo[];	/* which inode on which volume archive info */
+extern Transformation *transformation;
 
 #ifdef USE_QFA
 #define	QFA_MAGIC	"495115637697"

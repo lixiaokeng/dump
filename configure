@@ -594,7 +594,7 @@ ac_includes_default="\
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 top_builddir
-CRYPTO
+SSLLIB
 BZLIB
 ZLIB
 READLINE
@@ -5277,8 +5277,7 @@ rm -f conftest*
 
 fi
 
-if test "$ERMT" != ""; then
-	ac_fn_c_check_header_mongrel "$LINENO" "openssl/evp.h" "ac_cv_header_openssl_evp_h" "$ac_includes_default"
+ac_fn_c_check_header_mongrel "$LINENO" "openssl/evp.h" "ac_cv_header_openssl_evp_h" "$ac_includes_default"
 if test "x$ac_cv_header_openssl_evp_h" = x""yes; then :
   evp_h=yes
 else
@@ -5286,7 +5285,7 @@ else
 fi
 
 
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for EVP_CIPHER_CTX_set_padding in -lcrypto" >&5
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for EVP_CIPHER_CTX_set_padding in -lcrypto" >&5
 $as_echo_n "checking for EVP_CIPHER_CTX_set_padding in -lcrypto... " >&6; }
 if test "${ac_cv_lib_crypto_EVP_CIPHER_CTX_set_padding+set}" = set; then :
   $as_echo_n "(cached) " >&6
@@ -5328,23 +5327,18 @@ else
   crypto_lib=no
 fi
 
-	if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libcrypto\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libcrypto") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
+if test "$evp_h" = yes -a "$crypto_lib" = yes; then
+	if test "$STATICZ" = yes; then
+		SSLLIB="-Wl,-Bstatic -lssl -Wl,-Bdynamic"
+	else
+		SSLLIB="-lssl"
+	fi
 
-		if test -n $STATIC ; then
-			CRYPTO=`$PKG_CONFIG --libs --static libcrypto`
-		else
-			CRYPTO=`$PKG_CONFIG --libs libcrypto`
-		fi
+$as_echo "#define HAVE_OPENSSL 1" >>confdefs.h
 
 else
-  CRYPTO=""
-fi
-	if test "$evp_h" = no -o "x$CRYPTO" = "x"; then
+	SSLLIB=""
+	if test "$ERMT" != ""; then
 		as_fn_error or configure without --enable-ermt "You need to install the OpenSSL library (version 0.9.7a or later)" "$LINENO" 5
 	fi
 fi
@@ -5379,7 +5373,7 @@ top_builddir=`cd .; pwd`
 test -d compat || mkdir compat
 test -d compat/lib || mkdir compat/lib
 
-ac_config_files="$ac_config_files MCONFIG Makefile common/Makefile compat/include/Makefile compat/lib/Makefile dump/Makefile restore/Makefile $RMTMAKEFILE"
+ac_config_files="$ac_config_files MCONFIG Makefile common/Makefile compat/include/Makefile compat/lib/Makefile dump/Makefile restore/Makefile testing/Makefile $RMTMAKEFILE"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -6079,6 +6073,7 @@ do
     "compat/lib/Makefile") CONFIG_FILES="$CONFIG_FILES compat/lib/Makefile" ;;
     "dump/Makefile") CONFIG_FILES="$CONFIG_FILES dump/Makefile" ;;
     "restore/Makefile") CONFIG_FILES="$CONFIG_FILES restore/Makefile" ;;
+    "testing/Makefile") CONFIG_FILES="$CONFIG_FILES testing/Makefile" ;;
     "$RMTMAKEFILE") CONFIG_FILES="$CONFIG_FILES $RMTMAKEFILE" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5 ;;
