@@ -563,6 +563,23 @@ fi
 AC_SUBST(BZLIB)
 
 dnl
+dnl Check for sqlite3 headers and libraries
+dnl
+AC_CHECK_HEADER(sqlite3.h, [sqlite3_h=yes], [sqlite3_h=no], [-])
+AC_CHECK_LIB(sqlite3, sqlite3_initialize, [sqlite3_lib=yes], [sqlite3_lib=no])
+if test "$sqlite3_h" = yes -a "$sqlite3_lib" = yes; then
+    if test "$STATICZ" = yes; then
+        SQLITE3="-Wl,-Bstatic -lsqlite3 -Wl,-Bdynamic"
+    else
+        SQLITE3="-lsqlite3"
+    fi
+    AC_DEFINE([HAVE_SQLITE3],1,[Define this if you have sqlite3 library.])
+else
+    SQLITE3=""
+fi
+AC_SUBST(SQLITE3)
+
+dnl
 dnl Check for library functions
 dnl
 AC_CHECK_FUNCS(err errx verr verrx vwarn vwarnx warn warnx realpath lchown)

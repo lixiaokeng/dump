@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: main.c,v 1.98 2011/06/10 13:07:29 stelian Exp $";
+	"$Id: main.c,v 1.99 2011/06/10 13:41:41 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -85,6 +85,7 @@ static const char rcsid[] =
 #include "bylabel.h"
 
 #include "transformation.h"
+#include "indexer.h"
 
 #ifndef SBOFF
 #define SBOFF (SBLOCK * DEV_BSIZE)
@@ -151,13 +152,6 @@ int	dev_bshift;	/* log2(dev_bsize) */
 int	tp_bshift;	/* log2(TP_BSIZE) */
 dump_ino_t volinfo[TP_NINOS];/* which inode on which volume archive info */
 
-#ifdef USE_QFA
-int	gTapeposfd;
-char	*gTapeposfile;
-char	gTps[255];
-int32_t	gThisDumpDate;
-#endif /* USE_QFA */
-
 struct	dumptime *dthead;	/* head of the list version */
 int	nddates;		/* number of records (might be zero) */
 int	ddates_in;		/* we have read the increment file */
@@ -199,6 +193,8 @@ static void incompat_flags __P((int, char, char));
 
 static char* iexclude_bitmap = NULL;		/* the inode exclude bitmap */
 static unsigned int iexclude_bitmap_bytes = 0;	/* size of bitmap in bytes */
+
+Indexer *indexer = &indexer_legacy;
 
 int
 main(int argc, char *argv[])
@@ -250,10 +246,6 @@ main(int argc, char *argv[])
 		usage();
 
 	obsolete(&argc, &argv);
-
-#ifdef USE_QFA
-	gTapeposfd = -1;
-#endif /* USE_QFA */
 
 	while ((ch = getopt(argc, argv,
 			    "0123456789A:aB:b:cd:D:e:E:f:F:h:I:"
@@ -415,7 +407,7 @@ main(int argc, char *argv[])
 
 #ifdef USE_QFA
 		case 'Q':		/* create tapeposfile */
-			gTapeposfile = optarg;
+			//gTapeposfile = optarg;  // FIXME - communicate filename to indexer.
 			tapepos = 1;
 			break;
 #endif /* USE_QFA */
@@ -699,9 +691,6 @@ main(int argc, char *argv[])
 
 		msg("Date of this level %s dump: %s", level,
 		    ctime4(&spcl.c_date));
-#ifdef USE_QFA
-		gThisDumpDate = spcl.c_date;
-#endif
 		if (spcl.c_ddate)
 	 		msg("Date of last level %s dump: %s", lastlevel,
 			    ctime4(&spcl.c_ddate));
@@ -933,22 +922,7 @@ main(int argc, char *argv[])
 	}
 
 #ifdef USE_QFA
-	if (tapepos) {
-		msg("writing QFA positions to %s\n", gTapeposfile);
-		if ((gTapeposfd = open(gTapeposfile,
-				       O_WRONLY|O_CREAT|O_TRUNC,
-				       S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP
-				       | S_IROTH | S_IWOTH)) < 0)
-			quit("can't open tapeposfile\n");
-		/* print QFA-file header */
-		snprintf(gTps, sizeof(gTps), "%s\n%s\n%ld\n\n", QFA_MAGIC, QFA_VERSION, (unsigned long)spcl.c_date);
-		gTps[sizeof(gTps) - 1] = '\0';
-		if (write(gTapeposfd, gTps, strlen(gTps)) != (ssize_t)strlen(gTps))
-			quit("can't write tapeposfile\n");
-		sprintf(gTps, "ino\ttapeno\ttapepos\n");
-		if (write(gTapeposfd, gTps, strlen(gTps)) != (ssize_t)strlen(gTps))
-			quit("can't write tapeposfile\n");
-	}
+	indexer->openQfa();
 #endif /* USE_QFA */
 
 	/*
@@ -1023,6 +997,8 @@ main(int argc, char *argv[])
 	tend_writing = time(NULL);
 	spcl.c_type = TS_END;
 
+	indexer->foo();
+
 	if (Afile >= 0) {
 		volinfo[1] = ROOTINO;
 		memcpy(spcl.c_inos, volinfo, TP_NINOS * sizeof(dump_ino_t));
@@ -1069,8 +1045,8 @@ main(int argc, char *argv[])
 			spcl.c_tapea, tapekb, rate);
 	}
 
-	if (Afile >= 0)
-		msg("Archiving dump to %s\n", Apath);
+	indexer->close();
+	indexer->closeQfa();
 
 	broadcast("DUMP IS DONE!\7\7\n");
 	msg("DUMP IS DONE\n");

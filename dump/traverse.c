@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: traverse.c,v 1.73 2011/06/10 13:07:29 stelian Exp $";
+	"$Id: traverse.c,v 1.74 2011/06/10 13:41:41 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -77,6 +77,7 @@ static const char rcsid[] =
 #include <protocols/dumprestore.h>
 
 #include "dump.h"
+#include "indexer.h"
 
 #define	HASDUMPEDFILE	0x1
 #define	HASSUBDIRS	0x2
@@ -914,6 +915,8 @@ dumpino(struct dinode *dp, dump_ino_t ino, int metaonly)
 	spcl.c_type = TS_INODE;
 	spcl.c_count = 0;
 
+	indexer->addInode(dp, ino, metaonly);
+
 	if (metaonly && (dp->di_mode & S_IFMT)) {
 		spcl.c_flags |= DR_METAONLY;
 		spcl.c_count = 0;
@@ -1101,6 +1104,8 @@ convert_dir(struct ext2_dir_entry *dirent, UNUSED(int offset),
 	p->prev_offset = p->offset;
 	p->offset += reclen;
 
+	//indexer->addDirEntry(dirent, offset, blocksize, buf, private);
+
 	return 0;
 }
 
@@ -1203,6 +1208,8 @@ dumpdirino(struct dinode *dp, dump_ino_t ino)
 		writerec(buf, 0);
 		spcl.c_type = TS_ADDR;
 	}
+
+	indexer->addInode(dp, ino, 0);
 
 	(void)free(cdc.buf);
 	dump_xattr(ino, dp);

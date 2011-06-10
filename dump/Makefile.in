@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.13 2011/06/10 13:07:29 stelian Exp $
+# $Id: Makefile.in,v 1.14 2011/06/10 13:41:41 stelian Exp $
 
 top_srcdir=	@top_srcdir@
 srcdir=		@srcdir@
@@ -9,7 +9,7 @@ top_builddir=	..
 INC=		-I$(top_srcdir)/dump -I$(top_srcdir)/common
 ALL_CFLAGS=	@CPPFLAGS@ @CFLAGS@ @CCOPTS@ -pipe $(OPT) $(GINC) $(INC) $(DEFS) @DUMPDEBUG@ 
 ALL_LDFLAGS=	@LDFLAGS@ @LDOPTS@ @STATIC@
-LIBS=		$(GLIBS) @ZLIB@ @BZLIB@ @BLKID@
+LIBS=		$(GLIBS) @ZLIB@ @BZLIB@ @BLKID@ @SQLITE3@
 DEPLIBS=	../compat/lib/libcompat.a
 
 PROG=		dump
@@ -18,7 +18,8 @@ LINKS=		${SBINDIR}/dump ${SBINDIR}/rdump
 SRCS=		itime.c main.c optr.c tape.c traverse.c unctime.c
 OBJS=		itime.o main.o optr.o tape.o traverse.o unctime.o \
 		../common/dumprmt.o ../common/transformation_null.o ../common/transformation_lzo.o \
-		../common/transformation_zlib.o ../common/transformation_bzlib.o
+		../common/transformation_zlib.o ../common/transformation_bzlib.o \
+		../common/legacy_indexer.o ../common/sqlite.o
 MAN8=		dump.8
 RMAN8=		rdump.8
 

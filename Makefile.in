@@ -5,7 +5,7 @@ top_builddir=	.
 @MCONFIG@
 
 RM=		@RM@
-SUBDIRS=	compat/lib compat/include common dump restore testing @RMTDIR@
+SUBDIRS=	compat/lib compat/include common dump restore @RMTDIR@
 
 all clean install dep depend realclean distclean::
 	for i in $(SUBDIRS); do \

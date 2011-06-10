@@ -5,7 +5,7 @@
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
  *
- *	$Id: dump.h,v 1.51 2011/06/10 13:07:29 stelian Exp $
+ *	$Id: dump.h,v 1.52 2011/06/10 13:41:41 stelian Exp $
  */
 
 /*-
@@ -75,8 +75,6 @@ extern char	*tapeprefix;	/* prefix of the tape file */
 extern char	*dumpdates;	/* name of the file containing dump date information*/
 extern char	lastlevel[NUM_STR_SIZE];/* dump level of previous dump */
 extern char	level[NUM_STR_SIZE];/* dump level of this dump */
-extern int	Afile;		/* archive file descriptor */
-extern int      AfileActive;    /* Afile flag */
 extern int	zipflag;	/* which compression method */
 extern int	uflag;		/* update flag */
 extern int	mflag;		/* dump metadata only if possible flag */
@@ -118,15 +116,6 @@ extern int	dev_bshift;	/* log2(dev_bsize) */
 extern int	tp_bshift;	/* log2(TP_BSIZE) */
 extern dump_ino_t volinfo[];	/* which inode on which volume archive info */
 extern Transformation *transformation;
-
-#ifdef USE_QFA
-#define	QFA_MAGIC	"495115637697"
-#define QFA_VERSION	"1.0"
-extern int	gTapeposfd;
-extern char	*gTapeposfile;
-extern char	gTps[255];
-extern int32_t	gThisDumpDate;
-#endif /* USE_QFA */
 
 #ifndef __P
 #include <sys/cdefs.h>
@@ -287,5 +276,6 @@ extern void endgrent();
 extern void exit();
 extern off_t lseek();
 extern const char *strerror();
+
 #endif
 

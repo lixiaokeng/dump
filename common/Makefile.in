@@ -1,4 +1,4 @@
-# $Id: Makefile.in,v 1.6 2011/06/10 13:07:29 stelian Exp $
+# $Id: Makefile.in,v 1.7 2011/06/10 13:41:41 stelian Exp $
 
 top_srcdir=	@top_srcdir@
 srcdir=		@srcdir@
@@ -6,16 +6,29 @@ top_builddir=	..
 
 @MCONFIG@
 
-INC=		-I$(top_srcdir)/dump -I$(top_srcdir)/common
+INC=		-I. -I$(top_srcdir)/dump -I$(top_srcdir)/compat/include
 ALL_CFLAGS=	@CPPFLAGS@ @CFLAGS@ @CCOPTS@ -pipe $(OPT) $(GINC) $(INC) $(DEFS) @DUMPDEBUG@
 ALL_LDFLAGS=	@LDFLAGS@ @LDOPTS@ @STATIC@
-SRCS=		dumprmt.c transformation_null.c transformation_lzo.c transformation_zlib.c transformation_bzlib.c transformation_ssl.c
-OBJS=		dumprmt.o transformation_null.o transformation_lzo.o transformation_zlib.o transformation_bzlib.o transformation_ssl.o
+LIBS=		$(GLIBS) @ZLIB@ @BZLIB@ @BLKID@ @SSLLIB@ @SQLITE3@
+
+SRCS=		dumprmt.c transformation_null.c transformation_lzo.c transformation_zlib.c transformation_bzlib.c \
+    transformation_ssl.c legacy_indexer.c sqlite_indexer.c
+OBJS=		dumprmt.o transformation_null.o transformation_lzo.o transformation_zlib.o transformation_bzlib.o \
+    transformation_ssl.o legacy_indexer.o sqlite_indexer.o
 
 .c.o:
 	$(CC) -c $(ALL_CFLAGS) $< -o $@
 
-all::		$(OBJS)
+all::		$(OBJS) transform_test indexer_test
+
+transform_test:	transform_test.o $(OBJS) $(DEPLIBS)
+	$(LD) $(ALL_LDFLAGS) -o transform_test transform_test.o \
+		transformation_null.o transformation_lzo.o transformation_zlib.o \
+		transformation_bzlib.o transformation_ssl.o  $(LIBS)
+
+indexer_test:	indexer_test.o $(OBJS) $(DEPLIBS)
+	$(LD) $(ALL_LDFLAGS) -o indexer_test indexer_test.o legacy_indexer.o \
+	sqlite_indexer.o dumprmt.o $(LIBS)
 
 install::
 

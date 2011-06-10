@@ -37,7 +37,7 @@
 
 #ifndef lint
 static const char rcsid[] =
-	"$Id: tape.c,v 1.95 2011/06/10 13:07:29 stelian Exp $";
+	"$Id: tape.c,v 1.96 2011/06/10 13:41:41 stelian Exp $";
 #endif /* not lint */
 
 #include <config.h>
@@ -93,6 +93,8 @@ int    write(), read();
 #include <protocols/dumprestore.h>
 
 #include "dump.h"
+#include "indexer.h"
+#include "slave.h"
 
 int	writesize;		/* size of malloc()ed buffer for tape */
 long	lastspclrec = -1;	/* tape block number of last written header */
@@ -119,24 +121,7 @@ static	void enslave __P((void));
 static	void flushtape __P((void));
 static	void killall __P((void));
 static	void rollforward __P((void));
-#ifdef USE_QFA
-static int GetTapePos __P((long long *));
-static int MkTapeString __P((struct s_spcl *, long long));
-#define FILESQFAPOS	20
-#endif
 
-/*
- * Concurrent dump mods (Caltech) - disk block reading and tape writing
- * are exported to several slave processes.  While one slave writes the
- * tape, the others read disk blocks; they pass control of the tape in
- * a ring via signals. The parent process traverses the filesystem and
- * sends writeheader()'s and lists of daddr's to the slaves via pipes.
- * The following structure defines the instruction packets sent to slaves.
- */
-struct req {
-	ext2_loff_t dblk;
-	int count;
-};
 int reqsiz;
 
 struct slave_results {
@@ -144,19 +129,7 @@ struct slave_results {
 	ssize_t clen;		/* compressed length */
 };
 
-#define SLAVES 3		/* 1 slave writing, 1 reading, 1 for slack */
-struct slave {
-	int tapea;		/* header number at start of this chunk */
-	int count;		/* count to next header (used for TS_TAPE */
-				/* after EOT) */
-	int inode;		/* inode that we are currently dealing with */
-	int fd;			/* FD for this slave */
-	int pid;		/* PID for this slave */
-	int sent;		/* 1 == we've sent this slave requests */
-	int firstrec;		/* record number of this block */
-	char (*tblock)[TP_BSIZE]; /* buffer for data blocks */
-	struct req *req;	/* buffer for requests */
-} slaves[SLAVES+1];
+struct slave slaves[SLAVES+1];
 struct slave *slp;
 
 char	(*nextblock)[TP_BSIZE];
@@ -176,9 +149,6 @@ static int ready2;	/* have we reached the lock point without having */
 			/* received the SIGUSR2 signal from the prev slave? */
 static sigjmp_buf jmpbuf2;	/* where to jump to if we are ready when the */
 			/* SIGUSR2 arrives from the previous slave */
-#ifdef USE_QFA
-static int gtperr = 0;
-#endif
 
 /*
  * Determine if we can use Linux' clone system call.  If so, call it
@@ -280,27 +250,7 @@ writerec(const void *dp, int isspcl)
 	*(union u_spcl *)(*(nextblock)) = *(union u_spcl *)dp;
 
 	/* Need to write it to the archive file */
-	if (! AfileActive && isspcl && (spcl.c_type == TS_END))
-		AfileActive = 1;
-	if (AfileActive && Afile >= 0 && !(spcl.c_flags & DR_EXTATTRIBUTES)) {
-		/* When we dump an inode which is not a directory,
-		 * it means we ended the archive contents */
-		if (isspcl && (spcl.c_type == TS_INODE) &&
-		    ((spcl.c_dinode.di_mode & S_IFMT) != IFDIR))
-			AfileActive = 0;
-		else {
-			union u_spcl tmp;
-			tmp = *(union u_spcl *)dp;
-			/* Write the record, _uncompressed_ */
-			if (isspcl) {
-				tmp.s_spcl.c_flags &= ~DR_COMPRESSED;
-				mkchecksum(&tmp);
-			}
-			if (write(Afile, &tmp, TP_BSIZE) != TP_BSIZE)
-				msg("error writing archive file: %s\n", 
-			    	strerror(errno));
-		}
-	}
+	indexer->writerec(dp, isspcl);
 
 	nextblock++;
 	if (isspcl)
@@ -1176,12 +1126,7 @@ doslave(int cmd,
 	errcode_t retval;
 #endif
 #ifdef USE_QFA
-	long long curtapepos;
-	union u_spcl *uspclptr;
-	struct s_spcl *spclptr;
-	/* long		maxntrecs = 300000000 / (ntrec * 1024);	 last tested: 50 000 000 */
-	long		maxntrecs = 50000;	/* every 50MB */
-	long		cntntrecs = maxntrecs;
+    QFA_State qfa_state;
 #endif /* USE_QFA */
 	sigset_t set;
 
@@ -1194,6 +1139,8 @@ doslave(int cmd,
 #ifdef HAVE_BLOCK_TRANSFORMATION
 	transformation->startDiskIOProcess(transformation);
 #endif /* HAVE_BLOCK_TRANSFORMATION */
+
+	indexer->openQfaState(&qfa_state);
 
 	/*
 	 * Need our own seek pointer.
@@ -1333,38 +1280,7 @@ doslave(int cmd,
 		ready2 = 0;
 		caught2 = 0;
 
-#ifdef USE_QFA
-		if (gTapeposfd >= 0) {
-			int i;
-			int foundone = 0;
-
-			for (i = 0; (i < ntrec) && !foundone; ++i) {
-				uspclptr = (union u_spcl *)&slp->tblock[i];
-				spclptr = &uspclptr->s_spcl;
-				if ((spclptr->c_magic == NFS_MAGIC) && 
-							(spclptr->c_type == TS_INODE) &&
-							(spclptr->c_date == gThisDumpDate) &&
-							!(spclptr->c_dinode.di_mode & S_IFDIR) &&
-							!(spclptr->c_flags & DR_EXTATTRIBUTES)
-						) {
-					foundone = 1;
-					/* if (cntntrecs >= maxntrecs) {	 only write every maxntrecs amount of data */
-						cntntrecs = 0;
-						if (gtperr == 0) 
-							gtperr = GetTapePos(&curtapepos);
-						/* if an error occured previously don't
-						 * try again */
-						if (gtperr == 0) {
-#ifdef DEBUG_QFA
-							msg("inode %ld at tapepos %ld\n", spclptr->c_inumber, curtapepos);
-#endif
-							gtperr = MkTapeString(spclptr, curtapepos);
-						}
-					/* } */
-				}
-			}
-		}
-#endif /* USE_QFA */
+		indexer->updateQfa(&qfa_state);
 						
 		while (eot_count < 10 && size < bufsize) {
 #ifdef RDUMP
@@ -1417,11 +1333,8 @@ doslave(int cmd,
 		 * Signal the next slave to go.
 		 */
 		(void) kill(nextslave, SIGUSR2);
-#ifdef USE_QFA
-		if (gTapeposfd >= 0) {
-			cntntrecs += ntrec;
-		}
-#endif /* USE_QFA */
+
+		indexer->updateQfaState(&qfa_state);
 	}
 
 #ifdef HAVE_BLOCK_TRANSFORMATION
@@ -1484,64 +1397,3 @@ SetLogicalPos(void)
 	return err;
 }
 */
-
-#ifdef USE_QFA
-#define LSEEK_GET_TAPEPOS 	10
-#define LSEEK_GO2_TAPEPOS	11
-/*
- * read the current tape position
- */
-int
-GetTapePos(long long *pos)
-{
-	int err = 0;
-
-#ifdef RDUMP
-	if (host) {
-		*pos = (long long) rmtseek((OFF_T)0, (int)LSEEK_GET_TAPEPOS);
-		err = *pos < 0;
-	}
-	else 
-#endif
-	{
-	if (magtapeout) {
-		long mtpos;
-		*pos = 0;
-		err = (ioctl(tapefd, MTIOCPOS, &mtpos) < 0);
-		*pos = (long long)mtpos;
-	}
-	else {
-		*pos = LSEEK(tapefd, 0, SEEK_CUR);
-		err = (*pos < 0);
-	}
-	}
-	if (err) {
-		err = errno;
-		msg("[%ld] error: %d (getting tapepos: %lld)\n", getpid(), 
-			err, *pos);
-		return err;
-	}
-	return err;
-}
-
-static int 
-MkTapeString(struct s_spcl *spclptr, long long curtapepos)
-{
-	int	err = 0;
-
-#ifdef DEBUG_QFA
-	msg("inode %ld at tapepos %lld\n", spclptr->c_inumber, curtapepos);
-#endif
-
-	snprintf(gTps, sizeof(gTps), "%ld\t%d\t%lld\n", 
-		 (unsigned long)spclptr->c_inumber, 
-		 tapeno, 
-		 curtapepos);
-	gTps[sizeof(gTps) - 1] = '\0';
-	if (write(gTapeposfd, gTps, strlen(gTps)) != (ssize_t)strlen(gTps)) {
-		err = errno;
-      	warn("error writing tapepos file. (error %d)\n", errno);
-	}
-	return err;
-}
-#endif /* USE_QFA */
