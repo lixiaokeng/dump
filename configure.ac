@@ -339,7 +339,7 @@ AC_SUBST(READLINE)
 dnl
 dnl Check for rl_completion_matches
 dnl
-AC_CHECK_LIB(readline, rl_completion_matches, [rlcm=yes], [rlcm=no], "-ltermcap")
+AC_CHECK_LIB(readline, rl_completion_matches, [rlcm=yes], [rlcm=no], [$rdllib])
 if test "$rlcm" = yes; then
 	AC_DEFINE([HAVE_READLINE_RLCM],1,[Define this if your readline libs have the rl_completion_matches library.])
 fi
@@ -347,7 +347,7 @@ fi
 dnl
 dnl Check for rl_completion_append_character
 dnl
-AC_CHECK_LIB(readline, rl_completion_append_character, [rcac=yes], [rcac=no], "-ltermcap")
+AC_CHECK_LIB(readline, rl_completion_append_character, [rcac=yes], [rcac=no], [$rdllib])
 if test "$rcac" = yes; then
 	AC_DEFINE([HAVE_READLINE_CAC],1,[Define this if your readline libs have the rl_completion_append_character variable.])
 fi
