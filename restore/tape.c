@@ -852,23 +852,10 @@ extractfile(struct entry *ep, int doremove)
 		if (Nflag)
 			return (GOOD);
 		if (! (spcl.c_flags & DR_METAONLY)) {
-			int sk;
-			struct sockaddr_un addr;
-
-			if (uflag)
-				(void)unlink(name);
-
-			if ((sk = socket(AF_UNIX, SOCK_DGRAM, 0)) < 0) {
+			if (mknod(name, S_IFSOCK | 0600, 0) < 0) {
 				warn("%s: cannot create socket", name);
 				return (FAIL);
 			}
-			addr.sun_family = AF_UNIX;
-			strcpy(addr.sun_path, name);
-			if (bind(sk, (const struct sockaddr *)&addr, sizeof(struct sockaddr_un)) < 0) {
-				warn("%s: cannot create socket", name);
-				return (FAIL);
-			}
-			close(sk);
 		}
 		if (chown(name, luid, lgid) < 0)
 			warn("%s: chown", name);
