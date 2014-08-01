@@ -588,7 +588,7 @@ findunreflinks(void)
 					if (np->e_type == LEAF) {
 						removeleaf(np);
 						freeentry(np);
-					} else {
+					} else if (np->e_ino != 0) {
 						np->e_flags |= TMPNAME;
 						deleteino(np->e_ino);
 						np->e_next = removelist;
