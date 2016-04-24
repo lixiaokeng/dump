@@ -309,17 +309,6 @@ CCOPTS=)dnl
 AC_SUBST(CCOPTS)
 
 dnl
-dnl set $(LDFLAGS) from --with-ldopts=value
-dnl
-AC_ARG_WITH([ldopts],
-[  --with-ldopts=LDOPTS       select linker command line options],
-AC_MSG_RESULT(LDFLAGS is $withval)
-LDOPTS=$withval
-LDFLAGS="$LDFLAGS $withval",
-LDOPTS=)dnl
-AC_SUBST(LDOPTS)
-
-dnl
 dnl set $(BINOWNER) from --with-binowner
 dnl
 AC_ARG_WITH([binowner],
