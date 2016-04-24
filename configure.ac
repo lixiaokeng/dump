@@ -1,8 +1,8 @@
-AC_INIT(dump/dump.h)
+AC_INIT([dump], [0.4b44], [http://dump.sourceforge.net])
 AC_PREREQ(2.57)
-
-MCONFIG=./MCONFIG
-AC_SUBST_FILE(MCONFIG)
+AM_INIT_AUTOMAKE
+AM_SILENT_RULES([yes])
+AC_CONFIG_MACRO_DIR([m4])
 
 AC_CONFIG_HEADER(config.h)
 
@@ -11,15 +11,12 @@ dnl Check for programs
 dnl
 AC_PROG_MAKE_SET
 AC_PROG_LN_S
-AC_PATH_PROG(CP, cp, cp)
-AC_PATH_PROG(MV, mv, mv)
-AC_PATH_PROG(RM, rm, rm)
-AC_CHECK_TOOL(AR, ar, ar)
-AC_CHECK_TOOL(RANLIB, ranlib, :)
-AC_CHECK_TOOL(PATCH, patch, :)
 PKG_PROG_PKG_CONFIG
 AC_PROG_CC
 AC_PROG_INSTALL
+
+dnl Has to be after AC_PROG_CC and other core compiler checks.
+LT_INIT
 
 AC_CHECK_HEADERS([sys/types.h])
 
@@ -69,47 +66,31 @@ fi
 dnl
 dnl Handle --enable-rmt
 dnl
+AC_MSG_CHECKING([whether to build rmt])
+BUILD_RMT=yes
 AC_ARG_ENABLE([rmt],
-[  --enable-rmt               compile and install rmt (default is YES)],
-if test "$enableval" = "no"
-then
-	RMTDIR=""
-	RMTMAKEFILE=""
-	echo "Not compiling rmt"
-else
-	RMTDIR="rmt"
-	RMTMAKEFILE="rmt/Makefile"
-	echo "Compiling rmt"
+[  --enable-rmt               compile and install rmt (default is YES)])
+if test "$enable_rmt" = "no"; then
+	BUILD_RMT=no
 fi
-,
-RMTDIR="rmt"
-RMTMAKEFILE="rmt/Makefile"
-echo "Compiling rmt by default"
-)
-AC_SUBST(RMTDIR)
+AM_CONDITIONAL([BUILD_RMT], [test "$BUILD_RMT" = "yes"])
+AC_MSG_RESULT([$BUILD_RMT])
 
 dnl
 dnl Handle --enable-ermt
 dnl
+AC_MSG_CHECKING([whether to build ermt])
+BUILD_ERMT=no
 AC_ARG_ENABLE([ermt],
-[  --enable-ermt              compile ermt, an encrypting version of rmt (default is NO)],
-if test "$enableval" = "no"
-then
-	ERMT=""
-	echo "Not compiling ermt"
-else
-	if test "$RMTDIR" = ""
-	then
-		AC_MSG_ERROR(ermt requires --enable-rmt)
+[  --enable-ermt              compile ermt, an encrypting version of rmt (default is NO)])
+if test "$enable_ermt" = "yes"; then
+	if test "$BUILD_RMT" != "yes"; then
+		AC_MSG_ERROR([ermt requires --enable-rmt])
 	fi
-	ERMT="ermt"
-	echo "Compiling ermt"
+	BUILD_ERMT=yes
 fi
-,
-ERMT=""
-echo "Not compiling ermt by default"
-)
-AC_SUBST(ERMT)
+AM_CONDITIONAL([BUILD_ERMT], [test "$BUILD_ERMT" = "yes"])
+AC_MSG_RESULT([$BUILD_ERMT])
 
 dnl
 dnl Handle --enable-kerberos
@@ -251,18 +232,6 @@ AC_SUBST(LTRANSSELINUX)
 AC_SUBST(CCTRANSSELINUX)
 
 dnl
-dnl set $(LD) from --with-linker=value
-dnl
-AC_ARG_WITH([linker],
-[  --with-linker=LINKER       select linker to use],
-AC_MSG_RESULT(LD=$withval)
-LD=$withval,
-if test -z "$LD" ; then LD=$CC; fi
-[AC_MSG_RESULT(LD defaults to $LD)])dnl
-export LD
-AC_SUBST([LD])
-
-dnl
 dnl set $(DUMPDATESPATH) from --with-dumpdatespath
 dnl
 AC_ARG_WITH([dumpdatespath],
@@ -277,17 +246,13 @@ AC_SUBST(DUMPDATESPATH)
 dnl
 dnl Check for Ext2fs headers and libraries
 dnl
-AC_CHECK_HEADER(ext2fs/ext2fs.h, [ext2fs_h=yes], [ext2fs_h=no], [-])
 PKG_CHECK_MODULES(EXT2FS, [ext2fs])
-if test "$ext2fs_h" = no -o "x$EXT2FS_LIBS" = "x"; then
-	AC_MSG_ERROR(You need to install the Ext2fs libraries from the E2fsprogs distribution first - hint: make install-libs)
-fi
 PKG_CHECK_MODULES(COM_ERR, [com_err])
 
 dnl
 dnl Check for ext2fs_read_inode_full
 dnl
-AC_CHECK_LIB(ext2fs, ext2fs_read_inode_full, [rif=yes], [rif=no], [-lcom_err])
+AC_CHECK_LIB(ext2fs, ext2fs_read_inode_full, [rif=yes], [rif=no])
 if test "$rif" = yes; then
 	AC_DEFINE([HAVE_EXT2FS_READ_INODE_FULL],1,[Define this if your ext2fs libs have the ext2fs_read_inode_full function.])
 fi
@@ -483,18 +448,14 @@ AC_CHECK_TYPE(quad_t, int64_t)
 AC_CHECK_TYPE(u_quad_t, uint64_t)
 
 dnl
-dnl Compute top_buildir
-dnl
-top_builddir=`cd .; pwd`
-AC_SUBST(top_builddir)
-
-dnl
-dnl Create directories
-dnl
-test -d compat || mkdir compat
-test -d compat/lib || mkdir compat/lib
-
-dnl
 dnl Output files
 dnl
-AC_OUTPUT(MCONFIG Makefile common/Makefile compat/include/Makefile compat/lib/Makefile dump/Makefile restore/Makefile testing/Makefile $RMTMAKEFILE)
+AC_CONFIG_FILES(m4_flatten([
+	Makefile
+	common/Makefile
+	compat/lib/Makefile
+	dump/Makefile
+	restore/Makefile
+	rmt/Makefile
+]))
+AC_OUTPUT
