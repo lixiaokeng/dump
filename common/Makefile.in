@@ -19,12 +19,14 @@ OBJS=		dumprmt.o transformation_null.o transformation_lzo.o transformation_zlib.
 .c.o:
 	$(CC) -c $(ALL_CFLAGS) $< -o $@
 
-all::		$(OBJS) transform_test indexer_test
+all::		$(OBJS) indexer_test
 
-transform_test:	transform_test.o $(OBJS) $(DEPLIBS)
-	$(LD) $(ALL_LDFLAGS) -o transform_test transform_test.o \
-		transformation_null.o transformation_lzo.o transformation_zlib.o \
-		transformation_bzlib.o transformation_ssl.o  $(LIBS)
+# Disabled due to missing transform_test.c -- it was accidentally not added.
+# We can re-add when someone re-implements the test code :(.
+#transform_test:	transform_test.o $(OBJS) $(DEPLIBS)
+#	$(LD) $(ALL_LDFLAGS) -o transform_test transform_test.o \
+#		transformation_null.o transformation_lzo.o transformation_zlib.o \
+#		transformation_bzlib.o transformation_ssl.o  $(LIBS)
 
 indexer_test:	indexer_test.o $(OBJS) $(DEPLIBS)
 	$(LD) $(ALL_LDFLAGS) -o indexer_test indexer_test.o legacy_indexer.o \
