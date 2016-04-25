@@ -35,11 +35,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static const char rcsid[] =
-	"$Id: compaterr.c,v 1.11 2003/10/26 16:05:46 stelian Exp $";
-#endif /* not lint */
-
 #include <config.h>
 #include <sys/types.h>
 #include <compaterr.h>

@@ -35,11 +35,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static const char rcsid[] =
-	"$Id: rmtflags.c,v 1.3 2003/03/30 15:40:35 stelian Exp $";
-#endif /* not linux */
-
 /*
  * rmt
  */

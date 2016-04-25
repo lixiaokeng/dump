@@ -10,8 +10,6 @@
  *	Wed Aug 16 2000 Erik Troan <ewt@redhat.com>
  *	- Ported to dump/restore
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
- *
- *	$Id: bylabel.h,v 1.6 2004/07/05 15:02:36 stelian Exp $
  */
 
 #ifndef _BYLABEL_H_

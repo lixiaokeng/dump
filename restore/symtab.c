@@ -35,11 +35,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static const char rcsid[] =
-	"$Id: symtab.c,v 1.28 2010/06/11 11:19:17 stelian Exp $";
-#endif /* not lint */
-
 /*
  * These routines maintain the symbol table which tracks the state
  * of the file system being restored. They provide lookup by either

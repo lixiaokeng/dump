@@ -4,8 +4,6 @@
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
- *
- *	$Id: restore.h,v 1.34 2007/02/22 20:12:50 stelian Exp $
  */
 
 /*

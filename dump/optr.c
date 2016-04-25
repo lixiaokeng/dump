@@ -35,11 +35,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static const char rcsid[] =
-	"$Id: optr.c,v 1.41 2010/12/06 14:13:59 stelian Exp $";
-#endif /* not lint */
-
 #include <config.h>
 #include <sys/param.h>
 #include <sys/wait.h>

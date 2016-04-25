@@ -35,11 +35,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static const char rcsid[] =
-	"$Id: itime.c,v 1.28 2004/06/17 09:01:15 stelian Exp $";
-#endif /* not lint */
-
 #include <config.h>
 #include <errno.h>
 #include <fcntl.h>

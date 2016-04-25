@@ -35,11 +35,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static const char rcsid[] =
-	"$Id: traverse.c,v 1.74 2011/06/10 13:41:41 stelian Exp $";
-#endif /* not lint */
-
 #include <config.h>
 #include <ctype.h>
 #include <stdio.h>

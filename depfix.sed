@@ -1,4 +1,3 @@
-# $Id: depfix.sed,v 1.2 1999/10/11 13:31:04 stelian Exp $
 #
 # Insert the header.....
 #

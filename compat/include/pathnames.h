@@ -4,8 +4,6 @@
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
- *
- *	$Id: pathnames.h,v 1.14 2003/10/26 16:05:46 stelian Exp $
  */
 
 /*

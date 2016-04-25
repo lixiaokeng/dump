@@ -1,5 +1,3 @@
-# $Id: Makefile.in,v 1.10 2003/05/08 21:11:39 stelian Exp $
-
 top_srcdir=	@top_srcdir@
 srcdir=		@srcdir@
 top_builddir=	../..

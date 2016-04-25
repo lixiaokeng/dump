@@ -35,11 +35,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static const char rcsid[] =
-	"$Id: interactive.c,v 1.27 2003/10/26 16:05:48 stelian Exp $";
-#endif /* not lint */
-
 #include <config.h>
 #include <sys/types.h>
 #include <sys/param.h>

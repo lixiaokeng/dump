@@ -35,11 +35,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static const char rcsid[] =
-	"$Id: tape.c,v 1.96 2011/06/10 13:41:41 stelian Exp $";
-#endif /* not lint */
-
 #include <config.h>
 #include <compatlfs.h>
 #include <errno.h>

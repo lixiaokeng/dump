@@ -4,8 +4,6 @@
  *	Remy Card <card@Linux.EU.Org>, 1994-1997
  *	Stelian Pop <stelian@popies.net>, 1999-2000
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
- *
- *	$Id: bsdcompat.h,v 1.25 2011/06/10 12:46:41 stelian Exp $
  */
 
 #include <config.h>

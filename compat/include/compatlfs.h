@@ -2,8 +2,6 @@
  *	Ported to Linux's Second Extended File System as part of the
  *	dump and restore backup suit
  *	Stelian Pop <stelian@popies.net> - Alcôve <www.alcove.com>, 2000-2002
- *
- *	$Id: compatlfs.h,v 1.6 2005/07/07 08:47:16 stelian Exp $
  */
 
 /*-

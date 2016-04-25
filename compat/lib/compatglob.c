@@ -63,11 +63,6 @@
  *	Number of matches in the current invocation of glob.
  */
 
-#ifndef lint
-static const char rcsid[] =
-	"$Id: compatglob.c,v 1.10 2003/10/26 16:05:46 stelian Exp $";
-#endif /* not lint */
-
 #include <config.h>
 #include <sys/types.h>
 

@@ -35,11 +35,6 @@
  * SUCH DAMAGE.
  */
 
-#ifndef lint
-static const char rcsid[] =
-	"$Id: dumprmt.c,v 1.30 2010/06/11 11:19:17 stelian Exp $";
-#endif /* not lint */
-
 #include <config.h>
 #include <sys/param.h>
 #include <sys/mtio.h>
