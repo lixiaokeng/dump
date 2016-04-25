@@ -25,9 +25,6 @@ $(PROG):	$(OBJS) $(DEPLIBS)
 ermt:	ermt.o cipher.o $(DEPLIBS)
 	$(LD) $(LDFLAGS) -o ermt ermt.o cipher.o $(LIBS)
 
-ermt.o: rmt.c
-	$(CC) -c $(ALL_CFLAGS) -DERMT -o ermt.o rmt.c
-
 $(MAN8):		rmt.8.in
 	sed -e "s|__DATE__|$(DATE)|g" \
 	    -e "s|__VERSION__|$(VERSION)|g" $< > $@
