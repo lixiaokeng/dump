@@ -6,7 +6,7 @@ top_builddir=	..
 
 INC=		-I$(top_srcdir)/restore
 ALL_CFLAGS=	@CPPFLAGS@ @CFLAGS@ @CCOPTS@ @CCTRANSSELINUX@ -pipe $(OPT) $(GINC) $(INC) $(DEFS) @RESTOREDEBUG@
-ALL_LDFLAGS=	@LDFLAGS@
+LDFLAGS=	@LDFLAGS@
 LIBS=		$(GLIBS) -le2p @READLINE@ @ZLIB@ @BZLIB@ @LTRANSSELINUX@
 DEPLIBS=	../compat/lib/libcompat.a
 
@@ -26,7 +26,7 @@ RMAN8=		rrestore.8
 all::		$(PROG) $(MAN8)
 
 $(PROG):	$(OBJS) $(DEPLIBS)
-	$(CC) $(ALL_LDFLAGS) -o $(PROG) $(OBJS) $(LIBS)
+	$(CC) $(LDFLAGS) -o $(PROG) $(OBJS) $(LIBS)
 
 $(MAN8):	restore.8.in
 	sed -e "s|__DATE__|$(DATE)|g" \

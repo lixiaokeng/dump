@@ -6,7 +6,7 @@ top_builddir=	..
 
 INC=		-I. -I$(top_srcdir)/dump -I$(top_srcdir)/compat/include
 ALL_CFLAGS=	@CPPFLAGS@ @CFLAGS@ @CCOPTS@ -pipe $(OPT) $(GINC) $(INC) $(DEFS) @DUMPDEBUG@
-ALL_LDFLAGS=	@LDFLAGS@
+LDFLAGS=	@LDFLAGS@
 LIBS=		$(GLIBS) @ZLIB@ @BZLIB@ @BLKID@ @SSLLIB@ @SQLITE3@
 
 SRCS=		dumprmt.c transformation_null.c transformation_lzo.c transformation_zlib.c transformation_bzlib.c \
@@ -22,12 +22,12 @@ all::		$(OBJS) indexer_test
 # Disabled due to missing transform_test.c -- it was accidentally not added.
 # We can re-add when someone re-implements the test code :(.
 #transform_test:	transform_test.o $(OBJS) $(DEPLIBS)
-#	$(LD) $(ALL_LDFLAGS) -o transform_test transform_test.o \
+#	$(LD) $(LDFLAGS) -o transform_test transform_test.o \
 #		transformation_null.o transformation_lzo.o transformation_zlib.o \
 #		transformation_bzlib.o transformation_ssl.o  $(LIBS)
 
 indexer_test:	indexer_test.o $(OBJS) $(DEPLIBS)
-	$(LD) $(ALL_LDFLAGS) -o indexer_test indexer_test.o legacy_indexer.o \
+	$(LD) $(LDFLAGS) -o indexer_test indexer_test.o legacy_indexer.o \
 	sqlite_indexer.o dumprmt.o $(LIBS)
 
 install::
