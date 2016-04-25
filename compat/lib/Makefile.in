@@ -5,7 +5,7 @@ top_builddir=	../..
 @MCONFIG@
 
 INC=		-I$(top_srcdir)/compat/include
-ALL_CFLAGS=	@CPPFLAGS@ @CFLAGS@ @CCOPTS@ -pipe $(OPT) $(GINC) $(INC) $(DEFS)
+ALL_CFLAGS=	@CPPFLAGS@ @CFLAGS@ $(GINC) $(INC) $(DEFS)
 SRCS=		compaterr.c compatglob.c bylabel.c system.c rmtflags.c minilzo.c
 OBJS=		compaterr.o compatglob.o bylabel.o system.o rmtflags.o minilzo.o
 LIB=		libcompat.a

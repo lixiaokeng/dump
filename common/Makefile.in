@@ -5,7 +5,7 @@ top_builddir=	..
 @MCONFIG@
 
 INC=		-I. -I$(top_srcdir)/dump -I$(top_srcdir)/compat/include
-ALL_CFLAGS=	@CPPFLAGS@ @CFLAGS@ @CCOPTS@ -pipe $(OPT) $(GINC) $(INC) $(DEFS) @DUMPDEBUG@
+ALL_CFLAGS=	@CPPFLAGS@ @CFLAGS@ $(GINC) $(INC) $(DEFS) @DUMPDEBUG@
 LDFLAGS=	@LDFLAGS@
 LIBS=		$(GLIBS) @ZLIB@ @BZLIB@ @BLKID@ @SSLLIB@ @SQLITE3@
 

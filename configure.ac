@@ -251,19 +251,6 @@ echo "restore can translate SELinux EAs by default"
 AC_SUBST(LTRANSSELINUX)
 AC_SUBST(CCTRANSSELINUX)
 
-
-dnl
-dnl set $(CC) from --with-cc=value
-dnl
-AC_ARG_WITH([cc],
-[  --with-cc=COMPILER         select compiler to use],
-AC_MSG_RESULT(CC=$withval)
-CC=$withval,
-if test -z "$CC" ; then CC=cc; fi
-[AC_MSG_RESULT(CC defaults to $CC)])dnl
-export CC
-AC_SUBST([CC])
-
 dnl
 dnl set $(LD) from --with-linker=value
 dnl
@@ -275,17 +262,6 @@ if test -z "$LD" ; then LD=$CC; fi
 [AC_MSG_RESULT(LD defaults to $LD)])dnl
 export LD
 AC_SUBST([LD])
-
-dnl
-dnl set $(CCOPTS) from --with-ccopts=value
-dnl
-AC_ARG_WITH([ccopts],
-[  --with-ccopts=CCOPTS       select compiler command line options],
-AC_MSG_RESULT(CCOPTS is $withval)
-CCOPTS=$withval
-CFLAGS="$CFLAGS $withval",
-CCOPTS=)dnl
-AC_SUBST(CCOPTS)
 
 dnl
 dnl set $(BINOWNER) from --with-binowner
