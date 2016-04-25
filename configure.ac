@@ -17,6 +17,7 @@ AC_PATH_PROG(RM, rm, rm)
 AC_CHECK_TOOL(AR, ar, ar)
 AC_CHECK_TOOL(RANLIB, ranlib, :)
 AC_CHECK_TOOL(PATCH, patch, :)
+PKG_PROG_PKG_CONFIG
 AC_PROG_CC
 AC_PROG_INSTALL
 
@@ -47,41 +48,19 @@ AC_SUBST(DUMPDEBUG)
 AC_SUBST(RESTOREDEBUG)
 
 dnl
-dnl Handle --enable-static
+dnl Handle --enable-static-progs
 dnl
-AC_ARG_ENABLE([static],
-[  --enable-static            link dump and restore statically (default is NO)],
-if test "$enableval" = "no"
+AC_MSG_CHECKING([whether to build static binaries])
+AC_ARG_ENABLE([static-progs],
+[  --enable-static-progs      link dump and restore statically (default is NO)])
+if test "$enable_static_progs" = "yes"
 then
-	STATIC=""
-	echo "Linking dump and restore dynamically"
+	LDFLAGS="$LDFLAGS -static"
+	PKG_CONFIG="$PKG_CONFIG --static"
+	AC_MSG_RESULT([yes])
 else
-	STATIC="-static"
-	echo "Linking dump and restore statically"
+	AC_MSG_RESULT([no])
 fi
-,
-STATIC=""
-echo "Linking dump and restore dynamically by default"
-)
-AC_SUBST(STATIC)
-
-dnl
-dnl Handle --enable-staticz
-dnl
-AC_ARG_ENABLE([staticz],
-[  --enable-staticz           link libz and libbz2 statically (default is NO)],
-if test "$enableval" = "no"
-then
-	STATICZ="no"
-	echo "Linking libz and libbz2 dynamically"
-else
-	STATICZ="yes"
-	echo "Linking libz and libbz2 statically"
-fi
-,
-STATICZ="no"
-echo "Linking libz and libbz2 dynamically by default"
-)
 
 dnl
 dnl Handle --enable-rmt
@@ -397,9 +376,6 @@ dnl Check for Ext2fs headers and libraries
 dnl
 AC_CHECK_HEADER(ext2fs/ext2fs.h, [ext2fs_h=yes], [ext2fs_h=no], [-])
 PKG_CHECK_MODULES(EXT2FS, [ext2fs])
-if test -n "$STATIC" ; then
-	EXT2FS_LIBS=`$PKG_CONFIG --libs --static ext2fs`
-fi
 if test "$ext2fs_h" = no -o "x$EXT2FS_LIBS" = "x"; then
 	AC_MSG_ERROR(You need to install the Ext2fs libraries from the E2fsprogs distribution first - hint: make install-libs)
 fi
@@ -455,11 +431,7 @@ dnl
 AC_CHECK_HEADER(blkid/blkid.h, [blkid_h=yes], [blkid_h=no], [-])
 PKG_CHECK_EXISTS([blkid],
 	[
-	if test -n $STATIC ; then
-		BLKID=`$PKG_CONFIG --libs --static blkid`
-	else
-		BLKID=`$PKG_CONFIG --libs blkid`
-	fi
+	BLKID=`$PKG_CONFIG --libs blkid`
 	if test "$blkid_h" = yes ; then
 		AC_DEFINE([HAVE_BLKID],1,[Define this if you have the blkid library.])
 	fi
@@ -523,11 +495,7 @@ dnl
 AC_CHECK_HEADER(zlib.h, [zlib_h=yes], [zlib_h=no], [-])
 AC_CHECK_LIB(z, zlibVersion, [zlib_lib=yes], [zlib_lib=no])
 if test "$zlib_h" = yes -a "$zlib_lib" = yes; then
-	if test "$STATICZ" = yes; then
-		ZLIB="-Wl,-Bstatic -lz -Wl,-Bdynamic"
-	else
-		ZLIB="-lz"
-	fi
+	ZLIB="-lz"
 	AC_DEFINE([HAVE_ZLIB],1,[Define this if you have zlib compression library.])
 else
 	ZLIB=""
@@ -540,11 +508,7 @@ dnl
 AC_CHECK_HEADER(bzlib.h, [bzlib_h=yes], [bzlib_h=no], [-])
 AC_CHECK_LIB(bz2, BZ2_bzBuffToBuffCompress, [bzlib_lib=yes], [bzlib_lib=no])
 if test "$bzlib_h" = yes -a "$bzlib_lib" = yes; then
-	if test "$STATICZ" = yes; then
-		BZLIB="-Wl,-Bstatic -lbz2 -Wl,-Bdynamic"
-	else
-		BZLIB="-lbz2"
-	fi
+	BZLIB="-lbz2"
 	AC_DEFINE([HAVE_BZLIB],1,[Define this if you have bzlib compression library.])
 else
 	BZLIB=""
@@ -557,11 +521,7 @@ dnl
 AC_CHECK_HEADER(sqlite3.h, [sqlite3_h=yes], [sqlite3_h=no], [-])
 AC_CHECK_LIB(sqlite3, sqlite3_initialize, [sqlite3_lib=yes], [sqlite3_lib=no])
 if test "$sqlite3_h" = yes -a "$sqlite3_lib" = yes; then
-    if test "$STATICZ" = yes; then
-        SQLITE3="-Wl,-Bstatic -lsqlite3 -Wl,-Bdynamic"
-    else
-        SQLITE3="-lsqlite3"
-    fi
+	SQLITE3="-lsqlite3"
     AC_DEFINE([HAVE_SQLITE3],1,[Define this if you have sqlite3 library.])
 else
     SQLITE3=""
@@ -602,11 +562,7 @@ dnl
 AC_CHECK_HEADER(openssl/evp.h, [evp_h=yes], [evp_h=no])
 AC_CHECK_LIB(crypto, EVP_CIPHER_CTX_set_padding, [crypto_lib=yes], [crypto_lib=no])
 if test "$evp_h" = yes -a "$crypto_lib" = yes; then
-	if test "$STATICZ" = yes; then
-		SSLLIB="-Wl,-Bstatic -lssl -Wl,-Bdynamic"
-	else
-		SSLLIB="-lssl"
-	fi
+	SSLLIB="-lssl"
 	AC_DEFINE([HAVE_OPENSSL],1,[Define this if you have openssl library.])
 else
 	SSLLIB=""

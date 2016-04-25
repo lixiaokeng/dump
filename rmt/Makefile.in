@@ -5,7 +5,7 @@ top_builddir=	..
 @MCONFIG@
 
 ALL_CFLAGS=	@CPPFLAGS@ @CFLAGS@ @CCOPTS@ -pipe $(OPT) $(GINC) $(INC) $(DEFS)
-ALL_LDFLAGS=	@LDFLAGS@ @STATIC@
+ALL_LDFLAGS=	@LDFLAGS@
 LIBS=		$(GLIBS)
 DEPLIBS=	../compat/lib/libcompat.a
 
