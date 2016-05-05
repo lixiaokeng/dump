@@ -194,27 +194,22 @@ echo "Not including Mac OSX restore compatibility code by default"
 )
 
 dnl
-dnl Handle --enable-transselinux
+dnl Handle --enable-selinux
 dnl
-AC_ARG_ENABLE([transselinux],
-[  --enable-transselinux      restore can translate SELinux EAs (default is YES)],
-if test "$enableval" = "yes"
-then
-	LTRANSSELINUX="-lselinux"
-	CCTRANSSELINUX="-DTRANSSELINUX"
-	echo "restore can translate SELinux EAs"
-else
-	LTRANSSELINUX=""
-	CCTRANSSELINUX=""
-	echo "restore can not translate SELinux EAs"
+AC_ARG_ENABLE([selinux],
+[  --enable-selinux      restore can translate SELinux EAs (default is auto)])
+if test "$enable_selinux" != "no"; then
+	found_selinux="yes"
+	PKG_CHECK_MODULES([SELINUX], [libselinux], [], [
+		found_selinux="no"
+		if test "$enable_selinux" = "yes"; then
+			AC_MSG_ERROR([SELinux support requested, but not found])
+		fi
+	])
+	if test "$found_selinux" != "no"; then
+		AC_DEFINE([TRANSSELINUX], 1, [Support SELinux labels])
+	fi
 fi
-,
-LTRANSSELINUX="-lselinux"
-CCTRANSSELINUX="-DTRANSSELINUX"
-echo "restore can translate SELinux EAs by default"
-)
-AC_SUBST(LTRANSSELINUX)
-AC_SUBST(CCTRANSSELINUX)
 
 dnl
 dnl set $(DUMPDATESPATH) from --with-dumpdatespath

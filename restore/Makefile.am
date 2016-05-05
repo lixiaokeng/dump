@@ -1,4 +1,4 @@
-AM_CPPFLAGS = $(CCTRANSSELINUX) -I$(top_srcdir)/common -I$(top_srcdir)/compat/include
+AM_CPPFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/compat/include
 DISTCLEANFILES =
 EXTRA_DIST =
 
@@ -13,7 +13,7 @@ restore_SOURCES = \
 	dirs.c extern.h interactive.c main.c restore.c restore.h symtab.c \
 	tape.c utilities.c xattr.c
 restore_LDADD = ../common/libcommon.la ../compat/lib/libcompat.la \
-	$(READLINE) $(LTRANSSELINUX) $(EXT2FS_LIBS) -le2p
+	$(READLINE) $(SELINUX_LIBS) $(EXT2FS_LIBS) -le2p
 
 restore.8: restore.8.in
 	$(AM_V_GEN)\
