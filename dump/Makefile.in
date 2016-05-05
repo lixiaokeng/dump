@@ -37,9 +37,8 @@ $(MAN8):	dump.8.in
 install::	all
 	$(INSTALL) -d $(SBINDIR) $(MANDIR)
 	$(INSTALLBIN) $(PROG) $(SBINDIR)
-	$(INSTALLMAN) $(MAN8) $(MANDIR)
+	$(INSTALLMAN) $(MAN8) rdump.8 $(MANDIR)
 	cd $(SBINDIR) && $(RM) -f $(RPROG) && $(LN_S) $(PROG) $(RPROG)
-	cd $(MANDIR) && $(RM) -f $(RMAN8) && $(LN_S) $(MAN8) $(RMAN8)
 
 clean::
 	$(RM) -f $(PROG) $(MAN8) \#* *.s *.o *.a *~ core
