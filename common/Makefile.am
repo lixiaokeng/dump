@@ -16,7 +16,7 @@ libcommon_la_SOURCES = \
 	transformation_ssl.c
 libcommon_la_LIBADD = \
 	$(UUID_LIBS) \
-	$(ZLIB) \
+	$(ZLIB_LIBS) \
 	$(BZLIB) \
 	$(SSLLIB) \
 	$(SQLITE3)

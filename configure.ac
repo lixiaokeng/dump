@@ -341,15 +341,18 @@ fi
 dnl
 dnl Check for zlib headers and libraries
 dnl
-AC_CHECK_HEADER(zlib.h, [zlib_h=yes], [zlib_h=no], [-])
-AC_CHECK_LIB(z, zlibVersion, [zlib_lib=yes], [zlib_lib=no])
-if test "$zlib_h" = yes -a "$zlib_lib" = yes; then
-	ZLIB="-lz"
-	AC_DEFINE([HAVE_ZLIB],1,[Define this if you have zlib compression library.])
-else
-	ZLIB=""
+AC_ARG_ENABLE([zlib], [AC_HELP_STRING([--disable-zlib], [enable zlib compression support])])
+if test "$enable_zlib" != "no"; then
+	PKG_CHECK_MODULES([ZLIB], [zlib], [], [
+		found_zlib="no"
+		if test "$enable_zlib" = "yes"; then
+			AC_MSG_ERROR([zlib support requested, but not found])
+		fi
+	])
+	if test "$found_zlib" != "no"; then
+		AC_DEFINE([HAVE_ZLIB], 1, [Include zlib support])
+	fi
 fi
-AC_SUBST(ZLIB)
 
 dnl
 dnl Check for bzlib headers and libraries
