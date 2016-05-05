@@ -132,9 +132,9 @@ long smtc_errno;
 char	*__progname;
 #endif
 
-static void obsolete __P((int *, char **[]));
-static void usage __P((void));
-static void use_stdin __P((const char *));
+static void obsolete (int *, char **[]);
+static void usage (void);
+static void use_stdin (const char *);
 
 #define FORCED_UMASK (077)
 

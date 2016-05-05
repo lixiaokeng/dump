@@ -71,7 +71,7 @@
 #include "restore.h"
 #include "extern.h"
 
-static char *keyval __P((int));
+static char *keyval (int);
 
 /*
  * This implements the 't' option.

@@ -105,13 +105,13 @@ static int	rmt_version = 0;
 #define MTS_FLAGS	'f'
 #define MTS_BF		'b'
 
-static char	*checkbuf __P((char *, int));
-static void	 error __P((int));
-static void	 getstring __P((char *));
-static unsigned long swaplong __P((unsigned long inv));
+static char	*checkbuf (char *, int);
+static void	 error (int);
+static void	 getstring (char *);
+static unsigned long swaplong (unsigned long inv);
 #ifdef ERMT
-char	*cipher __P((char *, int, int));
-void	decrypt __P((void));
+char	*cipher (char *, int, int);
+void	decrypt (void);
 #endif
 
 int

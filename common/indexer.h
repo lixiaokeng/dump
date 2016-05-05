@@ -9,10 +9,6 @@
 #define QFA_VERSION	"1.0"
 #endif /* USE_QFA */
 
-#ifndef __P
-#include <sys/cdefs.h>
-#endif
-
 /* state information when writing QFA file. */
 typedef struct qfa_state {
 	long long curtapepos;
@@ -24,20 +20,20 @@ typedef struct qfa_state {
 /* methods used to write 'Indexer' file. */
 typedef struct indexer {
 	struct indexer *next;
-	int (*open) __P((const char *filename, int mode));
-	int (*close) __P((void));
-	int (*foo) __P((void)); // what does this function do?
-	int (*writerec) __P((const void *dp, int isspcl));
-	int (*addInode) __P((struct dinode *dp, dump_ino_t ino, int metaonly));  // dump entry
-	//int (*addDirEntry) __P((struct ext2_dir_entry *dirent, UNUSED(int offset),  // dump inode
-	//	    UNUSED(int blocksize), UNUSED(char *buf), void *private));
-	int (*addDirEntry) __P((struct direct *dp, dump_ino_t parent_ino));
+	int (*open) (const char *filename, int mode);
+	int (*close) (void);
+	int (*foo) (void); // what does this function do?
+	int (*writerec) (const void *dp, int isspcl);
+	int (*addInode) (struct dinode *dp, dump_ino_t ino, int metaonly);  // dump entry
+	//int (*addDirEntry) (struct ext2_dir_entry *dirent, UNUSED(int offset),  // dump inode
+	//	    UNUSED(int blocksize), UNUSED(char *buf), void *private);
+	int (*addDirEntry) (struct direct *dp, dump_ino_t parent_ino);
 
-	int (*openQfa) __P(());
-	int (*closeQfa) __P(());
-	int (*openQfaState) __P((QFA_State *state));
-	int (*updateQfa) __P((QFA_State *state));
-	int (*updateQfaState) __P((QFA_State *state));
+	int (*openQfa) ();
+	int (*closeQfa) ();
+	int (*openQfaState) (QFA_State *state);
+	int (*updateQfa) (QFA_State *state);
+	int (*updateQfaState) (QFA_State *state);
 } Indexer;
 
 extern Indexer *indexer;

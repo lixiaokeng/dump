@@ -36,124 +36,121 @@
  */
 
 #include <config.h>
-#ifndef __P
-#include <sys/cdefs.h>
-#endif
 #ifdef DUMP_MACOSX
 #include "darwin.h"
 #endif
 
-struct entry	*addentry __P((char *, dump_ino_t, int));
-long		 addfile __P((char *, dump_ino_t, int));
-int		 addwhiteout __P((char *));
-void		 badentry __P((struct entry *, const char *));
-void	 	 canon __P((char *, char *, int));
-void		 checkrestore __P((void));
-void		 closemt __P((void));
-void		 cleanup __P((void));
-void		 comparefile __P((char *));
-void		 compareleaves __P((void));
-void		 createfiles __P((void));
-void		 createleaves __P((char *));
-void		 createlinks __P((void));
-long		 deletefile __P((char *, dump_ino_t, int));
-void		 deleteino __P((dump_ino_t));
-void		 delwhiteout __P((struct entry *));
-dump_ino_t	 dirlookup __P((const char *));
-void		 dumpsymtable __P((char *, long));
-void	 	 extractdirs __P((int));
-int		 extractfile __P((struct entry *, int));
-void		 findunreflinks __P((void));
-char		*flagvalues __P((struct entry *));
-void		 freeentry __P((struct entry *));
-void		 freename __P((char *));
-int	 	 genliteraldir __P((char *, dump_ino_t));
-char		*gentempname __P((struct entry *));
-void		 getfile __P((void (*)(char *, size_t), void (*)(char *, size_t)));
-void		 getvol __P((long));
-void		 initsymtable __P((char *));
-int	 	 inodetype __P((dump_ino_t));
-int		 linkit __P((char *, char *, int));
-struct entry	*lookupino __P((dump_ino_t));
-struct entry	*lookupname __P((char *));
-long		 listfile __P((char *, dump_ino_t, int));
-dump_ino_t	 lowerbnd __P((dump_ino_t));
-void		 mktempname __P((struct entry *));
-void		 moveentry __P((struct entry *, char *));
-void		 msg __P((const char *, ...));
-char		*myname __P((struct entry *));
-void		 newnode __P((struct entry *));
-void		 newtapebuf __P((long));
-long		 nodeupdates __P((char *, dump_ino_t, int));
-void	 	 onintr __P((int));
-void		 panic __P((const char *, ...));
-void		 pathcheck __P((char *));
-struct direct	*pathsearch __P((const char *));
-void		 printdumpinfo __P((void));
-void		 printvolinfo __P((void));
-void		 removeleaf __P((struct entry *));
-void		 removenode __P((struct entry *));
-void		 removeoldleaves __P((void));
-void		 removeoldnodes __P((void));
-void		 renameit __P((char *, char *));
-int		 reply __P((const char *));
-void		 resizemaps __P((dump_ino_t, dump_ino_t));
-RST_DIR		*rst_opendir __P((const char *));
-struct direct	*rst_readdir __P((RST_DIR *));
-void		 rst_closedir __P((RST_DIR *dirp));
-void	 	 runcmdshell __P((void));
-char		*savename __P((char *));
-void	 	 setdirmodes __P((int));
-void		 comparedirmodes __P((void));
-void		 setinput __P((char *));
-void		 setup __P((void));
-void	 	 skipdirs __P((void));
-void		 skipfile __P((void));
-void		 skipmaps __P((void));
-void		 swabst __P((u_char *, u_char *));
-void	 	 treescan __P((char *, dump_ino_t, long (*)(char *, dump_ino_t, int)));
-dump_ino_t	 upperbnd __P((dump_ino_t));
-long		 verifyfile __P((char *, dump_ino_t, int));
-void		 xtrnull __P((char *, size_t));
+struct entry	*addentry (char *, dump_ino_t, int);
+long		 addfile (char *, dump_ino_t, int);
+int		 addwhiteout (char *);
+void		 badentry (struct entry *, const char *);
+void	 	 canon (char *, char *, int);
+void		 checkrestore (void);
+void		 closemt (void);
+void		 cleanup (void);
+void		 comparefile (char *);
+void		 compareleaves (void);
+void		 createfiles (void);
+void		 createleaves (char *);
+void		 createlinks (void);
+long		 deletefile (char *, dump_ino_t, int);
+void		 deleteino (dump_ino_t);
+void		 delwhiteout (struct entry *);
+dump_ino_t	 dirlookup (const char *);
+void		 dumpsymtable (char *, long);
+void	 	 extractdirs (int);
+int		 extractfile (struct entry *, int);
+void		 findunreflinks (void);
+char		*flagvalues (struct entry *);
+void		 freeentry (struct entry *);
+void		 freename (char *);
+int	 	 genliteraldir (char *, dump_ino_t);
+char		*gentempname (struct entry *);
+void		 getfile (void (*)(char *, size_t), void (*)(char *, size_t));
+void		 getvol (long);
+void		 initsymtable (char *);
+int	 	 inodetype (dump_ino_t);
+int		 linkit (char *, char *, int);
+struct entry	*lookupino (dump_ino_t);
+struct entry	*lookupname (char *);
+long		 listfile (char *, dump_ino_t, int);
+dump_ino_t	 lowerbnd (dump_ino_t);
+void		 mktempname (struct entry *);
+void		 moveentry (struct entry *, char *);
+void		 msg (const char *, ...);
+char		*myname (struct entry *);
+void		 newnode (struct entry *);
+void		 newtapebuf (long);
+long		 nodeupdates (char *, dump_ino_t, int);
+void	 	 onintr (int);
+void		 panic (const char *, ...);
+void		 pathcheck (char *);
+struct direct	*pathsearch (const char *);
+void		 printdumpinfo (void);
+void		 printvolinfo (void);
+void		 removeleaf (struct entry *);
+void		 removenode (struct entry *);
+void		 removeoldleaves (void);
+void		 removeoldnodes (void);
+void		 renameit (char *, char *);
+int		 reply (const char *);
+void		 resizemaps (dump_ino_t, dump_ino_t);
+RST_DIR		*rst_opendir (const char *);
+struct direct	*rst_readdir (RST_DIR *);
+void		 rst_closedir (RST_DIR *dirp);
+void	 	 runcmdshell (void);
+char		*savename (char *);
+void	 	 setdirmodes (int);
+void		 comparedirmodes (void);
+void		 setinput (char *);
+void		 setup (void);
+void	 	 skipdirs (void);
+void		 skipfile (void);
+void		 skipmaps (void);
+void		 swabst (u_char *, u_char *);
+void	 	 treescan (char *, dump_ino_t, long (*)(char *, dump_ino_t, int));
+dump_ino_t	 upperbnd (dump_ino_t);
+long		 verifyfile (char *, dump_ino_t, int);
+void		 xtrnull (char *, size_t);
 
 /* From ../dump/dumprmt.c */
-void		rmtclose __P((void));
-int		rmthost __P((const char *));
-int		rmtioctl __P((int, int));
-int		rmtopen __P((const char *, const int));
-int		rmtread __P((const char *, int));
-off_t		rmtseek __P((off_t, int));
+void		rmtclose (void);
+int		rmthost (const char *);
+int		rmtioctl (int, int);
+int		rmtopen (const char *, const int);
+int		rmtread (const char *, int);
+off_t		rmtseek (off_t, int);
 
 /* From e2fsprogs */
-int fsetflags __P((const char *, unsigned long));
-int fgetflags __P((const char *, unsigned long *));
-int setflags __P((int, unsigned long));
+int fsetflags (const char *, unsigned long);
+int fgetflags (const char *, unsigned long *);
+int setflags (int, unsigned long);
 
-int lsetflags __P((const char *, unsigned long));
-int lgetflags __P((const char *, unsigned long *));
+int lsetflags (const char *, unsigned long);
+int lgetflags (const char *, unsigned long *);
 
 #ifdef USE_QFA
-int	Inode2Tapepos __P((dump_ino_t, long *, long long *, int));
-int	GetTapePos __P((long long *));
-int	GotoTapePos __P((long long));
-void	ReReadFromTape __P((void));
-void	ReReadInodeFromTape __P((dump_ino_t));
-void    GetPathFile __P((char *, char *, char *));
+int	Inode2Tapepos (dump_ino_t, long *, long long *, int);
+int	GetTapePos (long long *);
+int	GotoTapePos (long long);
+void	ReReadFromTape (void);
+void	ReReadInodeFromTape (dump_ino_t);
+void    GetPathFile (char *, char *, char *);
 
 #ifdef sunos
-int		GetSCSIIDFromPath __P((char *, long *));
+int		GetSCSIIDFromPath (char *, long *);
 int		OpenSMTCmt(char *);
 #endif
 #endif
-void	RequestVol __P((long));
+void	RequestVol (long);
 
 #ifdef DUMP_MACOSX
-int	extractfinderinfoufs __P((char *));
-int	extractresourceufs __P((char *));
-int	CreateAppleDoubleFileRes __P((char *, FndrFileInfo *, mode_t, int, struct timeval *, u_int32_t, u_int32_t));
+int	extractfinderinfoufs (char *);
+int	extractresourceufs (char *);
+int	CreateAppleDoubleFileRes (char *, FndrFileInfo *, mode_t, int, struct timeval *, u_int32_t, u_int32_t);
 #endif
 
-void	skipxattr __P((void));
-int	readxattr __P((char *));
-int	xattr_compare __P((char *, char *));
-int	xattr_extract __P((char *, char *));
+void	skipxattr (void);
+int	readxattr (char *);
+int	xattr_compare (char *, char *);
+int	xattr_extract (char *, char *);

@@ -92,10 +92,10 @@
 static struct entry **entry;
 static long entrytblsize;
 
-static void		 addino __P((dump_ino_t, struct entry *));
-static struct entry	*lookupparent __P((char *));
-static void		 removeentry __P((struct entry *));
-static int		 dir_hash __P((char *));
+static void		 addino (dump_ino_t, struct entry *);
+static struct entry	*lookupparent (char *);
+static void		 removeentry (struct entry *);
+static int		 dir_hash (char *);
 
 /*
  * Returns a hash given a file name

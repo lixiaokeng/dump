@@ -2,10 +2,6 @@
 #include <bsdcompat.h>
 #include <protocols/dumprestore.h>
 
-#ifndef __P
-#include <sys/cdefs.h>
-#endif
-
 #ifdef HAVE_LZO
 #include <minilzo.h>
 #endif /* HAVE_LZO */
@@ -81,18 +77,18 @@ typedef struct transformation {
 	 * Initialize the system.
 	 * (mode: 1 = compress/encrypt, 0 = decompress/decrypt)
 	 */
-	int (*initialize) __P((struct transformation *xform, int mode));
+	int (*initialize) (struct transformation *xform, int mode);
 
 	/*
 	 * Shut down the system
 	 */
-	int (*shutdown) __P((struct transformation *xform));
+	int (*shutdown) (struct transformation *xform);
 
 	/*
 	 * Do anything necessary after forking the process.
 	 */
-	int (*startNewTape) __P((struct transformation *xform,
-		struct tapebuf *tpbin, unsigned long *destlen));
+	int (*startNewTape) (struct transformation *xform,
+		struct tapebuf *tpbin, unsigned long *destlen);
 
 	/*
 	 * The dump process is master-slave with the actual
@@ -101,24 +97,24 @@ typedef struct transformation {
 	 * the latter process. (E.g., some encryption libraries
 	 * must be reinitialized.)
 	 */
-	int (*startDiskIOProcess) __P((struct transformation *xform));
+	int (*startDiskIOProcess) (struct transformation *xform);
 
 	/*
 	 * Clean up everything before the slave process ends.
 	 */
-	int (*endDiskIOProcess) __P((struct transformation *xform));
+	int (*endDiskIOProcess) (struct transformation *xform);
 
 	/*
 	 * Compress/encrypt buffer.
 	 */
-	int (*compress) __P((struct transformation *xform, struct tapebuf *, unsigned long *destlen,
-			const char *src, int srclen));
+	int (*compress) (struct transformation *xform, struct tapebuf *, unsigned long *destlen,
+			const char *src, int srclen);
 
 	/*
 	 * Decompress/decrypt buffer.
 	 */
-	int (*decompress) __P((struct transformation *xform, struct tapebuf *, unsigned long *destlen,
-			const char *src, int srclen, char **reason));
+	int (*decompress) (struct transformation *xform, struct tapebuf *, unsigned long *destlen,
+			const char *src, int srclen, char **reason);
 
 } Transformation;
 

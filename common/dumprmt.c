@@ -94,16 +94,16 @@ static	int fromrmtape = -1;
 int rshpid = -1;
 static	const char *rmtpeer = 0;
 
-static	int okname __P((const char *));
-static	off_t rmtcall __P((const char *, const char *));
-static	void rmtconnaborted __P((int));
-static	int rmtgetb __P((void));
-static	int rmtgetconn __P((void));
-static	void rmtgets __P((char *, size_t));
-static	off_t rmtreply __P((const char *));
-static  int piped_child __P((const char **command));
+static	int okname (const char *);
+static	off_t rmtcall (const char *, const char *);
+static	void rmtconnaborted (int);
+static	int rmtgetb (void);
+static	int rmtgetconn (void);
+static	void rmtgets (char *, size_t);
+static	off_t rmtreply (const char *);
+static  int piped_child (const char **command);
 #ifdef KERBEROS
-int	krcmd __P((char **, int /*u_short*/, char *, char *, int *, char *));
+int	krcmd (char **, int /*u_short*/, char *, char *, int *, char *);
 #endif
 
 static	int errfd = -1;

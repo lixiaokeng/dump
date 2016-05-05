@@ -177,13 +177,13 @@ char	*__progname;
 #endif
 
 int 	maxbsize = 1024*1024;     /* XXX MAXBSIZE from sys/param.h */
-static long numarg __P((const char *, long, long));
-static long *numlistarg __P((const char *, long, long));
-static void obsolete __P((int *, char **[]));
-static void usage __P((void));
-static void do_exclude_from_file __P((char *));
-static void do_exclude_ino_str __P((char *));
-static void incompat_flags __P((int, char, char));
+static long numarg (const char *, long, long);
+static long *numlistarg (const char *, long, long);
+static void obsolete (int *, char **[]);
+static void usage (void);
+static void do_exclude_from_file (char *);
+static void do_exclude_ino_str (char *);
+static void incompat_flags (int, char, char);
 
 static char* iexclude_bitmap = NULL;		/* the inode exclude bitmap */
 static unsigned int iexclude_bitmap_bytes = 0;	/* size of bitmap in bytes */

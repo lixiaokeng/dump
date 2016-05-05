@@ -46,7 +46,7 @@
 extern int tapeno;
 extern dump_ino_t volinfo[]; // TP_NINOS
 
-extern void msg __P((const char *fmt,...));
+extern void msg (const char *fmt,...);
 
 #ifdef __linux__
 extern ext2_filsys fs;

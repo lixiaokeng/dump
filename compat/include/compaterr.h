@@ -58,28 +58,28 @@
 
 __BEGIN_DECLS
 #ifndef HAVE_ERR
-__dead void	err __P((int, const char *, ...));
+__dead void	err (int, const char *, ...);
 #endif
 #ifndef HAVE_VERR
-__dead void	verr __P((int, const char *, _BSD_VA_LIST_));
+__dead void	verr (int, const char *, _BSD_VA_LIST_);
 #endif
 #ifndef HAVE_ERRX
-__dead void	errx __P((int, const char *, ...));
+__dead void	errx (int, const char *, ...);
 #endif
 #ifndef HAVE_VERRX
-__dead void	verrx __P((int, const char *, _BSD_VA_LIST_));
+__dead void	verrx (int, const char *, _BSD_VA_LIST_);
 #endif
 #ifndef HAVE_WARN
-void		warn __P((const char *, ...));
+void		warn (const char *, ...);
 #endif
 #ifndef HAVE_VWARN
-void		vwarn __P((const char *, _BSD_VA_LIST_));
+void		vwarn (const char *, _BSD_VA_LIST_);
 #endif
 #ifndef HAVE_WARNX
-void		warnx __P((const char *, ...));
+void		warnx (const char *, ...);
 #endif
 #ifndef HAVE_VWARNX
-void		vwarnx __P((const char *, _BSD_VA_LIST_));
+void		vwarnx (const char *, _BSD_VA_LIST_);
 #endif
 __END_DECLS
 

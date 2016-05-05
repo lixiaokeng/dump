@@ -45,8 +45,8 @@ static int AfileActive = 1;/* Afile flag */
 char *Apath;
 
 #ifdef USE_QFA
-static int GetTapePos __P((long long *));
-static int MkTapeString __P((struct s_spcl *, long long));
+static int GetTapePos (long long *);
+static int MkTapeString (struct s_spcl *, long long);
 #define FILESQFAPOS	20
 
 int tapepos;
@@ -63,8 +63,8 @@ static char gTps[255];
 static int32_t gThisDumpDate;
 #endif /* USE_QFA */
 
-void	msg __P((const char *fmt, ...));
-void	quit __P((const char *fmt, ...));
+void	msg (const char *fmt, ...);
+void	quit (const char *fmt, ...);
 
 extern char *host;
 extern int tapefd;

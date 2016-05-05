@@ -76,10 +76,10 @@ int	nddates;
 int	ddates_in;
 struct	dumptime *dthead;
 
-static	void dumprecout __P((FILE *, struct dumpdates *));
-static	int getrecord __P((FILE *, struct dumpdates *));
-static	int makedumpdate __P((struct dumpdates *, char *));
-static	void readdumptimes __P((FILE *));
+static	void dumprecout (FILE *, struct dumpdates *);
+static	int getrecord (FILE *, struct dumpdates *);
+static	int makedumpdate (struct dumpdates *, char *);
+static	void readdumptimes (FILE *);
 
 void
 initdumptimes(int createdumpdates)

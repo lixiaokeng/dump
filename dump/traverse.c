@@ -88,15 +88,15 @@ typedef	long fsizeT;
 #endif
 
 #ifdef	__linux__
-static	int searchdir __P((struct ext2_dir_entry *dp, int offset,
-			   int blocksize, char *buf, void *private));
+static	int searchdir (struct ext2_dir_entry *dp, int offset,
+			   int blocksize, char *buf, void *private);
 #else
-static	int dirindir __P((dump_ino_t ino, daddr_t blkno, int level, long *size));
-static	void dmpindir __P((dump_ino_t ino, daddr_t blk, int level, fsizeT *size));
-static	int searchdir __P((dump_ino_t ino, daddr_t blkno, long size, long filesize));
+static	int dirindir (dump_ino_t ino, daddr_t blkno, int level, long *size);
+static	void dmpindir (dump_ino_t ino, daddr_t blk, int level, fsizeT *size);
+static	int searchdir (dump_ino_t ino, daddr_t blkno, long size, long filesize);
 #endif
-static	void mapfileino __P((dump_ino_t ino, struct dinode const *dp, long long *tapesize, int *dirskipped));
-static void dump_xattr __P((dump_ino_t ino, struct dinode *dp));
+static	void mapfileino (dump_ino_t ino, struct dinode const *dp, long long *tapesize, int *dirskipped);
+static void dump_xattr (dump_ino_t ino, struct dinode *dp);
 
 #ifdef HAVE_EXT2_JOURNAL_INUM
 #define ext2_journal_ino(sb) (sb->s_journal_inum)

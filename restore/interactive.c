@@ -114,14 +114,14 @@ struct arglist {
 	char	*cmd;		/* the current command */
 };
 
-static char	*copynext __P((char *, char *));
-static int	 fcmp __P((const void *, const void *));
-static void	 formatf __P((struct afile *, int));
-static void	 getcmd __P((char *, char *, char *, int, struct arglist *));
-struct dirent	*glob_readdir __P((RST_DIR *dirp));
-static int	 glob_stat __P((const char *, struct stat *));
-static void	 mkentry __P((char *, struct direct *, struct afile *));
-static void	 printlist __P((char *, char *));
+static char	*copynext (char *, char *);
+static int	 fcmp (const void *, const void *);
+static void	 formatf (struct afile *, int);
+static void	 getcmd (char *, char *, char *, int, struct arglist *);
+struct dirent	*glob_readdir (RST_DIR *dirp);
+static int	 glob_stat (const char *, struct stat *);
+static void	 mkentry (char *, struct direct *, struct afile *);
+static void	 printlist (char *, char *);
 
 /*
  * Read and execute commands from the terminal.

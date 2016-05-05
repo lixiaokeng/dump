@@ -68,9 +68,9 @@
 #include "pathnames.h"
 #include "bylabel.h"
 
-static	void alarmcatch __P((int));
-int	datesort __P((const void *, const void *));
-static	void sendmes __P((const char *, const char *));
+static	void alarmcatch (int);
+int	datesort (const void *, const void *);
+static	void sendmes (const char *, const char *);
 
 /* List of filesystem types that we can dump (same ext2 on-disk format) */
 static char *fstypes[] = { "ext2", "ext3", "ext4", "InterMezzo", NULL };

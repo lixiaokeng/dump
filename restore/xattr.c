@@ -191,15 +191,15 @@ struct ext2_xattr_entry {
 # define SYSCALL(args...)	( errno = ENOSYS, -1 )
 #endif
 
-static int lsetxattr __P((const char *, const char *, void *, size_t, int));
-static ssize_t lgetxattr __P((const char *, const char *, void *, size_t));
-static ssize_t llistxattr __P((const char *, char *, size_t));
-static int xattr_cb_list __P((char *, char *, int, int, void *));
-static int xattr_cb_set __P((char *, char *, int, int, void *));
-static int xattr_cb_compare __P((char *, char *, int, int, void *));
-static int xattr_verify __P((char *));
-static int xattr_count __P((char *, int *));
-static int xattr_walk __P((char *, int (*)(char *, char *, int, int, void *), void *));
+static int lsetxattr (const char *, const char *, void *, size_t, int);
+static ssize_t lgetxattr (const char *, const char *, void *, size_t);
+static ssize_t llistxattr (const char *, char *, size_t);
+static int xattr_cb_list (char *, char *, int, int, void *);
+static int xattr_cb_set (char *, char *, int, int, void *);
+static int xattr_cb_compare (char *, char *, int, int, void *);
+static int xattr_verify (char *);
+static int xattr_count (char *, int *);
+static int xattr_walk (char *, int (*)(char *, char *, int, int, void *), void *);
 
 static int
 lsetxattr(const char *path, const char *name, void *value, size_t size, int flags)

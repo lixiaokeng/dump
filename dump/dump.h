@@ -114,77 +114,73 @@ extern int	tp_bshift;	/* log2(TP_BSIZE) */
 extern dump_ino_t volinfo[];	/* which inode on which volume archive info */
 extern Transformation *transformation;
 
-#ifndef __P
-#include <sys/cdefs.h>
-#endif
-
 /* operator interface functions */
-void	broadcast __P((const char *message));
-time_t	do_stats __P((void));
-void	lastdump __P((char arg));
-void	msg __P((const char *fmt, ...));
-void	msgtail __P((const char *fmt, ...));
-int	query __P((const char *question));
-void	quit __P((const char *fmt, ...));
-void	set_operators __P((void));
+void	broadcast (const char *message);
+time_t	do_stats (void);
+void	lastdump (char arg);
+void	msg (const char *fmt, ...);
+void	msgtail (const char *fmt, ...);
+int	query (const char *question);
+void	quit (const char *fmt, ...);
+void	set_operators (void);
 #if defined(SIGINFO)
-void	statussig __P((int signo));
+void	statussig (int signo);
 #endif
-void	timeest __P((void));
-time_t	unctime __P((const char *str));
+void	timeest (void);
+time_t	unctime (const char *str);
 
 /* mapping rouintes */
 struct	dinode;
-long	blockest __P((struct dinode const *dp));
-int	mapfiles __P((dump_ino_t maxino, long long *tapesize));
+long	blockest (struct dinode const *dp);
+int	mapfiles (dump_ino_t maxino, long long *tapesize);
 #ifdef	__linux__
-int	mapfilesfromdir __P((dump_ino_t maxino, long long *tapesize, char *directory));
-int	maponefile __P((dump_ino_t maxino, long long *tapesize, char *directory));
+int	mapfilesfromdir (dump_ino_t maxino, long long *tapesize, char *directory);
+int	maponefile (dump_ino_t maxino, long long *tapesize, char *directory);
 #endif
-int	mapdirs __P((dump_ino_t maxino, long long *tapesize));
+int	mapdirs (dump_ino_t maxino, long long *tapesize);
 
 /* file dumping routines */
-void	blksout __P((blk_t *blkp, int frags, dump_ino_t ino));
-void	bread __P((ext2_loff_t blkno, char *buf, int size));
-void	dumpino __P((struct dinode *dp, dump_ino_t ino, int metaonly));
+void	blksout (blk_t *blkp, int frags, dump_ino_t ino);
+void	bread (ext2_loff_t blkno, char *buf, int size);
+void	dumpino (struct dinode *dp, dump_ino_t ino, int metaonly);
 #ifdef	__linux__
-void	dumpdirino __P((struct dinode *dp, dump_ino_t ino));
+void	dumpdirino (struct dinode *dp, dump_ino_t ino);
 #endif
-void	dumpmap __P((char *map, int type, dump_ino_t ino));
-void	writeheader __P((dump_ino_t ino));
-void	mkchecksum __P((union u_spcl *tmpspcl));
+void	dumpmap (char *map, int type, dump_ino_t ino);
+void	writeheader (dump_ino_t ino);
+void	mkchecksum (union u_spcl *tmpspcl);
 
 /* tape writing routines */
-int	alloctape __P((void));
-void	close_rewind __P((void));
-void	dumpblock __P((blk_t blkno, int size));
-void	startnewtape __P((int top));
-time_t	trewind __P((void));
-void	writerec __P((const void *dp, int isspcl));
-char	*mktimeest __P((time_t tnow));
+int	alloctape (void);
+void	close_rewind (void);
+void	dumpblock (blk_t blkno, int size);
+void	startnewtape (int top);
+time_t	trewind (void);
+void	writerec (const void *dp, int isspcl);
+char	*mktimeest (time_t tnow);
 
-void 	Exit __P((int status));
-void	dumpabort __P((int signo));
-void	getfstab __P((void));
+void 	Exit (int status);
+void	dumpabort (int signo);
+void	getfstab (void);
 
-const char *rawname __P((const char *cp));
-struct	dinode *getino __P((dump_ino_t inum));
+const char *rawname (const char *cp);
+struct	dinode *getino (dump_ino_t inum);
 
 /* rdump routines */
 #ifdef RDUMP
-int	rmthost __P((const char *host));
-int	rmtopen __P((const char *tape, const int mode));
-void	rmtclose __P((void));
-int	rmtread __P((char *buf, size_t count));
-int	rmtwrite __P((const char *buf, size_t count));
-off_t	rmtseek __P((off_t offset, int pos));
-struct mtget * rmtstatus __P((void));
-int	rmtioctl __P((int cmd, int count));
+int	rmthost (const char *host);
+int	rmtopen (const char *tape, const int mode);
+void	rmtclose (void);
+int	rmtread (char *buf, size_t count);
+int	rmtwrite (const char *buf, size_t count);
+off_t	rmtseek (off_t offset, int pos);
+struct mtget * rmtstatus (void);
+int	rmtioctl (int cmd, int count);
 #endif /* RDUMP */
 
-void	interrupt __P((int signo));	/* in case operator bangs on console */
-int	exclude_ino __P((dump_ino_t ino));
-void	do_exclude_ino __P((dump_ino_t ino, const char *));
+void	interrupt (int signo);	/* in case operator bangs on console */
+int	exclude_ino (dump_ino_t ino);
+void	do_exclude_ino (dump_ino_t ino, const char *);
 
 /*
  *	Exit status codes
@@ -203,9 +199,9 @@ void	do_exclude_ino __P((dump_ino_t ino, const char *));
 
 #include <mntent.h>
 
-struct	mntent *fstabsearch __P((const char *key));	/* search fs_file and fs_spec */
+struct	mntent *fstabsearch (const char *key);	/* search fs_file and fs_spec */
 #ifdef	__linux__
-struct	mntent *fstabsearchdir __P((const char *key, char *dir));	/* search fs_file and fs_spec */
+struct	mntent *fstabsearchdir (const char *key, char *dir);	/* search fs_file and fs_spec */
 #endif
 
 /*
@@ -226,13 +222,13 @@ extern struct	dumptime *dthead;	/* head of the list version */
 extern int	nddates;		/* number of records (might be zero) */
 extern int	ddates_in;		/* we have read the increment file */
 extern struct	dumpdates **ddatev;	/* the arrayfied version */
-void	initdumptimes __P((int));
-void	getdumptime __P((int));
-void	putdumptime __P((void));
+void	initdumptimes (int);
+void	getdumptime (int);
+void	putdumptime (void);
 #define	ITITERATE(i, ddp) \
 	for (ddp = ddatev[i = 0]; i < nddates; ddp = ddatev[++i])
 
-void	sig __P((int signo));
+void	sig (int signo);
 
 /*
  * Compatibility with old systems.

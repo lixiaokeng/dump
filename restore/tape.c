@@ -136,49 +136,49 @@ static int	Qcvt;		/* Swap quads (for sun) */
 
 #define	FLUSHTAPEBUF()	blkcnt = ntrec + 1
 
-static void	 accthdr __P((struct s_spcl *));
-static int	 checksum __P((int *));
-static void	 findinode __P((struct s_spcl *));
-static void	 findtapeblksize __P((void));
-static int	 gethead __P((struct s_spcl *));
-static int	 converthead __P((struct s_spcl *));
-static void	 converttapebuf __P((struct tapebuf *));
-static void	 readtape __P((char *));
-static void	 setdumpnum __P((void));
+static void	 accthdr (struct s_spcl *);
+static int	 checksum (int *);
+static void	 findinode (struct s_spcl *);
+static void	 findtapeblksize (void);
+static int	 gethead (struct s_spcl *);
+static int	 converthead (struct s_spcl *);
+static void	 converttapebuf (struct tapebuf *);
+static void	 readtape (char *);
+static void	 setdumpnum (void);
 #ifdef DUMP_MACOSX
-static void	 xtrfilefinderinfo __P((char *, size_t));
+static void	 xtrfilefinderinfo (char *, size_t);
 #endif
 
-static u_int	 swabi __P((u_int));
+static u_int	 swabi (u_int);
 #if 0
-static u_long	 swabl __P((u_long));
+static u_long	 swabl (u_long);
 #endif
-static u_char	*swab64 __P((u_char *, int));
-static u_char	*swab32 __P((u_char *, int));
-static u_char	*swab16 __P((u_char *, int));
-static void	 terminateinput __P((void));
-static void	 xtrfile __P((char *, size_t));
-static void	 xtrlnkfile __P((char *, size_t));
-static void	 xtrlnkskip __P((char *, size_t));
-static void	 xtrmap __P((char *, size_t));
-static void	 xtrmapskip __P((char *, size_t));
-static void	 xtrskip __P((char *, size_t));
-static void	 xtrxattr __P((char *, size_t));
-static void	 setmagtapein __P((void));
-static int	 extractattr __P((char *));
-static void	 compareattr __P((char *));
+static u_char	*swab64 (u_char *, int);
+static u_char	*swab32 (u_char *, int);
+static u_char	*swab16 (u_char *, int);
+static void	 terminateinput (void);
+static void	 xtrfile (char *, size_t);
+static void	 xtrlnkfile (char *, size_t);
+static void	 xtrlnkskip (char *, size_t);
+static void	 xtrmap (char *, size_t);
+static void	 xtrmapskip (char *, size_t);
+static void	 xtrskip (char *, size_t);
+static void	 xtrxattr (char *, size_t);
+static void	 setmagtapein (void);
+static int	 extractattr (char *);
+static void	 compareattr (char *);
 
 #if defined(HAVE_ZLIB) || defined(HAVE_BZLIB) || defined(HAVE_LZO)
-static void	newcomprbuf __P((int));
-static void	(*readtape_func) __P((char *));
-static void	readtape_set __P((char *));
-static void	readtape_uncompr __P((char *));
-static void	readtape_comprfile __P((char *));
-static void	readtape_comprtape __P((char *));
-static char	*decompress_tapebuf __P((struct tapebuf *, int));
-static void	msg_read_error __P((char *));
+static void	newcomprbuf (int);
+static void	(*readtape_func) (char *);
+static void	readtape_set (char *);
+static void	readtape_uncompr (char *);
+static void	readtape_comprfile (char *);
+static void	readtape_comprtape (char *);
+static char	*decompress_tapebuf (struct tapebuf *, int);
+static void	msg_read_error (char *);
 #endif
-static int	read_a_block __P((int, char *, size_t, long *));
+static int	read_a_block (int, char *, size_t, long *);
 #define PREFIXSIZE	sizeof(struct tapebuf)
 
 #define COMPARE_ONTHEFLY 1
@@ -186,8 +186,8 @@ static int	read_a_block __P((int, char *, size_t, long *));
 #if COMPARE_ONTHEFLY
 static int	ifile;		/* input file for compare */
 static int	cmperror;	/* compare error */
-static void	xtrcmpfile __P((char *, size_t));
-static void	xtrcmpskip __P((char *, size_t));
+static void	xtrcmpfile (char *, size_t);
+static void	xtrcmpskip (char *, size_t);
 #endif
 
 static int readmapflag;
@@ -1349,7 +1349,7 @@ skipxattr(void)
  * to the skip function.
  */
 void
-getfile(void (*fill) __P((char *, size_t)), void (*skip) __P((char *, size_t)))
+getfile(void (*fill) (char *, size_t), void (*skip) (char *, size_t))
 {
 	int i;
 	volatile int curblk = 0;

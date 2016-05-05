@@ -77,7 +77,7 @@
 #define	E_YEAR		20
 #define E_TZOFFSET      25
 
-static	int lookup __P((const char *));
+static	int lookup (const char *);
 
 
 time_t

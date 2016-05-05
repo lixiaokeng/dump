@@ -49,12 +49,12 @@ extern char *__progname;		/* Program name, from crt0. */
 #if !defined(HAVE_ERR) || !defined(HAVE_ERRX) || !defined(HAVE_VERR) || !defined(HAVE_VERRX) || !defined(HAVE_VWARN) || !defined(HAVE_VWARNX) || !defined(HAVE_WARN) || !defined(HAVE_WARNX)
 
 __BEGIN_DECLS
-__dead void     errc __P((int, int, const char *, ...));
-__dead void     verrc __P((int, int, const char *, _BSD_VA_LIST_));
-void            warnc __P((int, const char *, ...));
-void            vwarnc __P((int, const char *, _BSD_VA_LIST_));
-void            err_set_file __P((void *));
-void            err_set_exit __P((void (*)(int)));
+__dead void     errc (int, int, const char *, ...);
+__dead void     verrc (int, int, const char *, _BSD_VA_LIST_);
+void            warnc (int, const char *, ...);
+void            vwarnc (int, const char *, _BSD_VA_LIST_);
+void            err_set_file (void *);
+void            err_set_exit (void (*(int)));
 __END_DECLS
 
 static void (*err_exit)(int);

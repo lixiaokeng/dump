@@ -43,7 +43,7 @@ struct ext2_super_block {
 };
 #define ext2magic(s)	((unsigned int) s.s_magic[0] + (((unsigned int) s.s_magic[1]) << 8))
 
-void msg __P((const char *fmt, ...));
+void msg (const char *fmt, ...);
 
 static struct uuidCache_s {
 	struct uuidCache_s *next;

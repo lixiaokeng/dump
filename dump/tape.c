@@ -104,17 +104,17 @@ int 	eot_code = 1;
 long long tapea_bytes = 0;	/* bytes_written at start of current volume */
 static int magtapeout;		/* output is really a tape */
 
-static	ssize_t dump_atomic_read __P((int, char *, size_t));
-static	ssize_t dump_atomic_write __P((int, const char *, size_t));
+static	ssize_t dump_atomic_read (int, char *, size_t);
+static	ssize_t dump_atomic_write (int, const char *, size_t);
 #ifdef WRITEDEBUG
-static	void doslave __P((int, int, int));
+static	void doslave (int, int, int);
 #else
-static	void doslave __P((int, int));
+static	void doslave (int, int);
 #endif
-static	void enslave __P((void));
-static	void flushtape __P((void));
-static	void killall __P((void));
-static	void rollforward __P((void));
+static	void enslave (void);
+static	void flushtape (void);
+static	void killall (void);
+static	void rollforward (void);
 
 int reqsiz;
 

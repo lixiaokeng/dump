@@ -143,21 +143,21 @@ struct odirect {
 };
 
 #if defined(__linux__) || defined(sunos)
-static struct inotab	*allocinotab __P((dump_ino_t, off_t));
-static void		savemodeinfo __P((dump_ino_t, struct new_bsd_inode *, char *));
+static struct inotab	*allocinotab (dump_ino_t, off_t);
+static void		savemodeinfo (dump_ino_t, struct new_bsd_inode *, char *);
 #else
-static struct inotab	*allocinotab __P((dump_ino_t, off_t));
-static void		savemodeinfo __P((dump_ino_t, struct dinode *, char *));
+static struct inotab	*allocinotab (dump_ino_t, off_t);
+static void		savemodeinfo (dump_ino_t, struct dinode *, char *);
 #endif
-static void		 dcvt __P((struct odirect *, struct direct *));
-static void		 flushent __P((void));
-static struct inotab	*inotablookup __P((dump_ino_t));
-static RST_DIR		*opendirfile __P((const char *));
-static void		 putdir __P((char *, size_t));
-static void		 putent __P((struct direct *));
-static void		rst_seekdir __P((RST_DIR *, off_t, off_t));
-static off_t		rst_telldir __P((RST_DIR *));
-static struct direct	*searchdir __P((dump_ino_t, char *));
+static void		 dcvt (struct odirect *, struct direct *);
+static void		 flushent (void);
+static struct inotab	*inotablookup (dump_ino_t);
+static RST_DIR		*opendirfile (const char *);
+static void		 putdir (char *, size_t);
+static void		 putent (struct direct *);
+static void		rst_seekdir (RST_DIR *, off_t, off_t);
+static off_t		rst_telldir (RST_DIR *);
+static struct direct	*searchdir (dump_ino_t, char *);
 
 #ifdef sunos
 extern int fdsmtc;
@@ -283,7 +283,7 @@ skipdirs(void)
  *	pname and pass them off to be processed.
  */
 void
-treescan(char *pname, dump_ino_t ino, long (*todo) __P((char *, dump_ino_t, int)))
+treescan(char *pname, dump_ino_t ino, long (*todo) (char *, dump_ino_t, int))
 {
 	struct inotab *itp;
 	struct direct *dp;
