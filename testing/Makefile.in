@@ -6,7 +6,7 @@ top_builddir=	..
 
 PROG=		transform_test
 INC=		-I$(top_srcdir)/dump -I$(top_srcdir)/common
-ALL_CFLAGS=	@CPPFLAGS@ @CFLAGS@ $(GINC) $(INC) @DUMPDEBUG@
+ALL_CFLAGS=	@CPPFLAGS@ @CFLAGS@ $(GINC) $(INC)
 LDFLAGS=	@LDFLAGS@
 LIBS=		$(GLIBS) @ZLIB@ @BZLIB@ @BLKID@ @SSLLIB@
 SRCS=		transform_test.c ../common/transformation_null.c ../common/transformation_lzo.c ../common/transformation_zlib.c ../common/transformation_bzlib.c ../common/transformation_ssl.c

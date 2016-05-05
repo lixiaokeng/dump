@@ -24,29 +24,32 @@ AC_PROG_INSTALL
 AC_CHECK_HEADERS([sys/types.h])
 
 CPPFLAGS="-D_BSD_SOURCE -D_DEFAULT_SOURCE -D_USE_BSD_SIGNAL ${CPPFLAGS}"
-CPPFLAGS="${CPPFLAGS} -DRDUMP -DRRESTORE -DLINUX_FORK_BUG -DHAVE_LZO "'-D_PATH_DUMPDATES=\"$(DUMPDATESPATH)\" -D_DUMP_VERSION=\"$(VERSION)\"'
+CPPFLAGS="${CPPFLAGS} "'-D_PATH_DUMPDATES=\"$(DUMPDATESPATH)\" -D_DUMP_VERSION=\"$(VERSION)\"'
+
+AC_DEFINE([LINUX_FORK_BUG], 1, [Workaround bad fork behavior on Linux])
+
+dnl Should these be options?
+AC_DEFINE([RDUMP], 1, [Enable rdump support])
+AC_DEFINE([RRESTORE], 1, [Enable rrestore support])
+
+AC_DEFINE([HAVE_LZO], 1, [Enable LZO transformation support])
 
 dnl
 dnl Handle --enable-debug
 dnl
+AC_MSG_CHECKING([whether to enable extra debugging])
 AC_ARG_ENABLE([debug],
-[  --enable-debug             include debugging code (default is NO)],
-if test "$enableval" = "no"
+[  --enable-debug             include debugging code (default is NO)])
+if test "$enable_debug" = "yes"
 then
-	DUMPDEBUG=""
-	RESTOREDEBUG=""
-	echo "Not including debugging code"
+	AC_DEFINE([FDEBUG], 1, [Enable extra debugging])
+	AC_DEFINE([TDEBUG], 1, [Enable extra debugging])
+	AC_DEFINE([WRITEDEBUG], 1, [Enable extra debugging])
+	AC_DEFINE([DIRDEBUG], 1, [Enable extra debugging])
+	AC_MSG_RESULT([yes])
 else
-	DUMPDEBUG="-DFDEBUG -DTDEBUG -DWRITEDEBUG -DDIRDEBUG"
-	RESTOREDEBUG="-DDIRDEBUG"
-	echo "Including debugging code"
-fi,
-DUMPDEBUG=""
-RESTOREDEBUG=""
-echo "Not including debugging code by default"
-)
-AC_SUBST(DUMPDEBUG)
-AC_SUBST(RESTOREDEBUG)
+	AC_MSG_RESULT([no])
+fi
 
 dnl
 dnl Handle --enable-static-progs
@@ -111,18 +114,16 @@ AC_SUBST(ERMT)
 dnl
 dnl Handle --enable-kerberos
 dnl
+AC_MSG_CHECKING([whether to enable kerberos extensions])
 AC_ARG_ENABLE([kerberos],
-[  --enable-kerberos          compile kerberos extensions (default is NO)],
-if test "$enableval" = "yes"
+[  --enable-kerberos          compile kerberos extensions (default is NO)])
+if test "$enable_kerberos" = "yes"
 then
-	CPPFLAGS="$CPPFLAGS -DKERBEROS"
-	echo "Compiling kerberos extensions"
+	AC_DEFINE([KERBEROS], 1, [Enable kerberos extensions])
+	AC_MSG_RESULT([yes])
 else
-	echo "Not compiling kerberos extensions"
+	AC_MSG_RESULT([no])
 fi
-,
-echo "Not compiling kerberos extensions by default"
-)
 
 dnl
 dnl Handle --enable-readline
