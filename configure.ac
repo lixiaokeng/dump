@@ -357,13 +357,18 @@ fi
 dnl
 dnl Check for bzlib headers and libraries
 dnl
-AC_CHECK_HEADER(bzlib.h, [bzlib_h=yes], [bzlib_h=no], [-])
-AC_CHECK_LIB(bz2, BZ2_bzBuffToBuffCompress, [bzlib_lib=yes], [bzlib_lib=no])
-if test "$bzlib_h" = yes -a "$bzlib_lib" = yes; then
-	BZLIB="-lbz2"
-	AC_DEFINE([HAVE_BZLIB],1,[Define this if you have bzlib compression library.])
-else
-	BZLIB=""
+AC_ARG_ENABLE([bzip2], [AC_HELP_STRING([--disable-bzip2], [enable bzip2 compression support])])
+BZLIB=
+if test "$enable_bzip2" != "no"; then
+	AC_CHECK_HEADER(bzlib.h, [bzlib_h=yes], [bzlib_h=no], [-])
+	AC_CHECK_LIB(bz2, BZ2_bzBuffToBuffCompress, [bzlib_lib=yes], [bzlib_lib=no])
+
+	if test "$bzlib_h" = yes -a "$bzlib_lib" = yes; then
+		BZLIB="-lbz2"
+		AC_DEFINE([HAVE_BZLIB], 1, [Define this if you have bzlib compression library.])
+	elif test "$enable_bzip2" = "yes"; then
+		AC_MSG_ERROR([bzip2 support requested, but not found])
+	fi
 fi
 AC_SUBST(BZLIB)
 
