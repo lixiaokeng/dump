@@ -141,4 +141,6 @@ extern Transformation *transformation_ssl_factory(int enc, int complvl,
 		const char *ciphername, const char *digestname);
 #endif /* HAVE_OPENSSL */
 
+void quit(const char *fmt, ...);
+
 #endif /* _transformation_H */

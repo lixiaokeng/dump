@@ -55,7 +55,7 @@ extern ext2_filsys fs;
 extern struct fs *sblock;
 #endif /* __linux__ */
 
-//#ifdef HAVE_SQLITE3
+#ifdef HAVE_SQLITE3
 #include <sqlite3.h>
 #include <uuid/uuid.h>
 
@@ -153,7 +153,7 @@ sqlite_populate_backup_table()
  * Create database schema
  */
 static int
-sqlite_create_schema()
+sqlite_create_schema(void)
 {
 	int rc;
 	char *errMsg = NULL;
@@ -221,8 +221,10 @@ sqlite_create_schema()
 		sqlite3_free(errMsg);
 		sqlite3_close(db);
 		db = NULL;
-		return;
+		return -1;
 	}
+
+	return 0;
 }
 
 /*
@@ -508,4 +510,4 @@ Indexer indexer_sqlite =
 		&sqlite_updateQfaState
 };
 
-//#endif
+#endif

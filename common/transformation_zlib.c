@@ -120,7 +120,9 @@ Transformation
 	Transformation *t = (Transformation *) malloc(sizeof (Transformation));
 
 	t->enc = enc;
+#ifdef HAVE_ZLIB
 	t->state.zlib.complvl = complvl;
+#endif
 
 	t->name = "zlib";
 	t->mandatory = 0;

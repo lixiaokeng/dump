@@ -111,7 +111,7 @@ bzlib_decompress(Transformation *xform, struct tapebuf *tpbin,
 	}
 	return (cresult == BZ_OK) ? 1 : 0;
 #else
-	return 1
+	return 1;
 #endif
 }
 
@@ -124,7 +124,9 @@ Transformation
 	Transformation *t = (Transformation *) malloc(sizeof (Transformation));
 
 	t->enc = enc;
+#ifdef HAVE_BZLIB
 	t->state.bzlib.complvl = complvl;
+#endif
 
 	t->name = "bzlib";
 	t->mandatory = 0;

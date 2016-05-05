@@ -123,8 +123,6 @@ Transformation
 	t->state.lzo.LZO_WorkMem = malloc(LZO1X_1_MEM_COMPRESS);
 	if (!t->state.lzo.LZO_WorkMem)
 		quit("couldn't allocate a compress buffer.\n");
-#else /* HAVE_LZO */
-	t->state = NULL;
 #endif /* HAVE_LZO */
 
 	t->name = "lzo";
