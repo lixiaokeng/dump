@@ -38,11 +38,6 @@ GINC+=		@EXT2FS_CFLAGS@
 #GLIBDIR=	-L/usr/src/e2fsprogs-0.5c/lib
 GLIBS=		$(GLIBDIR) -L../compat/lib -lcompat @EXT2FS_LIBS@
 
-#
-# Definitions (don't change them unless you know what you are doing)
-#
-DEFS=		-DRDUMP -DRRESTORE -DLINUX_FORK_BUG -DHAVE_LZO -D_PATH_DUMPDATES=\"$(DUMPDATESPATH)\" -D_DUMP_VERSION=\"$(VERSION)\" @OPTDEFS@  
-
 all::
 
 #

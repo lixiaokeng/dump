@@ -24,6 +24,7 @@ AC_PROG_INSTALL
 AC_CHECK_HEADERS([sys/types.h])
 
 CPPFLAGS="-D_BSD_SOURCE -D_DEFAULT_SOURCE -D_USE_BSD_SIGNAL ${CPPFLAGS}"
+CPPFLAGS="${CPPFLAGS} -DRDUMP -DRRESTORE -DLINUX_FORK_BUG -DHAVE_LZO "'-D_PATH_DUMPDATES=\"$(DUMPDATESPATH)\" -D_DUMP_VERSION=\"$(VERSION)\"'
 
 dnl
 dnl Handle --enable-debug
@@ -114,17 +115,14 @@ AC_ARG_ENABLE([kerberos],
 [  --enable-kerberos          compile kerberos extensions (default is NO)],
 if test "$enableval" = "yes"
 then
-	OPTDEFS="-DKERBEROS"
+	CPPFLAGS="$CPPFLAGS -DKERBEROS"
 	echo "Compiling kerberos extensions"
 else
-	OPTDEFS=""
 	echo "Not compiling kerberos extensions"
 fi
 ,
-OPTDEFS=""
 echo "Not compiling kerberos extensions by default"
 )
-AC_SUBST(OPTDEFS)
 
 dnl
 dnl Handle --enable-readline
