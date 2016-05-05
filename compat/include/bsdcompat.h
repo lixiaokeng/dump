@@ -11,6 +11,13 @@
 #include <dirent.h>
 #include <ext2fs/ext2fs.h>
 
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
+
 #ifndef _BSDCOMPAT_H
 #define _BSDCOMPAT_H 1
 
@@ -66,11 +73,6 @@
 #define IFSOCK		S_IFSOCK
 #define IFIFO		S_IFIFO
 
-#if 0
-typedef __s64		quad_t;
-typedef __u64		u_quad_t;
-#endif
-
 /*
  * The BSD dump format reserves 4 bytes for a time_t, but other architectures
  * (notably axp) have larger time_t.  ctime4() is a modified ctime() which
@@ -103,7 +105,6 @@ typedef unsigned short u_int16_t;
 #ifndef u_char
 typedef unsigned char u_char;
 #endif
-typedef int64_t quad_t;
 #endif /* sunos */
 
 struct dinode {
@@ -231,11 +232,11 @@ struct old_bsd_inode {
 	__u16		di_gid;
 #if	1
 	union {
-		u_quad_t	v;
+		uint64_t	v;
 		__u32		val[2];
 	}		di_qsize;
 #else
-	u_quad_t	di_size;
+	uint64_t	di_size;
 #endif
 	__u32		di_atime;
 	__s32		di_atspare;
@@ -277,7 +278,7 @@ struct new_bsd_inode {
 		__u16		oldids[2];
 		__u32		inumber;
 	}		di_u;
-	u_quad_t	di_size;
+	uint64_t	di_size;
 	struct bsdtimeval	di_atime;
 	struct bsdtimeval	di_mtime;
 	struct bsdtimeval	di_ctime;

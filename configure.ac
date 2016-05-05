@@ -432,8 +432,8 @@ AC_SUBST(SSLLIB)
 dnl
 dnl Check for types
 dnl
-AC_CHECK_TYPE(quad_t, int64_t)
-AC_CHECK_TYPE(u_quad_t, uint64_t)
+AC_TYPE_INT64_T
+AC_TYPE_UINT64_T
 
 dnl
 dnl Output files

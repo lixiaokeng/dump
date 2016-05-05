@@ -70,7 +70,6 @@
 #include <bsdcompat.h>
 #else	/* __linux__ */
 #ifdef sunos
-#define quad_t int64_t
 #include <sys/time.h>
 #include <sys/fcntl.h>
 #include <bsdcompat.h>
@@ -1353,9 +1352,9 @@ getfile(void (*fill) (char *, size_t), void (*skip) (char *, size_t))
 {
 	int i;
 	volatile int curblk = 0;
-	volatile quad_t size = spcl.c_dinode.di_size;
+	volatile int64_t size = spcl.c_dinode.di_size;
 	volatile int last_write_was_hole = 0;
-	quad_t origsize = size;
+	int64_t origsize = size;
 	static char clearedbuf[MAXBSIZE];
 	char buf[MAXBSIZE / TP_BSIZE][TP_BSIZE];
 	char junk[TP_BSIZE];
@@ -2658,7 +2657,7 @@ converthead(struct s_spcl *buf)
 {
 	int32_t i;
 	union {
-		quad_t	qval;
+		int64_t	qval;
 		int32_t	val[2];
 	} qcvt;
 	union u_ospcl {

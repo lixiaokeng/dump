@@ -77,22 +77,12 @@
 #define	HASDUMPEDFILE	0x1
 #define	HASSUBDIRS	0x2
 
-#ifdef __linux__
-typedef u_quad_t fsizeT;
-#else
-#ifdef	FS_44INODEFMT
-typedef	quad_t fsizeT;
-#else
-typedef	long fsizeT;
-#endif
-#endif
-
 #ifdef	__linux__
 static	int searchdir (struct ext2_dir_entry *dp, int offset,
 			   int blocksize, char *buf, void *private);
 #else
 static	int dirindir (dump_ino_t ino, daddr_t blkno, int level, long *size);
-static	void dmpindir (dump_ino_t ino, daddr_t blk, int level, fsizeT *size);
+static	void dmpindir (dump_ino_t ino, daddr_t blk, int level, uint64_t *size);
 static	int searchdir (dump_ino_t ino, daddr_t blkno, long size, long filesize);
 #endif
 static	void mapfileino (dump_ino_t ino, struct dinode const *dp, long long *tapesize, int *dirskipped);
@@ -183,7 +173,7 @@ long
 blockest(struct dinode const *dp)
 {
 	long blkest, sizeest;
-	u_quad_t i_size;
+	uint64_t i_size;
 
 	/*
 	 * dp->di_size is the size of the file in bytes.
@@ -199,8 +189,8 @@ blockest(struct dinode const *dp)
 	 *	dump blocks (sizeest vs. blkest in the indirect block
 	 *	calculation).
 	 */
-	blkest = howmany((u_quad_t)dp->di_blocks * 512, fs->blocksize) * (fs->blocksize / TP_BSIZE);
-	i_size = dp->di_size + ((u_quad_t) dp->di_size_high << 32);
+	blkest = howmany((uint64_t)dp->di_blocks * 512, fs->blocksize) * (fs->blocksize / TP_BSIZE);
+	i_size = dp->di_size + ((uint64_t) dp->di_size_high << 32);
 	sizeest = howmany(i_size, fs->blocksize) * (fs->blocksize / TP_BSIZE);
 	if (blkest > sizeest)
 		blkest = sizeest;
@@ -213,7 +203,7 @@ blockest(struct dinode const *dp)
 		 blkest = blkest / 2;
 		 sizeest = sizeest / 2;
 	}
-	if (i_size > (u_quad_t)fs->blocksize * NDADDR) {
+	if (i_size > (uint64_t)fs->blocksize * NDADDR) {
 		/* calculate the number of indirect blocks on the dump tape */
 		blkest +=
 			howmany(sizeest - NDADDR * fs->blocksize / TP_BSIZE,
@@ -865,8 +855,8 @@ void
 dumpino(struct dinode *dp, dump_ino_t ino, int metaonly)
 {
 	//unsigned long cnt;
-	//fsizeT size;
-	fsizeT remaining;
+	//uint64_t size;
+	uint64_t remaining;
 	char buf[TP_BSIZE];
 	struct new_bsd_inode nbi;
 	int i;
@@ -875,12 +865,12 @@ dumpino(struct dinode *dp, dump_ino_t ino, int metaonly)
 #else
 	int ind_level;
 #endif
-	u_quad_t i_size;
+	uint64_t i_size;
 	
 	if (metaonly)
 		i_size = 0;
 	else 
-		i_size = dp->di_size + ((u_quad_t) dp->di_size_high << 32);
+		i_size = dp->di_size + ((uint64_t) dp->di_size_high << 32);
 
 	if (newtape) {
 		newtape = 0;
@@ -995,8 +985,8 @@ dumpino(struct dinode *dp, dump_ino_t ino, int metaonly)
 
 	ext2fs_block_iterate2(fs, (ext2_ino_t)ino, BLOCK_FLAG_DATA_ONLY, NULL, dumponeblock, (void *)&bc);
 	/* deal with holes at the end of the inode */
-	if (i_size > ((u_quad_t)bc.next_block) * sblock->fs_fsize) {
-		remaining = i_size - ((u_quad_t)bc.next_block) * sblock->fs_fsize;
+	if (i_size > ((uint64_t)bc.next_block) * sblock->fs_fsize) {
+		remaining = i_size - ((uint64_t)bc.next_block) * sblock->fs_fsize;
 		for (i = 0; i < (int)howmany(remaining, sblock->fs_fsize); i++) {
 			bc.buf[bc.cnt++] = 0;
 			if (bc.cnt == bc.max) {
@@ -1011,12 +1001,12 @@ dumpino(struct dinode *dp, dump_ino_t ino, int metaonly)
 	free(bc.buf);
 	dump_xattr(ino, dp);
 #else
-	if (i_size > (u_quad_t)NDADDR * sblock->fs_bsize)
+	if (i_size > (uint64_t)NDADDR * sblock->fs_bsize)
 		cnt = NDADDR * sblock->fs_frag;
 	else
 		cnt = howmany(i_size, sblock->fs_fsize);
 	blksout(&dp->di_db[0], cnt, ino);
-	if ((quad_t) (size = i_size - NDADDR * sblock->fs_bsize) <= 0) {
+	if ((int64_t) (size = i_size - NDADDR * sblock->fs_bsize) <= 0) {
 		dump_xattr(ino, dp);
 		return;
 	}
@@ -1112,13 +1102,13 @@ convert_dir(struct ext2_dir_entry *dirent, UNUSED(int offset),
 void
 dumpdirino(struct dinode *dp, dump_ino_t ino)
 {
-	fsizeT size;
+	uint64_t size;
 	char buf[TP_BSIZE];
 	struct new_bsd_inode nbi;
 	struct convert_dir_context cdc;
 	errcode_t retval;
 	struct ext2_dir_entry *de;
-	fsizeT dir_size;
+	uint64_t dir_size;
 
 	if (newtape) {
 		newtape = 0;
@@ -1159,7 +1149,7 @@ dumpdirino(struct dinode *dp, dump_ino_t ino)
 	nbi.di_nlink = dp->di_nlink;
 	nbi.di_ouid = dp->di_uid;
 	nbi.di_ogid = dp->di_gid;
-	nbi.di_size = dir_size; /* (u_quad_t)dp->di_size; */
+	nbi.di_size = dir_size; /* (uint64_t)dp->di_size; */
 	nbi.di_atime.tv_sec = dp->di_atime;
 	nbi.di_mtime.tv_sec = dp->di_mtime;
 	nbi.di_ctime.tv_sec = dp->di_ctime;
@@ -1216,7 +1206,7 @@ dumpdirino(struct dinode *dp, dump_ino_t ino)
  * Read indirect blocks, and pass the data blocks to be dumped.
  */
 static void
-dmpindir(dump_ino_t ino, daddr_t blk, int ind_level, fsizeT *size)
+dmpindir(dump_ino_t ino, daddr_t blk, int ind_level, uint64_t *size)
 {
 	int i, cnt;
 #ifdef __linux__
