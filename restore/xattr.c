@@ -28,7 +28,6 @@
  */
 
 #include <config.h>
-#include <compatlfs.h>
 #include <compaterr.h>
 #include <sys/types.h>
 #include <stdio.h>

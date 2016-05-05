@@ -1,5 +1,4 @@
 #include <config.h>
-#include <compatlfs.h>
 #include <ctype.h>
 #include <compaterr.h>
 #include <fcntl.h>
@@ -81,14 +80,14 @@ legacy_open(const char *filename, int mode)
 	}
 
 	if (mode == 0) {
-		if ((Afile = OPEN(filename, O_RDONLY)) < 0) {
+		if ((Afile = open(filename, O_RDONLY)) < 0) {
 			msg("Cannot open %s for reading: %s\n",
 					filename, strerror(errno));
 			msg("The ENTIRE dump is aborted.\n");
 			return -1;
 		}
 	} else if (mode == 1) {
-		if ((Afile = OPEN(filename, O_WRONLY|O_CREAT|O_TRUNC,
+		if ((Afile = open(filename, O_WRONLY|O_CREAT|O_TRUNC,
 				   S_IRUSR | S_IWUSR | S_IRGRP |
 				   S_IWGRP | S_IROTH | S_IWOTH)) < 0) {
 			msg("Cannot open %s for writing: %s\n",
@@ -296,7 +295,7 @@ GetTapePos(long long *pos)
 
 #ifdef RDUMP
 	if (host) {
-		*pos = (long long) rmtseek((OFF_T)0, (int)LSEEK_GET_TAPEPOS);
+		*pos = (long long) rmtseek((off_t)0, (int)LSEEK_GET_TAPEPOS);
 		err = *pos < 0;
 	}
 	else 
@@ -309,7 +308,7 @@ GetTapePos(long long *pos)
 		*pos = (long long)mtpos;
 	}
 	else {
-		*pos = LSEEK(tapefd, 0, SEEK_CUR);
+		*pos = lseek(tapefd, 0, SEEK_CUR);
 		err = (*pos < 0);
 	}
 	}

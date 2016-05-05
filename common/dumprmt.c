@@ -95,12 +95,12 @@ int rshpid = -1;
 static	const char *rmtpeer = 0;
 
 static	int okname __P((const char *));
-static	OFF_T rmtcall __P((const char *, const char *));
+static	off_t rmtcall __P((const char *, const char *));
 static	void rmtconnaborted __P((int));
 static	int rmtgetb __P((void));
 static	int rmtgetconn __P((void));
 static	void rmtgets __P((char *, size_t));
-static	OFF_T rmtreply __P((const char *));
+static	off_t rmtreply __P((const char *));
 static  int piped_child __P((const char **command));
 #ifdef KERBEROS
 int	krcmd __P((char **, int /*u_short*/, char *, char *, int *, char *));
@@ -344,8 +344,8 @@ rmtwrite(const char *buf, size_t count)
 	return (rmtreply("write"));
 }
 
-OFF_T
-rmtseek(OFF_T offset, int pos)
+off_t
+rmtseek(off_t offset, int pos)
 {
 	char line[80];
 
@@ -388,7 +388,7 @@ rmtioctl(int cmd, int count)
 	return (rmtcall("ioctl", buf));
 }
 
-static OFF_T
+static off_t
 rmtcall(const char *cmd, const char *buf)
 {
 
@@ -397,7 +397,7 @@ rmtcall(const char *cmd, const char *buf)
 	return (rmtreply(cmd));
 }
 
-static OFF_T
+static off_t
 rmtreply(const char *cmd)
 {
 	char *cp;
@@ -422,7 +422,7 @@ rmtreply(const char *cmd)
 		    code);
 		rmtconnaborted(0);
 	}
-	return (OFF_T)(atoll(code + 1));
+	return (off_t)(atoll(code + 1));
 }
 
 static int

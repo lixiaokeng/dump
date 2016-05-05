@@ -15,13 +15,15 @@ PKG_PROG_PKG_CONFIG
 AC_PROG_CC
 AC_PROG_INSTALL
 
+AC_USE_SYSTEM_EXTENSIONS
+AC_SYS_LARGEFILE
+
 dnl Has to be after AC_PROG_CC and other core compiler checks.
 LT_INIT
 
 AC_CHECK_HEADERS([sys/types.h])
 
-CPPFLAGS="-D_BSD_SOURCE -D_DEFAULT_SOURCE -D_USE_BSD_SIGNAL ${CPPFLAGS}"
-CPPFLAGS="${CPPFLAGS} "'-D_PATH_DUMPDATES=\"$(DUMPDATESPATH)\" -D_DUMP_VERSION=\"$(VERSION)\"'
+CPPFLAGS="${CPPFLAGS} -D_USE_BSD_SIGNAL "'-D_PATH_DUMPDATES=\"$(DUMPDATESPATH)\" -D_DUMP_VERSION=\"$(VERSION)\"'
 
 AC_DEFINE([LINUX_FORK_BUG], 1, [Workaround bad fork behavior on Linux])
 
@@ -140,23 +142,6 @@ else
 fi
 ,
 echo "Using new style F script by default"
-)
-
-dnl
-dnl Handle --enable-largefile
-dnl
-AC_ARG_ENABLE([largefile],
-[  --enable-largefile         enable Large File System support (default is YES)],
-if test "$enableval" = "yes"
-then
-	AC_DEFINE([USE_LFS],1,[Define this if you want Large File System support.])
-	echo "Enabling Large File System support"
-else
-	echo "Not enabling Large File System support"
-fi
-,
-AC_DEFINE([USE_LFS],1,[Define this if you want Large File System support.])
-echo "Enabling Large File System support by default"
 )
 
 dnl

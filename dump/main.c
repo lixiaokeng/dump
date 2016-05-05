@@ -36,7 +36,6 @@
  */
 
 #include <config.h>
-#include <compatlfs.h>
 #include <ctype.h>
 #include <compaterr.h>
 #include <fcntl.h>
@@ -203,7 +202,7 @@ main(int argc, char *argv[])
 	int i, anydirskipped;
 	int aflag = 0, bflag = 0, Tflag = 0, honorlevel = 1;
 	dump_ino_t maxino;
-	struct STAT statbuf;
+	struct stat statbuf;
 	dev_t filedev = 0;
 #ifdef	__linux__
 	errcode_t retval;
@@ -537,7 +536,7 @@ main(int argc, char *argv[])
 	}
 
 	(void)setuid(getuid()); /* rmthost() is the only reason to be setuid */
-	if (Apath && (Afile = OPEN(Apath, O_WRONLY|O_CREAT|O_TRUNC,
+	if (Apath && (Afile = open(Apath, O_WRONLY|O_CREAT|O_TRUNC,
 				   S_IRUSR | S_IWUSR | S_IRGRP |
 				   S_IWGRP | S_IROTH | S_IWOTH)) < 0) {
 		msg("Cannot open %s for writing: %s\n",
@@ -678,7 +677,7 @@ main(int argc, char *argv[])
 	tape[MAXPATHLEN - 1] = '\0';
 
 	if (!pipeout) {
-		if (STAT(tape, &statbuf) != -1)
+		if (stat(tape, &statbuf) != -1)
 			fifoout= statbuf.st_mode & S_IFIFO;
 	}
 
@@ -697,7 +696,7 @@ main(int argc, char *argv[])
 	} /* end of size estimate */
 
 #ifdef	__linux__
-	if ((diskfd = OPEN(disk, O_RDONLY)) < 0) {
+	if ((diskfd = open(disk, O_RDONLY)) < 0) {
 		msg("Cannot open %s\n", disk);
 		msg("The ENTIRE dump is aborted.\n");
 		exit(X_STARTUP);
@@ -799,7 +798,7 @@ main(int argc, char *argv[])
 	if (directory[0] == 0)
 		anydirskipped = mapfiles(maxino, &tapesize);
 	else {
-		if (LSTAT(pathname, &statbuf) == -1) {
+		if (lstat(pathname, &statbuf) == -1) {
 			msg("File cannot be accessed (%s).\n", pathname);
 			msg("The ENTIRE dump is aborted.\n");
 			exit(X_STARTUP);
@@ -816,7 +815,7 @@ main(int argc, char *argv[])
 		int anydirskipped2;
 		char *p = *argv;
 		/* check if file is available */
-		if (LSTAT(p, &statbuf) == -1) {
+		if (lstat(p, &statbuf) == -1) {
 			msg("File cannot be accessed (%s).\n", p);
 			msg("The ENTIRE dump is aborted.\n");
 			exit(X_STARTUP);

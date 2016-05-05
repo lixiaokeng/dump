@@ -1,5 +1,4 @@
 #include <config.h>
-#include <compatlfs.h>
 #include <ctype.h>
 #include <compaterr.h>
 #include <fcntl.h>

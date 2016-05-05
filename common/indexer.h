@@ -1,6 +1,5 @@
 #include <config.h>
 #include <protocols/dumprestore.h>
-#include <compatlfs.h>
 
 #ifndef _ARCHIVE_H
 #define _ARCHIVE_H 1

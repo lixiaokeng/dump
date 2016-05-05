@@ -37,7 +37,6 @@
 
 #include <config.h>
 #include <protocols/dumprestore.h>
-#include <compatlfs.h>
 #include "transformation.h"
 
 #define MAXINOPB	(MAXBSIZE / sizeof(struct dinode))
@@ -178,7 +177,7 @@ int	rmtopen __P((const char *tape, const int mode));
 void	rmtclose __P((void));
 int	rmtread __P((char *buf, size_t count));
 int	rmtwrite __P((const char *buf, size_t count));
-OFF_T	rmtseek __P((OFF_T offset, int pos));
+off_t	rmtseek __P((off_t offset, int pos));
 struct mtget * rmtstatus __P((void));
 int	rmtioctl __P((int cmd, int count));
 #endif /* RDUMP */

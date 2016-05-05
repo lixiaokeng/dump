@@ -12,7 +12,6 @@
  */
 
 #include <config.h>
-#include <compatlfs.h>
 #include <sys/types.h>
 #include <stdio.h>
 #include <sys/param.h>
@@ -62,11 +61,11 @@ get_label_uuid(const char *device, char **label, char *uuid) {
 	int fd;
 	struct ext2_super_block e2sb;
 
-	fd = OPEN(device, O_RDONLY);
+	fd = open(device, O_RDONLY);
 	if (fd < 0)
 		return 1;
 
-	if (LSEEK(fd, EXT2_SUPER_OFFSET, SEEK_SET) != EXT2_SUPER_OFFSET ||
+	if (lseek(fd, EXT2_SUPER_OFFSET, SEEK_SET) != EXT2_SUPER_OFFSET ||
 	    read(fd, (char *) &e2sb, EXT2_SUPER_SIZE) != EXT2_SUPER_SIZE ||
 	    ext2magic(e2sb) != EXT2_SUPER_MAGIC) {
 		close(fd);

@@ -45,7 +45,6 @@
  */
 
 #include <config.h>
-#include <compatlfs.h>
 #include <sys/param.h>
 #include <sys/stat.h>
 
@@ -550,7 +549,7 @@ dumpsymtable(char *filename, long checkpt)
 	Vprintf(stdout, "Check pointing the restore\n");
 	if (Nflag)
 		return;
-	if ((fd = FOPEN(filename, "w")) == NULL) {
+	if ((fd = fopen(filename, "w")) == NULL) {
 		warn("fopen");
 		panic("cannot create save file %s for symbol table\n",
 			filename);
@@ -655,7 +654,7 @@ initsymtable(char *filename)
 	struct entry *ep;
 	struct entry *baseep, *lep;
 	struct symtableheader hdr;
-	struct STAT stbuf;
+	struct stat stbuf;
 	long i;
 	int fd;
 
@@ -670,11 +669,11 @@ initsymtable(char *filename)
 		ep->e_flags |= NEW;
 		return;
 	}
-	if ((fd = OPEN(filename, O_RDONLY, 0)) < 0) {
+	if ((fd = open(filename, O_RDONLY, 0)) < 0) {
 		warn("open");
 		errx(1, "cannot open symbol table file %s", filename);
 	}
-	if (FSTAT(fd, &stbuf) < 0) {
+	if (fstat(fd, &stbuf) < 0) {
 		warn("stat");
 		errx(1, "cannot stat symbol table file %s", filename);
 	}

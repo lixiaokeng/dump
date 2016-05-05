@@ -145,8 +145,8 @@ runcmdshell(void)
 	arglist.glob.gl_opendir = (void *)rst_opendir;
 	arglist.glob.gl_readdir = (void *)glob_readdir;
 	arglist.glob.gl_closedir = (void *)rst_closedir;
-	arglist.glob.gl_lstat = (int (*)(const char *, void *))glob_stat;
-	arglist.glob.gl_stat = (int (*)(const char *, void *))glob_stat;
+	arglist.glob.gl_lstat = glob_stat;
+	arglist.glob.gl_stat = glob_stat;
 	canon("/", curdir, sizeof(curdir));
 loop:
 	if (setjmp(reset) != 0) {

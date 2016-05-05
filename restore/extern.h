@@ -36,7 +36,6 @@
  */
 
 #include <config.h>
-#include <compatlfs.h>
 #ifndef __P
 #include <sys/cdefs.h>
 #endif
@@ -123,7 +122,7 @@ int		rmthost __P((const char *));
 int		rmtioctl __P((int, int));
 int		rmtopen __P((const char *, const int));
 int		rmtread __P((const char *, int));
-OFF_T		rmtseek __P((OFF_T, int));
+off_t		rmtseek __P((off_t, int));
 
 /* From e2fsprogs */
 int fsetflags __P((const char *, unsigned long));

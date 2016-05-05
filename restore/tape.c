@@ -41,7 +41,6 @@
  */
 
 #include <config.h>
-#include <compatlfs.h>
 #include <sys/types.h>
 #include <errno.h>
 #include <compaterr.h>
@@ -298,7 +297,7 @@ void
 setup(void)
 {
 	int i, j, *ip, bot_code;
-	struct STAT stbuf;
+	struct stat stbuf;
 	char *temptape;
 
 	Vprintf(stdout, "Verify tape and initialize maps\n");
@@ -324,7 +323,7 @@ setup(void)
 	if (pipein)
 		mt = 0;
 	else
-		mt = OPEN(temptape, O_RDONLY, 0);
+		mt = open(temptape, O_RDONLY, 0);
 	if (mt < 0)
 		err(1, "%s", temptape);
 	if (!Afile) {
@@ -387,7 +386,7 @@ setup(void)
 	}
 	dumptime = spcl.c_ddate;
 	dumpdate = spcl.c_date;
-	if (STAT(".", &stbuf) < 0)
+	if (stat(".", &stbuf) < 0)
 		err(1, "cannot stat .");
 	if (stbuf.st_blksize > 0 && stbuf.st_blksize < TP_BSIZE )
 		fssize = TP_BSIZE;
@@ -611,7 +610,7 @@ again:
 		mt = rmtopen(magtape, O_RDONLY);
 	else
 #endif
-		mt = OPEN(magtape, O_RDONLY, 0);
+		mt = open(magtape, O_RDONLY, 0);
 
 	if (mt == -1) {
 		fprintf(stderr, "Cannot open %s\n", magtape);
@@ -1032,7 +1031,7 @@ extractfile(struct entry *ep, int doremove)
 		if (! (spcl.c_flags & DR_METAONLY)) {
 			if (uflag)
 				(void)unlink(name);
-			if ((ofile = OPEN(name, O_WRONLY | O_CREAT | O_TRUNC,
+			if ((ofile = open(name, O_WRONLY | O_CREAT | O_TRUNC,
 			    0666)) < 0) {
 				warn("%s: cannot create file", name);
 				skipfile();
@@ -1421,7 +1420,7 @@ loop:
 		last_write_was_hole = 1;
 	}
 	if (last_write_was_hole) {
-		if (FTRUNCATE(ofile, origsize) < 0)
+		if (ftruncate(ofile, origsize) < 0)
 			warn("%s: ftruncate", curfile.name);
 	}
 	if (!readingmaps) 
@@ -1459,7 +1458,7 @@ static void
 xtrskip(UNUSED(char *buf), size_t size)
 {
 
-	if (LSEEK(ofile, (OFF_T)size, SEEK_CUR) == -1)
+	if (lseek(ofile, (off_t)size, SEEK_CUR) == -1)
 		err(1, "seek error extracting inode %lu, name %s\nlseek",
 			(unsigned long)curfile.ino, curfile.name);
 }
@@ -1595,7 +1594,7 @@ xtrxattr(char *buf, size_t size)
 
 #if !COMPARE_ONTHEFLY
 static int
-do_cmpfiles(int fd_tape, int fd_disk, OFF_T size)
+do_cmpfiles(int fd_tape, int fd_disk, off_t size)
 {
 	static char buf_tape[BUFSIZ];
 	static char buf_disk[BUFSIZ];
@@ -1631,12 +1630,12 @@ int
 #else
 void
 #endif
-cmpfiles(char *tapefile, char *diskfile, struct STAT *sbuf_disk)
+cmpfiles(char *tapefile, char *diskfile, struct stat *sbuf_disk)
 {
-	struct STAT sbuf_tape;
+	struct stat sbuf_tape;
 	int fd_tape, fd_disk;
 
-	if (STAT(tapefile, &sbuf_tape) != 0) {
+	if (stat(tapefile, &sbuf_tape) != 0) {
 		panic("can't lstat tmp file %s: %s\n", tapefile,
 		      strerror(errno));
 		do_compare_error;
@@ -1654,11 +1653,11 @@ cmpfiles(char *tapefile, char *diskfile, struct STAT *sbuf_disk)
 #endif
 	}
 
-	if ((fd_tape = OPEN(tapefile, O_RDONLY)) < 0) {
+	if ((fd_tape = open(tapefile, O_RDONLY)) < 0) {
 		panic("can't open %s: %s\n", tapefile, strerror(errno));
 		do_compare_error;
 	}
-	if ((fd_disk = OPEN(diskfile, O_RDONLY)) < 0) {
+	if ((fd_disk = open(diskfile, O_RDONLY)) < 0) {
 		close(fd_tape);
 		panic("can't open %s: %s\n", diskfile, strerror(errno));
 		do_compare_error;
@@ -1754,11 +1753,11 @@ comparefile(char *name)
 	uid_t gid;
 	unsigned int flags;
 	unsigned long newflags;
-	struct STAT sb;
+	struct stat sb;
 	int r;
 #if !COMPARE_ONTHEFLY
 	static char *tmpfile = NULL;
-	struct STAT stemp;
+	struct stat stemp;
 #endif
 	curfile.name = name;
 	curfile.action = USING;
@@ -1773,7 +1772,7 @@ comparefile(char *name)
 		return;
 	}
 
-	if ((r = LSTAT(name, &sb)) != 0) {
+	if ((r = lstat(name, &sb)) != 0) {
 		warn("unable to stat %s", name);
 		do_compare_error;
 		skipfile();
@@ -1894,7 +1893,7 @@ comparefile(char *name)
 
 	case IFREG:
 #if COMPARE_ONTHEFLY
-		if ((ifile = OPEN(name, O_RDONLY)) < 0) {
+		if ((ifile = open(name, O_RDONLY)) < 0) {
 			warn("can't open %s", name);
 			skipfile();
 			do_compare_error;
@@ -1920,11 +1919,11 @@ comparefile(char *name)
 			snprintf(tmpfilename, sizeof(tmpfilename), "%s/restoreCXXXXXX", tmpdir);
 			tmpfile = mktemp(&tmpfilename[0]);
 		}
-		if ((STAT(tmpfile, &stemp) == 0) && (unlink(tmpfile) != 0)) {
+		if ((stat(tmpfile, &stemp) == 0) && (unlink(tmpfile) != 0)) {
 			panic("cannot delete tmp file %s: %s\n",
 			      tmpfile, strerror(errno));
 		}
-		if ((ofile = OPEN(tmpfile, O_WRONLY | O_CREAT | O_TRUNC, 0600)) < 0) {
+		if ((ofile = open(tmpfile, O_WRONLY | O_CREAT | O_TRUNC, 0600)) < 0) {
 			panic("cannot create file temp file %s: %s\n",
 			      name, strerror(errno));
 		}
@@ -2079,7 +2078,7 @@ getmore:
 			seek_failed = (rmtseek(i, 1) < 0);
 		else
 #endif
-			seek_failed = (LSEEK(mt, i, SEEK_CUR) == (OFF_T)-1);
+			seek_failed = (lseek(mt, i, SEEK_CUR) == (off_t)-1);
 
 		if (seek_failed) {
 			warn("continuation failed");
@@ -3250,7 +3249,7 @@ GetTapePos(long long *pos)
 
 #ifdef RDUMP
 	if (host) {
-		*pos = (long long) rmtseek((OFF_T)0, (int)LSEEK_GET_TAPEPOS);
+		*pos = (long long) rmtseek((off_t)0, (int)LSEEK_GET_TAPEPOS);
 		err = *pos < 0;
 	}
 	else
@@ -3263,7 +3262,7 @@ GetTapePos(long long *pos)
 		*pos = (long long)mtpos;
 	}
 	else {
-		*pos = LSEEK(mt, 0, SEEK_CUR);
+		*pos = lseek(mt, 0, SEEK_CUR);
 		err = (*pos < 0);
 	}
 	}
@@ -3286,7 +3285,7 @@ GotoTapePos(long long pos)
 
 #ifdef RDUMP
 	if (host)
-		err = (rmtseek((OFF_T)pos, (int)LSEEK_GO2_TAPEPOS) < 0);
+		err = (rmtseek((off_t)pos, (int)LSEEK_GO2_TAPEPOS) < 0);
 	else
 #endif
 	{
@@ -3297,7 +3296,7 @@ GotoTapePos(long long pos)
 		err = (ioctl(mt, MTIOCTOP, &buf) < 0);
 	}
 	else {
-		pos = LSEEK(mt, pos, SEEK_SET);
+		pos = lseek(mt, pos, SEEK_SET);
 		err = (pos < 0);
 	}
 	}

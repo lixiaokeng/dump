@@ -39,7 +39,6 @@
  * rmt
  */
 #include <config.h>
-#include <compatlfs.h>
 #include <rmtflags.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -118,7 +117,7 @@ void	decrypt __P((void));
 int
 main(int argc, char *argv[])
 {
-	OFF_T rval = 0;
+	off_t rval = 0;
 	char c;
 	int n, i, cc, oflags;
 	unsigned long block = 0;
@@ -170,7 +169,7 @@ top:
 		 * specify the permission bits; allow rw for everyone,
 		 * as modified by the users umask
 		 */
-		tape = OPEN(device, oflags, 0666);
+		tape = open(device, oflags, 0666);
 		if (tape < 0)
 			goto ioerror;
 		block = 0;
@@ -203,14 +202,14 @@ top:
 			case SEEK_SET:
 			case SEEK_CUR:
 			case SEEK_END:
-				rval = LSEEK(tape, (OFF_T)atoll(count), atoi(pos));
+				rval = lseek(tape, (off_t)atoll(count), atoi(pos));
 				break;
 #ifdef USE_QFA
 			case LSEEK_GET_TAPEPOS:
-				rval = LSEEK(tape, (OFF_T)0, SEEK_CUR);
+				rval = lseek(tape, (off_t)0, SEEK_CUR);
 				break;
 			case LSEEK_GO2_TAPEPOS:
-				rval = LSEEK(tape, (OFF_T)atoll(count), SEEK_SET);
+				rval = lseek(tape, (off_t)atoll(count), SEEK_SET);
 				break;
 #endif /* USE_QFA */
 			default:
@@ -224,7 +223,7 @@ top:
 			case SEEK_SET:
 			case SEEK_CUR:
 			case SEEK_END:
-				rval = LSEEK(tape, (OFF_T)atoll(count), atoi(pos));
+				rval = lseek(tape, (off_t)atoll(count), atoi(pos));
 				break;
 #ifdef USE_QFA
 			case LSEEK_GET_TAPEPOS: /* QFA */
@@ -243,14 +242,14 @@ top:
 					if (ioctl(tape, MTIOCPOS, &mtpos) < 0) {
 						goto ioerror;
 					}
-					rval = (OFF_T)mtpos;
+					rval = (off_t)mtpos;
 				} else {
 					buf.mt_op = MTSEEK;
 					buf.mt_count = atoi(count);
 					if (ioctl(tape, MTIOCTOP, &buf) < 0) {
 						goto ioerror;
 					}
-					rval = (OFF_T)buf.mt_count;
+					rval = (off_t)buf.mt_count;
 				}
 				}
 				break;

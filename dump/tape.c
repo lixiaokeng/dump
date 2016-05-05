@@ -36,7 +36,6 @@
  */
 
 #include <config.h>
-#include <compatlfs.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <setjmp.h>
@@ -153,10 +152,8 @@ static sigjmp_buf jmpbuf2;	/* where to jump to if we are ready when the */
 #ifdef __linux__
 /* first, pull in the header files that define sys_clone and CLONE_IO */
 #include <syscall.h>
-#define _GNU_SOURCE
 #include <sched.h>
 #include <unistd.h>
-#undef _GNU_SOURCE
 
 /* If either is not present, fall back on the fork behaviour */
 #if ! defined(SYS_clone) || ! defined (CLONE_IO)
@@ -552,7 +549,7 @@ trewind(void)
 		{
 			(void) close(tapefd);
 			if (!fifoout) {
-				while ((f = OPEN(tape, O_RDONLY)) < 0)
+				while ((f = open(tape, O_RDONLY)) < 0)
 					sleep (10);
 				(void) close(f);
 			}
@@ -885,10 +882,10 @@ restore_check_point:
 #ifdef RDUMP
 		while ((tapefd = (host ? rmtopen(tape, O_WRONLY|O_CREAT|O_TRUNC) : pipeout ? 
 			fileno(stdout) : 
-			OPEN(tape, O_WRONLY|O_CREAT|O_TRUNC, 0666))) < 0)
+			open(tape, O_WRONLY|O_CREAT|O_TRUNC, 0666))) < 0)
 #else
 		while ((tapefd = (pipeout ? fileno(stdout) :
-				  OPEN(tape, O_WRONLY|O_CREAT|O_TRUNC, 0666))) < 0)
+				  open(tape, O_WRONLY|O_CREAT|O_TRUNC, 0666))) < 0)
 #endif
 		    {
 			msg("Cannot open output \"%s\": %s\n", tape, 
@@ -1141,7 +1138,7 @@ doslave(int cmd,
 	 * Need our own seek pointer.
 	 */
 	(void) close(diskfd);
-	if ((diskfd = OPEN(disk, O_RDONLY)) < 0)
+	if ((diskfd = open(disk, O_RDONLY)) < 0)
 		quit("slave couldn't reopen disk: %s\n", strerror(errno));
 #ifdef	__linux__
 #ifdef BLKFLSBUF

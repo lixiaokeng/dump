@@ -36,7 +36,6 @@
  */
 
 #include <config.h>
-#include <compatlfs.h>
 #include <sys/types.h>
 #include <errno.h>
 #include <compaterr.h>
@@ -733,9 +732,9 @@ int
 lgetflags(const char *path, unsigned long *flags)
 {
 	int err;
-	struct STAT sb;
+	struct stat sb;
 
-	err = LSTAT(path, &sb);
+	err = lstat(path, &sb);
 	if (err < 0)
 		return err;
 
@@ -752,9 +751,9 @@ int
 lsetflags(const char *path, unsigned long flags)
 {
 	int err;
-	struct STAT sb;
+	struct stat sb;
 
-	err = LSTAT(path, &sb);
+	err = lstat(path, &sb);
 	if (err < 0)
 		return err;
 

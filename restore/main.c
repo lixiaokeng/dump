@@ -36,7 +36,6 @@
  */
 
 #include <config.h>
-#include <compatlfs.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/param.h>
@@ -450,7 +449,7 @@ main(int argc, char *argv[])
 	 * Compare contents of tape.
 	 */
 	case 'C': {
-		struct STAT stbuf;
+		struct stat stbuf;
 
 		Vprintf(stdout, "Begin compare restore\n");
 		compare_ignore_not_found = 0;
@@ -459,7 +458,7 @@ main(int argc, char *argv[])
 		aflag = 1;
 		setup();
 		printf("filesys = %s\n", filesys);
-		if (STAT(filesys, &stbuf) < 0)
+		if (stat(filesys, &stbuf) < 0)
 			err(1, "cannot stat directory %s", filesys);
 		if (chdir(filesys) < 0)
 			err(1, "cannot cd to %s", filesys);
