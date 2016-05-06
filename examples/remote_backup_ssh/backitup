@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #
 # This script will backup local drives to a remote tape drive over ssh.
