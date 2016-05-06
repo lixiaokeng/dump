@@ -92,7 +92,7 @@
 #endif /* HAVE_BZLIB */
 
 #ifdef HAVE_LZO
-#include <minilzo.h>
+#include <lzo/lzo1x.h>
 #endif /* HAVE_LZO */
 
 #include "restore.h"

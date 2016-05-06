@@ -18,6 +18,7 @@ libcommon_la_LIBADD = \
 	$(UUID_LIBS) \
 	$(ZLIB_LIBS) \
 	$(BZLIB) \
+	$(LZOLIB) \
 	$(SSLLIB) \
 	$(SQLITE3)
 

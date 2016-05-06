@@ -31,8 +31,6 @@ dnl Should these be options?
 AC_DEFINE([RDUMP], 1, [Enable rdump support])
 AC_DEFINE([RRESTORE], 1, [Enable rrestore support])
 
-AC_DEFINE([HAVE_LZO], 1, [Enable LZO transformation support])
-
 dnl
 dnl Handle --enable-debug
 dnl
@@ -387,6 +385,24 @@ if test "$enable_bzip2" != "no"; then
 	fi
 fi
 AC_SUBST(BZLIB)
+
+dnl
+dnl Check for lzo headers and libraries
+dnl
+AC_ARG_ENABLE([lzo], [AC_HELP_STRING([--disable-lzo], [enable lzo compression support])])
+LZOLIB=
+if test "$enable_lzo" != "no"; then
+	AC_CHECK_HEADER(lzo/lzo1x.h, [lzo_h=yes], [lzo_h=no], [-])
+	AC_CHECK_LIB(lzo2, lzo1x_1_compress, [lzo_lib=yes], [lzo_lib=no])
+
+	if test "$lzo_h" = yes -a "$lzo_lib" = yes; then
+		LZOLIB="-llzo2"
+		AC_DEFINE([HAVE_LZO], 1, [Define this if you have lzo compression library.])
+	elif test "$enable_lzo" = "yes"; then
+		AC_MSG_ERROR([lzo support requested, but not found])
+	fi
+fi
+AC_SUBST(LZOLIB)
 
 dnl
 dnl Check for sqlite3 headers and libraries

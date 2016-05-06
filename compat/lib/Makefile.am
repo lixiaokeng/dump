@@ -6,7 +6,6 @@ libcompat_la_SOURCES = \
 	bylabel.c \
 	compaterr.c \
 	compatglob.c \
-	minilzo.c \
 	rmtflags.c \
 	system.c
 libcompat_la_LIBADD = \
@@ -20,7 +19,6 @@ libcompat_la_SOURCES += \
 	../include/compatglob.h \
 	../include/darwin.h \
 	../include/lzoconf.h \
-	../include/minilzo.h \
 	../include/pathnames.h \
 	../include/rmtflags.h \
 	../include/system.h \
