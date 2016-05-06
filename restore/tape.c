@@ -59,6 +59,7 @@
 #include <sys/un.h>
 
 #ifdef	__linux__
+#include <sys/sysmacros.h>
 #include <sys/time.h>
 #include <time.h>
 #ifdef HAVE_EXT2FS_EXT2_FS_H
