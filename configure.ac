@@ -290,6 +290,19 @@ if test "$enable_blkid" != "no"; then
 	fi
 fi
 
+AC_ARG_ENABLE([uuid], [AC_HELP_STRING([--disable-uuid], [enable uuid support])])
+if test "$enable_uuid" != "no"; then
+	PKG_CHECK_MODULES([UUID], [uuid], [], [
+		found_uuid="no"
+		if test "$enable_uuid" = "yes"; then
+			AC_MSG_ERROR([uuid support requested, but not found])
+		fi
+	])
+	if test "$found_uuid" != "no"; then
+		AC_DEFINE([HAVE_UUID], 1, [Define this if you have the uuid library.])
+	fi
+fi
+
 dnl
 dnl Check for ncurses or termcap libraries
 dnl

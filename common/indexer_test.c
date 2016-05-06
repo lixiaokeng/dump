@@ -187,7 +187,7 @@ test_indexer(Indexer *indexer, const char *filename, const char *path)
 	struct direct dp;
 	struct stat buf;
 
-#ifdef __linux__
+#ifdef HAVE_UUID
 	test_fs.super = &test_super;
 	uuid_generate_time((unsigned char *)&test_fs.super->s_uuid);
 #endif
