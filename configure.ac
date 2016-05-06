@@ -277,15 +277,18 @@ AC_MSG_RESULT(no))
 dnl
 dnl Check for blkid headers libraries
 dnl
-AC_CHECK_HEADER(blkid/blkid.h, [blkid_h=yes], [blkid_h=no], [-])
-PKG_CHECK_EXISTS([blkid],
-	[
-	BLKID=`$PKG_CONFIG --libs blkid`
-	if test "$blkid_h" = yes ; then
-		AC_DEFINE([HAVE_BLKID],1,[Define this if you have the blkid library.])
+AC_ARG_ENABLE([blkid], [AC_HELP_STRING([--disable-blkid], [enable blkid support])])
+if test "$enable_blkid" != "no"; then
+	PKG_CHECK_MODULES([BLKID], [blkid], [], [
+		found_blkid="no"
+		if test "$enable_blkid" = "yes"; then
+			AC_MSG_ERROR([blkid support requested, but not found])
+		fi
+	])
+	if test "$found_blkid" != "no"; then
+		AC_DEFINE([HAVE_BLKID], 1, [Define this if you have the blkid library.])
 	fi
-	],[BLKID=""])
-AC_SUBST(BLKID)
+fi
 
 dnl
 dnl Check for ncurses or termcap libraries

@@ -9,6 +9,8 @@ libcompat_la_SOURCES = \
 	minilzo.c \
 	rmtflags.c \
 	system.c
+libcompat_la_LIBADD = \
+	$(BLKID_LIBS)
 
 # List headers for `make dist` to pull in.
 libcompat_la_SOURCES += \
