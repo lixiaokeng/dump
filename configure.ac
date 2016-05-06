@@ -282,6 +282,7 @@ PKG_CHECK_MODULES(EXT2FS, [ext2fs])
 if test "$ext2fs_h" = no -o "x$EXT2FS_LIBS" = "x"; then
 	AC_MSG_ERROR(You need to install the Ext2fs libraries from the E2fsprogs distribution first - hint: make install-libs)
 fi
+PKG_CHECK_MODULES(COM_ERR, [com_err])
 
 dnl
 dnl Check for ext2fs_read_inode_full

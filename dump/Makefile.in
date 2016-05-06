@@ -7,7 +7,7 @@ top_builddir=	..
 INC=		-I$(top_srcdir)/dump -I$(top_srcdir)/common
 ALL_CFLAGS=	@CPPFLAGS@ @CFLAGS@ $(GINC) $(INC)
 LDFLAGS=	@LDFLAGS@
-LIBS=		$(GLIBS) @ZLIB@ @BZLIB@ @BLKID@ @SQLITE3@
+LIBS=		$(GLIBS) @ZLIB@ @BZLIB@ @BLKID@ @SQLITE3@ @COM_ERR_LIBS@
 DEPLIBS=	../compat/lib/libcompat.a
 
 PROG=		dump
