@@ -404,13 +404,17 @@ AC_SUBST(LZOLIB)
 dnl
 dnl Check for sqlite3 headers and libraries
 dnl
-AC_CHECK_HEADER(sqlite3.h, [sqlite3_h=yes], [sqlite3_h=no], [-])
-AC_CHECK_LIB(sqlite3, sqlite3_initialize, [sqlite3_lib=yes], [sqlite3_lib=no])
-if test "$sqlite3_h" = yes -a "$sqlite3_lib" = yes; then
-	SQLITE3="-lsqlite3"
-    AC_DEFINE([HAVE_SQLITE3],1,[Define this if you have sqlite3 library.])
-else
-    SQLITE3=""
+AC_ARG_ENABLE([sqlite], [AC_HELP_STRING([--disable-sqlite], [disable sqlite indexing support])])
+SQLITE3=
+if test "$enable_sqlite" != "no"; then
+	AC_CHECK_HEADER(sqlite3.h, [sqlite3_h=yes], [sqlite3_h=no], [-])
+	AC_CHECK_LIB(sqlite3, sqlite3_initialize, [sqlite3_lib=yes], [sqlite3_lib=no])
+	if test "$sqlite3_h" = yes -a "$sqlite3_lib" = yes; then
+		SQLITE3="-lsqlite3"
+	    AC_DEFINE([HAVE_SQLITE3],1,[Define this if you have sqlite3 library.])
+	elif test "$enable_sqlite" = "yes"; then
+		AC_MSG_ERROR([sqlite support requested, but not found])
+    fi
 fi
 AC_SUBST(SQLITE3)
 
