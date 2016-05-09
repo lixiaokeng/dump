@@ -140,7 +140,7 @@ current directory.
 .TP
 .B add \fR[\fIarg\fR]
 The current directory or specified argument is added to the list of files to be
-extracted.  If a directory is specified, then it and all its descendents are
+extracted.  If a directory is specified, then it and all its descendants are
 added to the extraction list (unless the
 .B \-h
 flag is specified on the command line). Files that are on the extraction list
@@ -152,7 +152,7 @@ Change the current working directory to the specified argument.
 .TP
 .B delete \fR[\fIarg\fR]
 The current directory or specified argument is deleted from the list of files 
-to be extracted. If a directory is specified, then it and all its descendents
+to be extracted. If a directory is specified, then it and all its descendants
 are deleted from the extraction list (unless the
 .B \-h
 flag is specified on the command line). The most expedient way to extract most 
@@ -162,8 +162,8 @@ and then delete those files that are not needed.
 .B extract
 All files on the extraction list are extracted from the dump.
 .B Restore
-will ask which volume the user wishes to mount. The fastest way to extract a f
-ew files is to start with the last volume and work towards the first volume.
+will ask which volume the user wishes to mount. The fastest way to extract a few
+files is to start with the last volume and work towards the first volume.
 .TP
 .B help
 List a summary of the available commands.
