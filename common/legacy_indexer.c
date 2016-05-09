@@ -66,6 +66,9 @@ static int32_t gThisDumpDate;
 void	msg (const char *fmt, ...);
 void	quit (const char *fmt, ...);
 
+extern off_t rmtseek(off_t, int);
+extern void mkchecksum(union u_spcl *tmpspcl);
+
 extern char *host;
 extern int tapefd;
 
