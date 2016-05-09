@@ -18,7 +18,6 @@ libcompat_la_SOURCES += \
 	../include/compaterr.h \
 	../include/compatglob.h \
 	../include/darwin.h \
-	../include/lzoconf.h \
 	../include/pathnames.h \
 	../include/rmtflags.h \
 	../include/system.h \
