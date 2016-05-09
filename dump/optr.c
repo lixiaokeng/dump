@@ -703,8 +703,7 @@ lastdump(char arg) /* w ==> just what to do; W ==> most recent dumps */
 		char **type;
 
 		for (type = fstypes; *type != NULL; type++) {
-			if (strncmp(dt->mnt_type, *type,
-				    sizeof(dt->mnt_type)) == 0) {
+			if (strcmp(dt->mnt_type, *type) == 0) {
 				const char *disk = get_device_name(dt->mnt_fsname);
 				print_wmsg(arg, dt->mnt_freq > 0,
 					   disk ? disk : dt->mnt_fsname,
