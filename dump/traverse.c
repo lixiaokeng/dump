@@ -748,7 +748,7 @@ searchdir(dump_ino_t ino, daddr_t blkno, long size, long filesize)
 
 struct block_context {
 	ext2_ino_t ino;
-	int	*buf;
+	blk_t	*buf;
 	int	cnt;
 	int	max;
 	int	next_block;
@@ -978,7 +978,7 @@ dumpino(struct dinode *dp, dump_ino_t ino, int metaonly)
 	}
 #ifdef	__linux__
 	bc.max = NINDIR(sblock) * EXT2_FRAGS_PER_BLOCK(fs->super);
-	bc.buf = (int *)malloc (bc.max * sizeof (int));
+	bc.buf = malloc (bc.max * sizeof (int));
 	bc.cnt = 0;
 	bc.ino = ino;
 	bc.next_block = 0;
