@@ -35,8 +35,7 @@ dnl
 dnl Handle --enable-debug
 dnl
 AC_MSG_CHECKING([whether to enable extra debugging])
-AC_ARG_ENABLE([debug],
-[  --enable-debug             include debugging code (default is NO)])
+AC_ARG_ENABLE([debug], [AC_HELP_STRING([--enable-debug], [include debugging code @<:@default=no@:>@])])
 if test "$enable_debug" = "yes"
 then
 	AC_DEFINE([FDEBUG], 1, [Enable extra debugging])
@@ -52,8 +51,7 @@ dnl
 dnl Handle --enable-static-progs
 dnl
 AC_MSG_CHECKING([whether to build static binaries])
-AC_ARG_ENABLE([static-progs],
-[  --enable-static-progs      link dump and restore statically (default is NO)])
+AC_ARG_ENABLE([static-progs], [AC_HELP_STRING([--enable-static-progs], [link dump and restore statically @<:@default=no@:>@])])
 if test "$enable_static_progs" = "yes"
 then
 	LDFLAGS="$LDFLAGS -static"
@@ -68,8 +66,7 @@ dnl Handle --enable-rmt
 dnl
 AC_MSG_CHECKING([whether to build rmt])
 BUILD_RMT=yes
-AC_ARG_ENABLE([rmt],
-[  --enable-rmt               compile and install rmt (default is YES)])
+AC_ARG_ENABLE([rmt], [AC_HELP_STRING([--enable-rmt], [compile and install rmt @<:@default=yes@:>@])])
 if test "$enable_rmt" = "no"; then
 	BUILD_RMT=no
 fi
@@ -81,8 +78,7 @@ dnl Handle --enable-ermt
 dnl
 AC_MSG_CHECKING([whether to build ermt])
 BUILD_ERMT=no
-AC_ARG_ENABLE([ermt],
-[  --enable-ermt              compile ermt, an encrypting version of rmt (default is NO)])
+AC_ARG_ENABLE([ermt], [AC_HELP_STRING([--enable-ermt], [compile ermt, an encrypting version of rmt @<:@default=no@:>@])])
 if test "$enable_ermt" = "yes"; then
 	if test "$BUILD_RMT" != "yes"; then
 		AC_MSG_ERROR([ermt requires --enable-rmt])
@@ -96,8 +92,7 @@ dnl
 dnl Handle --enable-kerberos
 dnl
 AC_MSG_CHECKING([whether to enable kerberos extensions])
-AC_ARG_ENABLE([kerberos],
-[  --enable-kerberos          compile kerberos extensions (default is NO)])
+AC_ARG_ENABLE([kerberos], [AC_HELP_STRING([--enable-kerberos], [compile kerberos extensions @<:@default=no@:>@])])
 if test "$enable_kerberos" = "yes"
 then
 	AC_DEFINE([KERBEROS], 1, [Enable kerberos extensions])
@@ -109,8 +104,7 @@ fi
 dnl
 dnl Handle --enable-readline
 dnl
-AC_ARG_ENABLE([readline],
-[  --enable-readline          enable readline support in restore (default is YES)],
+AC_ARG_ENABLE([readline], [AC_HELP_STRING([--enable-readline], [enable readline support in restore @<:@default=yes@:>@])],
 if test "$enableval" = "no"
 then
 	READLINE=""
@@ -129,8 +123,7 @@ echo "Including readline support by default"
 dnl
 dnl Handle --enable-oldsylefscript
 dnl
-AC_ARG_ENABLE([oldstylefscript],
-[  --enable-oldstylefscript   enable old style F script (no arguments) (default is NO)],
+AC_ARG_ENABLE([oldstylefscript], [AC_HELP_STRING([--enable-oldstylefscript], [enable old style F script (no arguments) @<:@default=no@:>@])],
 if test "$enableval" = "yes"
 then
 	AC_DEFINE([OLD_STYLE_FSCRIPT],1,[Define this is you want old style F script (no arguments).])
@@ -145,8 +138,7 @@ echo "Using new style F script by default"
 dnl
 dnl Handle --enable-qfa
 dnl
-AC_ARG_ENABLE([qfa],
-[  --enable-qfa               enable Quick File Access support (default is YES)],
+AC_ARG_ENABLE([qfa], [AC_HELP_STRING([--enable-qfa], [enable Quick File Access support @<:@default=yes@:>@])],
 if test "$enableval" = "yes"
 then
 	AC_DEFINE([USE_QFA],1,[Define this if you want Quick File Access support.])
@@ -162,8 +154,7 @@ echo "Enabling Quick File Access support by default"
 dnl
 dnl Handle --enable-qfadebug
 dnl
-AC_ARG_ENABLE([qfadebug],
-[  --enable-qfadebug          include Quick File Access debugging code (default is NO)],
+AC_ARG_ENABLE([qfadebug], [AC_HELP_STRING([--enable-qfadebug], [include Quick File Access debugging code @<:@default=no@:>@])],
 if test "$enableval" = "yes"
 then
 	AC_DEFINE([DEBUG_QFA],1,[Define this if you want to include Quick File Access debugging code.])
@@ -178,8 +169,7 @@ echo "Not including Quick File Access debugging code by default"
 dnl
 dnl Handle --enable-macosx
 dnl
-AC_ARG_ENABLE([macosx],
-[  --enable-macosx            include Mac OSX restore compatibility (default is NO)],
+AC_ARG_ENABLE([macosx], [AC_HELP_STRING([--enable-macosx], [include Mac OSX restore compatibility @<:@default=no@:>@])],
 if test "$enableval" = "yes"
 then
 	AC_DEFINE([DUMP_MACOSX],1,[Define this if you want to include Mac OSX restore compatibility.])
@@ -194,8 +184,7 @@ echo "Not including Mac OSX restore compatibility code by default"
 dnl
 dnl Handle --enable-selinux
 dnl
-AC_ARG_ENABLE([selinux],
-[  --enable-selinux      restore can translate SELinux EAs (default is auto)])
+AC_ARG_ENABLE([selinux], [AC_HELP_STRING([--enable-selinux], [restore can translate SELinux EAs @<:@default=auto@:>@])])
 if test "$enable_selinux" != "no"; then
 	found_selinux="yes"
 	PKG_CHECK_MODULES([SELINUX], [libselinux], [], [
@@ -212,8 +201,7 @@ fi
 dnl
 dnl set $(DUMPDATESPATH) from --with-dumpdatespath
 dnl
-AC_ARG_WITH([dumpdatespath],
-[  --with-dumpdatespath=PATH  select path for dumpdates file],
+AC_ARG_WITH([dumpdatespath], [AC_HELP_STRING([--with-dumpdatespath=PATH], [select path for dumpdates file])],
 AC_MSG_RESULT(DUMPDATESPATH is $withval)
 DUMPDATESPATH=$withval,
 DUMPDATESPATH="${sysconfdir}/dumpdates"
@@ -224,8 +212,7 @@ AC_SUBST(DUMPDATESPATH)
 dnl
 dnl set _PATH_RMT from --with-rmtpath
 dnl
-AC_ARG_WITH([rmtpath],
-[  --with-rmtpath=PATH  select path for rmt program],
+AC_ARG_WITH([rmtpath], [AC_HELP_STRING([--with-rmtpath=PATH], [select path for rmt program])],
 RMTPATH=$withval,
 RMTPATH='/etc/rmt')
 AC_SUBST(RMTPATH)
