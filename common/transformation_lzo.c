@@ -66,7 +66,7 @@ lzo_endDiskIOProcess(Transformation *xform)
  */
 static int
 lzo_compress(Transformation *xform, struct tapebuf *tpbin,
-		unsigned long *destlen, const char *src, int srclen, int compressed)
+		unsigned long *destlen, const char *src, int srclen)
 {
 #ifdef HAVE_LZO
 	lzo_uint *worklen2 = (lzo_uint *) destlen;

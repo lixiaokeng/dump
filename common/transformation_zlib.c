@@ -11,7 +11,7 @@
  * Initialize
  */
 static int
-zlib_initialize(Transformation *xform)
+zlib_initialize(Transformation *xform, int enc)
 {
 	return 0;
 }
