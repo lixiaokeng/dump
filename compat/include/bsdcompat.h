@@ -9,7 +9,7 @@
 #include <config.h>
 #include <sys/time.h>
 #include <dirent.h>
-#include <ext2fs/ext2fs.h>
+#include <stdio.h>
 
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
@@ -17,6 +17,13 @@
 #ifdef HAVE_INTTYPES_H
 #include <inttypes.h>
 #endif
+
+#ifdef HAVE_EXT2FS_EXT2_FS_H
+#include <ext2fs/ext2_fs.h>
+#else
+#include <linux/ext2_fs.h>
+#endif
+#include <ext2fs/ext2fs.h>
 
 #ifndef _BSDCOMPAT_H
 #define _BSDCOMPAT_H 1
