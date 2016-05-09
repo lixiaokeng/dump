@@ -479,14 +479,18 @@ Transformation
 	t = (Transformation *) malloc(sizeof (Transformation));
 	mlock(t, sizeof(Transformation));
 
+#ifdef HAVE_OPENSSL
 	OpenSSL_add_all_ciphers();
 	OpenSSL_add_all_digests();
+#endif
 
 	t->enc = enc;
+#ifdef HAVE_OPENSSL
 	t->state.ssl.complvl = complvl;
 	t->state.ssl.cipher = EVP_get_cipherbyname(ciphername);
 	t->state.ssl.digest = EVP_get_digestbyname(digestname);
 	t->state.ssl.engine = NULL;
+#endif
 
 	t->name = "ssl";
 	t->mandatory = 1;
@@ -498,6 +502,7 @@ Transformation
 	t->compress = &ssl_compress;
 	t->decompress = &ssl_decompress;
 
+#ifdef HAVE_OPENSSL
 	// we could use this to generate a key from a passphrase.
 	// using this as the actual encryption key has the problems
 	// discussed elsewhere.
@@ -514,6 +519,7 @@ Transformation
 	} else {
 		// how do we get keys?
 	}
+#endif
 
 	return t;
 }

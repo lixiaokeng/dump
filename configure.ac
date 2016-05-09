@@ -449,16 +449,20 @@ fi
 dnl
 dnl Check for OpenSSL, for ermt and encryption.
 dnl
-AC_CHECK_HEADER(openssl/evp.h, [evp_h=yes], [evp_h=no])
-AC_CHECK_LIB(crypto, EVP_CIPHER_CTX_set_padding, [crypto_lib=yes], [crypto_lib=no])
-if test "$evp_h" = yes -a "$crypto_lib" = yes; then
-	SSLLIB="-lssl"
-	AC_DEFINE([HAVE_OPENSSL],1,[Define this if you have openssl library.])
-else
-	SSLLIB=""
-	if test "$ERMT" != ""; then
-		AC_MSG_ERROR(You need to install the OpenSSL library (version 0.9.7a or later), or configure without --enable-ermt)
+AC_ARG_ENABLE([ssl], [AC_HELP_STRING([--disable-ssl], [disable ssl support])])
+SSLLIB=
+if test "$enable_ssl" != "no"; then
+	AC_CHECK_HEADER(openssl/evp.h, [evp_h=yes], [evp_h=no])
+	AC_CHECK_LIB(crypto, EVP_CIPHER_CTX_set_padding, [crypto_lib=yes], [crypto_lib=no])
+	if test "$evp_h" = yes -a "$crypto_lib" = yes; then
+		SSLLIB="-lssl"
+		AC_DEFINE([HAVE_OPENSSL],1,[Define this if you have openssl library.])
+	elif test "$enable_ssl" = "yes"; then
+		AC_MSG_ERROR([ssl support requested, but not found])
 	fi
+fi
+if test "$ERMT" != "" -a -z "$SSLLIB"; then
+	AC_MSG_ERROR([You need to install the OpenSSL library (version 0.9.7a or later), or configure without --enable-ermt])
 fi
 AC_SUBST(SSLLIB)
 
