@@ -51,5 +51,3 @@
 #define	_PATH_DEFTAPE	"/dev/rmt/0"
 #endif
 #endif
-
-#define	_PATH_RMT	"/etc/rmt"		/* path on remote host */

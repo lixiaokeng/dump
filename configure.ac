@@ -222,6 +222,16 @@ echo "DUMPDATESPATH defaults to $DUMPDATESPATH"
 AC_SUBST(DUMPDATESPATH)
 
 dnl
+dnl set _PATH_RMT from --with-rmtpath
+dnl
+AC_ARG_WITH([rmtpath],
+[  --with-rmtpath=PATH  select path for rmt program],
+RMTPATH=$withval,
+RMTPATH='/etc/rmt')
+AC_SUBST(RMTPATH)
+CPPFLAGS="${CPPFLAGS} "'-D_PATH_RMT=\"$(RMTPATH)\"'
+
+dnl
 dnl Check for Ext2fs headers and libraries
 dnl
 PKG_CHECK_MODULES(EXT2FS, [ext2fs])
