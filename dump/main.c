@@ -535,7 +535,8 @@ main(int argc, char *argv[])
 		}
 	}
 
-	(void)setuid(getuid()); /* rmthost() is the only reason to be setuid */
+	if (setuid(getuid()))
+		/* rmthost() is the only reason to be setuid */;
 	if (Apath && (Afile = open(Apath, O_WRONLY|O_CREAT|O_TRUNC,
 				   S_IRUSR | S_IWUSR | S_IRGRP |
 				   S_IWGRP | S_IROTH | S_IWOTH)) < 0) {

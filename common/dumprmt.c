@@ -220,8 +220,10 @@ rmtgetconn(void)
 		/* Restore the uid and gid. We really don't want
 		 * to execute whatever is put into RSH variable with
 		 * more priviledges than needed... */
-		setuid(getuid());
-		setgid(getgid());
+		if (setuid(getuid()))
+			err(1, "cannot setuid");
+		if (setgid(getgid()))
+			err(1, "cannot setgid");
 
 		if ((rshpid = piped_child(rshcmd)) < 0) {
 			msg("cannot open connection\n");

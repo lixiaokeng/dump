@@ -43,6 +43,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <compaterr.h>
 #include "system.h"
 
 /*
@@ -60,8 +61,10 @@ int system_command(const char *command, const char *device, int volnum) {
 		return -1;
 	}
 	if (pid == 0) {
-		setuid(getuid());
-		setgid(getgid());
+		if (setuid(getuid()))
+			err(1, "cannot setuid");
+		if (setgid(getgid()))
+			err(1, "cannot setgid");
 #if OLD_STYLE_FSCRIPT
 		snprintf(commandstr, sizeof(commandstr), "%s", command);
 #else
