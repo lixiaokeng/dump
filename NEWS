@@ -1,4 +1,4 @@
-Changes between versions 0.4b44 and 0.4b45 (released ?????????????)
+Changes between versions 0.4b44 and 0.4b45 (released May 09, 2016)
 ===================================================================
 
 1.	Improve data throughput when using compression in dump by
@@ -12,6 +12,8 @@ Changes between versions 0.4b44 and 0.4b45 (released ?????????????)
 3.	Add sqlite index support and reorganize the QFA code
 	as plugins. Thanks to Bear Giles <bgiles@coyotesong.com> for
 	the patch.
+
+4.	Lots of various build cleanups and minor bugfixes.
 
 Changes between versions 0.4b43 and 0.4b44 (released June 10, 2011)
 ===================================================================

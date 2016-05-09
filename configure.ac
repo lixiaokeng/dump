@@ -1,4 +1,4 @@
-AC_INIT([dump], [0.4b44], [http://dump.sourceforge.net])
+AC_INIT([dump], [0.4b45], [http://dump.sourceforge.net])
 AC_PREREQ(2.57)
 AM_INIT_AUTOMAKE
 AM_SILENT_RULES([yes])
