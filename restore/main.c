@@ -92,7 +92,7 @@ int	dokerberos = 0;
 char	command = '\0';
 long	dumpnum = 1;
 long	volno = 0;
-long	ntrec;
+int	ntrec;
 char	*dumpmap = NULL;
 char	*usedinomap = NULL;
 dump_ino_t maxino;

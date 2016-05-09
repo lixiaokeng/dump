@@ -73,7 +73,7 @@ extern char	*usedinomap; 	/* map of inodes that are in use on this fs */
 extern dump_ino_t maxino;	/* highest numbered inode in this file system */
 extern long	dumpnum;	/* location of the dump on this tape */
 extern long	volno;		/* current volume being read */
-extern long	ntrec;		/* number of TP_BSIZE records per tape block */
+extern int	ntrec;		/* number of TP_BSIZE records per tape block */
 extern time_t	dumptime;	/* time that this dump begins */
 extern time_t	dumpdate;	/* time that this dump was made */
 extern char	command;	/* opration being performed */

@@ -2044,7 +2044,7 @@ getmore:
 			 */
 			if (i % TP_BSIZE != 0)
 				Vprintf(stdout,
-				    "partial block read: %ld should be %ld\n",
+				    "partial block read: %ld should be %d\n",
 				    (long)i, ntrec * TP_BSIZE);
 			numtrec = i / TP_BSIZE;
 		}
@@ -2530,7 +2530,7 @@ findtapeblksize(void)
 			errx(1,"Error reading dump file header");
 		tbufptr = tapebuf;
 		numtrec = ntrec;
-		Vprintf(stdout, "Input block size is %ld\n", ntrec);
+		Vprintf(stdout, "Input block size is %d\n", ntrec);
 		return;
 	} /* if (!magtapein) */
 
@@ -2574,7 +2574,7 @@ oldformat:
 				"\'-b %d\' ", spclpt.c_ntrec);
 	}
 	numtrec = ntrec;
-	Vprintf(stdout, "Tape block size is %ld\n", ntrec);
+	Vprintf(stdout, "Tape block size is %d\n", ntrec);
 }
 
 /*
