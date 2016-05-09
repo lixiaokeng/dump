@@ -114,7 +114,7 @@ static char	*tapebuf;		/* input buffer for read */
 static int	bufsize;		/* buffer size without prefix */
 static char	*tbufptr = NULL;	/* active tape buffer */
 #if defined(HAVE_ZLIB) || defined(HAVE_BZLIB) || defined(HAVE_LZO)
-static char	*comprbuf;		/* uncompress work buf */
+static void	*comprbuf;		/* uncompress work buf */
 static size_t	comprlen;		/* size including prefix */
 #endif
 static union	u_spcl endoftapemark;
@@ -2311,8 +2311,9 @@ decompress_tapebuf(struct tapebuf *tpbin, int readsize)
 	/* zflag gets set in setup() from the dump header          */
 	int cresult, blocklen;        
 	unsigned long worklen;
-	char *output = NULL,*reason = NULL, *lengtherr = NULL;              
-       
+	void *output = NULL;
+	char *reason = NULL, *lengtherr = NULL;
+
 	/* build a length error message */
 	blocklen = tpbin->length;
 	if (readsize < blocklen + (int)PREFIXSIZE)
