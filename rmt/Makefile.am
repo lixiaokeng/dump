@@ -16,7 +16,7 @@ rmt_SOURCES = rmt.c
 rmt_LDADD = ../compat/lib/libcompat.la $(EXT2FS_LIBS)
 
 ermt_SOURCES = ermt.c cipher.c
-ermt_LDADD = ../compat/lib/libcompat.la $(EXT2FS_LIBS)
+ermt_LDADD = ../compat/lib/libcompat.la $(EXT2FS_LIBS) $(SSL_LIBS)
 
 rmt.8: rmt.8.in
 	$(AM_V_GEN)\

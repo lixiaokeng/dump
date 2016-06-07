@@ -19,7 +19,7 @@ libcommon_la_LIBADD = \
 	$(ZLIB_LIBS) \
 	$(BZLIB) \
 	$(LZOLIB) \
-	$(SSLLIB) \
+	$(SSL_LIBS) \
 	$(SQLITE3)
 
 check_PROGRAMS = indexer_test
