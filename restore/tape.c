@@ -337,9 +337,9 @@ setup(void)
 	readtape_func = readtape_set;
 #if defined(HAVE_LZO)
 	if (lzo_init() != LZO_E_OK) {
-	  msg("internal error - lzo_init failed \n");
-	  exit(1);
-        }
+		msg("internal error - lzo_init failed \n");
+		exit(1);
+	}
 #endif
 #endif
 	FLUSHTAPEBUF();
@@ -484,7 +484,7 @@ getvol(long nextvol)
 	saved_blksread = blksread;
 	saved_tpblksread = tpblksread;
 #if defined(USE_QFA) && defined(sunos)
-	if (createtapeposflag || tapeposflag) 
+	if (createtapeposflag || tapeposflag)
 		close(fdsmtc);
 #endif
 again:
@@ -548,7 +548,7 @@ again:
 	}
 	closemt();
 
-	/* 
+	/*
 	 * if using an archive file, reset its name so readtape()
 	 * could properly use remote access.
 	 */
@@ -594,7 +594,7 @@ again:
 			char *pos;
 			(void) strncpy(magtape, buf, sizeof(magtape));
 			magtape[sizeof(magtape) - 1] = '\0';
-			if ((pos = strchr(magtape, '\n'))) 
+			if ((pos = strchr(magtape, '\n')))
 				magtape[pos - magtape] = '\0';
 		}
 	}
@@ -661,13 +661,13 @@ gethdr:
 		goto again;
 	}
 	tapesread |= 1 << volno;
- 	/*
- 	 * If continuing from the previous volume, skip over any
- 	 * blocks read already at the end of the previous volume.
- 	 *
- 	 * If coming to this volume at random, skip to the beginning
- 	 * of the next record.
- 	 */
+	/*
+	 * If continuing from the previous volume, skip over any
+	 * blocks read already at the end of the previous volume.
+	 *
+	 * If coming to this volume at random, skip to the beginning
+	 * of the next record.
+	 */
 	if (zflag) {
 		fprintf(stderr, "Dump tape is compressed.\n");
 #if !defined(HAVE_ZLIB) && !defined(HAVE_BZLIB) && !defined(HAVE_LZO)
@@ -676,23 +676,23 @@ gethdr:
 	}
 	Dprintf(stdout, "read %ld recs, tape starts with %ld\n",
 		tpblksread - 1, (long)tmpbuf.c_firstrec);
- 	if (tmpbuf.c_type == TS_TAPE && (tmpbuf.c_flags & DR_NEWHEADER)) {
- 		if (!wantnext) {
- 			tpblksread = tmpbuf.c_firstrec + 1;
- 			for (i = tmpbuf.c_count; i > 0; i--)
- 				readtape(buf);
- 		} else if (tmpbuf.c_firstrec > 0 &&
+	if (tmpbuf.c_type == TS_TAPE && (tmpbuf.c_flags & DR_NEWHEADER)) {
+		if (!wantnext) {
+			tpblksread = tmpbuf.c_firstrec + 1;
+			for (i = tmpbuf.c_count; i > 0; i--)
+				readtape(buf);
+		} else if (tmpbuf.c_firstrec > 0 &&
 			   tmpbuf.c_firstrec < tpblksread - 1) {
 			/*
 			 * -1 since we've read the volume header
 			 */
- 			i = tpblksread - tmpbuf.c_firstrec - 1;
+			i = tpblksread - tmpbuf.c_firstrec - 1;
 			Dprintf(stderr, "Skipping %ld duplicate record%s.\n",
 				(long)i, i > 1 ? "s" : "");
- 			while (--i >= 0)
- 				readtape(buf);
- 		}
- 	}
+			while (--i >= 0)
+				readtape(buf);
+		}
+	}
 	if (curfile.action == USING) {
 		if (volno == 1)
 			panic("active file into volume 1\n");
@@ -752,7 +752,7 @@ setdumpnum(void)
 	if (host) {
 		if (rmtioctl(MTFSF, dumpnum - 1) < 0) {
 			fprintf(stderr, "rmtioctl MTFSF: %s\n", strerror(errno));
-            exit(1);
+			exit(1);
 		}
 	} else
 #endif
@@ -787,7 +787,7 @@ printdumpinfo(void)
 #endif
 }
 
-void 
+void
 printvolinfo(void)
 {
 	int i;
@@ -1079,7 +1079,7 @@ extractattr(char *path)
 			break;
 		case EXT_XATTR: {
 			char xattr[XATTR_MAXSIZE];
-			
+
 			if (readxattr(xattr) == GOOD) {
 				xattr_extract(path, xattr);
 				break;
@@ -1115,8 +1115,8 @@ extractfinderinfoufs(char *name)
 	timep[1].tv_usec = curfile.dip->di_mtime.tv_usec;
 	mode = curfile.dip->di_mode;
 	flags = curfile.dip->di_flags;
-        uid = curfile.dip->di_uid;
-        gid =  curfile.dip->di_gid;
+	uid = curfile.dip->di_uid;
+	gid =  curfile.dip->di_gid;
 
 	switch (mode & IFMT) {
 
@@ -1171,7 +1171,7 @@ extractresourceufs(char *name)
 	ASDHeaderPtr	hp;
 	ASDEntryPtr	ep;
 	u_long	loff;
-	 u_int32_t	uid;
+	u_int32_t	uid;
 	u_int32_t	gid;
 	u_int64_t	di_size;
 	char		*p;
@@ -1412,7 +1412,7 @@ loop:
 		if (ftruncate(ofile, origsize) < 0)
 			warn("%s: ftruncate", curfile.name);
 	}
-	if (!readingmaps) 
+	if (!readingmaps)
 		findinode(&spcl);
 	gettingfile = 0;
 }
@@ -1525,14 +1525,14 @@ xtrcmpfile(char *buf, size_t size)
 
 	if (cmperror)
 		return;
-	
+
 	if (read(ifile, cmpbuf, size) != (ssize_t)size) {
-		fprintf(stderr, "%s: size has changed.\n", 
+		fprintf(stderr, "%s: size has changed.\n",
 			curfile.name);
 		cmperror = 1;
 		return;
 	}
-	
+
 	if (memcmp(buf, cmpbuf, size) != 0) {
 		fprintf(stderr, "%s: tape and disk copies are different\n",
 			curfile.name);
@@ -1552,9 +1552,9 @@ xtrcmpskip(UNUSED(char *buf), size_t size)
 
 	if (cmperror)
 		return;
-	
+
 	if (read(ifile, cmpbuf, size) != (ssize_t)size) {
-		fprintf(stderr, "%s: size has changed.\n", 
+		fprintf(stderr, "%s: size has changed.\n",
 			curfile.name);
 		cmperror = 1;
 		return;
@@ -1677,7 +1677,7 @@ cmpfiles(char *tapefile, char *diskfile, struct stat *sbuf_disk)
 					tapefile, newname);
 			}
 		}
-		
+
 		/* don't unlink the file (it's not there anymore */
 		/* anyway) */
 		return (0);
@@ -1697,7 +1697,7 @@ static void
 compareattr(char *name)
 {
 	int xattr_done = 0;
-	
+
 	while (spcl.c_flags & DR_EXTATTRIBUTES) {
 		switch (spcl.c_extattributes) {
 		case EXT_MACOSFNDRINFO:
@@ -1893,7 +1893,7 @@ comparefile(char *name)
 			if (!cmperror) {
 				char c;
 				if (read(ifile, &c, 1) != 0) {
-					fprintf(stderr, "%s: size has changed.\n", 
+					fprintf(stderr, "%s: size has changed.\n",
 						name);
 					cmperror = 1;
 				}
@@ -1953,7 +1953,7 @@ readtape(char *buf)
 static void
 readtape_set(char *buf)
 {
-	if (!zflag) 
+	if (!zflag)
 		readtape_func = readtape_uncompr;
 	else {
 		newcomprbuf(ntrec);
@@ -2105,13 +2105,13 @@ getmore:
 
 /*
  * Read a compressed format block from a file or pipe and uncompress it.
- * Attempt to handle read errors, and end of file. 
+ * Attempt to handle read errors, and end of file.
  */
 static void
 readtape_comprfile(char *buf)
 {
 	long rl, size, i, ret;
-	int newvol; 
+	int newvol;
 	struct tapebuf *tpb;
 
 	if (blkcnt < numtrec) {
@@ -2298,7 +2298,7 @@ decompress_tapebuf(struct tapebuf *tpbin, int readsize)
 {
 	/* If zflag is on, all blocks have a struct tapebuf prefix */
 	/* zflag gets set in setup() from the dump header          */
-	int cresult, blocklen;        
+	int cresult, blocklen;
 	unsigned long worklen;
 	void *output = NULL;
 	char *reason = NULL, *lengtherr = NULL;
@@ -2319,7 +2319,7 @@ decompress_tapebuf(struct tapebuf *tpbin, int readsize)
 #ifndef HAVE_ZLIB
 			errx(1,"This restore version doesn't support zlib decompression");
 #else
-			cresult = uncompress(comprbuf, &worklen, 
+			cresult = uncompress(comprbuf, &worklen,
 					     tpbin->buf, blocklen);
 			output = comprbuf;
 			switch (cresult) {
@@ -2349,7 +2349,7 @@ decompress_tapebuf(struct tapebuf *tpbin, int readsize)
 #else
 			unsigned int worklen2 = worklen;
 			cresult = BZ2_bzBuffToBuffDecompress(
-					comprbuf, &worklen2, 
+					comprbuf, &worklen2,
 					tpbin->buf, blocklen, 0, 0);
 			worklen = worklen2;
 			output = comprbuf;
@@ -2381,16 +2381,16 @@ decompress_tapebuf(struct tapebuf *tpbin, int readsize)
 			errx(1,"This restore version doesn't support lzo decompression");
 #else
 			lzo_uint worklen2 = worklen;
-			cresult = lzo1x_decompress(tpbin->buf, blocklen,
-                                                   comprbuf, &worklen2, NULL);
+			cresult = lzo1x_decompress(tpbin->buf, blocklen, comprbuf,
+				&worklen2, NULL);
 			worklen = worklen2;
 			output = comprbuf;
 			switch (cresult) {
 				case LZO_E_OK:
 					break;
-                                case LZO_E_ERROR:
-                                case LZO_E_EOF_NOT_FOUND:
-                                	reason = "data error";
+				case LZO_E_ERROR:
+				case LZO_E_EOF_NOT_FOUND:
+					reason = "data error";
 					break;
 				default:
 					reason = "unknown";
@@ -2457,7 +2457,7 @@ msg_read_error(char *m)
  * readtape_set can set the correct function pointer for readtape().
  * Note that the first block of each tape/file is not compressed
  * and does not have a prefix.
- */ 
+ */
 static void
 findtapeblksize(void)
 {
@@ -2485,7 +2485,7 @@ findtapeblksize(void)
 		cvtflag++;
 		if (converthead(&spclpt) == FAIL) {
 			/* Special case for old compressed tapes with prefix */
-			if (magtapein && (i % TP_BSIZE != 0)) 
+			if (magtapein && (i % TP_BSIZE != 0))
 				goto oldformat;
 			errx(1, "Tape is not a dump tape");
 		}
@@ -2508,7 +2508,7 @@ findtapeblksize(void)
 				     "\'-b %d\' ", spclpt.c_ntrec);
 			ntrec = spclpt.c_ntrec;
 			len = (ntrec - 1) * TP_BSIZE;
-			zflag = 1;   
+			zflag = 1;
 		}
 		else {
 			/* read in the rest of the block based on bufsize */
@@ -2526,7 +2526,7 @@ findtapeblksize(void)
 	/*
 	 * If the input is a tape, we tried to read ntrec * TP_BSIZE bytes.
 	 * If the value of ntrec is too large, we read less than
-	 * what we asked for; adjust the value of ntrec and test for 
+	 * what we asked for; adjust the value of ntrec and test for
 	 * a compressed dump tape.
 	 */
 	if (i % TP_BSIZE != 0) {
@@ -2580,7 +2580,7 @@ static int read_a_block(int fd, char *buf, size_t len, long *lengthread)
 			i = rmtread(buf, size);
 		else
 #endif
-			i = read(fd, buf, size);                 
+			i = read(fd, buf, size);
 
 		if (i <= 0)
 			break; /* EOD or error */
@@ -2768,7 +2768,7 @@ good:
 		buf->c_dinode.di_size = buf->c_count * TP_BSIZE;
 		if (buf->c_count > TP_NINDIR)
 			readmapflag = 1;
-		else 
+		else
 			for (i = 0; i < buf->c_count; i++)
 				buf->c_addr[i]++;
 		break;
@@ -2817,7 +2817,7 @@ converttapebuf(struct tapebuf *tpb)
 			unsigned int    compressed:1;
 		} tb;
 		swabst((u_char *)"i", (u_char *)tpb);
-		memcpy(&tb, tpb, 4);	
+		memcpy(&tb, tpb, 4);
 		tpb->length = tb.length;
 		tpb->flags = tb.flags;
 		tpb->compressed = tb.compressed;
@@ -2838,10 +2838,10 @@ accthdr(struct s_spcl *header)
 	if (header->c_type == TS_TAPE) {
 		fprintf(stderr, "Volume header (%s inode format) ",
 		    oldinofmt ? "old" : "new");
- 		if (header->c_firstrec)
- 			fprintf(stderr, "begins with record %d",
- 				header->c_firstrec);
- 		fprintf(stderr, "\n");
+		if (header->c_firstrec)
+			fprintf(stderr, "begins with record %d",
+				header->c_firstrec);
+		fprintf(stderr, "\n");
 		previno = 0x7fffffff;
 		return;
 	}
@@ -2948,7 +2948,7 @@ findinode(struct s_spcl *header)
 		if (!noresyncmesg)
 #endif
 			fprintf(stderr, "resync restore, skipped %ld blocks\n",
-		    		skipcnt);
+				skipcnt);
 	skipcnt = 0;
 }
 
@@ -3115,19 +3115,19 @@ RequestVol(long tnum)
 extern int fdsmtc;
 
 struct uscsi_cmd {
-        int     uscsi_flags;            /* read, write, etc. see below */
-        short   uscsi_status;           /* resulting status  */
-        short   uscsi_timeout;          /* Command Timeout */
-        caddr_t uscsi_cdb;              /* cdb to send to target */
-        caddr_t uscsi_bufaddr;          /* i/o source/destination */
-        u_int   uscsi_buflen;           /* size of i/o to take place */
-        u_int   uscsi_resid;            /* resid from i/o operation */
-        u_char  uscsi_cdblen;           /* # of valid cdb bytes */
-        u_char  uscsi_rqlen;            /* size of uscsi_rqbuf */
-        u_char  uscsi_rqstatus;         /* status of request sense cmd */
-        u_char  uscsi_rqresid;          /* resid of request sense cmd */
-        caddr_t uscsi_rqbuf;            /* request sense buffer */
-        void   *uscsi_reserved_5;       /* Reserved for Future Use */
+	int     uscsi_flags;            /* read, write, etc. see below */
+	short   uscsi_status;           /* resulting status  */
+	short   uscsi_timeout;          /* Command Timeout */
+	caddr_t uscsi_cdb;              /* cdb to send to target */
+	caddr_t uscsi_bufaddr;          /* i/o source/destination */
+	u_int   uscsi_buflen;           /* size of i/o to take place */
+	u_int   uscsi_resid;            /* resid from i/o operation */
+	u_char  uscsi_cdblen;           /* # of valid cdb bytes */
+	u_char  uscsi_rqlen;            /* size of uscsi_rqbuf */
+	u_char  uscsi_rqstatus;         /* status of request sense cmd */
+	u_char  uscsi_rqresid;          /* resid of request sense cmd */
+	caddr_t uscsi_rqbuf;            /* request sense buffer */
+	void   *uscsi_reserved_5;       /* Reserved for Future Use */
 };
 
 #define CDB_GROUP0      6       /*  6-byte cdb's */
@@ -3258,7 +3258,7 @@ GetTapePos(long long *pos)
 	}
 	if (err) {
 		err = errno;
-		fprintf(stdout, "[%ld] error: %d (getting tapepos: %lld)\n", 
+		fprintf(stdout, "[%ld] error: %d (getting tapepos: %lld)\n",
 			(unsigned long)getpid(), err, *pos);
 		return err;
 	}
@@ -3292,7 +3292,7 @@ GotoTapePos(long long pos)
 	}
 	if (err) {
 		err = errno;
-		fprintf(stdout, "[%ld] error: %d (setting tapepos: %lld)\n", 
+		fprintf(stdout, "[%ld] error: %d (setting tapepos: %lld)\n",
 			(unsigned long)getpid(), err, pos);
 		return err;
 	}

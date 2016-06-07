@@ -292,9 +292,9 @@ rmtopen(const char *tape, const int mode)
 	char *rmtflags;
 
 	rmtflags = rmtflags_tochar(mode);
-	(void)snprintf(buf, sizeof (buf), "O%s\n%d %s\n", 
-		       tape, 
-		       mode & O_ACCMODE, 
+	(void)snprintf(buf, sizeof (buf), "O%s\n%d %s\n",
+		       tape,
+		       mode & O_ACCMODE,
 		       rmtflags);
 	free(rmtflags);
 	rmtstate = TS_OPEN;
@@ -468,7 +468,7 @@ int piped_child(const char **command) {
 		return -1;
 	}
 	if (pipe (from_child_pipe) < 0) {
-		msg ("cannot create pipe: %s\n", strerror(errno)); 
+		msg ("cannot create pipe: %s\n", strerror(errno));
 		return -1;
 	}
 	pid = fork ();

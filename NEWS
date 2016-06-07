@@ -123,7 +123,7 @@ Changes between versions 0.4b41 and 0.4b42 (released June 18, 2009)
 	<kalou@users.sourceforge.net> for reporting the bug.
 
 3.	Enable restore to handle restoring onto a different SELinux
-	policy from the dump. Thanks to Tony Nelson 
+	policy from the dump. Thanks to Tony Nelson
 	<tony_nelson@users.sourceforge.net> for the patch.
 	(see http://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=189845
 	for details)
@@ -214,7 +214,7 @@ Changes between versions 0.4b39 and 0.4b40 (released May 2, 2005)
 =================================================================
 
 1.	Changed restore to emit warnings (instead of emitting a fatal
-	error) if a file (or a directory) is unavailable for a 
+	error) if a file (or a directory) is unavailable for a
 	comparision (if the user doesn't have the necessary permissions
 	to access it for example). Thanks to Kenneth Porter
 	<shiva@sewingwitch.com> for the bug report.
@@ -248,7 +248,7 @@ Changes between versions 0.4b38 and 0.4b39 (released January 21, 2005)
 2.	Made restore to chdir() back into the initial directory when
 	dumping core while aborting a comparision operation. The
 	previous behaviour was to write the corefile at the root of
-	the directory being compared, which could very well be 
+	the directory being compared, which could very well be
 	read only and preventing the corefile generation. Thanks
 	to Kenneth Porter <shiva@sewingwitch.com> for the bug report.
 
@@ -278,13 +278,13 @@ Changes between versions 0.4b37 and 0.4b38 (released January 7, 2005)
 	dump containing files over 2GB. Thanks to Steve Bonds
 	<sbonds@users.sourceforge.net> for the bug report.
 
-4.	Do not save directory entries to non-dumped inodes 
+4.	Do not save directory entries to non-dumped inodes
 	(excluded from dump). This will eliminate the 'missing
 	file' warnings when doing 'restore -C'.
 
 5.	Fix dump crash when backuping a huge (2TB) filesystem,
 	due to a bogus calculation on the inode map size.
-	Thanks to Kevin B. Haines <K.B.Haines@rl.ac.uk> for 
+	Thanks to Kevin B. Haines <K.B.Haines@rl.ac.uk> for
 	submitting the bug and testing the fix.
 
 6.	Fix a problem in restore where the final \0 in the symbolic
@@ -302,7 +302,7 @@ Changes between versions 0.4b37 and 0.4b38 (released January 7, 2005)
 	attributes into the comparision.
 
 9.	Made restore understand tapes containing EA/ACLs (which will
-	be dumped by the next version of dump). In this version 
+	be dumped by the next version of dump). In this version
 	extended attributes on the tape are ignored, for full EA/ACL
 	support wait for the next version or try the experimental EA
 	patch.
@@ -315,20 +315,20 @@ Changes between versions 0.4b36 and 0.4b37 (released July 7, 2004)
 	libz and libbz2 (and dynamic versions of all other libraries).
 	This will make Debian users happy, because libz and libbz2
 	were the only needed libraries living in /usr, all the
-	others live in /lib. In case of system emergency, it is 
+	others live in /lib. In case of system emergency, it is
 	better not to have to rely on an extra filesystem.
 	Thanks to Bdale Garbee <bdale@gag.com> for the suggestion.
 
 2.	Fix compilation on (at least the Linux Debian port to) AMD64.
 	(<ext2fs/ext2_types.h> defines some types (__s64 and __u64)
-	that are also defined by <linux/types.h> (<asm/types.h>) and 
+	that are also defined by <linux/types.h> (<asm/types.h>) and
 	they conflict).
 
 3.	Make dump's reading of the dumpdates file a bit more robust,
 	preventing dump from crashing when the dumpdates file has
 	been modified by hand.
 
-4.	Fixed some offset calculations in dump code which could 
+4.	Fixed some offset calculations in dump code which could
 	lead to "bread lseek errors" on large filesystems. Thanks
 	to Bruce Lowekamp <lowekamp@users.sourceforge.net> for
 	reporting this bug and debugging the issue.
@@ -337,7 +337,7 @@ Changes between versions 0.4b36 and 0.4b37 (released July 7, 2004)
 	by label or uuid instead of dump's own routines.
 
 6.	Corrected a bug in dump where a wrong LABEL=... line in
-	/etc/fstab could prevent dump from dumping unrelated 
+	/etc/fstab could prevent dump from dumping unrelated
 	filesystems. Thanks to Bruce Lowekamp
 	<lowekamp@users.sourceforge.net> for reporting the bug.
 
@@ -352,7 +352,7 @@ Changes between versions 0.4b35 and 0.4b36 (released April 21, 2004)
 
 3.	Fixed a bug in restore preventing the read of a dump tape
 	written with Solaris 7 ufsdump. Thanks to Patrick Higgins
-	<phiggins@transzap.com> for reporting the bug and providing 
+	<phiggins@transzap.com> for reporting the bug and providing
 	the test case.
 
 4.	Changed dump to enable the creation of volumes of different
@@ -376,8 +376,8 @@ Changes between versions 0.4b35 and 0.4b36 (released April 21, 2004)
 	feature even when it is combined with -M/-f.
 
 9.	Fixed restore when restoring huge backups (where rstdir...
-	temporary files are over 2GB). Thanks to 
-	Raphael Jaffey <rjaffey@artic.edu> for reporting this, 
+	temporary files are over 2GB). Thanks to
+	Raphael Jaffey <rjaffey@artic.edu> for reporting this,
 	debugging the issue and making the patch.
 
 10.	Made restore understand FreeBSD UFS2 tapes. Thanks to
@@ -387,7 +387,7 @@ Changes between versions 0.4b35 and 0.4b36 (released April 21, 2004)
 11.	Made dump work with an arbitrary integer level (no more 10
 	levels only limitation). Thanks to Matthew
 	<msvincen@midway.uchicago.edu> for the patch.
-	
+
 Changes between versions 0.4b34 and 0.4b35 (released December 21, 2003)
 =======================================================================
 
@@ -401,12 +401,12 @@ Changes between versions 0.4b34 and 0.4b35 (released December 21, 2003)
 	<antipode@users.sourceforge.net> for reporting the bug.
 
 3.	Made -e/-E options of dump accept an unlimited number of inodes
-	to be excluded, rather than a hardcoded maximum. Thanks to 
+	to be excluded, rather than a hardcoded maximum. Thanks to
 	Dietrich Rothe <d-rothe@users.sourceforge.net> for the patch.
 
 4.	Updated the autoconf system to 2.50. Forced the -D_BSD_SOURCE
 	and -D_USE_BSD_SIGNAL defines in configure in order to solve
-	64bit build problems because quad_t is redifined with a 
+	64bit build problems because quad_t is redifined with a
 	different signature. Thanks to Mike Harris <mharris@redhat.com>
 	for reporting this bug.
 
@@ -421,7 +421,7 @@ Changes between versions 0.4b34 and 0.4b35 (released December 21, 2003)
 	used in the future to save ACLs...
 
 7.	Made rmt work correctly with regard to QFA and local/remote
-	files and tapes. The remote access will however work only 
+	files and tapes. The remote access will however work only
 	when the dump provided rmt version is used. If you want to
 	use another rmt server, please do not use the QFA feature.
 	Thanks to Uwe Gohlke <uwe@ugsoft.de> for the patch.
@@ -435,7 +435,7 @@ Changes between versions 0.4b33 and 0.4b34 (released April 18, 2003)
 
 2.	Fixed the configure script to only check for headers presence
 	instead of trying to compile them. This should fix issues
-	with old build environments. Thanks to Kari Lempiainen 
+	with old build environments. Thanks to Kari Lempiainen
 	<kari@funky.pp.fi> for reporting the bug.
 
 3.	Fixed restore to correctly ignore sockets when comparing
@@ -443,7 +443,7 @@ Changes between versions 0.4b33 and 0.4b34 (released April 18, 2003)
 	to Gunther Reiszig <gunther@mit.edu> for reporting the bug.
 
 4.	Fixed restore to correctly access the archive file (-A argument)
-	even when using a remote tape. Thanks to Fabrice Bellet 
+	even when using a remote tape. Thanks to Fabrice Bellet
 	<fabrice@bellet.info> for reporting the bug.
 
 5.	Fixed (again) handling of long (largefile) seeks in rmt.
@@ -454,12 +454,12 @@ Changes between versions 0.4b33 and 0.4b34 (released April 18, 2003)
 	dump is able to write now (-b 1024). Thanks to Fabrice Bellet
 	<fabrice@bellet.info> for reporting the bug.
 
-7.	Fixed a bug preventing dump to access a filesystem having 
+7.	Fixed a bug preventing dump to access a filesystem having
 	a label exactly 16 bytes in length. Thanks to <minduni@ti-edu.ch>
 	for reporting the bug.
 
 8.	Made dump store dump dates using explicit timezones, fixing a
-	problem with incremental dumps if the timezone is modified 
+	problem with incremental dumps if the timezone is modified
 	between the dumps. Thanks to Philippe Troin <phil@fifi.org> for
 	the bug report and the patch.
 
@@ -471,7 +471,7 @@ Changes between versions 0.4b33 and 0.4b34 (released April 18, 2003)
 	bug and providing the fix.
 
 10.	Fixed open and creation modes and permissions for QFA and
-	table-of-contents files in dump and restore. Thanks to 
+	table-of-contents files in dump and restore. Thanks to
 	Philippe Troin <phil@fifi.org> for the patch.
 
 11.	Fixed the archive file descriptor handling enabling it to be 0.
@@ -479,16 +479,16 @@ Changes between versions 0.4b33 and 0.4b34 (released April 18, 2003)
 	Thanks to Philippe Troin <phil@fifi.org> for the patch.
 
 12.	Delayed the opening of archive file until after suid had been
-	dropped (fixing a possible security issue if dump is suid). 
+	dropped (fixing a possible security issue if dump is suid).
 	Thanks to Philippe Troin <phil@fifi.org> for the patch.
 
 13.	Fixed the 'S' command handling in the rmt client part.
 	Thanks to Philippe Troin <phil@fifi.org> for the patch.
-	
+
 14.	Modified the end-of-tape script handling to print out statistics
 	(and stop the timer) before launching the eot script. Also, the eot
 	script does not get run anymore when using -M (which makes sense) or
-	when multiple tapes are listed on the command line 
+	when multiple tapes are listed on the command line
 	(-f tape0,tape1,tapen) (which also makes sense).
 	Thanks to Philippe Troin <phil@fifi.org> for the patch.
 
@@ -497,8 +497,8 @@ Changes between versions 0.4b33 and 0.4b34 (released April 18, 2003)
 
 16.	Added LZO compression to dump. This new compression method has
 	the advantage of being super fast, thus not killing tape streaming
-	on slow machines. Thanks to Helmut Jarausch 
-	<jarausch@igpm.rwth-aachen.de> for the patch and to 
+	on slow machines. Thanks to Helmut Jarausch
+	<jarausch@igpm.rwth-aachen.de> for the patch and to
 	Markus Oberhumer <markus@oberhumer.com> for giving special permission
 	to include his miniLZO project (GPL licensed) in dump/restore.
 
@@ -515,7 +515,7 @@ Changes between versions 0.4b33 and 0.4b34 (released April 18, 2003)
 
 20.	Fixed a bug which caused dump -w|-W not to work anymore, because
 	the fs_freq and fs_passno fields in /etc/mtab are always set
-	to 0 0. Thanks to Trent Piepho <xyzzy@speakeasy.org> for 
+	to 0 0. Thanks to Trent Piepho <xyzzy@speakeasy.org> for
 	reporting the bug.
 
 Changes between versions 0.4b32 and 0.4b33 (released February 10, 2003)
@@ -533,7 +533,7 @@ Changes between versions 0.4b32 and 0.4b33 (released February 10, 2003)
 	an extra, unrelated error message). Thanks to Dragan Krnic
 	<dkrnic@lycos.com> for reporting this bug.
 
-4.	Made dump look first into /etc/mtab, then into /etc/fstab 
+4.	Made dump look first into /etc/mtab, then into /etc/fstab
 	when searching for filesystem paths. Also fixed some problems
 	caused by binding mounts or multiple block device mounts.
 	Thanks to Matus Uhlar <uhlar@fantomas.sk>, Elliott Mitchell
@@ -548,7 +548,7 @@ Changes between versions 0.4b32 and 0.4b33 (released February 10, 2003)
 
 6.	Fixed the output of dump to indicate 'blocks' instead of
 	'tape blocks' in the various messages (blocks are always
-	1 Kilobyte, tape blocks are 1 BK * '-b' argument), and 
+	1 Kilobyte, tape blocks are 1 BK * '-b' argument), and
 	made it clearly print the current blocksize at the start of
 	a dump. Thanks to Michal Szymanski <msz@astrouw.edu.pl> for
 	the suggestions.
@@ -571,17 +571,17 @@ Changes between versions 0.4b31 and 0.4b32 (released November 15, 2002)
 =======================================================================
 
 1.	Changed dump to use fcntl(F_SETLK) style locking instead
-	of flock() when locking the dumpdates file. With the old 
-	locking scheme, a local user having read rights on the 
+	of flock() when locking the dumpdates file. With the old
+	locking scheme, a local user having read rights on the
 	dumpdates file could be able to do a Denial of Service attack
 	on dump. In order to lock the dumpdates file with the new
 	scheme, the user would need to have write access on the file.
-	Thanks to Richard Johnson <Richard.Johnson3@ey.com> for 
+	Thanks to Richard Johnson <Richard.Johnson3@ey.com> for
 	reporting the bug (originally a bugtraq post).
 
 2.	Fixed interactive 'ls' which caused spurious errors warnings
-	about 'undefined filetypes' detected. Thanks to Jorgen Ostling 
-	<jorgen_ostling@users.sourceforge.net> for reporting this 
+	about 'undefined filetypes' detected. Thanks to Jorgen Ostling
+	<jorgen_ostling@users.sourceforge.net> for reporting this
 	bug.
 
 3.	Fixed dump's estimate when dealing with sparse inodes.
@@ -593,7 +593,7 @@ Changes between versions 0.4b31 and 0.4b32 (released November 15, 2002)
 
 5.	Fixed a bug causing Dump to stop and report an error if an
 	inode number in the exclude file was followed by some amount
-	of whitespace. Thanks to Jeffrey Sofferin 
+	of whitespace. Thanks to Jeffrey Sofferin
 	<sofferin@users.sourceforge.net> for reporting this bug.
 
 6.	Fixed a bug which caused restore, in some particular cases,
@@ -619,7 +619,7 @@ Changes between versions 0.4b29 and 0.4b30 (released July 25, 2002)
 
 1.	Made dump print out the ext2 logical block number in case of a read
 	error, which can be given as an argument to debugfs' ncheck command,
-	in order to find out the affected inode. Added note about this 
+	in order to find out the affected inode. Added note about this
 	usage in dump's man page.
 
 2.	Fixed a problem in restore when reading tapes written on big
@@ -627,7 +627,7 @@ Changes between versions 0.4b29 and 0.4b30 (released July 25, 2002)
 	contributed by George Helffrich <george@geology.bristol.ac.uk>.
 
 3.	Fixed the tape length calculation when using large tapes
-	and compression. Thanks to Georg Lippold 
+	and compression. Thanks to Georg Lippold
 	<g_lippold@sourceforge.net> for reporting the bug.
 
 4.	Added a new set of examples in dump_on_cd_2 directory, based
@@ -636,15 +636,15 @@ Changes between versions 0.4b29 and 0.4b30 (released July 25, 2002)
 	Georg Lippold <g_lippold@sourceforge.net> for the new scripts.
 
 5.	Made dump save 32 bit UID/GID. Internally, this was achieved
-	by switching from the old BSD inode format to the new BSD 
+	by switching from the old BSD inode format to the new BSD
 	inode format, which means that the tape format was changed.
-	However, since all restore versions out there should 
+	However, since all restore versions out there should
 	transparently support both inode formats, the change should
 	have no side effects. Thanks to John Yu <jky@cs.bu.edu> for
 	reporting the bug.
 
 6.	Fixed a lot of warnings in the code shown when compiling
-	with 'gcc -W'. Thanks to Matthias Andree 
+	with 'gcc -W'. Thanks to Matthias Andree
 	<matthias.andree@stud.uni-dortmund.de> for reporting this.
 
 7.	Fixed a small markup bug in the dump man page. Thanks to
@@ -671,19 +671,19 @@ Changes between versions 0.4b28 and 0.4b29 (released June 8, 2002)
 	contained on the first volume (when using really small volumes or
 	when dumping a huge number of inodes).
 
-3.	Fixed a problem in dump, where files in subdirectories of directories 
-	that have the nodump flag set (or being excluded with -e/-E) were 
+3.	Fixed a problem in dump, where files in subdirectories of directories
+	that have the nodump flag set (or being excluded with -e/-E) were
 	sometimes incorrectly dumped (instead of being excluded). The original
-	fix is from David C Lawrence <tale@dd.org> in the FreeBSD version 
+	fix is from David C Lawrence <tale@dd.org> in the FreeBSD version
 	of dump: http://www.FreeBSD.org/cgi/query-pr.cgi?pr=32414
-	Thanks to Ted Grzesik <tedgyz@roostme.com> for reporting the bug and 
+	Thanks to Ted Grzesik <tedgyz@roostme.com> for reporting the bug and
 	help testing the patch.
 
 4.	Added some example scripts from Gerd Bavendiek <bav@epost.de>
 	which makes one able to pipe the output of dump, by the net, to
 	a remote CD-burner server.
 
-5.	Made dump use O_CREAT|O_TRUNC both locally and remotely (over rmt), 
+5.	Made dump use O_CREAT|O_TRUNC both locally and remotely (over rmt),
 	and use GNU's symbolic syntax over rmt instead of numerical values
 	to assure multiple platform compatibility.
 
@@ -701,7 +701,7 @@ Changes between versions 0.4b28 and 0.4b29 (released June 8, 2002)
 Changes between versions 0.4b27 and 0.4b28 (released April 12, 2002)
 ====================================================================
 
-1.	Fixed a bug in the QFA feature which could have caused 
+1.	Fixed a bug in the QFA feature which could have caused
 	a bad tape positionning on restore (causing extra delays in
 	restore). Credits go to Uwe Gohlke <uwe@ugsoft.de>.
 
@@ -730,7 +730,7 @@ Changes between versions 0.4b27 and 0.4b28 (released April 12, 2002)
 	open the output file for writing. Thanks to Amith Varghese
 	<amithv@yahoo.com> for reporting this bug.
 
-7.	Made restore able to understand large Solaris ufsdump tapes 
+7.	Made restore able to understand large Solaris ufsdump tapes
 	(containing inodes bigger than 4194304). Sun have introduced
 	an "extension" to the dump tape format when dealing with
 	those inodes, which was uncorrectly handled by Linux restore.
@@ -741,7 +741,7 @@ Changes between versions 0.4b27 and 0.4b28 (released April 12, 2002)
 	inodes having been changed but not modified since the last dump
 	('changed' and 'modified' have the meaning defined in stat(2)).
 	For those inodes, dump will save only the metadata, instead of
-	saving the entire inode contents. Inodes which are either 
+	saving the entire inode contents. Inodes which are either
 	directories or have been modified since the last dump are saved
 	in a regular way.  Uses of this flag must be consistent, meaning
 	that either every dump in an incremental dump set have the flag,
@@ -753,7 +753,7 @@ Changes between versions 0.4b26 and 0.4b27 (released February 15, 2002)
 1.	Fixed behaviour of dump when exceeding resource limits
 	(SIGXFSZ treatment).
 
-2.	Added the -L flag to restore to allow the user to specify a 
+2.	Added the -L flag to restore to allow the user to specify a
 	maximal allowed number of miscompares when using restore
 	with the -C option to check the backup.
 
@@ -765,11 +765,11 @@ Changes between versions 0.4b26 and 0.4b27 (released February 15, 2002)
 
 5.	Extended the QFA mode to work with local files and/or
 	remote tapes and files. This way, restore can know in advance
-	the tape number and the offset for the inodes to extract and 
-	can minimize the extraction time by seeking directly to the 
+	the tape number and the offset for the inodes to extract and
+	can minimize the extraction time by seeking directly to the
 	good tape/offset.
 
-6.	Added the -A <archive> option to both dump and restore, 
+6.	Added the -A <archive> option to both dump and restore,
 	which makes dump to archive a dump table-of-contents in
 	the specified file to be used by restore to determine
 	whether a file is in the dump file that is being restored.
@@ -784,10 +784,10 @@ Changes between versions 0.4b26 and 0.4b27 (released February 15, 2002)
 	for reporting this bug.
 
 9.	Added the -P <file> option to restore to create a
-	Quick File Access file from an already made dump. Patch 
+	Quick File Access file from an already made dump. Patch
 	contributed by Uwe Gohlke <uwe@ugsoft.de>.
 
-10.	Made restore compile and run on Solaris, making it a 
+10.	Made restore compile and run on Solaris, making it a
 	possible replacement for the standard ufsrestore. Port was
 	contributed by Uwe Gohlke <uwe@ugsoft.de>.
 
@@ -800,7 +800,7 @@ Changes between versions 0.4b25 and 0.4b26 (released January 7, 2002)
 	several filesystems on a separate filesystem.
 
 2.	Fixed a off-by-one miscalculation which disabled dumping
-	a one letter subdirectory. Thanks to Chris Siebenmann 
+	a one letter subdirectory. Thanks to Chris Siebenmann
 	<cks@utcc.utoronto.ca> for reporting the bug.
 
 3.	Fixed several restore bugs occuring when trying to
@@ -815,11 +815,11 @@ Changes between versions 0.4b25 and 0.4b26 (released January 7, 2002)
 	number inode of a filesystem, to not be dumped. Many thanks
 	to Chris Siebenmann <cks@utcc.utoronto.ca> for helping me
 	chase this bug.
-	
+
 Changes between versions 0.4b24 and 0.4b25 (released November 17, 2001)
 =======================================================================
 
-1.	Added a mini howto from Patrick Walsh in the examples 
+1.	Added a mini howto from Patrick Walsh in the examples
 	directory.
 
 2.	Minor man pages syntax corrections. Thanks to
@@ -840,14 +840,14 @@ Changes between versions 0.4b24 and 0.4b25 (released November 17, 2001)
 6.	Add the -l option to restore to specify if, when doing a
         remote restore, the file used to access the backup is a
 	regular file (the defaults being a tape drive). Restore needs
-	to know this information when reading a remote compressed 
+	to know this information when reading a remote compressed
 	dump. Previously, this information was autodetected, but
-	the autodetection code fails (with ioctl: Inappropriate ioctl 
-	for device) when using a non Linux remote box. Thanks to 
-	many users and especially to Eros Albertazzi 
+	the autodetection code fails (with ioctl: Inappropriate ioctl
+	for device) when using a non Linux remote box. Thanks to
+	many users and especially to Eros Albertazzi
 	<eros@lamel.bo.cnr.it> for reporting this.
 
-7.	Found a workaroung for the dump deadlock problem (3 childs 
+7.	Found a workaroung for the dump deadlock problem (3 childs
 	stuck in pause(), father in read()). The workaround seems
 	to work for me and several beta-testers. If it doesn't work
 	for you, please report back.
@@ -859,7 +859,7 @@ Changes between versions 0.4b23 and 0.4b24 (released September 12, 2001)
 
 1.	Fixed the permissions of a newly created QFA file by dump.
 
-2.	Cleaned up the source of dump (the external variables 
+2.	Cleaned up the source of dump (the external variables
 	definition was a complete mess, making possible to have
 	objects overlap).
 
@@ -867,14 +867,14 @@ Changes between versions 0.4b23 and 0.4b24 (released September 12, 2001)
 	a compare (since it changes the working directory to the
 	filesystem being compared in the process).
 
-4.	Added the -q option to dump which makes dump abort 
+4.	Added the -q option to dump which makes dump abort
 	whenever it needs operator attention. It should be
 	easier to use dump in scripts with this option.
 
 5.	Detect the use of incompatible options to dump and
 	refuse them (like -a and -B options together).
 
-6.	Added bzip2 compression to dump/restore (use option -j level 
+6.	Added bzip2 compression to dump/restore (use option -j level
 	to select it). Note that you will need a restore version
 	>= 0.4b24 in order to restore a bzip2 compressed dump.
 	The same warning as for the zlib compression applies:
@@ -882,7 +882,7 @@ Changes between versions 0.4b23 and 0.4b24 (released September 12, 2001)
 	original BSD tape format.
 
 7.	Fixed a overflow problem in dump corrupting the dump when
-	very large files were encountered. Thanks to Vladimir Nadvornik 
+	very large files were encountered. Thanks to Vladimir Nadvornik
 	for the bug report.
 
 8.	Added a ioctl(BLKFLSBUF) in dump which should flush the
@@ -891,13 +891,13 @@ Changes between versions 0.4b23 and 0.4b24 (released September 12, 2001)
 	John Yu <jky@it.bu.edu> and to Theodore T'so <tytso@mit.edu>
 	for this suggestion.
 
-9.	Updated the RPM spec file following the RedHat changes 
+9.	Updated the RPM spec file following the RedHat changes
 	(dynamically linked binaries now in /usr/sbin etc).
 
 10.	Added a patch from Helmut Jarausch <jarausch@igpm.rwth-aachen.de>
 	which enables restore to recognise multi volume compressed dumps
 	done on CD. Included his scripts for dump (which pipe the dump
-	output directly into cdrecord) and restore. There is now 
+	output directly into cdrecord) and restore. There is now
 	possible to to backups to CD on the fly!
 
 Changes between versions 0.4b22 and 0.4b23 (released July 20, 2001)
@@ -909,21 +909,21 @@ Changes between versions 0.4b22 and 0.4b23 (released July 20, 2001)
 2.	Implement the Sun rmt extended protocol. Patch submitted
 	by Ian Gordon <iangordon@users.sourceforge.net>.
 
-3.	Check for the e2fsprogs header <ext2fs/ext2_fs.h> instead of 
+3.	Check for the e2fsprogs header <ext2fs/ext2_fs.h> instead of
 	the linux kernel header. This ensures that dump always has the
 	latest version of this file. Patch submitted by
 	Andreas Dilger <adilger@turbolinux.com>.
 
-4.	Report any filesystem present in either /etc/fstab with a 
+4.	Report any filesystem present in either /etc/fstab with a
 	positive passno or /etc/dumpdates in dump -w output.
 	Patch submitted by Andreas Dilger <adilger@turbolinux.com>.
 
-5.	Fixed the looping problem in dump introduced in the 
+5.	Fixed the looping problem in dump introduced in the
 	previous version.
 
-6.	Changed the -B option of dump to limit the size of 
+6.	Changed the -B option of dump to limit the size of
 	_compressed_ output per volume if compression is on.
-	Patch contributed by Helmut Jarausch 
+	Patch contributed by Helmut Jarausch
 	<jarausch@igpm.rwth-aachen.de>. Note however that, since
 	it is impossible to predict the size of the compressed
 	data before doing the compression, the -B limit is a bit
@@ -938,7 +938,7 @@ Changes between versions 0.4b22 and 0.4b23 (released July 20, 2001)
 	tape changers for example. See the restore man page for the
 	script parameters and return codes.
 
-9.	Small fix for the QFA routines provided by Uwe Gohlke 
+9.	Small fix for the QFA routines provided by Uwe Gohlke
 	<uwe@ugsoft.de>, and some recommendations for QFA uses in
 	the man pages.
 
@@ -968,14 +968,14 @@ Changes between versions 0.4b21 and 0.4b22 (released May 12, 2001)
 3.	Added a compression option to dump, contributed by Jerry
 	Peters <gapeters@worldnet.att.net>.
 
-	WARNING: the compression works only on files/pipes and 
+	WARNING: the compression works only on files/pipes and
 	drives supporting variable block size.
 
 	WARNING2: tapes created using the compression feature are
 	incompatible with the standard dump tape format, and a
 	version of restore >= 0.4b22 will be needed for extraction.
 
-4.	Fixed some compilation problems for glibc 2.2.2 and 64 bit 
+4.	Fixed some compilation problems for glibc 2.2.2 and 64 bit
 	architectures. Thanks to Paul Slootman <paul@debian.org> for
 	the patch and to Bdale Garbee <bdale@gag.com> for forwarding
 	it upstream.
@@ -989,19 +989,19 @@ Changes between versions 0.4b21 and 0.4b22 (released May 12, 2001)
 
 7.	Added the Quick File Access mode in dump/restore, contributed
 	by Uwe Gohlke <uwe@ugsoft.de>. In this mode, dump stores in
-	a file tape position for each inode, and this file is used by 
+	a file tape position for each inode, and this file is used by
 	restore (if called with parameter Q and the filename)
-	to directly position the tape at the file restore is currently 
+	to directly position the tape at the file restore is currently
 	working on.  This saves hours when restoring single files from
 	large backups, saves the tapes and the drive's head. Use
 	--enable-qfa option of configure to compile in the QFA support.
 
 8.	Added the possibility to dump several files and directories
-	in a single invocation of dump. Thanks to Uwe Gohlke 
+	in a single invocation of dump. Thanks to Uwe Gohlke
 	<uwe@ugsoft.de> for implementing this option.
 
 9.	Fixed the dumping and restoring of files with holes
-	(files ending with holes didn't get dumped or restored 
+	(files ending with holes didn't get dumped or restored
 	correctly).
 
 10.	Fixed a socket descriptor leak in dump, which leaved opened
@@ -1009,34 +1009,34 @@ Changes between versions 0.4b21 and 0.4b22 (released May 12, 2001)
 	process per tape).
 
 11.	Fixed dump large file system support, by explicit use of
-	open64/lseek64/etc functions (explicit use needed because 
-	e2fsprogs libraries don't behave well when compiled with 
+	open64/lseek64/etc functions (explicit use needed because
+	e2fsprogs libraries don't behave well when compiled with
 	FILE_OFFSET_BITS=64).
 
 Changes between versions 0.4b20 and 0.4b21 (released January 13, 2001)
 ======================================================================
 
 1.	Fixed some bugs in the dump -w|-W logic introduced by
-	the previous version. Thanks to Andreas Dilger 
+	the previous version. Thanks to Andreas Dilger
 	<adilger@turbolinux.com> for his help on this one.
 
 2.	Fixed again a compilation problem when using old e2fs
 	headers (filesystem label related). Thanks to many users
 	who reported this stupid error.
 
-3.	Fixed a build problem on old lib5 based systems dealing with 
+3.	Fixed a build problem on old lib5 based systems dealing with
 	_PATH_MNTTAB being undefined. Thanks to John Adams
 	<johna@onevista.com> for reporting the bug.
 
 4.	Improved the error detection in restore when creating
 	the temporary files in TMPDIR. Now restore will corectly
-	report a 'no space left on device' error instead of 
+	report a 'no space left on device' error instead of
 	strange errors which could imply an archive corruption.
 	Thanks to Gabriel Somlo <somlo@cs.colostate.edu> and
 	bgjenero <bgjenero@sympatico.ca> for reporting the bug.
 
 5.	Added the throughput information in dump's progression
-	messages.  Thanks to Andreas Dilger <adilger@turbolinux.com> 
+	messages.  Thanks to Andreas Dilger <adilger@turbolinux.com>
 	for the patch.
 
 6.	Use libext2fs's inode scanning routines, which are particularly
@@ -1067,20 +1067,20 @@ Changes between versions 0.4b19 and 0.4b20 (released November 10, 2000)
 
 1.	Fixed a small compilation problem due to a change
 	in the definintion of the struct sigaction in
-	glibc 2.0 / libc5. Thanks to Gunther Schlegel 
+	glibc 2.0 / libc5. Thanks to Gunther Schlegel
 	<schlegel@riege.de> for reporting the bug and to
 	Dave Platt <dplatt@snulbug.mtview.ca.us> for suggesting
 	a fix.
 
-2.	Modified the label and uuid analysis in order to be 
-	self-contained (independant of kernel/libc headers). This 
+2.	Modified the label and uuid analysis in order to be
+	self-contained (independant of kernel/libc headers). This
         should fix the compile with older kernel/libc headers and
 	will preserve the functionality. Thanks to Bernhard Erdmann
 	<bernhard.erdmann@gmx.de> for reporting the bug.
 
 3.	The 'exclude inode' option, if applied to a directory
-	inode, excludes now correctly all the leaves of this 
-	directory. Thanks to John R. Dennison 
+	inode, excludes now correctly all the leaves of this
+	directory. Thanks to John R. Dennison
 	<gerdesas@users.sourceforge.net> for reporting the bug.
 
 4.	Fixed the '-e' option to disable the possibility
@@ -1089,8 +1089,8 @@ Changes between versions 0.4b19 and 0.4b20 (released November 10, 2000)
 	when multiple -e options are used.
 
 5.	Fixed dump to correctly interpret a filesystem argument
-	which is a mountpoint and it is not an absolute path 
-	(as specified in the fstab). Thanks to Bernhard R. Erdmann 
+	which is a mountpoint and it is not an absolute path
+	(as specified in the fstab). Thanks to Bernhard R. Erdmann
 	<be@berdmann.de> for reporting the bug.
 
 6.	Made dump able to backup files larger than 2 GB. Note that
@@ -1103,7 +1103,7 @@ Changes between versions 0.4b19 and 0.4b20 (released November 10, 2000)
 	of fstab file from the system headers. Thanks to
 	Andreas Dilger <adilger@turbolinux.com> for the patch.
 
-9.	Made dump -w|-W report all recognized filesystems 
+9.	Made dump -w|-W report all recognized filesystems
 	present in either /etc/fstab or /etc/dumpdates, and present
 	the list in the same order as in fstab file. Thanks
 	to Andreas Dilger <adilger@turbolinux.com> for the patch.
@@ -1123,13 +1123,13 @@ Changes between versions 0.4b18 and 0.4b19 (released August 20, 2000)
 
 1.	Fixed the signal handling in dump (which I broke in 0.4b17)
 	which was causing several strange dump failures (dump
-	hanged or segmentation faults etc). 
+	hanged or segmentation faults etc).
 
 2.	Specified the default blocksize in the dump man page.
 
 3.	Changed two info messages of restore to be written on stdout
 	instead of stderr in order to leave stderr only for errors
-	or warnings. Thanks to Stephen Atwell 
+	or warnings. Thanks to Stephen Atwell
 	<satwell@urbana.css.mot.com> for the suggestion.
 
 4.	Corrected an off by one calculation which prevented
@@ -1138,8 +1138,8 @@ Changes between versions 0.4b18 and 0.4b19 (released August 20, 2000)
 	for reporting the bug.
 
 5.	Reinforce dump in order to allow only level 0 and no
-	-u option when dumping a subdirectory, and document 
-	this in the man page. Thanks to Bernhard Erdmann 
+	-u option when dumping a subdirectory, and document
+	this in the man page. Thanks to Bernhard Erdmann
 	<bernhard.erdmann@gmx.de> for reporting the bug.
 
 6.	Fixed a small harmless bug in restore which caused
@@ -1159,14 +1159,14 @@ Changes between versions 0.4b18 and 0.4b19 (released August 20, 2000)
 9.	Made dump understand the LABEL= and UUID= notation
 	both in /etc/fstab and on the command line. Note that
 	you will need the /proc filesystem in order to use
-	these notations. Thanks to Erik Troan <ewt@redhat.com> 
+	these notations. Thanks to Erik Troan <ewt@redhat.com>
 	for providing the patch.
 
 Changes between versions 0.4b17 and 0.4b18 (released June 30, 2000)
 ===================================================================
 
 1.	Fixed a potential buffer overflow in restore. Thanks
-	to Stan Bubrouski <satan@fastdial.net> for reporting 
+	to Stan Bubrouski <satan@fastdial.net> for reporting
 	the bug.
 
 2.	Fixed a readline-related bug which prevented
@@ -1189,7 +1189,7 @@ Changes between versions 0.4b17 and 0.4b18 (released June 30, 2000)
 
 5.	Added -ltermcap to the compile parameters for restore
 	when using readline support, in order to make the compile
-	process work on some systems (SuSE ?). Thanks to 
+	process work on some systems (SuSE ?). Thanks to
 	Patrik Schindler <poc@pocnet.net> for reporting the bug.
 
 Changes between versions 0.4b16 and 0.4b17 (released June 1st, 2000)
@@ -1205,7 +1205,7 @@ Changes between versions 0.4b16 and 0.4b17 (released June 1st, 2000)
 	passed on the command line), you can enable it in
 	configure with the --enable-oldstylefscript.
 
-2.	Use posix signal handling to preserve dump functionality 
+2.	Use posix signal handling to preserve dump functionality
 	with libc5. Thanks to Jeff Johnson <jbj@redhat.com> for
 	the patch.
 
@@ -1217,8 +1217,8 @@ Changes between versions 0.4b16 and 0.4b17 (released June 1st, 2000)
 
 4.	Made (finally) quotes work in interactive restore.
 
-5.	Small fixes in order to allow dump to compile with a 
-	really old e2fsprogs version. Thanks to Ian Zimmerman 
+5.	Small fixes in order to allow dump to compile with a
+	really old e2fsprogs version. Thanks to Ian Zimmerman
 	<itz@speakeasy.org> for the bug report.
 
 6.	Add GNU readline capabilities to interactive restore.
@@ -1227,7 +1227,7 @@ Changes between versions 0.4b16 and 0.4b17 (released June 1st, 2000)
 	suggestion.
 
 7.	Do the compare on the fly in restore 'C' mode (this will
-	allow not to exhaust the available /tmp space when 
+	allow not to exhaust the available /tmp space when
 	ccmparing large files). Thanks to Kenneth Porter
 	<shiva@well.com> for the suggestion.
 
@@ -1249,16 +1249,16 @@ Changes between versions 0.4b15 and 0.4b16 (released March 11, 2000)
 	<wcooley@nakedape.cc> for the patch.
 
 4.	Added the -X option to restore giving the possibility
-	to read the names of the files to be extracted/listed 
-	from a text file (in addition of the command line). 
-	Thanks to Dejan Muhamedagic <dejan@quant-x.com> for the 
+	to read the names of the files to be extracted/listed
+	from a text file (in addition of the command line).
+	Thanks to Dejan Muhamedagic <dejan@quant-x.com> for the
 	patch.
 
 5.	Added the device name and the current volume number
 	as arguments to the end of tape script (dump -F option).
 
-6.	Made the multi-volume dump work again (after having 
-	broken it in 0.4b15). 
+6.	Made the multi-volume dump work again (after having
+	broken it in 0.4b15).
 
 Changes between versions 0.4b14 and 0.4b15 (released March 2, 2000)
 ===================================================================
@@ -1266,18 +1266,18 @@ Changes between versions 0.4b14 and 0.4b15 (released March 2, 2000)
 1.	Added a prompt command in interactive restore mode. Thanks
 	to Andreas Dilger <adilger@home.com> for the patch.
 
-2.	Fixed a buffer overflow problem in dump (caused by 
-	not checking the size of the filesystem parameter). 
+2.	Fixed a buffer overflow problem in dump (caused by
+	not checking the size of the filesystem parameter).
 	Thanks to Kim Yong-jun <loveyou@hackerslab.org> for
 	reporting this on Bugtraq (and to several dump users
 	who forwarded me his mail).
 
-3.	Added the '-F script' option to dump in order to 
+3.	Added the '-F script' option to dump in order to
 	launch a script at the end of each tape (to be used
 	with a tape changer, or to notify the sysadmin by
 	pager etc.).
 
-4.	Fixed a bug in restore compare code caused by the changes 
+4.	Fixed a bug in restore compare code caused by the changes
 	I made in 0.4b14.
 
 5.	Fixed the treatment of options using the old BSD syntax
@@ -1286,7 +1286,7 @@ Changes between versions 0.4b14 and 0.4b15 (released March 2, 2000)
 Changes between versions 0.4b13 and 0.4b14 (released February 10, 2000)
 =======================================================================
 
-1.	Fixed a bug in dump which may have caused invalid deleted 
+1.	Fixed a bug in dump which may have caused invalid deleted
 	directories to be dumped out if they were deleted after the
 	mapping pass. This could occure on active filesystem and lead
 	to heap corruption (causing dump malfunction in many possible ways).
@@ -1312,19 +1312,19 @@ Changes between versions 0.4b13 and 0.4b14 (released February 10, 2000)
 	Ambrose Li <acli@mingpaoxpress.com> for submitting the patch.
 
 7.	Fixed a compatibility problem between dumps made on little
-	endian machines (the format was correct) and big endian 
+	endian machines (the format was correct) and big endian
 	machines (the format was incorrect). This fix break the
-	compatibility with the older dumps made on big endian 
+	compatibility with the older dumps made on big endian
 	machines (sparc, m86k, ppc etc). For the first time in
-	linux dump's history (I believe), the dumps made by *BSD, 
-	Linux/alpha, Linux/sparc and Linux/x86 are compatible, 
+	linux dump's history (I believe), the dumps made by *BSD,
+	Linux/alpha, Linux/sparc and Linux/x86 are compatible,
 	so interchangeable. Thanks to Rob Cermak
 	<cermak@ahab.rutgers.edu> for submitting the bug and
 	helping me test the fix.
 
 8.	Fixed the way dump reports the remaining percent/time, if
 	the number of blocks actually dumped exceeds the estimated
-	number of blocks. Thanks to Jean-Paul van der Jagt 
+	number of blocks. Thanks to Jean-Paul van der Jagt
 	<jeanpaul@dutepp0.et.tudelft.nl> for reporting the bug.
 
 Changes between versions 0.4b12 and 0.4b13 (released January 21, 2000)
@@ -1334,12 +1334,12 @@ Changes between versions 0.4b12 and 0.4b13 (released January 21, 2000)
 	<sadlowsk@Mathematik.Uni-Bielefeld.DE> for reporting the bug.
 
 2.	Removed the requirement to build the RPM as root from the
-	spec file. Thanks to Christian Weisgerber 
+	spec file. Thanks to Christian Weisgerber
 	<naddy@mips.rhein-neckar.de> for submitting this.
 
 3.	Fixed a bug in dump related to the 'filetype' feature of ext2fs,
 	causing dump to block when dumping really huge filesystems.
-	Many thanks to Patrik Schindler <poc@pocnet.net> for 
+	Many thanks to Patrik Schindler <poc@pocnet.net> for
 	helping me find this bug.
 
 4.	Fixed the treatment for an interrupt signal when dump access
@@ -1352,7 +1352,7 @@ Changes between versions 0.4b12 and 0.4b13 (released January 21, 2000)
 Changes between versions 0.4b11 and 0.4b12 (released January 8, 2000)
 =====================================================================
 
-1.	Small fix in the dump man page. Thanks to Thorsten Kukuk 
+1.	Small fix in the dump man page. Thanks to Thorsten Kukuk
 	<kukuk@suse.de> for submitting the patch.
 
 2.	Fix for the exit code when using the size estimate option of
@@ -1369,20 +1369,20 @@ Changes between versions 0.4b11 and 0.4b12 (released January 8, 2000)
 
 5.	Fixed a bug in dump which prevented the creation of the
 	dumpdates file when doing a 0-level dump without already
-	having a dumpdates file. Thanks to Patrik Schindler 
+	having a dumpdates file. Thanks to Patrik Schindler
 	<poc@pocnet.net> for reporting the bug.
 
 6.	Changed the way dump 'S' flag reports the size estimate
 	from number of blocks into bytes (making it compatible
 	with the Solaris version, and simplifying things for
-	amanda users). Thanks to Jason L Tibbitts III 
+	amanda users). Thanks to Jason L Tibbitts III
 	<tibbs@math.uh.edu> for reporting the bug.
 
 7.	Fixed a compatibility problem in linux/alpha dump tape format.
 	Now the linux/alpha dump are (again) compatible with the
 	other dump formats. But this breaks compatibility with
-	older dumps made on alpha. Thanks to Mike Tibor 
-	<tibor@lib.uaa.alaska.edu> for helping me in finding this bug.  
+	older dumps made on alpha. Thanks to Mike Tibor
+	<tibor@lib.uaa.alaska.edu> for helping me in finding this bug.
 
 Changes between versions 0.4b10 and 0.4b11 (released December 5, 1999)
 ======================================================================
@@ -1403,21 +1403,21 @@ Changes between versions 0.4b10 and 0.4b11 (released December 5, 1999)
 	asking to enter a new tape each time.
 
 4.	Fixed a memory leak which was causing dump to grow very big
-	(270MB when dumping a 10GB filesystem...). Thanks to Jason 
+	(270MB when dumping a 10GB filesystem...). Thanks to Jason
 	Fearon <jasonf@netrider.org.au> for reporting the bug.
 
 Changes between versions 0.4b9 and 0.4b10 (released November 21, 1999)
 ======================================================================
 
-1.	Make configure test if the system glob routines support 
+1.	Make configure test if the system glob routines support
 	extended syntax (ALTDIRFUNC). If not, use the internal glob
-	routines instead of system ones. Thanks to Bernhard Sadlowski 
+	routines instead of system ones. Thanks to Bernhard Sadlowski
 	<sadlowsk@Mathematik.Uni-Bielefeld.DE> for reporting the bug
 	and helping me resolve this and other minor libc5 compiling
 	glitches.
 
 2.	Fix a problem when dumping a ext2fs with the 'filetype'
-	feature enabled. Thanks to Patrick J. LoPresti 
+	feature enabled. Thanks to Patrick J. LoPresti
 	<patl@cag.lcs.mit.edu> for reporting the bug and to
 	Theodore Y. Ts'o <tytso@mit.edu> for providing the patch.
 
@@ -1430,7 +1430,7 @@ Changes between versions 0.4b9 and 0.4b10 (released November 21, 1999)
 	is a "quick and dirty" patch which enables backup of an ext3
 	filesystem through the ext2 compatibility (by ignoring the
 	NEEDS_RECOVERY bit). The journal file is not recognized and
-	it is dumped (it should not). 
+	it is dumped (it should not).
 
 5.	Test the superblock compatibility flags when dumping, in order
 	to be sure that we know how to deal with specific features.
@@ -1438,7 +1438,7 @@ Changes between versions 0.4b9 and 0.4b10 (released November 21, 1999)
 Changes between versions 0.4b8 and 0.4b9 (released November 5, 1999)
 ====================================================================
 
-1.	Use lchown instead of chown, fixing a possible security problem 
+1.	Use lchown instead of chown, fixing a possible security problem
 	when restoring symlinks (a malicious user could use this
 	to deliberately corrupt the ownership of important system files).
 	Thanks to Chris Siebenmann <cks@utcc.utoronto.ca> for detecting
@@ -1502,18 +1502,18 @@ Changes between versions 0.4b6 and 0.4b7 (released October 8, 1999)
 	when an inferior level dump does not exist (except for a level 0
 	dump).
 
-8.	Debugged the glob calls in interactive mode: restore used a 
+8.	Debugged the glob calls in interactive mode: restore used a
 	dirent struct which was different from the /usr/include/dirent.h
-	one (this used to work, is it a glibc2 change?), so none of the 
-	compat glob (which used /usr/include/dirent.h) or the system glob 
-	worked. Restore use now the system dirent (and the system 
+	one (this used to work, is it a glibc2 change?), so none of the
+	compat glob (which used /usr/include/dirent.h) or the system glob
+	worked. Restore use now the system dirent (and the system
 	DT_* constants), which are compatible with BSD ones.
 
 9.	Added a configure flag (--with-dumpdatespath) to specify
-	the location of dumpdates file. By default, it is 
+	the location of dumpdates file. By default, it is
 	/etc/dumpdates.
 
-10.	Added the "AUTHOR" and "AVAILABILITY" sections and 
+10.	Added the "AUTHOR" and "AVAILABILITY" sections and
 	included the current date/version in man pages.
 
 11.	Corrected the estimation of remaining time when
@@ -1527,7 +1527,7 @@ Changes between versions 0.4b5 and 0.4b6 (released October 1, 1999)
 
 1.	Integrated multiple patches from RedHat, Debian and SuSE:
 
-	- tweak dump/itime.c to not try to read dumpdates if the 'u' option 
+	- tweak dump/itime.c to not try to read dumpdates if the 'u' option
 	  isn't specified.
 	- several fixes in the man pages.
 	- update the default tape device to /dev/st0.

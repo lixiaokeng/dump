@@ -575,7 +575,7 @@ Inode2Tapepos(dump_ino_t ino, long *tnum, long long *tpos, int exactmatch)
 			*pp++ = *p++;
 		tmpino = atol(numbuff);
 		if (*p == 0)
-			return 1;	/* may NOT happen */    
+			return 1;	/* may NOT happen */
 		p++;
 		bzero(numbuff, sizeof(numbuff));
 		pp = numbuff;
@@ -583,7 +583,7 @@ Inode2Tapepos(dump_ino_t ino, long *tnum, long long *tpos, int exactmatch)
 		while ((*p != 0) && (*p != '\t'))
 			*pp++ = *p++;
 		if (*p == 0)
-			return 1;	/* may NOT happen */    
+			return 1;	/* may NOT happen */
 		tmptnum = atol(numbuff);
 		p++;
 		bzero(numbuff, sizeof(numbuff));
@@ -686,7 +686,7 @@ CreateAppleDoubleFileRes(char *oFile, FndrFileInfo *finderinfo, mode_t mode, int
 
 	bzero(&hp->filler, sizeof(hp->filler));
 	hp->entries = (short)n;
-	
+
 	ep->entryID = EntryFinderInfo;
 	ep->offset = p - pp - CORRECT;
 	ep->len = INFOLEN; /*  sizeof(MacFInfo) + sizeof(FXInfo); */

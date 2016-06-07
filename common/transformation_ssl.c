@@ -44,7 +44,7 @@
  * The greatest vulnerability is predictable keys (and weak ciphers
  * required by local laws). The key should also be protected in memory
  * while dumping and restoring files but it's not as critical since
- * anyone able to read the key probably has the ability to read the 
+ * anyone able to read the key probably has the ability to read the
  * filesystem directly.
  */
 
@@ -144,7 +144,7 @@ ssl_startNewTape(Transformation *xform, struct tapebuf *tpbin,
 
 	return 0;
 }
- 
+
 /*
  * Start slave process. We need to reinitialize the encryption
  * engine.

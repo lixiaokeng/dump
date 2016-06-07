@@ -154,7 +154,7 @@ dump_walk(Indexer *indexer, const char *root, int first)
 	//	indexer->addDirEntry(&direct, direct.d_ino);
 	//	dump_inode(indexer, &bufroot);
 	//}
-	
+
 	while ((dp = readdir(dirp)) != NULL) {
 		direct.d_ino = dp->d_ino;
 		direct.d_reclen = dp->d_reclen;

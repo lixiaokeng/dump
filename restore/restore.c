@@ -92,7 +92,7 @@ listfile(char *name, dump_ino_t ino, int type)
 #ifdef USE_QFA
 	if (tapeposflag) {	/* add QFA positions to output */
 		(void)Inode2Tapepos(ino, &tnum, &tpos, 1);
-		fprintf(stdout, "%10lu\t%ld\t%lld\t%s\n", (unsigned long)ino, 
+		fprintf(stdout, "%10lu\t%ld\t%lld\t%s\n", (unsigned long)ino,
 			tnum, tpos, name);
 	}
 	else
@@ -725,7 +725,7 @@ compareleaves(void)
 		/*
 		 * If we find files on the tape that have no corresponding
 		 * directory entries, then we must have found a file that
-		 * was created while the dump was in progress. Since we have 
+		 * was created while the dump was in progress. Since we have
 		 * no name for it, we discard it knowing that it will be
 		 * on the next incremental tape.
 		 */
@@ -759,8 +759,8 @@ compareleaves(void)
 	/*
 	 * If we encounter the end of the tape and the next available
 	 * file is not the one which we expect then we have missed one
-	 * or more files. Since we do not request files that were not 
-	 * on the tape, the lost files must have been due to a tape 
+	 * or more files. Since we do not request files that were not
+	 * on the tape, the lost files must have been due to a tape
 	 * read error, or a file that was removed while the dump was
 	 * in progress.
 	 */
@@ -769,7 +769,7 @@ compareleaves(void)
 		ep = lookupino(first);
 		if (ep == NULL)
 			panic("%d: bad first\n", first);
-		fprintf(stderr, "%s: (inode %lu) not found on tape\n", 
+		fprintf(stderr, "%s: (inode %lu) not found on tape\n",
 			myname(ep), (unsigned long)first);
 		do_compare_error;
 		ep->e_flags &= ~(NEW|EXTRACT);
@@ -810,7 +810,7 @@ createleaves(char *symtabfile)
 			ep = lookupino(first);
 			if (ep == NULL)
 				panic("%d: bad first\n", first);
-			fprintf(stderr, "%s: (inode %lu) not found on tape\n", 
+			fprintf(stderr, "%s: (inode %lu) not found on tape\n",
 				myname(ep), (unsigned long)first);
 			ep->e_flags &= ~(NEW|EXTRACT);
 			first = lowerbnd(first);
@@ -861,8 +861,8 @@ next:
 	/*
 	 * If we encounter the end of the tape and the next available
 	 * file is not the one which we expect then we have missed one
-	 * or more files. Since we do not request files that were not 
-	 * on the tape, the lost files must have been due to a tape 
+	 * or more files. Since we do not request files that were not
+	 * on the tape, the lost files must have been due to a tape
 	 * read error, or a file that was removed while the dump was
 	 * in progress.
 	 */
@@ -871,7 +871,7 @@ next:
 		ep = lookupino(first);
 		if (ep == NULL)
 			panic("%d: bad first\n", first);
-		fprintf(stderr, "%s: (inode %lu) not found on tape\n", 
+		fprintf(stderr, "%s: (inode %lu) not found on tape\n",
 			myname(ep), (unsigned long)first);
 		do_compare_error;
 		ep->e_flags &= ~(NEW|EXTRACT);
@@ -937,7 +937,7 @@ createfiles(void)
 					ep = lookupino(next);
 					if (ep == NULL)
 						panic("corrupted symbol table\n");
-					fprintf(stderr, "%s: (inode %lu) not found on tape\n", 
+					fprintf(stderr, "%s: (inode %lu) not found on tape\n",
 						myname(ep), (unsigned long)next);
 					ep->e_flags &= ~NEW;
 					next = lowerbnd(next);
@@ -966,7 +966,7 @@ createfiles(void)
 					volChg = 0;
 				}
 				if (GetTapePos(&curtpos) == 0) {
-					/*  curtpos +1000 ???, some drives 
+					/*  curtpos +1000 ???, some drives
 					 *  might be too slow */
 					if (((tpos > (curtpos + 1000)) && (volChg == 0)) || ((tpos != curtpos) && (volChg == 1))) {
 						volChg = 0;
@@ -1023,8 +1023,8 @@ createfiles(void)
 		titaken = tiend - tistart;
 #ifdef DEBUG_QFA
 		if (titaken / 60 > 0)
-			msg("%ld reads took %d:%02d:%02d\n", 
-				tmpcnt, titaken / 3600, 
+			msg("%ld reads took %d:%02d:%02d\n",
+				tmpcnt, titaken / 3600,
 				(titaken % 3600) / 60, titaken % 60);
 #endif
 #endif /* USE_QFA */
@@ -1052,7 +1052,7 @@ createfiles(void)
 #ifdef USE_QFA
 			if (!createtapeposflag)
 #endif
-				fprintf(stderr, "%s: (inode %lu) not found on tape\n", 
+				fprintf(stderr, "%s: (inode %lu) not found on tape\n",
 					myname(ep), (unsigned long)next);
 			ep->e_flags &= ~NEW;
 			next = lowerbnd(next);

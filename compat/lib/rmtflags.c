@@ -157,13 +157,13 @@ rmtflags_tochar(int filemode)
 	char *result = (char *) malloc(4096);	/* enough space */
 
 	switch (filemode & O_ACCMODE) {
-	case O_RDONLY: 
-		strcpy(result, "O_RDONLY"); 
+	case O_RDONLY:
+		strcpy(result, "O_RDONLY");
 		break;
-	case O_WRONLY: 
+	case O_WRONLY:
 		strcpy(result, "O_WRONLY");
 		break;
-	case O_RDWR: 
+	case O_RDWR:
 		strcpy(result, "O_RDWR");
 		break;
 	default:

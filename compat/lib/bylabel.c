@@ -224,13 +224,13 @@ get_spec_by_volume_label(const char *s) {
 	return get_spec_by_x(VOL, s);
 }
 
-const char * 
+const char *
 get_device_name(const char * item) {
 	const char * rc;
 
 	if (!strncmp(item, "UUID=", 5)) {
 		rc = get_spec_by_uuid(item+5);
-	} 
+	}
 	else
 		if (!strncmp(item, "LABEL=", 6)) {
 			rc = get_spec_by_volume_label(item+6);

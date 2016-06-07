@@ -128,7 +128,7 @@ struct slave *slp;
 
 char	(*nextblock)[TP_BSIZE];
 
-static time_t tstart_volume;	/* time of volume start */ 
+static time_t tstart_volume;	/* time of volume start */
 static int tapea_volume;	/* value of spcl.c_tapea at volume start */
 
 int master;		/* pid of master, for sending error signals */
@@ -284,7 +284,7 @@ tperror(int errnum)
 		quit("Cannot recover\n");
 		/* NOTREACHED */
 	}
-	msg("write error %d blocks into volume %d: %s\n", 
+	msg("write error %d blocks into volume %d: %s\n",
 	    blocksthisvol, tapeno, strerror(errnum));
 	broadcast("DUMP WRITE ERROR!\n");
 	if (query("Do you want to rewrite this volume?")) {
@@ -322,7 +322,7 @@ do_stats(void)
 	blocks = spcl.c_tapea - tapea_volume;
 	msg("Volume %d completed at: %s", tapeno, ctime(&tnow));
 	if (! compressed)
-		msg("Volume %d %ld blocks (%.2fMB)\n", tapeno, 
+		msg("Volume %d %ld blocks (%.2fMB)\n", tapeno,
 			blocks, ((double)blocks * TP_BSIZE / 1048576));
 	if (ttaken > 0) {
 		long volkb = (bytes_written - tapea_bytes) / 1024;
@@ -398,7 +398,7 @@ flushtape(void)
 
 	int siz = (char *)nextblock - (char *)slp->req;
 
-	/* make sure returned has sane values in case we don't read 
+	/* make sure returned has sane values in case we don't read
 	 * them from the slave in this pass */
 	returned.unclen = returned.clen = writesize;
 
@@ -544,7 +544,7 @@ trewind(void)
 				sleep(10);
 			rmtclose();
 		}
-		else 
+		else
 #endif
 		{
 			(void) close(tapefd);
@@ -558,7 +558,7 @@ trewind(void)
 	return do_stats();
 }
 
-		
+
 void
 close_rewind(void)
 {
@@ -602,7 +602,7 @@ rollforward(void)
 	tslp = &slaves[SLAVES];
 	ntb = (union u_spcl *)tslp->tblock[1];
 
-	/* make sure returned has sane values in case we don't read 
+	/* make sure returned has sane values in case we don't read
 	 * them from the slave in this pass */
 	returned.unclen = returned.clen = writesize;
 
@@ -880,15 +880,15 @@ restore_check_point:
 		if (blocksperfiles && blocksperfiles_current < *blocksperfiles)
 			blocksperfiles_current++;
 #ifdef RDUMP
-		while ((tapefd = (host ? rmtopen(tape, O_WRONLY|O_CREAT|O_TRUNC) : pipeout ? 
-			fileno(stdout) : 
+		while ((tapefd = (host ? rmtopen(tape, O_WRONLY|O_CREAT|O_TRUNC) : pipeout ?
+			fileno(stdout) :
 			open(tape, O_WRONLY|O_CREAT|O_TRUNC, 0666))) < 0)
 #else
 		while ((tapefd = (pipeout ? fileno(stdout) :
 				  open(tape, O_WRONLY|O_CREAT|O_TRUNC, 0666))) < 0)
 #endif
 		    {
-			msg("Cannot open output \"%s\": %s\n", tape, 
+			msg("Cannot open output \"%s\": %s\n", tape,
 			    strerror(errno));
 			if (!query("Do you want to retry the open?"))
 				dumpabort(0);
@@ -900,7 +900,7 @@ restore_check_point:
 				struct mtget mt_stat;
 				magtapeout = ioctl(tapefd, MTIOCGET, (char *)&mt_stat) == 0;
 				/*
-				msg("Output is to %s\n", 
+				msg("Output is to %s\n",
 					magtapeout ? "tape" : "file/pipe");
 				*/
 			}
@@ -925,7 +925,7 @@ restore_check_point:
 			spcl.c_flags |= DR_COMPRESSED;
 		writeheader((dump_ino_t)slp->inode);
 		spcl.c_flags &=~ DR_NEWHEADER;
-		msg("Volume %d started with block %ld at: %s", tapeno, 
+		msg("Volume %d started with block %ld at: %s", tapeno,
 		    spcl.c_tapea, ctime(&tstart_volume));
 		if (tapeno > 1)
 			msg("Volume %d begins with blocks from inode %d\n",
@@ -1044,9 +1044,9 @@ enslave(void)
 			    != sizeof i)
 				quit("master/slave protocol botched 3\n");
 #endif
-			doslave(cmd[0], 
+			doslave(cmd[0],
 #ifdef WRITEDEBUG
-				i, 
+				i,
 #endif
 				(slaves[i].pid == slp->pid));
 			Exit(X_FINOK);
@@ -1067,11 +1067,11 @@ enslave(void)
 #endif
 
 	for (i = 0; i < SLAVES; i++)
-		(void) dump_atomic_write( slaves[i].fd, 
-			      (char *) &slaves[(i + 1) % SLAVES].pid, 
+		(void) dump_atomic_write( slaves[i].fd,
+			      (char *) &slaves[(i + 1) % SLAVES].pid,
 		              sizeof slaves[0].pid);
-		
-	master = 0; 
+
+	master = 0;
 }
 
 void
@@ -1096,9 +1096,9 @@ killall(void)
  * and moves to the compression phase.
  */
 static void
-doslave(int cmd, 
+doslave(int cmd,
 #ifdef WRITEDEBUG
-	int slave_number, 
+	int slave_number,
 #endif
 	int first)
 {
@@ -1175,9 +1175,9 @@ doslave(int cmd,
 			comp_buf->flags = COMPRESS_ZLIB;
 		else if (zipflag == COMPRESS_BZLIB)
 			comp_buf->flags = COMPRESS_BZLIB;
-        else if (zipflag == COMPRESS_LZO)
+		else if (zipflag == COMPRESS_LZO)
 			comp_buf->flags = COMPRESS_LZO;
-        else
+		else
 			quit("internal error - unknown compression method: %d\n", zipflag);
 	}
 #endif /* HAVE_BLOCK_TRANSFORMATION */
@@ -1199,7 +1199,7 @@ doslave(int cmd,
 
 		for (trecno = 0; trecno < ntrec;
 		     trecno += p->count, p += p->count) {
-			 
+
 			if (p->dblk) {	/* read a disk block */
 				bread(p->dblk, slp->tblock[trecno],
 					p->count * TP_BSIZE);
@@ -1222,7 +1222,7 @@ doslave(int cmd,
 		returns.clen = returns.unclen = bufsize;
 
 #if defined(HAVE_BLOCK_TRANSFORMATION)
-		/* 
+		/*
 		 * When writing a compressed dump, each block except
 		 * the first one on each tape is written
 		 * from struct tapebuf with an 4 byte prefix
@@ -1273,7 +1273,7 @@ doslave(int cmd,
 		caught2 = 0;
 
 		indexer->updateQfa(&qfa_state);
-						
+
 		while (eot_count < 10 && size < bufsize) {
 #ifdef RDUMP
 			if (host)
@@ -1383,7 +1383,7 @@ SetLogicalPos(void)
 	buf.mt_count = MT_ST_BOOLEANS | MT_ST_SCSI2LOGICAL;
 	if (ioctl(tapefd, MTIOCTOP, &buf) == -1) {
 		err = errno;
-		msg("[%ld] error: %d (setting logical)\n", 
+		msg("[%ld] error: %d (setting logical)\n",
 			(unsigned long)getpid(), err);
 	}
 	return err;

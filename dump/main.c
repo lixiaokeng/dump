@@ -268,7 +268,7 @@ main(int argc, char *argv[])
 		case '5': case '6': case '7': case '8': case '9':
 			if ((pch >= '0') && (pch <= '9') && (strlen(level) < NUM_STR_SIZE))
 				level[strlen(level)] = ch;
-			else 
+			else
 				level[0] = ch;
 			pch = ch;
 			break;
@@ -315,7 +315,7 @@ main(int argc, char *argv[])
 		case 'D':		/* path of dumpdates file */
 			dumpdates = optarg;
 			break;
-			
+
 			                /* 04-Feb-00 ILC */
 		case 'e':		/* exclude an inode */
 			{
@@ -355,8 +355,8 @@ main(int argc, char *argv[])
 			break;
 #endif /* HAVE_BZLIB */
 
-	        case 'I':
-		        breademax =
+		case 'I':
+			breademax =
 			  numarg ("number of errors to ignore", 0L, 0L);
 			break;
 
@@ -405,7 +405,7 @@ main(int argc, char *argv[])
 			tapepos = 1;
 			break;
 #endif /* USE_QFA */
-			
+
 		case 's':		/* tape size, feet */
 			unlimited = 0;
 			tsize = numarg("tape size", 1L, 0L) * 12 * 10;
@@ -423,7 +423,7 @@ main(int argc, char *argv[])
 				exit(X_STARTUP);
 			}
 			Tflag = 1;
-			lastlevel[0] = '?'; lastlevel[1] = '\0'; 
+			lastlevel[0] = '?'; lastlevel[1] = '\0';
 			break;
 
 		case 'u':		/* update dumpdates */
@@ -440,8 +440,8 @@ main(int argc, char *argv[])
 			exit(X_FINOK);	/* do nothing else */
 #ifdef HAVE_LZO
 		case 'y':
-                	compressed = 2;
-        			transformation = transformation_lzo_factory(1);
+			compressed = 2;
+			transformation = transformation_lzo_factory(1);
 			zipflag = COMPRESS_LZO;
 			break;
 #endif /* HAVE_LZO */
@@ -662,10 +662,10 @@ main(int argc, char *argv[])
 	spcl.c_level = atoi(level);
 	spcl.c_type = TS_TAPE;
 	if (!Tflag)
-	        getdumptime(uflag);		/* dumpdates snarfed */
+		getdumptime(uflag);		/* dumpdates snarfed */
 
 	if (spcl.c_ddate == 0 && spcl.c_level) {
-		msg("WARNING: There is no inferior level dump on this filesystem\n"); 
+		msg("WARNING: There is no inferior level dump on this filesystem\n");
 		msg("WARNING: Assuming a level 0 dump by default\n");
 		level[0] = '0'; level[1] = '\0';
 		spcl.c_level = 0;
@@ -768,7 +768,7 @@ main(int argc, char *argv[])
 	dumpdirmap = (char *)calloc((unsigned) mapsize, sizeof(char));
 	dumpinomap = (char *)calloc((unsigned) mapsize, sizeof(char));
 	metainomap = (char *)calloc((unsigned) mapsize, sizeof(char));
-	if (usedinomap == NULL || dumpdirmap == NULL || 
+	if (usedinomap == NULL || dumpdirmap == NULL ||
 	    dumpinomap == NULL || metainomap == NULL)
 		quit("out of memory allocating inode maps\n");
 	tapesize = 2 * (howmany(mapsize * sizeof(char), TP_BSIZE) + 1);
@@ -777,11 +777,11 @@ main(int argc, char *argv[])
 
 	if (!sizest) {
 		msg("Label: %s\n", spcl.c_label);
-		
+
 		msg("Writing %d Kilobyte records\n", ntrec);
 
 		if (compressed) {
-			if (zipflag == COMPRESS_LZO) 
+			if (zipflag == COMPRESS_LZO)
 				msg("Compressing output (lzo)\n");
 			else
 				msg("Compressing output at transformation level %d (%s)\n",
@@ -806,10 +806,10 @@ main(int argc, char *argv[])
 		}
 		filedev = statbuf.st_dev;
 		if (!(statbuf.st_mode & S_IFDIR))	/* is a file */
-			anydirskipped = maponefile(maxino, &tapesize, 
+			anydirskipped = maponefile(maxino, &tapesize,
 						   directory);
 		else
-			anydirskipped = mapfilesfromdir(maxino, &tapesize, 
+			anydirskipped = mapfilesfromdir(maxino, &tapesize,
 							directory);
 	}
 	while (argc--) {
@@ -821,7 +821,7 @@ main(int argc, char *argv[])
 			msg("The ENTIRE dump is aborted.\n");
 			exit(X_STARTUP);
 		}
-		/* check if file is on same unix partiton as the first 
+		/* check if file is on same unix partiton as the first
 		 * argument */
 		if (statbuf.st_dev != filedev) {
 			msg("Files are not on same file system (%s).\n", p);
@@ -830,19 +830,19 @@ main(int argc, char *argv[])
 		}
 		/* check if file is a directory */
 		if (!(statbuf.st_mode & S_IFDIR))
-			anydirskipped2 = maponefile(maxino, &tapesize, 
+			anydirskipped2 = maponefile(maxino, &tapesize,
 						    p+strlen(dt->mnt_dir));
 		else
 			/* read directory inodes.
-			 * NOTE: nested directories are not recognized 
+			 * NOTE: nested directories are not recognized
 			 * so inodes may be umped twice!
 			 */
-			anydirskipped2 = mapfilesfromdir(maxino, &tapesize, 
+			anydirskipped2 = mapfilesfromdir(maxino, &tapesize,
 							 p+strlen(dt->mnt_dir));
 		if (!anydirskipped)
 			anydirskipped = anydirskipped2;
 		argv++;
-	}		
+	}
 #else
 	anydirskipped = mapfiles(maxino, &tapesize);
 #endif
@@ -1015,7 +1015,7 @@ main(int argc, char *argv[])
 			((double)spcl.c_tapea * TP_BSIZE / 1048576));
 	else
 		msg("%ld blocks (%.2fMB) on %d volume(s)\n",
-		    spcl.c_tapea, 
+		    spcl.c_tapea,
 		    ((double)spcl.c_tapea * TP_BSIZE / 1048576),
 		    spcl.c_volume);
 
@@ -1090,7 +1090,7 @@ usage(void)
 		"[-z zlevel] "
 #endif
 		"filesystem\n"
-		"\t%s [-W | -w]\n", 
+		"\t%s [-W | -w]\n",
 		__progname, white, white, white, __progname);
 	exit(X_STARTUP);
 }
@@ -1315,9 +1315,9 @@ do_exclude_ino(dump_ino_t ino, const char *reason)
 		}
 		else {
 			unsigned int oldsize = iexclude_bitmap_bytes;
-			iexclude_bitmap_bytes *= 
+			iexclude_bitmap_bytes *=
 				(ino / 8 + 1) / iexclude_bitmap_bytes + 1;
-			iexclude_bitmap = (char*) realloc(iexclude_bitmap, 
+			iexclude_bitmap = (char*) realloc(iexclude_bitmap,
 				iexclude_bitmap_bytes);
 			if (iexclude_bitmap == NULL) {
 				msg("allocating memory failed\n");
@@ -1327,12 +1327,13 @@ do_exclude_ino(dump_ino_t ino, const char *reason)
 				iexclude_bitmap[oldsize] = 0;
 		}
 	}
-		
+
 	iexclude_bitmap[ino / 8] |= 1 << (ino % 8);
 }
 
 static void
-do_exclude_ino_str(char * ino) {
+do_exclude_ino_str(char * ino)
+{
 	char *r;
 	unsigned long inod;
 
@@ -1348,11 +1349,11 @@ do_exclude_ino_str(char * ino) {
 /*
  * This reads a file containing one inode number per line and exclude them all
  */
-static void 
-do_exclude_from_file(char *file) {
+static void
+do_exclude_from_file(char *file)
+{
 	FILE *f;
 	char *p, fname[MAXPATHLEN];
-	
 
 	if (!( f = fopen(file, "r")) ) {
 		msg("Cannot open file for reading: %s\n", file);
@@ -1369,9 +1370,10 @@ do_exclude_from_file(char *file) {
 	fclose(f);
 }
 
-static void incompat_flags(int cond, char flag1, char flag2) {
+static void incompat_flags(int cond, char flag1, char flag2)
+{
 	if (cond) {
-	        msg("You cannot use the %c and %c flags together.\n", 
+		msg("You cannot use the %c and %c flags together.\n",
 		    flag1, flag2);
 		msg("The ENTIRE dump is aborted.\n");
 		exit(X_STARTUP);

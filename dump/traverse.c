@@ -153,7 +153,7 @@ int dump_fs_open(const char *disk, ext2_filsys *fs)
 		}
 		else {
 			if (es->s_feature_compat &
-				EXT3_FEATURE_COMPAT_HAS_JOURNAL && 
+				EXT3_FEATURE_COMPAT_HAS_JOURNAL &&
 				journal_ino)
 				do_exclude_ino(journal_ino, "journal inode");
 			do_exclude_ino(EXT2_RESIZE_INO, "resize inode");
@@ -198,7 +198,7 @@ blockest(struct dinode const *dp)
 	if ((dp->di_mode & IFMT) == IFDIR) {
 		/*
 		 * for directories, assume only half of space is filled
-		 * with entries.  
+		 * with entries.
 		 */
 		 blkest = blkest / 2;
 		 sizeest = sizeest / 2;
@@ -378,10 +378,10 @@ maponefile(UNUSED(dump_ino_t maxino), long long *tapesize, char *directory)
 		if (directory[i] == '/') {
 			strncpy (dir_name, directory, i);
 			dir_name[i] = '\0';
-			retval = ext2fs_namei(fs, ROOTINO, ROOTINO, 
+			retval = ext2fs_namei(fs, ROOTINO, ROOTINO,
 					      dir_name, &dir_ino);
 			if (retval) {
-				com_err(disk, retval, 
+				com_err(disk, retval,
 					"while translating %s", dir_name);
 				exit(X_ABORT);
 			}
@@ -417,7 +417,7 @@ struct mapfile_context {
 };
 
 static int
-mapfilesindir(struct ext2_dir_entry *dirent, UNUSED(int offset), 
+mapfilesindir(struct ext2_dir_entry *dirent, UNUSED(int offset),
 	      UNUSED(int blocksize), UNUSED(char *buf), void *private)
 {
 	struct dinode const *dp;
@@ -557,7 +557,7 @@ mapdirs(dump_ino_t maxino, long long *tapesize)
 		 * If dir has been removed from the used map, it's either
 		 * because it had the nodump flag, or it herited it from
 		 * its parent. A directory can't be in dumpinomap if not
-		 * in usedinomap, but we have to go through it anyway 
+		 * in usedinomap, but we have to go through it anyway
 	 	 * to propagate the nodump attribute.
 		 */
 		if ((isdir & 1) == 0)
@@ -654,7 +654,7 @@ dirindir(dump_ino_t ino, daddr_t blkno, int ind_level, long *filesize)
  */
 #ifdef	__linux__
 static	int
-searchdir(struct ext2_dir_entry *dp, UNUSED(int offset), 
+searchdir(struct ext2_dir_entry *dp, UNUSED(int offset),
 	  UNUSED(int blocksize), UNUSED(char *buf), void *private)
 {
 	struct mapdirs_context *mdc;
@@ -810,7 +810,7 @@ dump_xattr(dump_ino_t ino, struct dinode *dp) {
 				msg("dumping EA (inode) in inode #%ld\n", (long)ino);
 			memset(xattr, 0, EXT2_INODE_SIZE(fs->super));
 			memcpy(xattr, (void *)magic,
-			       EXT2_INODE_SIZE(fs->super) - 
+			       EXT2_INODE_SIZE(fs->super) -
 			       (EXT2_GOOD_OLD_INODE_SIZE + dp->di_extraisize));
 			magic = (u_int32_t *)xattr;
 			*magic = EXT2_XATTR_MAGIC2;
@@ -866,10 +866,10 @@ dumpino(struct dinode *dp, dump_ino_t ino, int metaonly)
 	int ind_level;
 #endif
 	uint64_t i_size;
-	
+
 	if (metaonly)
 		i_size = 0;
-	else 
+	else
 		i_size = dp->di_size + ((uint64_t) dp->di_size_high << 32);
 
 	if (newtape) {
@@ -1034,7 +1034,7 @@ struct convert_dir_context {
  * size of the entry, and creates it in a temporary buffer
  */
 static int
-convert_dir(struct ext2_dir_entry *dirent, UNUSED(int offset), 
+convert_dir(struct ext2_dir_entry *dirent, UNUSED(int offset),
 	    UNUSED(int blocksize), UNUSED(char *buf), void *private)
 {
 	struct convert_dir_context *p;
@@ -1218,7 +1218,7 @@ dmpindir(dump_ino_t ino, daddr_t blk, int ind_level, uint64_t *size)
 	if (blk != 0) {
 		bread(fsbtodb(sblock, blk), (char *)idblk, (int) sblock->fs_bsize);
 #ifdef __linux__
-	/* 
+	/*
 	 * My RedHat 4.0 system doesn't have these flags; I haven't
 	 * upgraded e2fsprogs yet
 	 */
@@ -1314,11 +1314,11 @@ dumpmap(char *map, int type, dump_ino_t ino)
 #define int32_t __s32
 #endif
 
-/* 
+/*
  * Compute and fill in checksum information.
  */
 void
-mkchecksum(union u_spcl *tmpspcl) 
+mkchecksum(union u_spcl *tmpspcl)
 {
 	int32_t sum, cnt, *lp;
 
@@ -1425,7 +1425,7 @@ loop:
 	}
 	if (cnt == -1)
 		msg("read error from %s: %s: [block %d, ext2blk %d]: count=%d\n",
-			disk, strerror(errno), blkno, 
+			disk, strerror(errno), blkno,
 			dbtofsb(sblock, blkno), size);
 	else
 		msg("short read error from %s: [block %d, ext2blk %d]: count=%d, got=%d\n",
@@ -1458,7 +1458,7 @@ loop:
 			continue;
 		if (cnt == -1) {
 			msg("read error from %s: %s: [sector %d, ext2blk %d]: count=%d\n",
-				disk, strerror(errno), blkno, 
+				disk, strerror(errno), blkno,
 				dbtofsb(sblock, blkno), dev_bsize);
 			continue;
 		}

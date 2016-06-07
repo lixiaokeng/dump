@@ -28,7 +28,7 @@ static inline const char * get_device_name(const char * item) {
 static inline const char * get_device_label(const char * spec) {
 	return blkid_get_tag_value(NULL, "LABEL", spec);
 }
-	
+
 #else
 
 const char * get_device_name(const char * item);

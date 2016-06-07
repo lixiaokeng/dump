@@ -164,7 +164,7 @@ getdumptime(int createdumpdates)
 	spcl.c_ddate = 0;
 	memset(&lastlevel, 0, NUM_STR_SIZE);
 
-	/* If this is a level 0 dump, and we're not updating 
+	/* If this is a level 0 dump, and we're not updating
 	   dumpdates, there's no point in trying to read
 	   dumpdates.  It may not exist yet, or may not be mounted.  For
 	   incrementals, we *must* read dumpdates (fail if it's not there!) */

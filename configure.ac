@@ -248,7 +248,7 @@ AC_TRY_COMPILE([#include <stdio.h>
 #include <linux/ext2_fs.h>
 #endif
 #include <ext2fs/ext2fs.h>],
-[ext2_ino_t ino = 0;], 
+[ext2_ino_t ino = 0;],
 [AC_DEFINE([HAVE_EXT2_INO_T],1,[Define if we have the ext2_ino_t type (from e2fsprogs 1.20+).])
  AC_MSG_RESULT(yes)],
 AC_MSG_RESULT(no))
@@ -429,13 +429,13 @@ dnl Check for GLOB_ALTDIRFUNC
 dnl
 AC_MSG_CHECKING(for extended glob routines)
 if test "$ac_cv_func_glob" = "yes"; then
-	AC_EGREP_CPP(yes, 
+	AC_EGREP_CPP(yes,
 	[
 #	include <glob.h>
 #	ifdef GLOB_ALTDIRFUNC
 	yes
 #	endif
-	], 
+	],
 	[
 	AC_DEFINE([HAVE_GLOB],1,[Define if you have the glob function.])
 	AC_MSG_RESULT(yes)

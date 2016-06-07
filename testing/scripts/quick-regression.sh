@@ -23,33 +23,33 @@ mkvirtpart()
 {
     FILENAME=$1
     LOOPDEV=$2
-    
+
     if [ "$#" -ne "2" ]; then
       /bin/echo "usage: mkvrtpart FILENAME LOOPDEV"
       return 1
     fi
-    
+
     # create 10M sparse file
     /usr/bin/truncate -s 10M $FILENAME
     if [ "$?" -ne "0" ]; then
       /bin/echo "unable to create partition image."
       return 1
     fi
-    
+
     # mount and format it
     /sbin/losetup $LOOPDEV $FILENAME
     if [ "$?" -ne "0" ]; then
       /bin/echo "setting up loop device failed."
       return 1
     fi
-    
+
     /sbin/mkfs -text4 $LOOPDEV
     if [ "$?" -ne "0" ]; then
       /bin/echo "formating test partition failed."
       /sbin/losetup -d $LOOPDEV
       return 1
     fi
-    
+
     /sbin/losetup -d $LOOPDEV
     if [ "$?" -ne "0" ]; then
       /bin/echo "tearing down loop device failed."
@@ -64,7 +64,7 @@ mkvirtpart()
 mktestfs()
 {
     ROOT=$1
-    
+
     if [ "$#" -ne "1" ]; then
       /bin/echo "usage: mktestfs ROOT"
       return 1
@@ -74,39 +74,39 @@ mktestfs()
         /bin/echo "cowardly refusing to stomp on root."
         return 1
     fi
-    
+
     /usr/bin/install -d $ROOT
-    
+
     # create typical file
     /usr/bin/touch $ROOT/perm644
     /bin/chmod 0644 $ROOT/perm644
-    
+
     # create typical executable
     /usr/bin/touch $ROOT/perm755
     /bin/chmod 0755 $ROOT/perm755
-    
+
     # create multiple symlinks
     /usr/bin/touch $ROOT/symlink
     /bin/ln $ROOT/symlink $ROOT/symlink1
     /bin/ln $ROOT/symlink $ROOT/symlink2
-    
+
     # create hard links
     /usr/bin/touch $ROOT/hardlink
     /bin/ln $ROOT/hardlink $ROOT/hardlink1
     /bin/ln $ROOT/hardlink $ROOT/hardlink2
-    
+
     # create block device
     /bin/mknod $ROOT/block b 10 20
-    
+
     # create character device
     /bin/mknod $ROOT/char c 11 21
-    
+
     # create FIFO
     /bin/mknod $ROOT/pipe p
-    
+
     # make sparse device
     #/usr/bin/truncate -s 500k $ROOT/sparse
-    
+
     # populate some files
     /bin/mkdir $ROOT/man1
     /bin/cp -rp /usr/share/man/man1/* $ROOT/man1
@@ -115,8 +115,8 @@ mktestfs()
 #
 # Single test cycle
 #
-dump_verify_restore() {    
-    
+dump_verify_restore() {
+
     if [ "$#" -lt "5" ]; then
       /bin/echo "usage: dump_verify_restore SRC_LOOPDEV SRC_MOUNTPOINT DEST_LOOPDEV DEST_MOUNTPOINT DUMPFILE ..."
       return 1
@@ -127,7 +127,7 @@ dump_verify_restore() {
     DEST_LOOPDEV=$3
     DEST_MOUNTPOINT=$4
     DUMPFILE=$5
-    
+
     shift; shift; shift; shift; shift
 
     /sbin/losetup $SRC_LOOPDEV $SRC_FILENAME
@@ -169,13 +169,13 @@ dump_verify_restore() {
     # I can't do that yet since restore will only restore to the current directory.
     # this makes sense for a number of reasons it difficult to test our newly
     # compiled code.
-    # ../../restore/restore -r ...    
-    
+    # ../../restore/restore -r ...
+
     # tear everything down
     /bin/umount $SRC_MOUNTPOINT
     if [ "$?" -ne "0" ]; then
        /bin/echo "unmounting test partition failed."
-       return 1    
+       return 1
     fi
 
     /sbin/losetup -d $SRC_LOOPDEV
@@ -192,12 +192,12 @@ setup_src_partition() {
     SRC_FILENAME=$1
     SRC_LOOPDEV=$2
     SRC_MOUNTPOINT=$3
-    
+
     if [ "$#" -ne "3" ]; then
       /bin/echo "usage: setup_src_partition SRC_FILENAME SRC_LOOPDEV SRC_MOUNTPOINT"
       return 1
     fi
-    
+
     mkvirtpart $SRC_FILENAME $SRC_LOOPDEV
     if [ $? -ne 0 ]; then
        /bin/echo "creating source test partition failed."
@@ -221,34 +221,34 @@ setup_src_partition() {
     if [ "$?" -ne "0" ]; then
        return 1
     fi
-      
+
     /bin/umount $SRC_LOOPDEV
     if [ "$?" -ne "0" ]; then
        /bin/echo "unmounting test partition failed."
        return 1
     fi
-      
+
     /sbin/losetup -d $SRC_LOOPDEV
     if [ "$?" -ne "0" ]; then
       /bin/echo "tearing down loop device failed."
       return 1
     fi
-    
+
     return 0
 }
 
 
 #
 # clean up temporary files. We want to be extremely careful here that
-# we don't accidently do a 'rm -rf' on / 
+# we don't accidently do a 'rm -rf' on /
 #
 cleanup() {
-    
+
     if [ "$#" -ne "6" ]; then
       /bin/echo "usage: cleanup SRC_FILENAME SRC_MOUNTPOINT DEST_FILENAME DEST_MOUNTPOINT BASEDIR DUMPFILE"
       return 1
     fi
-    
+
     SRC_FILENAME=$1
     SRC_MOUNTPOINT=$2
     DEST_FILENAME=$3
@@ -269,8 +269,8 @@ cleanup() {
     /bin/rmdir $DEST_MOUNTPOINT
     /bin/rm -f $DUMPFILE
     /bin/rmdir $BASEDIR
-   
-    return 0 
+
+    return 0
 }
 
 ###############################################
@@ -310,7 +310,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo
-echo "testing basic dump/restore" 
+echo "testing basic dump/restore"
 dump_verify_restore $SRC_LOOPDEV $SRC_MOUNTPOINT $DEST_LOOPDEV $DEST_MOUNTPOINT $DUMPFILE
 if [ $? -ne 0 ]; then
    /bin/echo "dump cycle failed."

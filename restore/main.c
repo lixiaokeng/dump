@@ -177,9 +177,9 @@ main(int argc, char *argv[])
 	if ((tmpdir = strdup(tmpdir)) == NULL)
 		err(1, "malloc tmpdir");
 	for (p = tmpdir + strlen(tmpdir) - 1; p >= tmpdir && *p == '/'; p--)
-		;                                                               
+		;
 	obsolete(&argc, &argv);
-	while ((ch = getopt(argc, argv, 
+	while ((ch = getopt(argc, argv,
 		"aA:b:CcdD:"
 #ifdef TRANSSELINUX			/*GAN6May06 SELinux MLS */
 		"eE:"
@@ -353,7 +353,7 @@ main(int argc, char *argv[])
 	if (tapeposflag && command != 'i' && command != 'x' && command != 't')
 		errx(1, "Q option is not valid for %c command", command);
 #endif
-	
+
 	if (Afile && command != 'i' && command != 'x' && command != 't')
 		errx(1, "A option is not valid for %c command", command);
 
@@ -537,7 +537,7 @@ main(int argc, char *argv[])
 		checkrestore();
 		dumpsymtable(symtbl, (long)1);
 		break;
-	
+
 /* handle file names from either text file (-X) or the command line */
 #define NEXTFILE(p) \
 	p = NULL; \
@@ -553,7 +553,7 @@ main(int argc, char *argv[])
 				continue; \
 			} \
 	}
-	
+
 	/*
 	 * List contents of tape.
 	 */
@@ -608,7 +608,7 @@ main(int argc, char *argv[])
 #ifdef DEBUG_QFA
 		tiend = time(NULL);
 		titaken = tiend - tistart;
-		msg("restore took %d:%02d:%02d\n", titaken / 3600, 
+		msg("restore took %d:%02d:%02d\n", titaken / 3600,
 			(titaken % 3600) / 60, titaken % 60);
 #endif /* DEBUG_QFA */
 		break;
@@ -668,7 +668,7 @@ main(int argc, char *argv[])
 #ifdef DEBUG_QFA
 		tiend = time(NULL);
 		titaken = tiend - tistart;
-		msg("writing QFA positions took %d:%02d:%02d\n", titaken / 3600, 
+		msg("writing QFA positions took %d:%02d:%02d\n", titaken / 3600,
 			(titaken % 3600) / 60, titaken % 60);
 #endif /* DEBUG_QFA */
 		break;
@@ -690,7 +690,7 @@ usage(void)
 
 #ifdef __linux__
 	ext2fs_get_library_version(&ext2ver, &ext2date);
-	(void)fprintf(stderr, "%s %s (using libext2fs %s of %s)\n", 
+	(void)fprintf(stderr, "%s %s (using libext2fs %s of %s)\n",
 		      __progname, _DUMP_VERSION, ext2ver, ext2date);
 #else
 	(void)fprintf(stderr, "%s %s\n", __progname, _DUMP_VERSION);
@@ -733,14 +733,14 @@ usage(void)
 		"\t%s    [-f file] [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]\n"
 		"\t%s -x [-acd" tseflag "hH" kerbflag "lmMouvVy] [-A file] [-b blocksize] " tsEflag"\n"
 		"\t%s    [-f file] [-F script] " qfaflag "[-s fileno] [-X filelist] [file ...]\n",
-		__progname, white, 
-		__progname, white, 
+		__progname, white,
+		__progname, white,
 #ifdef USE_QFA
-		__progname, white, 
+		__progname, white,
 #endif
 		__progname, white,
-		__progname, white, 
-		__progname, white, 
+		__progname, white,
+		__progname, white,
 		__progname, white);
 	exit(1);
 }

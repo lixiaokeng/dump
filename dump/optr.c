@@ -455,7 +455,7 @@ allocfsent(struct mntent *fs)
 			quit("Cannot access %s\n", tabfs->mnt_fsname);
 		if (tabbuf.st_rdev == buf.st_rdev) {
 			free(new);
-			/* Copy passno and freq from /etc/fstab because 
+			/* Copy passno and freq from /etc/fstab because
 			 * /etc/mtab does always have them as 0 0 */
 			if (!tabfs->mnt_passno)
 				tabfs->mnt_passno = fs->mnt_passno;
@@ -467,7 +467,7 @@ allocfsent(struct mntent *fs)
 			return NULL;
 		}
 	}
-		
+
 	if (strlen(fs->mnt_dir) > 1 && fs->mnt_dir[strlen(fs->mnt_dir) - 1] == '/')
 		fs->mnt_dir[strlen(fs->mnt_dir) - 1] = '\0';
 	if ((new->mnt_dir = strdup(fs->mnt_dir)) == NULL ||
@@ -509,7 +509,7 @@ getfstab(void)
 				quit("%s\n", strerror(errno));
 			pf->pf_mntent = fs;
 			pf->pf_next = NULL;
-	
+
 			/* keep table in /etc/fstab order for use with -w and -W */
 			if (pfold) {
 				pfold->pf_next = pf;
@@ -680,7 +680,7 @@ lastdump(char arg) /* w ==> just what to do; W ==> most recent dumps */
 				 * dump level was x-3660
 				 *
 				 * Negative values indicate that the fs is
-				 * not to be dumped, and the latest dump 
+				 * not to be dumped, and the latest dump
 				 * level was -x-1
 				 */
 				dt->mnt_passno = dtwalk->dd_ddate;

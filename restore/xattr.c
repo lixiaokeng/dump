@@ -110,14 +110,14 @@ struct ext2_xattr_entry {
 
 /*
  * On-block xattr value offsets start at the beginning of the block, but
- * on-inode xattr value offsets start after the initial header 
+ * on-inode xattr value offsets start after the initial header
  * (ext3_xattr_ibody_header).
  */
 #define VALUE_OFFSET(buffer, entry) \
 	(((HDR(buffer)->h_magic == EXT2_XATTR_MAGIC2) ? \
 		(entry)->e_value_offs + sizeof(struct ext3_xattr_ibody_header) : \
 		(entry)->e_value_offs))
-	
+
 /*
  * xattr syscalls do not exist yet in libc, get our own copy here,
  * taken from libattr.
@@ -430,12 +430,12 @@ xattr_cb_set(char *name, char *value, int valuelen, int isSELinux, void *private
 	else
 #endif
 		err = lsetxattr(path, name, value, valuelen, 0);
-	
+
 	if (err) {
 		warn("%s: EA set %s:%s failed", path, name, value);
 		return FAIL;
 	}
-	
+
 	return GOOD;
 }
 
@@ -445,18 +445,18 @@ xattr_cb_compare(char *name, char *value, int valuelen, int isSELinux, void *pri
 	char *path = (char *)private;
 	char valuef[XATTR_MAXSIZE];
 	int valuesz;
-	
+
 	isSELinux;
 #ifdef TRANSSELINUX			/*GAN6May06 SELinux MLS */
 	if (isSELinux)
 	{
 		security_context_t con = NULL;
-		
+
 		if (lgetfilecon(path, &con) < 0) {
 			warn("%s: EA compare lgetfilecon failed\n", path);
 			return FAIL;
 		}
-		
+
 		valuesz = strlen(con) + 1;
 		valuef[0] = 0;
 		strncat(valuef, con, sizeof(valuef) - 1);
@@ -472,7 +472,7 @@ xattr_cb_compare(char *name, char *value, int valuelen, int isSELinux, void *pri
 #ifdef TRANSSELINUX			/*GAN6May06 SELinux MLS */
 	}
 #endif
-	
+
 	if (valuesz != valuelen || memcmp(value, valuef, valuelen)) {
 		/* GAN24May06: show name and new value for user to compare */
 		fprintf(stderr, "%s: EA %s:%s value changed to %s\n", path, name, value, valuef);
@@ -498,7 +498,7 @@ xattr_verify(char *buffer)
 	    HDR(buffer)->h_magic != EXT2_XATTR_MAGIC2) {
 		fprintf(stderr, "error in EA block 1\n");
 		fprintf(stderr, "magic = %x\n", HDR(buffer)->h_magic);
-		
+
 		return FAIL;
 	}
 
@@ -545,7 +545,7 @@ xattr_walk(char *buffer, int (*xattr_cb)(char *, char *, int, int, void *), void
 	/* list the attribute names */
 	for (entry = FIRST_ENTRY(buffer); !IS_LAST_ENTRY(entry);
 	     entry = EXT2_XATTR_NEXT(entry)) {
-	     	char name[XATTR_MAXSIZE], value[XATTR_MAXSIZE];
+		char name[XATTR_MAXSIZE], value[XATTR_MAXSIZE];
 		int size;
 		int off;
 		int convertacl = 0;
@@ -598,23 +598,22 @@ xattr_walk(char *buffer, int (*xattr_cb)(char *, char *, int, int, void *), void
 				return FAIL;
 			free(acl);
 		}
-		
+
 #ifdef TRANSSELINUX			/*GAN6May06 SELinux MLS */
 		if (convertcon  &&  strcmp(name, "security.selinux"))
 			convertcon = 0;	/*GAN24May06 only for selinux */
-		
-		if (convertcon)
-		{
+
+		if (convertcon) {
 			security_context_t con = NULL;
 			int err;
-			
+
 			if (!transselinuxarg)
 				err = security_canonicalize_context(value, &con);
 			else {
 				strncat(value, transselinuxarg, sizeof(value) - 1);
 				err = security_canonicalize_context_raw(value, &con);
 			}
-			
+
 			if (err < 0) {
 				warn("%s: EA canonicalize failed\n", value);
 				return FAIL;
@@ -705,4 +704,3 @@ xattr_extract(char *path, char *buffer)
 
 	return xattr_walk(buffer, xattr_cb_set, path);
 }
-

@@ -377,9 +377,9 @@ getcmd(char *curdir, char *cmd, char *name, int size, struct arglist *ap)
 #else
 	do	{
 		if (pflag)
-			fprintf(stderr, "%s:%s:%s > ", 
+			fprintf(stderr, "%s:%s:%s > ",
 				__progname,
-				spcl.c_filesys, 
+				spcl.c_filesys,
 				curdir[1] ? &curdir[1] : "/");
 		else
 			fprintf(stderr, "%s > ", __progname);
@@ -512,7 +512,7 @@ canon(char *rawname, char *canonname, int len)
 		(void) strcpy(canonname, "./");
 	if (strlen(canonname) + strlen(rawname) >= (unsigned)len)
 		errx(1, "canonname: not enough buffer space");
-		
+
 	(void) strcat(canonname, rawname);
 	/*
 	 * Eliminate multiple and trailing '/'s
@@ -775,7 +775,7 @@ struct dirent *
 glob_readdir(RST_DIR *dirp)
 {
 	struct direct *dp;
-	static struct dirent adirent; 
+	static struct dirent adirent;
 
 	while ((dp = rst_readdir(dirp)) != NULL) {
 		if (!vflag && dp->d_ino == WINO)
@@ -845,9 +845,9 @@ static char *line_read = NULL;
 
 static char completion_curdir[MAXPATHLEN];
 
-static char *commands[] = { 
-	"add ", "cd ", "delete ", "extract ", "help ", 
-	"? ", "ls ", "pwd ", "prompt ", "quit ", "xit ", 
+static char *commands[] = {
+	"add ", "cd ", "delete ", "extract ", "help ",
+	"? ", "ls ", "pwd ", "prompt ", "quit ", "xit ",
 	"verbose ", "setmodes ", "what ", "Debug ",
 	NULL };
 
@@ -867,9 +867,9 @@ rl_gets (char *dir)
 		prompt = (char *)malloc(sz);
 		if (!prompt)
 			return NULL;
-		snprintf(prompt, sz, "%s:%s:%s > ", 
+		snprintf(prompt, sz, "%s:%s:%s > ",
 			__progname,
-			spcl.c_filesys, 
+			spcl.c_filesys,
 			(completion_curdir + 1 ? completion_curdir + 1 : "/"));
 	}
 	else {
@@ -1022,8 +1022,8 @@ restore_completion (const char *text, int start, UNUSED(int end))
 	return (matches);
 }
 
-static void 
-initialize_readline(void) 
+static void
+initialize_readline(void)
 {
 	rl_readline_name = "dump";
 	rl_attempted_completion_function = restore_completion;

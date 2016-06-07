@@ -80,13 +80,13 @@ static FILE	*debug;
  * 		the ioctl commands to the UNIX "standard", as per:
  * 			ftp://ftp.fokus.gmd.de/pub/unix/star/README.mtio
  *
- * 	In order to use rmt version 1, a client must send "I-1\n0\n" 
+ * 	In order to use rmt version 1, a client must send "I-1\n0\n"
  * 	before issuing the other I commands.
  */
 static int	rmt_version = 0;
 #define RMTI_VERSION	-1
 #define RMT_VERSION 	1
- 
+
 /* Extended 'i' commands */
 #define RMTI_CACHE	0
 #define RMTI_NOCACHE	1
@@ -94,7 +94,7 @@ static int	rmt_version = 0;
 #define RMTI_ERASE	3
 #define RMTI_EOM	4
 #define RMTI_NBSF	5
- 
+
 /* Extended 's' comands */
 #define MTS_TYPE	'T'
 #define MTS_DSREG	'D'
@@ -318,8 +318,8 @@ top:
 		if (atoi(op) == RMTI_VERSION) {
 			rval = RMT_VERSION;
 			rmt_version = 1;
-		} 
-		else { 
+		}
+		else {
 			struct mtop mtop;
 			mtop.mt_op = -1;
 			if (rmt_version) {
@@ -400,7 +400,7 @@ top:
 
 	case 'i':
 	{	struct mtop mtop;
- 
+
 		getstring (op);
 		getstring (count);
 		DEBUG2 ("rmtd: i %s %s\n", op, count);
@@ -489,13 +489,13 @@ top:
 	case 's':
 	{	char s;
 		struct mtget mtget;
- 
+
 		DEBUG ("rmtd: s\n");
 
 		if (read (0, &s, 1) != 1)
 			goto top;
 		DEBUG1 ("rmtd: s %d\n", s);
- 
+
 		if (ioctl (tape, MTIOCGET, (char *) &mtget) < 0) {
 			goto ioerror;
 		}

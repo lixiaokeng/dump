@@ -260,7 +260,7 @@ legacy_updateQfa(QFA_State *s)
 		for (i = 0; (i < ntrec) && !foundone; ++i) {
 			uspclptr = (union u_spcl *)&slp->tblock[i];
 			spclptr = &uspclptr->s_spcl;
-			if ((spclptr->c_magic == NFS_MAGIC) && 
+			if ((spclptr->c_magic == NFS_MAGIC) &&
 						(spclptr->c_type == TS_INODE) &&
 						(spclptr->c_date == gThisDumpDate) &&
 						!(spclptr->c_dinode.di_mode & S_IFDIR) &&
@@ -269,7 +269,7 @@ legacy_updateQfa(QFA_State *s)
 				foundone = 1;
 				/* if (s->cntntrecs >= s->maxntrecs) {	 only write every maxntrecs amount of data */
 					s->cntntrecs = 0;
-					if (gtperr == 0) 
+					if (gtperr == 0)
 						gtperr = GetTapePos(&s->curtapepos);
 					/* if an error occured previously don't
 					 * try again */
@@ -301,7 +301,7 @@ GetTapePos(long long *pos)
 		*pos = (long long) rmtseek((off_t)0, (int)LSEEK_GET_TAPEPOS);
 		err = *pos < 0;
 	}
-	else 
+	else
 #endif
 	{
 	if (magtapeout) {
@@ -317,14 +317,14 @@ GetTapePos(long long *pos)
 	}
 	if (err) {
 		err = errno;
-		msg("[%ld] error: %d (getting tapepos: %lld)\n", getpid(), 
+		msg("[%ld] error: %d (getting tapepos: %lld)\n", getpid(),
 			err, *pos);
 		return err;
 	}
 	return err;
 }
 
-static int 
+static int
 MkTapeString(struct s_spcl *spclptr, long long curtapepos)
 {
 	int	err = 0;
@@ -333,14 +333,14 @@ MkTapeString(struct s_spcl *spclptr, long long curtapepos)
 	msg("inode %ld at tapepos %lld\n", spclptr->c_inumber, curtapepos);
 #endif
 
-	snprintf(gTps, sizeof(gTps), "%ld\t%d\t%lld\n", 
-		 (unsigned long)spclptr->c_inumber, 
-		 tapeno, 
+	snprintf(gTps, sizeof(gTps), "%ld\t%d\t%lld\n",
+		 (unsigned long)spclptr->c_inumber,
+		 tapeno,
 		 curtapepos);
 	gTps[sizeof(gTps) - 1] = '\0';
 	if (write(gTapeposfd, gTps, strlen(gTps)) != (ssize_t)strlen(gTps)) {
 		err = errno;
-      	warn("error writing tapepos file. (error %d)\n", errno);
+		warn("error writing tapepos file. (error %d)\n", errno);
 	}
 	return err;
 }

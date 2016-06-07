@@ -105,13 +105,13 @@ dir_hash(char *name)
 {
 	unsigned long hash0 = 0x12a3fe2d, hash1 = 0x37abe8f9;
 	int len = strlen(name);
-	
+
 	while (len--) {
 		unsigned long hash = hash1 + (hash0 ^ (*name++ * 7152373));
 		if (hash & 0x80000000) hash -= 0x7fffffff;
 		hash1 = hash0;
-		hash0 = hash; 
-	}       
+		hash0 = hash;
+	}
 	return hash0 % dirhash_size;
 }
 
@@ -352,7 +352,7 @@ freeentry(struct entry *ep)
 		if (ep->e_entries != NULL) {
 			int i;
 			for (i = 0; i < dirhash_size; i++) {
-				if (ep->e_entries[i] != NULL) 
+				if (ep->e_entries[i] != NULL)
 					badentry(ep, "freeing non-empty directory");
 			}
 		}

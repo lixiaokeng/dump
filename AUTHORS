@@ -9,7 +9,7 @@ Kevin Layer <layer@Franz.COM> added the comparison code in restore.
 Doug Paul <dbp@dragonsys.com> helped me to make dump able to backup 2GB+
 filesystems.
 
-David Frey <david@eos.lugs.ch> (the old Debian dump maintainer), 
+David Frey <david@eos.lugs.ch> (the old Debian dump maintainer),
 Bdale Garbee <bdale@gag.com> (the new Debian dump maintainer) and the people
 from Red Hat Software provided lots of patches.
 
