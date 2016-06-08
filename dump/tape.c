@@ -1132,7 +1132,9 @@ doslave(int cmd,
 	transformation->startDiskIOProcess(transformation);
 #endif /* HAVE_BLOCK_TRANSFORMATION */
 
+#ifdef USE_QFA
 	indexer->openQfaState(&qfa_state);
+#endif
 
 	/*
 	 * Need our own seek pointer.
@@ -1272,7 +1274,9 @@ doslave(int cmd,
 		ready2 = 0;
 		caught2 = 0;
 
+#ifdef USE_QFA
 		indexer->updateQfa(&qfa_state);
+#endif
 
 		while (eot_count < 10 && size < bufsize) {
 #ifdef RDUMP
@@ -1326,7 +1330,9 @@ doslave(int cmd,
 		 */
 		(void) kill(nextslave, SIGUSR2);
 
+#ifdef USE_QFA
 		indexer->updateQfaState(&qfa_state);
+#endif
 	}
 
 #ifdef HAVE_BLOCK_TRANSFORMATION

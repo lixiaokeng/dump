@@ -235,9 +235,11 @@ legacy_openQfaState(QFA_State *s)
 static int
 legacy_updateQfaState(QFA_State *s)
 {
+#ifdef USE_QFA
 	if (gTapeposfd >= 0) {
 		s->cntntrecs += ntrec;
 	}
+#endif
 
 	return 0;
 }
