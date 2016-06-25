@@ -358,6 +358,7 @@ Indexer indexer_legacy = {
 	&legacy_addDirEntry,
 	&legacy_openQfa,
 	&legacy_closeQfa,
+	&legacy_openQfaState,
 	&legacy_updateQfa,
 	&legacy_updateQfaState
 };
