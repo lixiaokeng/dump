@@ -159,6 +159,7 @@ int	ntrec = NTREC;	/* # blocks in each tape record */
 int	cartridge = 0;	/* Assume non-cartridge tape */
 #ifdef USE_QFA
 int	tapepos = 0; 	/* assume no QFA tapeposition needed by user */
+extern const char *gTapeposfile;
 #endif /* USE_QFA */
 int	dokerberos = 0;	/* Use Kerberos authentication */
 long	dev_bsize = 1;	/* recalculated below */
@@ -401,7 +402,7 @@ main(int argc, char *argv[])
 
 #ifdef USE_QFA
 		case 'Q':		/* create tapeposfile */
-			//gTapeposfile = optarg;  // FIXME - communicate filename to indexer.
+			gTapeposfile = optarg;
 			tapepos = 1;
 			break;
 #endif /* USE_QFA */
