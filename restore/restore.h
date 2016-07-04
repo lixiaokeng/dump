@@ -173,7 +173,7 @@ typedef struct rstdirdesc RST_DIR;
 #define QFA_MAGIC	"495115637697"
 #define QFA_VERSION	"1.0"
 extern FILE	*gTapeposfp;
-extern char	*gTapeposfile;
+extern const char *gTapeposfile;
 extern char	gTps[255];
 extern long	gSeekstart;
 extern int	tapeposflag;

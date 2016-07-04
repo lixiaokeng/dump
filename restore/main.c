@@ -111,7 +111,7 @@ int	dirhash_size = 1;
 
 #ifdef USE_QFA
 FILE	*gTapeposfp;
-char	*gTapeposfile;
+const char *gTapeposfile;
 char	gTps[255];
 long	gSeekstart;
 int	tapeposflag;

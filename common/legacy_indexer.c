@@ -58,7 +58,7 @@ int magtapeout;  /* is output a magnetic tape? */
 
 static int gtperr = 0;
 static int gTapeposfd;
-static char *gTapeposfile;
+static const char *gTapeposfile;
 static char gTps[255];
 static int32_t gThisDumpDate;
 #endif /* USE_QFA */
