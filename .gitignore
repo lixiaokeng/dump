@@ -35,4 +35,5 @@ Makefile.in
 
 /m4/
 
+/dump.lsm
 /dump-*

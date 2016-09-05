@@ -475,6 +475,7 @@ dnl
 dnl Output files
 dnl
 AC_CONFIG_FILES(m4_flatten([
+	dump.lsm
 	Makefile
 	common/Makefile
 	compat/lib/Makefile
