@@ -38,7 +38,7 @@
 extern dump_ino_t volinfo[];  // TP_NINOS
 extern int tapeno;
 
-static int Afile = -1;	/* archive file descriptor */
+extern int Afile; /* archive file descriptor */
 static int AfileActive = 1;/* Afile flag */
 
 //extern char *Apath;

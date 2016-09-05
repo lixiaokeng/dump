@@ -105,7 +105,6 @@ char	lastlevel[NUM_STR_SIZE];/* dump level of previous dump */
 char	level[NUM_STR_SIZE];/* dump level of this dump */
 int	zipflag;	/* which compression method */
 int	Afile = -1;	/* archive file descriptor */
-int	AfileActive = 1;/* Afile flag */
 int	uflag;		/* update flag */
 int	mflag;		/* dump metadata only if possible */
 int	Mflag;		/* multi-volume flag */
