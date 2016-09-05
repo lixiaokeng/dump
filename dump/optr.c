@@ -45,6 +45,7 @@
 #include <mntent.h>
 #include <paths.h>
 #include <grp.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -431,6 +432,18 @@ allocfsent(struct mntent *fs)
 	struct stat buf, tabbuf;
 	struct pfstab *tabpf;
 	struct mntent *tabfs;
+	char **type;
+	bool known_fs;
+
+	/* Discard fstypes we don't handle */
+	if (fs->mnt_type == NULL)
+		return NULL;
+
+	known_fs = false;
+	for (type = fstypes; *type != NULL && known_fs == false; ++type)
+		known_fs = (strcmp(fs->mnt_type, *type) == 0);
+	if (!known_fs)
+		return NULL;
 
 	new = (struct mntent *)malloc(sizeof (*fs));
 	if (new == NULL)
@@ -701,6 +714,10 @@ lastdump(char arg) /* w ==> just what to do; W ==> most recent dumps */
 	for (pf = table; pf != NULL; pf = pf->pf_next) {
 		struct mntent *dt = pf->pf_mntent;
 		char **type;
+
+		/* Skip fstypes we don't handle */
+		if (dt->mnt_type == NULL)
+			continue;
 
 		for (type = fstypes; *type != NULL; type++) {
 			if (strcmp(dt->mnt_type, *type) == 0) {
