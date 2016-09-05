@@ -2726,10 +2726,15 @@ converthead(struct s_spcl *buf)
 		memmove(buf->c_addr, u_ospcl.s_ospcl.c_fill, (long)256);
 	}
 	else if (u_ospcl.s_ospcl.c_magic == FS_UFS2_MAGIC) {
-		buf->c_date = (int32_t)(*(int64_t *)&u_ospcl.dummy[896]);
-		buf->c_ddate = (int32_t)(*(int64_t *)&u_ospcl.dummy[904]);
-		buf->c_tapea = (int32_t)(*(int64_t *)&u_ospcl.dummy[912]);
-		buf->c_firstrec = (int32_t)(*(int64_t *)&u_ospcl.dummy[920]);
+		int64_t i64;
+		memcpy(&i64, &u_ospcl.dummy[896], sizeof(i64));
+		buf->c_date = i64;
+		memcpy(&i64, &u_ospcl.dummy[904], sizeof(i64));
+		buf->c_ddate = i64;
+		memcpy(&i64, &u_ospcl.dummy[912], sizeof(i64));
+		buf->c_tapea = i64;
+		memcpy(&i64, &u_ospcl.dummy[920], sizeof(i64));
+		buf->c_firstrec = i64;
 		buf->c_ntrec = 0;
 		buf->c_extattributes = 0;
 		buf->c_flags |= DR_NEWINODEFMT;
