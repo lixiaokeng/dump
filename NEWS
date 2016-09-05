@@ -1,3 +1,20 @@
+Changes between versions 0.4b45 and 0.4b46 (released Sep 05, 2016)
+===================================================================
+
+1.	Use pkg-config to locate openssl dependencies to fix ermt linking.
+
+2.	Fix building when QFA code is disabled (Alexander Zangerl).
+
+3.	Fix crash with the -Q option (Alexander Zangerl).
+
+4.	Fix crash with legacy indexer (Alexander Zangerl).
+
+5.	Fix handling of the -A flag.
+
+6.	Fix compression enabling logic (Alexander Zangerl).
+
+7.	Skip unhandled fstab entries (Josef Ridky).
+
 Changes between versions 0.4b44 and 0.4b45 (released May 09, 2016)
 ===================================================================
 
