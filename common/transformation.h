@@ -121,18 +121,22 @@ typedef struct transformation {
 extern Transformation transformation_null;
 
 #ifdef HAVE_LZO
+#define HAVE_BLOCK_TRANSFORMATION 1
 extern Transformation *transformation_lzo_factory(int enc);
 #endif /* HAVE_ZLIB */
 
 #ifdef HAVE_ZLIB
+#define HAVE_BLOCK_TRANSFORMATION 1
 extern Transformation *transformation_zlib_factory(int enc, int complvl);
 #endif /* HAVE_ZLIB */
 
 #ifdef HAVE_BZLIB
+#define HAVE_BLOCK_TRANSFORMATION 1
 extern Transformation *transformation_bzlib_factory(int enc, int complvl);
 #endif /* HAVE_BZLIB */
 
 #ifdef HAVE_OPENSSL
+#define HAVE_BLOCK_TRANSFORMATION 1
 extern Transformation *transformation_ssl_factory(int enc, int complvl,
 		const char *ciphername, const char *digestname);
 #endif /* HAVE_OPENSSL */
