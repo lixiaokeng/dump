@@ -13,6 +13,7 @@
 static int
 lzo_initialize(Transformation *xform, int enc)
 {
+	return 0;
 }
 
 /*
